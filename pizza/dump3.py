@@ -6,11 +6,15 @@
 # certain rights in this software.  This software is distributed under
 # the GNU General Public License.
 #
-# Code converted to pyton 3.x
+# ==== Code converted to pyton 3.x ====
 # INRAE\olivier.vitrac@agroparistech.fr
-#
-# last release 2022-01-25, 2022-02-03 with new displays, and the class frame
 
+# History of additions and improvements
+# 2022-01-25 first conversion to Python 3.x (rewritting when necessary)
+# 2022-02-03 add new displays, and the class frame and the method frame()
+# 2022-02-08 add the method kind(), the property type, the operator + (for merging)
+
+# ======================================
 # dump tool
 
 oneline = "Read, write, manipulate dump files and particle attributes"
@@ -192,7 +196,7 @@ d.extra(obj)				   extract bond/tri/line info from obj
 
 import sys, re, glob, types  # commands
 from os import popen
-from math import *  # any function could be used by set()
+from math import *  # any function could be used by set() - required for eval
 
 try:
     import numpy as np
@@ -460,9 +464,9 @@ class dump:
                     words += f.readline().split()
                 floats = list(map(float, words))
                 if oldnumeric:
-                    atoms = np.zeros((snap.natoms, ncol), np.Float)
+                    atoms = np.zeros((snap.natoms, ncol), np.float64)
                 else:
-                    atoms = np.zeros((snap.natoms, ncol), np.float)
+                    atoms = np.zeros((snap.natoms, ncol), np.float64)
                 start = 0
                 stop = ncol
                 for i in range(snap.natoms):
@@ -1335,7 +1339,8 @@ class dump:
     # --------------------------------------------------------------------
 
     def frame(self,iframe):
-        """ simplified class to access properties of a snapshot (INRAE\Olivier Vitrac) """
+        """ simplified class to access properties of a snapshot
+        (INRAE\Olivier Vitrac) """
         nframes= len(self.time());
         if iframe>=nframes:
             raise ValueError("the frame index should be ranged between 0 and %d" % nframes)
@@ -1357,6 +1362,48 @@ class dump:
         return frame
 
     # --------------------------------------------------------------------
+
+    def kind(self,listtypes=None):
+        """ guessed kind of dump file based on column names
+        (possibility to supply a personnalized list)
+        (INRAE\Olivier Vitrac) """
+        if listtypes==None:
+            listtypes = {
+                'smd': ["id","type","x","y","z","vx","vy","vz"]
+                     }
+        for t in listtypes.keys():
+            if len(listtypes[t])==0:
+                ismatching = False
+            else:
+                ismatching = True
+                for field in listtypes[t]:
+                    ismatching = ismatching and field in self.names
+                if ismatching: break
+        if ismatching:
+            return t
+        else:
+            return None
+        
+    # --------------------------------------------------------------------
+
+    @property
+    def type(self):
+        """ type of dump file defined as a hash of column names """
+        return hash(self.names2str())
+
+    # --------------------------------------------------------------------
+    
+    def __add__(self,o):
+        """ merge dump objects of the same kind/type """
+        if not isinstance(o,dump):
+            raise ValueError("the second operand is not a dump object")
+        elif self.type != o.type:
+            raise ValueError("the dumps are not of the same type")
+        twofiles = self.flist[0] + " " + o.flist[0]
+        return dump(twofiles)
+    
+    # --------------------------------------------------------------------
+    
 
 # --------------------------------------------------------------------
 # one snapshot
@@ -1597,3 +1644,22 @@ class aselect:
                 if not flag:
                     snap.aselect[i] = 0
                     snap.nselect -= 1
+
+
+# %%        
+# ===================================================   
+# main()
+# ===================================================   
+# for debugging purposes (code called as a script)
+# the code is called from here
+# ===================================================
+if __name__ == '__main__':
+    f1 = "../data/play_data/dump.play.1frames"
+    f2 = "../data/play_data/dump.play.50frames"
+    X1 = dump(f1)
+    X1.kind()
+    X1.type
+    X50 = dump(f2)
+    X50.kind()
+    X50.type
+    X = X50 + X1

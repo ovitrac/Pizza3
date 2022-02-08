@@ -51,6 +51,7 @@
 # History
 # 2022-02-05 first alpha version
 # 2022-02-06 RC for 2D
+# 2022-02-08 add count(), update the display method
 
 
 
@@ -172,13 +173,29 @@ class raster:
 
     # DISP method ---------------------------- 
     def __repr__(self):
-       """ display method """
-       print("RASTER area with %d objects" % self.nobjects)
-       print("\twidth: %d" % self.width)
-       print("\theihgt: %d" % self.height)
-       return "RASTER AREA %d x %d with %d objects." % \
-        (self.width,self.height,self.nobjects)
+        """ display method """
+        ctyp = self.count()
+        print("-"*40)
+        print("RASTER area with %d objects" % self.nobjects)
+        print("-"*40)
+        print("\twidth: %d" % self.width)
+        print("\theihgt: %d" % self.height)
+        print("bead types:",end=" ")
+        for i,c in enumerate(ctyp):
+            print("%d (%d)" % c,end=" ")
+        print("-"*40)
+        return "RASTER AREA %d x %d with %d objects (%d types)." % \
+        (self.width,self.height,self.nobjects,len(ctyp))
 
+    # count method ---------------------------- 
+    def count(self):
+        """ count objects by type """
+        typlist = [self.objects[o].beadtype for o in self.names()]
+        utypes = list(set(typlist))
+        c = []
+        for t in utypes:
+            c.append((t,typlist.count(t)))
+        return c
 
     # NAMES method ---------------------------- 
     def names(self):
@@ -235,7 +252,7 @@ class raster:
             R.name = name
         else:
             name = R.name
-        if beadtype != None: R.beadtype = np.floor(beadtype)
+        if beadtype != None: R.beadtype = int(np.floor(beadtype))
         if ismask: R.beadtype = 0
         R.ismask = R.beadtype==0
         # build vertices
@@ -318,7 +335,7 @@ class raster:
             G.name = name
         else:
             name = G.name
-        if beadtype != None: G.beadtype = np.floor(beadtype)
+        if beadtype != None: G.beadtype = int(np.floor(beadtype))
         if ismask: G.beadtype = 0
         G.ismask = G.beadtype==0
         # build vertices
