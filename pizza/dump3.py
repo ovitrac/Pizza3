@@ -13,6 +13,7 @@
 # 2022-01-25 first conversion to Python 3.x (rewritting when necessary)
 # 2022-02-03 add new displays, and the class frame and the method frame()
 # 2022-02-08 add the method kind(), the property type, the operator + (for merging)
+# 2022-02-09 vecs accepts inputs as list or tuple: ["id","x","y","z"]
 
 # ======================================
 # dump tool
@@ -1035,14 +1036,19 @@ class dump:
     # --------------------------------------------------------------------
     # extract vector(s) of values for selected atoms at chosen timestep
 
-    def vecs(self, n, *list):
+    def vecs(self, n, *colname):
+        """ tab = vecs(time,"id","x","y") or tab = vecs(time,["id","x","y"],"z")  """
         snap = self.snaps[self.findtime(n)]
 
-        if len(list) == 0:
+        if len(colname) == 0:
             raise ValueError("no columns specified")
+        if isinstance(colname[0],tuple):
+            colname = list(colname[0]) + list(colname[1:])
+        if isinstance(colname[0],list):
+            colname = colname[0] + list(colname[1:])
         columns = []
         values = []
-        for name in list:
+        for name in colname:
             columns.append(self.names[name])
             values.append(snap.nselect * [0])
         ncol = len(columns)
@@ -1055,7 +1061,7 @@ class dump:
                 values[j][m] = snap.atoms[i][columns[j]]
             m += 1
 
-        if len(list) == 1:
+        if len(colname) == 1:
             return values[0]
         else:
             return values
@@ -1663,3 +1669,4 @@ if __name__ == '__main__':
     X50.kind()
     X50.type
     X = X50 + X1
+    xy=X.vecs(82500,('x','y'))
