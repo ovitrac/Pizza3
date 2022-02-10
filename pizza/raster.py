@@ -5,7 +5,7 @@
     
     Generate a raster area
         R = raster()
-        R = raster(width=200, height=200)
+        R = raster(width=200, height=200, dpi=300)
         
     Set objects (rectangle, circle, triangle, diamond...)
         R.rectangle(1,24,2,20,name='rect1')
@@ -32,7 +32,7 @@
         R.show()
         
     Show and manage labels
-        R.show(extra="label")
+        R.show(extra="label",contour=True)
         R.label("rect003")
         R.unlabel('rect1')
         
@@ -52,7 +52,7 @@
 # 2022-02-05 first alpha version
 # 2022-02-06 RC for 2D
 # 2022-02-08 add count(), update the display method
-
+# 2022-02-10 add figure(), newfigure(), contout
 
 
 
@@ -110,6 +110,8 @@ class raster:
         R.print()
         R.label("object")
         R.unlabel("object")
+        R.figure
+        R.newfigure(dpi=300)
         
     Clear and delete
         R.clear()
@@ -135,6 +137,8 @@ class raster:
                         "circle":0}
         self.fontsize = 12   # font size for labels
         self.im = np.zeros((height,width),dtype=np.int8)
+        self.hfig = [] # figure handle
+        self.dpi = 200
         
     # NUMERIC ---------------------------- 
     def numeric(self):
@@ -168,6 +172,7 @@ class raster:
             else:
                 self.objects[o].isplotted = False
                 self.objects[o].islabelled = False
+        self.figure()
         plt.cla()
         self.show()
 
@@ -398,16 +403,20 @@ class raster:
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # label method ---------------------------- 
-    def label(self,name,ax=plt.gca(),edgecolor="orange",facecolor="none",linewidth=2):
+    def label(self,name,ax=plt.gca(),contour=True,edgecolor="orange",facecolor="none",linewidth=2):
         """ label """
+        self.figure()
         if name in self.objects:
             if not self.objects[name].islabelled:
-                patch = patches.PathPatch(self.objects[name].polygon2plot,
-                                          facecolor=facecolor,
-                                          edgecolor=edgecolor,
-                                          lw=linewidth)
-                self.objects[name].hlabel["contour"] = \
-                    ax.add_patch(patch)
+                if contour:
+                    patch = patches.PathPatch(self.objects[name].polygon2plot,
+                                              facecolor=facecolor,
+                                              edgecolor=edgecolor,
+                                              lw=linewidth)
+                    self.objects[name].hlabel["contour"] = \
+                        ax.add_patch(patch)
+                else:
+                    self.objects[name].hlabel["contour"] = None
                 self.objects[name].hlabel["text"] = \
                 plt.text(self.objects[name].xcenter,
                          self.objects[name].ycenter,
@@ -459,13 +468,15 @@ class raster:
 
 
     # SHOW method ---------------------------- 
-    def show(self,extra="none"):
+    def show(self,extra="none",contour=True):
         """ show method """
+        self.figure()
         imagesc(self.im)
         if extra == "label":
             ax = plt.gca()
             for o in self.names():
-                self.label(o,ax=ax)
+                if not self.objects[o].ismask:
+                    self.label(o,ax=ax,contour=contour)
             plt.show()
             
     # SHOW method ---------------------------- 
@@ -474,7 +485,20 @@ class raster:
         txt = self.string()
         for i in range(len(txt)):
             print(txt[i],end="\n")
-        
+         
+            
+    # FIGURE method ---------------------------- 
+    def figure(self):
+        """ set the current figure """
+        if self.hfig==[] or not plt.fignum_exists(self.hfig.number):
+            self.newfigure()
+        plt.figure(self.hfig.number)
+    
+    # NEWFIGURE method ---------------------------- 
+    def newfigure(self):
+        """ create a new figure (dpi=200) """
+        self.hfig = plt.figure(dpi=self.dpi)
+    
 # %% sub-classes
 class Rectangle:
     """ Rectangle class """
@@ -560,6 +584,7 @@ class Hexagon(Circle):
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':
+    plt.close("all")
     R = raster()
     R.rectangle(1,24,2,20,name='rect1')
     R.rectangle(60,80,50,81,name='rect2',beadtype=2,angle=40)
@@ -587,3 +612,16 @@ if __name__ == '__main__':
     R.show(extra="label")
     R.label("rect003")
     R.unlabel('rect1')
+
+# %% another example    
+    S = raster(width=1000,height=1000)
+    S.rectangle(150,850,850,1000,name="top",beadtype=1)
+    S.rectangle(150,850,0,150,name="bottom",beadtype=2)
+    S.circle(500,500,480,name="mask",ismask=True,resolution=500)
+    S.triangle(250,880,80,name='tooth1',angle=60,beadtype=1)
+    S.triangle(750,880,80,name='tooth2',angle=-0,beadtype=1)
+    S.circle(500,200,300,name="tongue",beadtype=5,shaperatio=0.3,resolution=300)
+    S.rectangle(500,450,320,320,name="food",mode="center",beadtype=3)
+    S.plot()
+    S.show(extra="label",contour=False)
+    
