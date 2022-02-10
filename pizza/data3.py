@@ -14,6 +14,7 @@
 # last release
 # 2022-02-03 - add flist, __repr__
 # 2022-02-04 - add append and start to add comments
+# 2022-02-10 - first implementation of a full restart object from a dump object
 
 oneline = "Read, write, manipulate LAMMPS data files"
 
@@ -79,7 +80,11 @@ d.write("data.new")             write a LAMMPS data file
 
 # Imports and external programs
 
+# External dependency
 from os import popen
+
+# Dependecy for the creation of DATA restart object from a DUMP object
+from pizza.dump3 import dump
 
 #try:
 #    tmp = PIZZA_GUNZIP
@@ -97,12 +102,73 @@ class data:
         self.nselect = 1
 
         if len(list) == 0:
+            
+        # ========================================
+        # Default Constructor (empty object)
+        # ========================================
+            
             self.title = "LAMMPS data file"
             self.names = {}
             self.headers = {}
             self.sections = {}
             self.flist = []
+            self.restart = False
             return
+        elif isinstance(list[0],dump):
+                
+        # ========================================
+        # Constructor from an existing DUMP object
+        # ========================================
+        
+            X = list[0]     # supplied dump object
+            t = X.time()
+            nt = len(t)
+            if len(list)>1:
+                tselect = list[1]
+                if tselect not in t:
+                    raise ValueError("the input time is not available in the dump object")
+            else:
+                tselect = t[-1]
+            itselect = next(i for i in range(nt) if t[i]==tselect)
+            # set object title
+            self.title = 'LAMMPS data file (restart from "%s" t = %0.5g (frame %d of %d))' %  \
+                (X.flist[0],tselect,itselect,nt)
+            # set default names                       ------------- HEADERS SECTION -------------
+            self.names = {}
+            X.tselect.one(tselect)
+            snap = X.snaps[itselect]
+            # set headers
+            self.headers = {    'atoms': snap.natoms,
+                                'atom types': X.minmax("type")[1],
+                                'xlo xhi': (snap.xlo, snap.xhi),
+                                'ylo yhi': (snap.ylo, snap.yhi),
+                                'zlo zhi': (snap.zlo, snap.zhi)}
+            # Default sections
+            self.sections = {}
+            # set atoms (specific to your style/kind) ------------- ATOMS SUBSECTION -------------
+            template_atoms = {"smd": ["id","type","mol","c_vol", "mass", "radius",
+                                      "c_contact_radius", "x", "y", "z", "f_1[1]", "f_1[2]", "f_1[3]"] }
+            if X.kind(template_atoms["smd"]):
+                for col in template_atoms["smd"]:
+                    self.append("Atoms", X.vecs(tselect, col), col in ["id","type","mol"])
+            else:
+                raise ValueError("Please add your ATOMS section in the constructor")
+            # set velocities (if required)           ------------- VELOCITIES SUBSECTION -------------
+            template_velocities = {"smd": ["id","vx","vy","vz"]}
+            if X.kind(template_atoms["smd"]):
+                if X.kind(template_velocities["smd"]):
+                    for col in template_velocities["smd"]:
+                        self.append("Velocities", X.vecs(tselect, col), col == "id")
+                else:
+                    raise ValueError("the velocities are missing for the style SMD")
+            # store filename
+            self.flist = list[0].flist
+            self.restart = True
+            return
+        
+        # ===========================================================
+        # Regular constructor from DATA file (supplied as filename)
+        # ===========================================================
         
         flist = list
         file = list[0]
@@ -168,10 +234,19 @@ class data:
         self.headers = headers
         self.sections = sections
         self.flist = flist
+        self.restart = False
         
     # --------------------------------------------------------------------
     # Display method (added OV - 2022-02-03)
     def __repr__(self):
+        if self.sections == {} or self.headers == {}:
+            ret = "empty %s" % self.title
+            print(ret)
+            return ret
+        if self.restart:
+            kind = "restart"
+        else:
+            kind = "source"
         print("Data file: %s\n\tcontains %d atoms from %d atom types\n\twith box = [%0.4g %0.4g %0.4g %0.4g %0.4g %0.4g]" 
               % (self.flist[0],
                  self.headers['atoms'],
@@ -186,8 +261,8 @@ class data:
         print("\twith the following sections:")
         for sectionname in self.sections.keys():
             print("\t\t" +self.dispsection(sectionname,False))
-        ret = 'LAMMPS data object including %d atoms (%d types, source="%s")' \
-            % (self.headers['atoms'],self.maxtype(),self.flist[0])
+        ret = 'LAMMPS data object including %d atoms (%d types, %s="%s")' \
+            % (self.headers['atoms'],self.maxtype(),kind,self.flist[0])
         return ret
     
     
@@ -274,24 +349,37 @@ class data:
     # --------------------------------------------------------------------
     # append a column of named section with vector of values (added 2022-02-04)
 
-    def append(self, name, vector):
-        """ append a new column: X.append("section",vectorofvalues) """
+    def append(self, name, vector,forceinteger = False):
+        """ append a new column: X.append("section",vectorofvalues,forceinteger=False) """
+        if name not in self.sections:
+            self.sections[name] = []
+            print('Add section [%s]' % name)
         lines = self.sections[name]
         nlines = len(lines)
-        if name not in self.sections:
-            raise ValueError('"%s" is not a valid section name' % name)
         if not isinstance(vector,list): vector = [vector]
-        if len(vector)==1: vector = vector * nlines
-        if len(vector) != nlines:
-            raise ValueError('the length of new data (%d) in section "%s" does not match the number of rows %d' % \
-                             (len(vector),name,nlines))
         newlines = []
-        for i in range(nlines):
-            line = lines[i]
-            words = line.split()
-            words.append(str(vector[i]))
-            newline = " ".join(words) + "\n"
-            newlines.append(newline)
+        if nlines == 0:           # empty atoms section, create first column
+            nlines = len(vector)  # new column length = input column length
+            for i in range(nlines):
+                if forceinteger:
+                    line = str(int(vector[i]))
+                else:
+                    line = str(vector[i])
+                newlines.append(line)
+        else:
+            if len(vector)==1: vector = vector * nlines
+            if len(vector) != nlines:
+                raise ValueError('the length of new data (%d) in section "%s" does not match the number of rows %d' % \
+                                 (len(vector),name,nlines))
+            for i in range(nlines):
+                line = lines[i]
+                words = line.split()
+                if forceinteger:
+                    words.append(str(int(vector[i])))
+                else:
+                    words.append(str(vector[i]))
+                newline = " ".join(words) + "\n"
+                newlines.append(newline)
         self.sections[name] = newlines
 
 
@@ -305,6 +393,7 @@ class data:
         line = lines[0]
         words = line.split()
         ret = '"%s": %d x %d values' % (name,nlines,len(words))
+        
         if flaghead: ret = "LAMMPS data section "+ret
         return ret
         
@@ -324,7 +413,7 @@ class data:
         self.replace("Atoms", self.names["y"] + 1, y)
         self.replace("Atoms", self.names["z"] + 1, z)
 
-        if dm.names.has_key("ix") and self.names.has_key("ix"):
+        if "ix" in dm.names and "ix" in self.names: #if dm.names.has_key("ix") and self.names.has_key("ix"):
             ix, iy, iz = dm.vecs(ntime, "ix", "iy", "iz")
             self.replace("Atoms", self.names["ix"] + 1, ix)
             self.replace("Atoms", self.names["iy"] + 1, iy)
@@ -335,9 +424,9 @@ class data:
 
     def delete(self, keyword):
 
-        if self.headers.has_key(keyword):
+        if keyword in self.headers: # if self.headers.has_key(keyword):
             del self.headers[keyword]
-        elif self.sections.has_key(keyword):
+        elif keyword in self.sections: # elif self.sections.has_key(keyword):
             del self.sections[keyword]
         else:
             raise ValueError("keyword not found in data object")
@@ -515,3 +604,19 @@ skeywords = [
     ["Molecules", "atoms"],
     ["Tinker Types", "atoms"],
 ]
+
+# %%        
+# ===================================================   
+# main()
+# ===================================================   
+# for debugging purposes (code called as a script)
+# the code is called from here
+# ===================================================
+if __name__ == '__main__':
+    datafile = "../data/play_data/data.play.lmp"
+    X = data(datafile)
+    Y = dump("../data/play_data/dump.play.restartme")
+    t = Y.time()
+    step = 2000
+    R = data(Y,step)
+    R.write("../tmp/data.myfirstrestart.lmp")

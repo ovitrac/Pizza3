@@ -14,6 +14,7 @@
 # 2022-02-03 add new displays, and the class frame and the method frame()
 # 2022-02-08 add the method kind(), the property type, the operator + (for merging)
 # 2022-02-09 vecs accepts inputs as list or tuple: ["id","x","y","z"]
+# 2022-02-10 kind has 2 internal styles ("vxyz" and "xyz") and can be supplied with a user style
 
 # ======================================
 # dump tool
@@ -1375,9 +1376,14 @@ class dump:
         (INRAE\Olivier Vitrac) """
         if listtypes==None:
             listtypes = {
-                'smd': ["id","type","x","y","z","vx","vy","vz"]
+                'vxyz': ["id","type","x","y","z","vx","vy","vz"],
+                'xyz': ["id","type","x","y","z"]
                      }
-        for t in listtypes.keys():
+            internaltypes = True
+        else:
+            listtypes = {"usertype":listtypes}
+            internaltypes = False
+        for t in listtypes:
             if len(listtypes[t])==0:
                 ismatching = False
             else:
@@ -1386,9 +1392,15 @@ class dump:
                     ismatching = ismatching and field in self.names
                 if ismatching: break
         if ismatching:
-            return t
+            if internaltypes:
+                return t
+            else:
+                return True
         else:
-            return None
+            if internaltypes:
+                return None
+            else:
+                return False
         
     # --------------------------------------------------------------------
 
