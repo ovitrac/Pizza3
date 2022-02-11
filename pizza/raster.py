@@ -52,8 +52,8 @@
 # 2022-02-05 first alpha version
 # 2022-02-06 RC for 2D
 # 2022-02-08 add count(), update the display method
-# 2022-02-10 add figure(), newfigure(), contout
-
+# 2022-02-10 add figure(), newfigure(), count()
+# 2022-02-11 improve display, add data()
 
 
 # %% Imports and private library
@@ -62,6 +62,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.path as path
 import matplotlib.patches as patches
+from pizza.data3 import data as data3
 
 def _rotate(x0,y0,xc,yc,angle):
     angle = np.pi * angle / 180.0
@@ -121,24 +122,55 @@ class raster:
     """
     
     # CONSTRUCTOR ---------------------------- 
-    def __init__(self,width=100,height=100):
+    def __init__(self,width=100,height=100,name="default raster"):
         """ initialize raster """
+        self.name = name
         self.width = width
         self.height = height
         self.xcenter= width/2
         self.ycenter = height/2
         self.objects = {}
         self.nobjects = 0    # total number of objects (alive)
+        self.nbeads = 0
         self.counter = {"triangle":0,
                         "diamond":0,
                         "rectangle":0,
                         "pentagon":0,
                         "hexagon":0,
                         "circle":0}
-        self.fontsize = 12   # font size for labels
+        self.fontsize = 10   # font size for labels
         self.im = np.zeros((height,width),dtype=np.int8)
         self.hfig = [] # figure handle
         self.dpi = 200
+
+        
+    # DATA ---------------------------- 
+    def data(self):
+        """ return a pizza.data object """
+        n = self.length()
+        i,j = R.im.nonzero() # x=j+0.5 y=i+0.5
+        X = data3()  # empty dataobject
+        X.title = self.name + "(raster)"
+        X.headers = {'atoms': n,
+                      'atom types': self.count()[-1][0],
+                      'xlo xhi': (0.5, self.width-0.5),
+                      'ylo yhi': (0.5, self.height-0.5),
+                      'zlo zhi': (0, 0)}
+        X.append('Atoms',list(range(1,n+1)),True) # id
+        X.append('Atoms',list(self.im[i,j]),True) # Type
+        X.append('Atoms',list(j+0.5),False)           # x
+        X.append('Atoms',list(i+0.5),False)           # y
+        X.append('Atoms',list(i*0),False)             # z
+        X.flist = ["%dx%d raster (%s)" % (self.width,self.height,self.name)]
+        return X
+     
+    # LENGTH ---------------------------- 
+    def length(self,t=None):
+        """ returns the total number of beads """
+        if t==None:
+            return np.count_nonzero(self.im>0)
+        else:
+            return np.count_nonzero(self.im==t)
         
     # NUMERIC ---------------------------- 
     def numeric(self):
@@ -172,6 +204,9 @@ class raster:
             else:
                 self.objects[o].isplotted = False
                 self.objects[o].islabelled = False
+                if not self.objects[o].ismask:
+                    self.nbeads -= self.objects[o].nbeads
+                self.objects[o].nbeads = 0  # number of beads (plotted)
         self.figure()
         plt.cla()
         self.show()
@@ -179,18 +214,25 @@ class raster:
     # DISP method ---------------------------- 
     def __repr__(self):
         """ display method """
-        ctyp = self.count()
+        ctyp = self.count() # count objects (not beads)
         print("-"*40)
-        print("RASTER area with %d objects" % self.nobjects)
+        print('RASTER area "%s" with %d objects' % (self.name,self.nobjects))
         print("-"*40)
+        print("<- grid size ->")
         print("\twidth: %d" % self.width)
-        print("\theihgt: %d" % self.height)
-        print("bead types:",end=" ")
-        for i,c in enumerate(ctyp):
-            print("%d (%d)" % c,end=" ")
+        print("\theight: %d" % self.height)
+        print("<- bead types ->")
+        nbt = 0
+        if len(ctyp):
+            for i,c in enumerate(ctyp):
+                nb = self.length(c[0])
+                nbt += nb
+                print("\t type=%d (%d objects, %d beads)" % (c[0],c[1],nb))
+        else:
+            print("\tno bead assigned")
         print("-"*40)
-        return "RASTER AREA %d x %d with %d objects (%d types)." % \
-        (self.width,self.height,self.nobjects,len(ctyp))
+        return "RASTER AREA %d x %d with %d objects (%d types, %d beads)." % \
+        (self.width,self.height,self.nobjects,len(ctyp),nbt)
 
     # count method ---------------------------- 
     def count(self):
@@ -213,7 +255,7 @@ class raster:
         print("RASTER with %d objects" % self.nobjects)
         for o in self.objects.keys():
             print(fmt % self.objects[o].name,self.objects[o].kind,
-                  "(beadtype=%d)" % self.objects[o].beadtype)
+                  "(beadtype=%d, n=%d)" % (self.objects[o].beadtype,self.objects[o].nbeads))
             
     # EXIST method ---------------------------- 
     def exist(self,name):
@@ -224,6 +266,8 @@ class raster:
     def delete(self,name):
         """ delete object """
         if name in self.objects: 
+            if not self.objects[name].ismask:
+                self.nbeads -= self.objects[name].nbeads
             del self.objects[name]
             self.nobjects -= 1
         else:
@@ -420,7 +464,7 @@ class raster:
                 self.objects[name].hlabel["text"] = \
                 plt.text(self.objects[name].xcenter,
                          self.objects[name].ycenter,
-                         "%s\n(%d)" % (name, self.objects[name].beadtype),
+                         "%s\n(t=$%d$,$n_p$=%d)" % (name, self.objects[name].beadtype,self.objects[name].nbeads),
                          horizontalalignment = "center",
                          verticalalignment = "center_baseline",
                          fontsize=self.fontsize
@@ -461,10 +505,13 @@ class raster:
                             points[k,1]>=0 and \
                             points[k,1]<self.height :
                                 self.im[points[k,1],points[k,0]] = self.objects[o].beadtype
+                                self.objects[o].nbeads += 1
                 else:
                     raise ValueError("Not yet implemented")
                 # store it as plotted
                 self.objects[o].isplotted = True
+                if not self.objects[o].ismask:
+                    self.nbeads += self.objects[o].nbeads
 
 
     # SHOW method ---------------------------- 
@@ -477,6 +524,8 @@ class raster:
             for o in self.names():
                 if not self.objects[o].ismask:
                     self.label(o,ax=ax,contour=contour)
+            ax.set_title("raster area: %s \n (n=%d, $n_p$=%d)" %\
+                      (self.name,self.length(),self.nbeads) )
             plt.show()
             
     # SHOW method ---------------------------- 
@@ -507,6 +556,7 @@ class Rectangle:
         self.kind = "rectangle"     # kind of object
         self.alike = "circle"       # similar object for plotting
         self.beadtype = 1           # bead type
+        self.nbeads = 0             # number of beads
         self.ismask = False         # True if beadtype == 0
         self.isplotted = False      # True if plotted
         self.islabelled = False     # True if labelled
@@ -529,6 +579,7 @@ class Circle:
         self.alike = "circle"        # similar object for plotting
         self.resolution = resolution # default resolution
         self.beadtype = 1            # bead type
+        self.nbeads = 0              # number of beads
         self.ismask = False          # True if beadtype == 0
         self.isplotted = False       # True if plotted
         self.islabelled = False      # True if labelled
@@ -576,7 +627,7 @@ class Hexagon(Circle):
         self.name = "hex%03d" % counter
         self.kind = "Hexagon"     # kind of object
 
-# %%        
+# %% debug section
 # ===================================================   
 # main()
 # ===================================================   

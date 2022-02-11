@@ -114,6 +114,7 @@ class data:
             self.flist = []
             self.restart = False
             return
+        
         elif isinstance(list[0],dump):
                 
         # ========================================
