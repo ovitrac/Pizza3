@@ -43,6 +43,10 @@
         T = R.string()
         R.print()
         
+    Create a pizza.dump3.dump object
+        X = R.data()
+        X.write("/tmp/myfile")
+        
 """
 
 # INRAE\Olivier Vitrac - rev. 2022-02-06
@@ -54,6 +58,7 @@
 # 2022-02-08 add count(), update the display method
 # 2022-02-10 add figure(), newfigure(), count()
 # 2022-02-11 improve display, add data()
+# 2022-02-12 major release, fully compatible with pizza.data3.data
 
 
 # %% Imports and private library
@@ -102,23 +107,32 @@ class raster:
         R.pentagon(...)
         R.hexagon(...)
         
-    Display methods (order is omportant)
+    Display methods (precedence affects the result)
         R.plot()
-        R.show()
+        R.show(), R.show(extra="label",contour=True,what="beadtype" or "objindex")
         R.show(extra="labels")
         R.list()
         R.get("object")
         R.print()
         R.label("object")
         R.unlabel("object")
-        R.figure
+        R.figure()
         R.newfigure(dpi=300)
+        
+        R.numeric()
+        R.string(), R.string(what="beadtype" or "objindex"))
+        R.names()
+        R.print()
         
     Clear and delete
         R.clear()
         R.clear("all")
         R.delete("object")
 
+    Generate an input data object
+        X = R.data()
+        X.write("/tmp/myfile")
+    
     """
     
     # CONSTRUCTOR ---------------------------- 
@@ -137,50 +151,84 @@ class raster:
                         "rectangle":0,
                         "pentagon":0,
                         "hexagon":0,
-                        "circle":0}
+                        "circle":0,
+                        "all":0}
         self.fontsize = 10   # font size for labels
-        self.im = np.zeros((height,width),dtype=np.int8)
+        self.imbead = np.zeros((height,width),dtype=np.int8)
+        self.imobj = np.zeros((height,width),dtype=np.int8)
         self.hfig = [] # figure handle
         self.dpi = 200
-
+        # generic SMD properties (to be rescaled)
+        self.volume = 1
+        self.mass = 1
+        self.radius = 1
+        self.contactradius = 1
+        self.velocities = [0,0,0]
+        self.forces =[0,0,0]
         
     # DATA ---------------------------- 
     def data(self):
         """ return a pizza.data object """
         n = self.length()
-        i,j = R.im.nonzero() # x=j+0.5 y=i+0.5
-        X = data3()  # empty dataobject
+        i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
+        X = data3()  # empty pizza.data3.data object
         X.title = self.name + "(raster)"
         X.headers = {'atoms': n,
                       'atom types': self.count()[-1][0],
                       'xlo xhi': (0.5, self.width-0.5),
                       'ylo yhi': (0.5, self.height-0.5),
                       'zlo zhi': (0, 0)}
-        X.append('Atoms',list(range(1,n+1)),True) # id
-        X.append('Atoms',list(self.im[i,j]),True) # Type
-        X.append('Atoms',list(j+0.5),False)           # x
-        X.append('Atoms',list(i+0.5),False)           # y
-        X.append('Atoms',list(i*0),False)             # z
+        # [ATOMS] section
+        X.append('Atoms',list(range(1,n+1)),True,"id")      # id
+        X.append('Atoms',self.imbead[i,j],True,"type")      # Type
+        X.append('Atoms',self.imobj[i,j],True,"mol")        # mol
+        X.append('Atoms',self.volume,False,"c_vol")         # c_vol
+        X.append('Atoms',self.mass,False,"mass")            # mass
+        X.append('Atoms',self.radius,False,"radius")        # radius
+        X.append('Atoms',self.contactradius,False,"c_contact_radius") # c_contact_radius
+        X.append('Atoms',j+0.5,False,"x")                   # x
+        X.append('Atoms',i+0.5,False,"y")                   # y
+        X.append('Atoms',0,False,"z")                       # z
+        X.append('Atoms',self.forces[0],False,"f_1[1]")     # force along x
+        X.append('Atoms',self.forces[1],False,"f_1[2]")     # force along y
+        X.append('Atoms',self.forces[2],False,"f_1[3]")     # force along z
+        # [VELOCITIES] section
+        X.append('Velocities',list(range(1,n+1)),True,"id") # id
+        X.append('Velocities',self.velocities[0],False,"vx") # vx
+        X.append('Velocities',self.velocities[1],False,"vy") # vy
+        X.append('Velocities',self.velocities[2],False,"vz") # vz
+        # pseudo-filename
         X.flist = ["%dx%d raster (%s)" % (self.width,self.height,self.name)]
         return X
      
     # LENGTH ---------------------------- 
-    def length(self,t=None):
-        """ returns the total number of beads """
-        if t==None:
-            return np.count_nonzero(self.im>0)
+    def length(self,t=None,what="beadtype"):
+        """ returns the total number of beads length(type,"beadtype") """
+        if what == "beadtype":
+            num = self.imbead
+        elif what == "objindex":
+            num = self.imobj
         else:
-            return np.count_nonzero(self.im==t)
+            raise ValueError('"beadtype" and "objindex" are the only acceptable values')
+        if t==None:
+            return np.count_nonzero(num>0)
+        else:
+            return np.count_nonzero(num==t)
         
     # NUMERIC ---------------------------- 
     def numeric(self):
         """ retrieve the image as a numpy.array """
-        return self.im
+        return self.imbead, self.imobj
 
     # STRING ---------------------------- 
-    def string(self):
+    def string(self,what="beadtype"):
         """ convert the image as ASCII strings """
-        num = np.flipud(duplicate(self.im));
+        if what == "beadtype":
+            num = np.flipud(duplicate(self.imbead))
+        elif what == "objindex":
+            num = np.flipud(duplicate(self.imobj))
+        else:
+            raise ValueError('"beadtype" and "objindex" are the only acceptable values')
         num[num>0] = num[num>0] + 65
         num[num==0] = 32
         num = list(num)
@@ -197,7 +245,8 @@ class raster:
     # CLEAR ---------------------------- 
     def clear(self,what="nothing"):
         """ clear the plotting area, use clear("all")) to remove all objects """
-        self.im = np.zeros((self.height,self.width),dtype=np.int8)
+        self.imbead = np.zeros((self.height,self.width),dtype=np.int8)
+        self.imobj = np.zeros((self.height,self.width),dtype=np.int8)
         for o in self.names():
             if what=="all":
                 self.delete(o)
@@ -246,7 +295,12 @@ class raster:
 
     # NAMES method ---------------------------- 
     def names(self):
-        return list(self.objects.keys())
+        """ return the names of objects sorted as index """
+        namesunsorted=namessorted=list(self.objects.keys())
+        nobj = len(namesunsorted)
+        for iobj in range(nobj):
+            namessorted[self.objects[namesunsorted[iobj]].index-1] = namesunsorted[iobj]
+        return namessorted
         
     # LIST method ---------------------------- 
     def list(self):
@@ -254,8 +308,12 @@ class raster:
         fmt = "%%%ss:" % max(10,max([len(n) for n in self.names()])+2)
         print("RASTER with %d objects" % self.nobjects)
         for o in self.objects.keys():
-            print(fmt % self.objects[o].name,self.objects[o].kind,
-                  "(beadtype=%d, n=%d)" % (self.objects[o].beadtype,self.objects[o].nbeads))
+            print(fmt % self.objects[o].name,"%-10s" % self.objects[o].kind,
+                  "(beadtype=%d,object index=[%d,%d], n=%d)" % \
+                      (self.objects[o].beadtype,
+                       self.objects[o].index,
+                       self.objects[o].subindex,
+                       self.objects[o].nbeads))
             
     # EXIST method ---------------------------- 
     def exist(self,name):
@@ -292,8 +350,9 @@ class raster:
             rectangle(xcenter,ycenter,width,height [, beadtype=1,mode="center", angle=0, ismask=False])
         """
         # object creation
+        self.counter["all"] += 1
         self.counter["rectangle"] += 1
-        R = Rectangle(self.counter["rectangle"])
+        R = Rectangle((self.counter["all"],self.counter["rectangle"]))
         if name != None:
             if self.exist(name):
                 print('RASTER:: the object "%s" is overwritten',name)
@@ -362,21 +421,22 @@ class raster:
             circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
         """
         # object creation
+        self.counter["all"] += 1
         if resolution==3:
             self.counter["triangle"] += 1
-            G = Triangle(self.counter["triangle"])
+            G = Triangle((self.counter["all"],self.counter["triangle"]))
         elif resolution==4:
             self.counter["diamond"] += 1
-            G = Diamond(self.counter["diamond"])
+            G = Diamond((self.counter["all"],self.counter["diamond"]))
         elif resolution==5:
             self.counter["pentagon"] += 1
-            G = Pentagon(self.counter["pentagon"])
+            G = Pentagon((self.counter["all"],self.counter["pentagon"]))
         elif resolution==6:
             self.counter["hexagon"] += 1
-            G = Hexagon(self.counter["hexagon"])
+            G = Hexagon((self.counter["all"],self.counter["hexagon"]))
         else:
             self.counter["circle"] += 1
-            G = Circle(self.counter["circle"],resolution=resolution)
+            G = Circle((self.counter["all"],self.counter["circle"]),resolution=resolution)
         if name != None:
             if self.exist(name):
                 print('RASTER:: the object "%s" is overwritten',name)
@@ -504,7 +564,8 @@ class raster:
                             points[k,0]<self.width and \
                             points[k,1]>=0 and \
                             points[k,1]<self.height :
-                                self.im[points[k,1],points[k,0]] = self.objects[o].beadtype
+                                self.imbead[points[k,1],points[k,0]] = self.objects[o].beadtype
+                                self.imobj[points[k,1],points[k,0]] = self.objects[o].index
                                 self.objects[o].nbeads += 1
                 else:
                     raise ValueError("Not yet implemented")
@@ -515,10 +576,15 @@ class raster:
 
 
     # SHOW method ---------------------------- 
-    def show(self,extra="none",contour=True):
-        """ show method """
+    def show(self,extra="none",contour=True,what="beadtype"):
+        """ show method: show(extra="label",contour=True,what="beadtype") """
         self.figure()
-        imagesc(self.im)
+        if what=="beadtype":
+            imagesc(self.imbead)
+        elif what == "objindex":
+            imagesc(self.imobj)
+        else:
+            raise ValueError('"beadtype" and "objindex" are the only acceptable values')        
         if extra == "label":
             ax = plt.gca()
             for o in self.names():
@@ -529,9 +595,9 @@ class raster:
             plt.show()
             
     # SHOW method ---------------------------- 
-    def print(self):
+    def print(self,what="beadtype"):
         """ print method """
-        txt = self.string()
+        txt = self.string(what=what)
         for i in range(len(txt)):
             print(txt[i],end="\n")
          
@@ -548,11 +614,15 @@ class raster:
         """ create a new figure (dpi=200) """
         self.hfig = plt.figure(dpi=self.dpi)
     
-# %% sub-classes
+# %% PRIVATE SUB-CLASSES
+# Use the equivalent method of raster() to call these constructors
+# counter[0] is the overall index (total number of objects created)
+# counter[1] is the index of objects of this type (total number of objects created for this class)
+
 class Rectangle:
     """ Rectangle class """
     def __init__(self,counter):
-        self.name = "rect%03d" % counter
+        self.name = "rect%03d" % counter[1]
         self.kind = "rectangle"     # kind of object
         self.alike = "circle"       # similar object for plotting
         self.beadtype = 1           # bead type
@@ -562,6 +632,8 @@ class Rectangle:
         self.islabelled = False     # True if labelled
         self.resolution = None      # resolution is undefined
         self.hlabel = {'contour':[], 'text':[]}
+        self.index = counter[0]
+        self.subindex = counter[1]
         
     def __repr__(self):
         print("%s - %s object" % (self.name, self.kind))
@@ -574,7 +646,7 @@ class Rectangle:
 class Circle:
     """ Circle class """
     def __init__(self,counter,resolution=20):
-        self.name = "circ%03d" % counter
+        self.name = "circ%03d" % counter[1]
         self.kind = "circle"         # kind of object
         self.alike = "circle"        # similar object for plotting
         self.resolution = resolution # default resolution
@@ -584,6 +656,8 @@ class Circle:
         self.isplotted = False       # True if plotted
         self.islabelled = False      # True if labelled
         self.hlabel = {'contour':[], 'text':[]}
+        self.index = counter[0]
+        self.subindex = counter[1]
         
     def __repr__(self):
         print("%s - %s object" % (self.name,self.kind) )
@@ -599,35 +673,35 @@ class Circle:
 class Triangle(Circle):
     """ Triangle class """
     def __init__(self,counter):
-        super().__init__(0,resolution=3)
-        self.name = "tri%03d" % counter
+        super().__init__(counter,resolution=3)
+        self.name = "tri%03d" % counter[1]
         self.kind = "triangle"     # kind of object
 
 
 class Diamond(Circle):
     """ Diamond class """
     def __init__(self,counter):
-        super().__init__(0,resolution=4)
-        self.name = "diam%03d" % counter
+        super().__init__(counter,resolution=4)
+        self.name = "diam%03d" % counter[1]
         self.kind = "diamond"     # kind of object
 
 
 class Pentagon(Circle):
     """ Pentagon class """
     def __init__(self,counter):
-        super().__init__(0,resolution=5)
-        self.name = "penta%03d" % counter
+        super().__init__(counter,resolution=5)
+        self.name = "penta%03d" % counter[1]
         self.kind = "pentagon"     # kind of object
 
 
 class Hexagon(Circle):
     """ Hexagon class """
     def __init__(self,counter):
-        super().__init__(0,resolution=6)
-        self.name = "hex%03d" % counter
+        super().__init__(counter,resolution=6)
+        self.name = "hex%03d" % counter[1]
         self.kind = "Hexagon"     # kind of object
 
-# %% debug section
+# %% debug section - generic code to test methods (press F5)
 # ===================================================   
 # main()
 # ===================================================   
@@ -663,7 +737,10 @@ if __name__ == '__main__':
     R.show(extra="label")
     R.label("rect003")
     R.unlabel('rect1')
-
+    
+    X=R.data()
+    print(X)
+    
 # %% another example    
     S = raster(width=1000,height=1000)
     S.rectangle(150,850,850,1000,name="top",beadtype=1)

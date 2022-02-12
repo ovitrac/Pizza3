@@ -15,6 +15,7 @@
 # 2022-02-03 - add flist, __repr__
 # 2022-02-04 - add append and start to add comments
 # 2022-02-10 - first implementation of a full restart object from a dump object
+# 2022-02-12 - revised append method, more robust, more verbose
 
 oneline = "Read, write, manipulate LAMMPS data files"
 
@@ -82,6 +83,7 @@ d.write("data.new")             write a LAMMPS data file
 
 # External dependency
 from os import popen
+import numpy as np
 
 # Dependecy for the creation of DATA restart object from a DUMP object
 from pizza.dump3 import dump
@@ -151,7 +153,7 @@ class data:
                                       "c_contact_radius", "x", "y", "z", "f_1[1]", "f_1[2]", "f_1[3]"] }
             if X.kind(template_atoms["smd"]):
                 for col in template_atoms["smd"]:
-                    self.append("Atoms", X.vecs(tselect, col), col in ["id","type","mol"])
+                    self.append("Atoms", X.vecs(tselect, col), col in ["id","type","mol"],col)
             else:
                 raise ValueError("Please add your ATOMS section in the constructor")
             # set velocities (if required)           ------------- VELOCITIES SUBSECTION -------------
@@ -159,7 +161,7 @@ class data:
             if X.kind(template_atoms["smd"]):
                 if X.kind(template_velocities["smd"]):
                     for col in template_velocities["smd"]:
-                        self.append("Velocities", X.vecs(tselect, col), col == "id")
+                        self.append("Velocities", X.vecs(tselect, col), col == "id",col)
                 else:
                     raise ValueError("the velocities are missing for the style SMD")
             # store filename
@@ -350,14 +352,19 @@ class data:
     # --------------------------------------------------------------------
     # append a column of named section with vector of values (added 2022-02-04)
 
-    def append(self, name, vector,forceinteger = False):
-        """ append a new column: X.append("section",vectorofvalues,forceinteger=False) """
+    def append(self, name, vector, forceinteger = False, propertyname=None):
+        """ append a new column: X.append("section",vectorofvalues,forceinteger=False,propertyname=None) """
         if name not in self.sections:
             self.sections[name] = []
-            print('Add section [%s]' % name)
+            print('Add section [%s] - file="%s"' % (name,self.title) )
         lines = self.sections[name]
         nlines = len(lines)
-        if not isinstance(vector,list): vector = [vector]
+        if not isinstance(vector,list) and not isinstance(vector,np.ndarray):
+            vector = [vector]
+        if propertyname != None:
+            print('\t> Add "%s" (%d values) to [%s]' % (propertyname,len(vector),name))
+        else:
+            print('\t> Add %d values (no name) to [%s]' % (len(vector),name))
         newlines = []
         if nlines == 0:           # empty atoms section, create first column
             nlines = len(vector)  # new column length = input column length
