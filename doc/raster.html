@@ -1,0 +1,2312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>raster API documentation</title>
+<meta name="description" content="RASTER method to generate LAMMPS input files (in 2D for this version) …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>raster</code></h1>
+</header>
+<section id="section-intro">
+<p>RASTER method to generate LAMMPS input files (in 2D for this version)</p>
+<p>Generate a raster area
+R = raster()
+R = raster(width=200, height=200, dpi=300)</p>
+<p>Set objects (rectangle, circle, triangle, diamond&hellip;)
+R.rectangle(1,24,2,20,name='rect1')
+R.rectangle(60,80,50,81,name='rect2',beadtype=2,angle=40)
+R.rectangle(50,50,10,10,mode="center",angle=45,beadtype=1)
+R.circle(45,20,5,name='C1',beadtype=3)
+R.circle(35,10,5,name='C2',beadtype=3)</p>
+<pre><code>R.circle(15,30,10,name='p1',beadtype=4,shaperatio=0.2,angle=-30)
+R.circle(12,40,8,name='p2',beadtype=4,shaperatio=0.2,angle=20)
+R.circle(12,80,22,name='p3',beadtype=4,shaperatio=1.3,angle=20)
+
+R.triangle(85,20,10,name='T1',beadtype=5,angle=20)
+R.diamond(85,35,5,name='D1',beadtype=5,angle=20)
+R.pentagon(50,35,5,name='P1',beadtype=5,angle=90)
+R.hexagon(47,85,12,name='H1',beadtype=5,angle=90)
+</code></pre>
+<p>List objects
+R.list()
+R.get("p1")</p>
+<p>Build objects and show them
+R.plot()
+R.show()</p>
+<p>Show and manage labels
+R.show(extra="label",contour=True)
+R.label("rect003")
+R.unlabel('rect1')</p>
+<p>Manage objects, update and show</p>
+<p>Get the image and convert the image to text
+I = R.numeric()
+T = R.string()
+R.print()</p>
+<p>Create a pizza.dump3.dump object
+X = R.data()
+X.write("/tmp/myfile")</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+
+&#34;&#34;&#34;
+    RASTER method to generate LAMMPS input files (in 2D for this version)
+    
+    Generate a raster area
+        R = raster()
+        R = raster(width=200, height=200, dpi=300)
+        
+    Set objects (rectangle, circle, triangle, diamond...)
+        R.rectangle(1,24,2,20,name=&#39;rect1&#39;)
+        R.rectangle(60,80,50,81,name=&#39;rect2&#39;,beadtype=2,angle=40)
+        R.rectangle(50,50,10,10,mode=&#34;center&#34;,angle=45,beadtype=1)
+        R.circle(45,20,5,name=&#39;C1&#39;,beadtype=3)
+        R.circle(35,10,5,name=&#39;C2&#39;,beadtype=3)
+        
+        R.circle(15,30,10,name=&#39;p1&#39;,beadtype=4,shaperatio=0.2,angle=-30)
+        R.circle(12,40,8,name=&#39;p2&#39;,beadtype=4,shaperatio=0.2,angle=20)
+        R.circle(12,80,22,name=&#39;p3&#39;,beadtype=4,shaperatio=1.3,angle=20)
+        
+        R.triangle(85,20,10,name=&#39;T1&#39;,beadtype=5,angle=20)
+        R.diamond(85,35,5,name=&#39;D1&#39;,beadtype=5,angle=20)
+        R.pentagon(50,35,5,name=&#39;P1&#39;,beadtype=5,angle=90)
+        R.hexagon(47,85,12,name=&#39;H1&#39;,beadtype=5,angle=90)
+
+    List objects
+        R.list()
+        R.get(&#34;p1&#34;)
+
+    Build objects and show them 
+        R.plot()
+        R.show()
+        
+    Show and manage labels
+        R.show(extra=&#34;label&#34;,contour=True)
+        R.label(&#34;rect003&#34;)
+        R.unlabel(&#39;rect1&#39;)
+        
+    Manage objects, update and show
+    
+    Get the image and convert the image to text
+        I = R.numeric()
+        T = R.string()
+        R.print()
+        
+    Create a pizza.dump3.dump object
+        X = R.data()
+        X.write(&#34;/tmp/myfile&#34;)
+        
+&#34;&#34;&#34;
+
+# INRAE\Olivier Vitrac - rev. 2022-02-13
+# contact: olivier.vitrac@agroparistech.fr
+
+# History
+# 2022-02-05 first alpha version
+# 2022-02-06 RC for 2D
+# 2022-02-08 add count(), update the display method
+# 2022-02-10 add figure(), newfigure(), count()
+# 2022-02-11 improve display, add data()
+# 2022-02-12 major release, fully compatible with pizza.data3.data
+# 2022-02-13 the example (&lt;F5&gt;) has been modified R.plot() should precedes R.list()
+
+
+# %% Imports and private library
+from copy import copy as duplicate
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.path as path
+import matplotlib.patches as patches
+from pizza.data3 import data as data3
+
+def _rotate(x0,y0,xc,yc,angle):
+    angle = np.pi * angle / 180.0
+    x1 = (x0 - xc)*np.cos(angle) - (y0 - yc)*np.sin(angle) + xc
+    y1 = (x0 - xc)*np.sin(angle) + (y0 - yc)*np.cos(angle) + yc
+    return x1, y1
+
+def _extents(f):
+    halftick = ( f[1] - f[0] ) / 2
+    return [f[0] - halftick, f[-1] + halftick]
+
+# wrapper of imagesc (note that the origin is bottom left)
+# usage: data = np.random.randn(5,10)
+#        imagesc(data)
+def imagesc(im,x=None,y=None):
+    if x==None: x=np.arange(1,np.shape(im)[1]+1)
+    if y==None: y=np.arange(1,np.shape(im)[0]+1)
+    plt.imshow(im, extent=_extents(x) + _extents(y), 
+               aspect=&#34;auto&#34;, origin=&#34;lower&#34;, interpolation=&#34;none&#34;)
+
+
+# %% raster class
+class raster:
+    &#34;&#34;&#34; raster class for LAMMPS SMD 
+    
+    Constructor
+    
+        R = raster(width=100,height=100)
+    
+    Graphical objects
+        
+        R.rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode=&#34;lower&#34;, angle=0, ismask=False])
+        R.rectangle(xcenter,ycenter,width,height [, beadtype=1,mode=&#34;center&#34;, angle=0, ismask=False])
+        R.circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
+        R.triangle(...)
+        R.diamond(...)
+        R.pentagon(...)
+        R.hexagon(...)
+        
+    Display methods (precedence affects the result)
+        R.plot()
+        R.show(), R.show(extra=&#34;label&#34;,contour=True,what=&#34;beadtype&#34; or &#34;objindex&#34;)
+        R.show(extra=&#34;labels&#34;)
+        R.list()
+        R.get(&#34;object&#34;)
+        R.print()
+        R.label(&#34;object&#34;)
+        R.unlabel(&#34;object&#34;)
+        R.figure()
+        R.newfigure(dpi=300)
+        
+        R.numeric()
+        R.string(), R.string(what=&#34;beadtype&#34; or &#34;objindex&#34;))
+        R.names()
+        R.print()
+        
+    Clear and delete
+        R.clear()
+        R.clear(&#34;all&#34;)
+        R.delete(&#34;object&#34;)
+
+    Generate an input data object
+        X = R.data()
+        X.write(&#34;/tmp/myfile&#34;)
+    
+    &#34;&#34;&#34;
+    
+    # CONSTRUCTOR ---------------------------- 
+    def __init__(self,width=100,height=100,name=&#34;default raster&#34;):
+        &#34;&#34;&#34; initialize raster &#34;&#34;&#34;
+        self.name = name
+        self.width = width
+        self.height = height
+        self.xcenter= width/2
+        self.ycenter = height/2
+        self.objects = {}
+        self.nobjects = 0    # total number of objects (alive)
+        self.nbeads = 0
+        self.counter = {&#34;triangle&#34;:0,
+                        &#34;diamond&#34;:0,
+                        &#34;rectangle&#34;:0,
+                        &#34;pentagon&#34;:0,
+                        &#34;hexagon&#34;:0,
+                        &#34;circle&#34;:0,
+                        &#34;all&#34;:0}
+        self.fontsize = 10   # font size for labels
+        self.imbead = np.zeros((height,width),dtype=np.int8)
+        self.imobj = np.zeros((height,width),dtype=np.int8)
+        self.hfig = [] # figure handle
+        self.dpi = 200
+        # generic SMD properties (to be rescaled)
+        self.volume = 1
+        self.mass = 1
+        self.radius = 1
+        self.contactradius = 1
+        self.velocities = [0,0,0]
+        self.forces =[0,0,0]
+        
+    # DATA ---------------------------- 
+    def data(self):
+        &#34;&#34;&#34; return a pizza.data object &#34;&#34;&#34;
+        n = self.length()
+        i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
+        X = data3()  # empty pizza.data3.data object
+        X.title = self.name + &#34;(raster)&#34;
+        X.headers = {&#39;atoms&#39;: n,
+                      &#39;atom types&#39;: self.count()[-1][0],
+                      &#39;xlo xhi&#39;: (0.5, self.width-0.5),
+                      &#39;ylo yhi&#39;: (0.5, self.height-0.5),
+                      &#39;zlo zhi&#39;: (0, 0)}
+        # [ATOMS] section
+        X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)      # id
+        X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)      # Type
+        X.append(&#39;Atoms&#39;,self.imobj[i,j],True,&#34;mol&#34;)        # mol
+        X.append(&#39;Atoms&#39;,self.volume,False,&#34;c_vol&#34;)         # c_vol
+        X.append(&#39;Atoms&#39;,self.mass,False,&#34;mass&#34;)            # mass
+        X.append(&#39;Atoms&#39;,self.radius,False,&#34;radius&#34;)        # radius
+        X.append(&#39;Atoms&#39;,self.contactradius,False,&#34;c_contact_radius&#34;) # c_contact_radius
+        X.append(&#39;Atoms&#39;,j+0.5,False,&#34;x&#34;)                   # x
+        X.append(&#39;Atoms&#39;,i+0.5,False,&#34;y&#34;)                   # y
+        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                       # z
+        X.append(&#39;Atoms&#39;,self.forces[0],False,&#34;f_1[1]&#34;)     # force along x
+        X.append(&#39;Atoms&#39;,self.forces[1],False,&#34;f_1[2]&#34;)     # force along y
+        X.append(&#39;Atoms&#39;,self.forces[2],False,&#34;f_1[3]&#34;)     # force along z
+        # [VELOCITIES] section
+        X.append(&#39;Velocities&#39;,list(range(1,n+1)),True,&#34;id&#34;) # id
+        X.append(&#39;Velocities&#39;,self.velocities[0],False,&#34;vx&#34;) # vx
+        X.append(&#39;Velocities&#39;,self.velocities[1],False,&#34;vy&#34;) # vy
+        X.append(&#39;Velocities&#39;,self.velocities[2],False,&#34;vz&#34;) # vz
+        # pseudo-filename
+        X.flist = [&#34;%dx%d raster (%s)&#34; % (self.width,self.height,self.name)]
+        return X
+     
+    # LENGTH ---------------------------- 
+    def length(self,t=None,what=&#34;beadtype&#34;):
+        &#34;&#34;&#34; returns the total number of beads length(type,&#34;beadtype&#34;) &#34;&#34;&#34;
+        if what == &#34;beadtype&#34;:
+            num = self.imbead
+        elif what == &#34;objindex&#34;:
+            num = self.imobj
+        else:
+            raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)
+        if t==None:
+            return np.count_nonzero(num&gt;0)
+        else:
+            return np.count_nonzero(num==t)
+        
+    # NUMERIC ---------------------------- 
+    def numeric(self):
+        &#34;&#34;&#34; retrieve the image as a numpy.array &#34;&#34;&#34;
+        return self.imbead, self.imobj
+
+    # STRING ---------------------------- 
+    def string(self,what=&#34;beadtype&#34;):
+        &#34;&#34;&#34; convert the image as ASCII strings &#34;&#34;&#34;
+        if what == &#34;beadtype&#34;:
+            num = np.flipud(duplicate(self.imbead))
+        elif what == &#34;objindex&#34;:
+            num = np.flipud(duplicate(self.imobj))
+        else:
+            raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)
+        num[num&gt;0] = num[num&gt;0] + 65
+        num[num==0] = 32
+        num = list(num)
+        return [&#34;&#34;.join(map(chr,x)) for x in num]
+        
+    # GET ---------------------------- 
+    def get(self,name):
+        &#34;&#34;&#34; returns the object &#34;&#34;&#34;
+        if name in self.objects:
+            return self.objects[name]
+        else:
+            raise ValueError(&#39;the object &#34;%s&#34; does not exist, use list()&#39; % name)
+        
+    # CLEAR ---------------------------- 
+    def clear(self,what=&#34;nothing&#34;):
+        &#34;&#34;&#34; clear the plotting area, use clear(&#34;all&#34;)) to remove all objects &#34;&#34;&#34;
+        self.imbead = np.zeros((self.height,self.width),dtype=np.int8)
+        self.imobj = np.zeros((self.height,self.width),dtype=np.int8)
+        for o in self.names():
+            if what==&#34;all&#34;:
+                self.delete(o)
+            else:
+                self.objects[o].isplotted = False
+                self.objects[o].islabelled = False
+                if not self.objects[o].ismask:
+                    self.nbeads -= self.objects[o].nbeads
+                self.objects[o].nbeads = 0  # number of beads (plotted)
+        self.figure()
+        plt.cla()
+        self.show()
+
+    # DISP method ---------------------------- 
+    def __repr__(self):
+        &#34;&#34;&#34; display method &#34;&#34;&#34;
+        ctyp = self.count() # count objects (not beads)
+        print(&#34;-&#34;*40)
+        print(&#39;RASTER area &#34;%s&#34; with %d objects&#39; % (self.name,self.nobjects))
+        print(&#34;-&#34;*40)
+        print(&#34;&lt;- grid size -&gt;&#34;)
+        print(&#34;\twidth: %d&#34; % self.width)
+        print(&#34;\theight: %d&#34; % self.height)
+        print(&#34;&lt;- bead types -&gt;&#34;)
+        nbt = 0
+        if len(ctyp):
+            for i,c in enumerate(ctyp):
+                nb = self.length(c[0])
+                nbt += nb
+                print(&#34;\t type=%d (%d objects, %d beads)&#34; % (c[0],c[1],nb))
+        else:
+            print(&#34;\tno bead assigned&#34;)
+        print(&#34;-&#34;*40)
+        return &#34;RASTER AREA %d x %d with %d objects (%d types, %d beads).&#34; % \
+        (self.width,self.height,self.nobjects,len(ctyp),nbt)
+
+    # count method ---------------------------- 
+    def count(self):
+        &#34;&#34;&#34; count objects by type &#34;&#34;&#34;
+        typlist = [self.objects[o].beadtype for o in self.names()]
+        utypes = list(set(typlist))
+        c = []
+        for t in utypes:
+            c.append((t,typlist.count(t)))
+        return c
+
+    # NAMES method ---------------------------- 
+    def names(self):
+        &#34;&#34;&#34; return the names of objects sorted as index &#34;&#34;&#34;
+        namesunsorted=namessorted=list(self.objects.keys())
+        nobj = len(namesunsorted)
+        for iobj in range(nobj):
+            namessorted[self.objects[namesunsorted[iobj]].index-1] = namesunsorted[iobj]
+        return namessorted
+        
+    # LIST method ---------------------------- 
+    def list(self):
+        &#34;&#34;&#34; list objects &#34;&#34;&#34;
+        fmt = &#34;%%%ss:&#34; % max(10,max([len(n) for n in self.names()])+2)
+        print(&#34;RASTER with %d objects&#34; % self.nobjects)
+        for o in self.objects.keys():
+            print(fmt % self.objects[o].name,&#34;%-10s&#34; % self.objects[o].kind,
+                  &#34;(beadtype=%d,object index=[%d,%d], n=%d)&#34; % \
+                      (self.objects[o].beadtype,
+                       self.objects[o].index,
+                       self.objects[o].subindex,
+                       self.objects[o].nbeads))
+            
+    # EXIST method ---------------------------- 
+    def exist(self,name):
+        &#34;&#34;&#34; exist object &#34;&#34;&#34;
+        return name in self.objects
+    
+    # DELETE method ---------------------------- 
+    def delete(self,name):
+        &#34;&#34;&#34; delete object &#34;&#34;&#34;
+        if name in self.objects: 
+            if not self.objects[name].ismask:
+                self.nbeads -= self.objects[name].nbeads
+            del self.objects[name]
+            self.nobjects -= 1
+        else:
+            raise ValueError(&#34;%d is not a valid name (use list()) to list valid objects&#34; % name)
+        R.clear()
+        R.plot()
+        R.show(extra=&#34;label&#34;)
+        
+    # VALID method
+    def valid(self,x,y):
+        &#34;&#34;&#34; validation of coordinates &#34;&#34;&#34;
+        return min(self.width,max(0,round(x))),min(self.width,max(0,round(y)))
+
+
+    # RECTANGLE ----------------------------     
+    def rectangle(self,a,b,c,d,
+                  mode=&#34;lowerleft&#34;,name=None,angle=0,
+                  beadtype=None,ismask=False):
+        &#34;&#34;&#34; 
+        rectangle object
+            rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode=&#34;lower&#34;, angle=0, ismask=False])
+            rectangle(xcenter,ycenter,width,height [, beadtype=1,mode=&#34;center&#34;, angle=0, ismask=False])
+        &#34;&#34;&#34;
+        # object creation
+        self.counter[&#34;all&#34;] += 1
+        self.counter[&#34;rectangle&#34;] += 1
+        R = Rectangle((self.counter[&#34;all&#34;],self.counter[&#34;rectangle&#34;]))
+        if name != None:
+            if self.exist(name):
+                print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
+                self.delete(name)
+            R.name = name
+        else:
+            name = R.name
+        if beadtype != None: R.beadtype = int(np.floor(beadtype))
+        if ismask: R.beadtype = 0
+        R.ismask = R.beadtype==0
+        # build vertices
+        if mode == &#34;lowerleft&#34;:
+            R.xcenter = (a+b)/2
+            R.ycenter = (c+d)/2
+            R.vertices = [
+                _rotate(a,c,R.xcenter,R.ycenter,angle),
+                _rotate(b,c,R.xcenter,R.ycenter,angle),
+                _rotate(b,d,R.xcenter,R.ycenter,angle),
+                _rotate(a,d,R.xcenter,R.ycenter,angle),
+                _rotate(a,c,R.xcenter,R.ycenter,angle)
+                ] # anti-clockwise, closed (last point repeated)
+        elif mode == &#34;center&#34;:
+            R.xcenter = a
+            R.ycenter = b
+            R.vertices = [
+                _rotate(a-c/2,b-d/2,R.xcenter,R.ycenter,angle),
+                _rotate(a+c/2,b-d/2,R.xcenter,R.ycenter,angle),
+                _rotate(a+c/2,b+d/2,R.xcenter,R.ycenter,angle),
+                _rotate(a-c/2,b+d/2,R.xcenter,R.ycenter,angle),
+                _rotate(a-c/2,b-d/2,R.xcenter,R.ycenter,angle)
+                ]
+        else:
+            raise ValueError(&#39;&#34;%s&#34; is not a recognized mode, use &#34;lowerleft&#34; (default) and &#34;center&#34; instead&#39;)
+        # build path object and range
+        R.codes =    [ path.Path.MOVETO,
+                     path.Path.LINETO,
+                     path.Path.LINETO,
+                     path.Path.LINETO,
+                     path.Path.CLOSEPOLY
+                    ]
+        R.nvertices = len(R.vertices)-1
+        R.polygon = path.Path(R.vertices,R.codes,closed=True)
+        R.polygon2plot = path.Path(R.polygon.vertices+ np.array([1,1]),R.codes,closed=True)
+        R.xmin, R.ymin = self.valid(
+            min([R.vertices[k][0] for k in range(R.nvertices)]),
+            min([R.vertices[k][1] for k in range(R.nvertices)])
+            )
+        R.xmax, R.ymax = self.valid(
+            max([R.vertices[k][0] for k in range(R.nvertices)]),
+            max([R.vertices[k][1] for k in range(R.nvertices)])
+            )
+        R.width = R.xmax - R.xmin
+        R.height = R.ymax - R.ymin
+        R.angle = angle
+        # store the object
+        self.objects[name] = R
+        self.nobjects += 1
+
+        
+    # CIRCLE ----------------------------     
+    def circle(self,xc,yc,radius,
+                  name=None,shaperatio=1,angle=0,beadtype=None,ismask=False,
+                  resolution=20,shiftangle=0):
+        &#34;&#34;&#34; 
+        circle object (or any regular polygon)
+            circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
+        &#34;&#34;&#34;
+        # object creation
+        self.counter[&#34;all&#34;] += 1
+        if resolution==3:
+            self.counter[&#34;triangle&#34;] += 1
+            G = Triangle((self.counter[&#34;all&#34;],self.counter[&#34;triangle&#34;]))
+        elif resolution==4:
+            self.counter[&#34;diamond&#34;] += 1
+            G = Diamond((self.counter[&#34;all&#34;],self.counter[&#34;diamond&#34;]))
+        elif resolution==5:
+            self.counter[&#34;pentagon&#34;] += 1
+            G = Pentagon((self.counter[&#34;all&#34;],self.counter[&#34;pentagon&#34;]))
+        elif resolution==6:
+            self.counter[&#34;hexagon&#34;] += 1
+            G = Hexagon((self.counter[&#34;all&#34;],self.counter[&#34;hexagon&#34;]))
+        else:
+            self.counter[&#34;circle&#34;] += 1
+            G = Circle((self.counter[&#34;all&#34;],self.counter[&#34;circle&#34;]),resolution=resolution)
+        if name != None:
+            if self.exist(name):
+                print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
+                self.delete(name)
+            G.name = name
+        else:
+            name = G.name
+        if beadtype != None: G.beadtype = int(np.floor(beadtype))
+        if ismask: G.beadtype = 0
+        G.ismask = G.beadtype==0
+        # build vertices
+        th = np.linspace(0,2*np.pi,G.resolution+1) +shiftangle*np.pi/180
+        xgen = xc + radius * np.cos(th)
+        ygen = yc + radius * shaperatio * np.sin(th)
+        G.xcenter, G.ycenter, G.radius = xc, yc, radius
+        G.vertices, G.codes = [], []
+        for i in range(G.resolution+1):
+            G.vertices.append(_rotate(xgen[i],ygen[i],xc,yc,angle))
+            if i==0:
+                G.codes.append(path.Path.MOVETO)
+            elif i==G.resolution:
+                G.codes.append(path.Path.CLOSEPOLY)        
+            else:
+                G.codes.append(path.Path.LINETO)
+        G.nvertices = len(G.vertices)-1
+        # build path object and range
+        G.polygon = path.Path(G.vertices,G.codes,closed=True)
+        G.polygon2plot = path.Path(G.polygon.vertices+ np.array([1,1]),G.codes,closed=True)
+        G.xmin, G.ymin = self.valid(
+            min([G.vertices[k][0] for k in range(G.nvertices)]),
+            min([G.vertices[k][1] for k in range(G.nvertices)])
+            )
+        G.xmax, G.ymax = self.valid(
+            max([G.vertices[k][0] for k in range(G.nvertices)]),
+            max([G.vertices[k][1] for k in range(G.nvertices)])
+            )
+        G.width = G.xmax - G.xmin
+        G.height = G.ymax - G.ymin
+        G.angle, G.shaperatio = angle, shaperatio
+        # store the object
+        self.objects[name] = G
+        self.nobjects += 1
+  
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # =========== pseudo methods connected to circle() ===========
+    # TRIANGLE, DIAMOND, PENTAGON, HEXAGON, -----------------------     
+    def triangle(self,xc,yc,radius,name=None,
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+        self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=3,
+           angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)
+        
+    def diamond(self,xc,yc,radius,name=None,
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=4,
+            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)
+        
+    def pentagon(self,xc,yc,radius,name=None,
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=5,
+            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)
+        
+    def hexagon(self,xc,yc,radius,name=None,
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=6,
+            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)
+        
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    # label method ---------------------------- 
+    def label(self,name,ax=plt.gca(),contour=True,edgecolor=&#34;orange&#34;,facecolor=&#34;none&#34;,linewidth=2):
+        &#34;&#34;&#34; label &#34;&#34;&#34;
+        self.figure()
+        if name in self.objects:
+            if not self.objects[name].islabelled:
+                if contour:
+                    patch = patches.PathPatch(self.objects[name].polygon2plot,
+                                              facecolor=facecolor,
+                                              edgecolor=edgecolor,
+                                              lw=linewidth)
+                    self.objects[name].hlabel[&#34;contour&#34;] = \
+                        ax.add_patch(patch)
+                else:
+                    self.objects[name].hlabel[&#34;contour&#34;] = None
+                self.objects[name].hlabel[&#34;text&#34;] = \
+                plt.text(self.objects[name].xcenter,
+                         self.objects[name].ycenter,
+                         &#34;%s\n(t=$%d$,$n_p$=%d)&#34; % (name, self.objects[name].beadtype,self.objects[name].nbeads),
+                         horizontalalignment = &#34;center&#34;,
+                         verticalalignment = &#34;center_baseline&#34;,
+                         fontsize=self.fontsize
+                         )
+                plt.show()
+                self.objects[name].islabelled = True
+        else:
+            raise ValueError(&#34;%d is not a valid name (use list()) to list valid objects&#34; % name)
+   
+    def unlabel(self,name):
+        &#34;&#34;&#34; unlabel &#34;&#34;&#34;
+        if name in self.objects:
+            if  self.objects[name].islabelled:
+                self.objects[name].hlabel[&#34;contour&#34;].remove()
+                self.objects[name].hlabel[&#34;text&#34;].remove()
+                self.objects[name].hlabel = {&#39;contour&#39;:[], &#39;text&#39;:[]}
+                self.objects[name].islabelled = False
+        else:
+            raise ValueError(&#34;%d is not a valid name (use list()) to list valid objects&#34; % name)
+        
+
+    # PLOT method ---------------------------- 
+    def plot(self):
+        &#34;&#34;&#34; plot &#34;&#34;&#34;
+        for o in self.objects:
+            if not self.objects[o].isplotted:
+                if self.objects[o].alike == &#34;circle&#34;:
+                    j,i = np.meshgrid( 
+                        range(self.objects[o].xmin-1,self.objects[o].xmax+1),
+                        range(self.objects[o].ymin-1,self.objects[o].ymax+1))
+                    points = np.vstack((j.flatten(),i.flatten())).T
+                    npoints = points.shape[0]
+                    inside = self.objects[o].polygon.contains_points(points)
+                    for k in range(npoints):
+                        if inside[k] and \
+                            points[k,0]&gt;=0 and \
+                            points[k,0]&lt;self.width and \
+                            points[k,1]&gt;=0 and \
+                            points[k,1]&lt;self.height :
+                                self.imbead[points[k,1],points[k,0]] = self.objects[o].beadtype
+                                self.imobj[points[k,1],points[k,0]] = self.objects[o].index
+                                self.objects[o].nbeads += 1
+                else:
+                    raise ValueError(&#34;Not yet implemented&#34;)
+                # store it as plotted
+                self.objects[o].isplotted = True
+                if not self.objects[o].ismask:
+                    self.nbeads += self.objects[o].nbeads
+
+
+    # SHOW method ---------------------------- 
+    def show(self,extra=&#34;none&#34;,contour=True,what=&#34;beadtype&#34;):
+        &#34;&#34;&#34; show method: show(extra=&#34;label&#34;,contour=True,what=&#34;beadtype&#34;) &#34;&#34;&#34;
+        self.figure()
+        if what==&#34;beadtype&#34;:
+            imagesc(self.imbead)
+        elif what == &#34;objindex&#34;:
+            imagesc(self.imobj)
+        else:
+            raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)        
+        if extra == &#34;label&#34;:
+            ax = plt.gca()
+            for o in self.names():
+                if not self.objects[o].ismask:
+                    self.label(o,ax=ax,contour=contour)
+            ax.set_title(&#34;raster area: %s \n (n=%d, $n_p$=%d)&#34; %\
+                      (self.name,self.length(),self.nbeads) )
+            plt.show()
+            
+    # SHOW method ---------------------------- 
+    def print(self,what=&#34;beadtype&#34;):
+        &#34;&#34;&#34; print method &#34;&#34;&#34;
+        txt = self.string(what=what)
+        for i in range(len(txt)):
+            print(txt[i],end=&#34;\n&#34;)
+         
+            
+    # FIGURE method ---------------------------- 
+    def figure(self):
+        &#34;&#34;&#34; set the current figure &#34;&#34;&#34;
+        if self.hfig==[] or not plt.fignum_exists(self.hfig.number):
+            self.newfigure()
+        plt.figure(self.hfig.number)
+    
+    # NEWFIGURE method ---------------------------- 
+    def newfigure(self):
+        &#34;&#34;&#34; create a new figure (dpi=200) &#34;&#34;&#34;
+        self.hfig = plt.figure(dpi=self.dpi)
+    
+# %% PRIVATE SUB-CLASSES
+# Use the equivalent method of raster() to call these constructors
+# counter[0] is the overall index (total number of objects created)
+# counter[1] is the index of objects of this type (total number of objects created for this class)
+
+class Rectangle:
+    &#34;&#34;&#34; Rectangle class &#34;&#34;&#34;
+    def __init__(self,counter):
+        self.name = &#34;rect%03d&#34; % counter[1]
+        self.kind = &#34;rectangle&#34;     # kind of object
+        self.alike = &#34;circle&#34;       # similar object for plotting
+        self.beadtype = 1           # bead type
+        self.nbeads = 0             # number of beads
+        self.ismask = False         # True if beadtype == 0
+        self.isplotted = False      # True if plotted
+        self.islabelled = False     # True if labelled
+        self.resolution = None      # resolution is undefined
+        self.hlabel = {&#39;contour&#39;:[], &#39;text&#39;:[]}
+        self.index = counter[0]
+        self.subindex = counter[1]
+        
+    def __repr__(self):
+        print(&#34;%s - %s object&#34; % (self.name, self.kind))
+        print(&#34;\trange x = [%0.4g %0.4g]&#34; % (self.xmin,self.xmax))
+        print(&#34;\trange y = [%0.4g %0.4g]&#34; % (self.ymin,self.ymax))
+        print(&#34;\tcenter = [%0.4g %0.4g]&#34; % (self.xcenter,self.ycenter))
+        print(&#34;\tangle = %0.4g&#34; % self.angle)
+        return &#34;%s object: %s (beadtype=%d)&#34; % (self.kind,self.name,self.beadtype)
+
+class Circle:
+    &#34;&#34;&#34; Circle class &#34;&#34;&#34;
+    def __init__(self,counter,resolution=20):
+        self.name = &#34;circ%03d&#34; % counter[1]
+        self.kind = &#34;circle&#34;         # kind of object
+        self.alike = &#34;circle&#34;        # similar object for plotting
+        self.resolution = resolution # default resolution
+        self.beadtype = 1            # bead type
+        self.nbeads = 0              # number of beads
+        self.ismask = False          # True if beadtype == 0
+        self.isplotted = False       # True if plotted
+        self.islabelled = False      # True if labelled
+        self.hlabel = {&#39;contour&#39;:[], &#39;text&#39;:[]}
+        self.index = counter[0]
+        self.subindex = counter[1]
+        
+    def __repr__(self):
+        print(&#34;%s - %s object&#34; % (self.name,self.kind) )
+        print(&#34;\trange x = [%0.4g %0.4g]&#34; % (self.xmin,self.xmax))
+        print(&#34;\trange y = [%0.4g %0.4g]&#34; % (self.ymin,self.ymax))
+        print(&#34;\tcenter = [%0.4g %0.4g]&#34; % (self.xcenter,self.ycenter))
+        print(&#34;\tradius = %0.4g&#34; % self.radius)
+        print(&#34;\tshaperatio = %0.4g&#34; % self.shaperatio)
+        print(&#34;\tangle = %0.4g&#34; % self.angle)
+        return &#34;%s object: %s (beadtype=%d)&#34; % (self.kind, self.name,self.beadtype)
+
+
+class Triangle(Circle):
+    &#34;&#34;&#34; Triangle class &#34;&#34;&#34;
+    def __init__(self,counter):
+        super().__init__(counter,resolution=3)
+        self.name = &#34;tri%03d&#34; % counter[1]
+        self.kind = &#34;triangle&#34;     # kind of object
+
+
+class Diamond(Circle):
+    &#34;&#34;&#34; Diamond class &#34;&#34;&#34;
+    def __init__(self,counter):
+        super().__init__(counter,resolution=4)
+        self.name = &#34;diam%03d&#34; % counter[1]
+        self.kind = &#34;diamond&#34;     # kind of object
+
+
+class Pentagon(Circle):
+    &#34;&#34;&#34; Pentagon class &#34;&#34;&#34;
+    def __init__(self,counter):
+        super().__init__(counter,resolution=5)
+        self.name = &#34;penta%03d&#34; % counter[1]
+        self.kind = &#34;pentagon&#34;     # kind of object
+
+
+class Hexagon(Circle):
+    &#34;&#34;&#34; Hexagon class &#34;&#34;&#34;
+    def __init__(self,counter):
+        super().__init__(counter,resolution=6)
+        self.name = &#34;hex%03d&#34; % counter[1]
+        self.kind = &#34;Hexagon&#34;     # kind of object
+
+# %% debug section - generic code to test methods (press F5)
+# ===================================================   
+# main()
+# ===================================================   
+# for debugging purposes (code called as a script)
+# the code is called from here
+# ===================================================
+if __name__ == &#39;__main__&#39;:
+    plt.close(&#34;all&#34;)
+    R = raster()
+    R.rectangle(1,24,2,20,name=&#39;rect1&#39;)
+    R.rectangle(60,80,50,81,name=&#39;rect2&#39;,beadtype=2,angle=40)
+    R.rectangle(50,50,10,10,mode=&#34;center&#34;,angle=45,beadtype=1)
+    R.circle(45,20,5,name=&#39;C1&#39;,beadtype=3)
+    R.circle(35,10,5,name=&#39;C2&#39;,beadtype=3)
+    
+    R.circle(15,30,10,name=&#39;p1&#39;,beadtype=4,shaperatio=0.2,angle=-30)
+    R.circle(12,40,8,name=&#39;p2&#39;,beadtype=4,shaperatio=0.2,angle=20)
+    R.circle(12,80,22,name=&#39;p3&#39;,beadtype=4,shaperatio=1.3,angle=20)
+    
+    R.triangle(85,20,10,name=&#39;T1&#39;,beadtype=5,angle=20)
+    R.diamond(85,35,5,name=&#39;D1&#39;,beadtype=5,angle=20)
+    R.pentagon(50,35,5,name=&#39;P1&#39;,beadtype=5,angle=90)
+    R.hexagon(47,85,12,name=&#39;H1&#39;,beadtype=5,angle=90)
+    
+    R.label(&#34;rect003&#34;)
+    R.plot()
+    R.list()
+    R.show()
+    
+    R.clear()
+    R.show()
+    R.plot()
+    R.show(extra=&#34;label&#34;)
+    R.label(&#34;rect003&#34;)
+    R.unlabel(&#39;rect1&#39;)
+    
+    X=R.data()
+    
+# %% another example    
+    S = raster(width=1000,height=1000)
+    S.rectangle(150,850,850,1000,name=&#34;top&#34;,beadtype=1)
+    S.rectangle(150,850,0,150,name=&#34;bottom&#34;,beadtype=2)
+    S.circle(500,500,480,name=&#34;mask&#34;,ismask=True,resolution=500)
+    S.triangle(250,880,80,name=&#39;tooth1&#39;,angle=60,beadtype=1)
+    S.triangle(750,880,80,name=&#39;tooth2&#39;,angle=-0,beadtype=1)
+    S.circle(500,200,300,name=&#34;tongue&#34;,beadtype=5,shaperatio=0.3,resolution=300)
+    S.rectangle(500,450,320,320,name=&#34;food&#34;,mode=&#34;center&#34;,beadtype=3)
+    S.plot()
+    S.show(extra=&#34;label&#34;,contour=False)
+    </code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="raster.imagesc"><code class="name flex">
+<span>def <span class="ident">imagesc</span></span>(<span>im, x=None, y=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def imagesc(im,x=None,y=None):
+    if x==None: x=np.arange(1,np.shape(im)[1]+1)
+    if y==None: y=np.arange(1,np.shape(im)[0]+1)
+    plt.imshow(im, extent=_extents(x) + _extents(y), 
+               aspect=&#34;auto&#34;, origin=&#34;lower&#34;, interpolation=&#34;none&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="raster.Circle"><code class="flex name class">
+<span>class <span class="ident">Circle</span></span>
+<span>(</span><span>counter, resolution=20)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Circle class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Circle:
+    &#34;&#34;&#34; Circle class &#34;&#34;&#34;
+    def __init__(self,counter,resolution=20):
+        self.name = &#34;circ%03d&#34; % counter[1]
+        self.kind = &#34;circle&#34;         # kind of object
+        self.alike = &#34;circle&#34;        # similar object for plotting
+        self.resolution = resolution # default resolution
+        self.beadtype = 1            # bead type
+        self.nbeads = 0              # number of beads
+        self.ismask = False          # True if beadtype == 0
+        self.isplotted = False       # True if plotted
+        self.islabelled = False      # True if labelled
+        self.hlabel = {&#39;contour&#39;:[], &#39;text&#39;:[]}
+        self.index = counter[0]
+        self.subindex = counter[1]
+        
+    def __repr__(self):
+        print(&#34;%s - %s object&#34; % (self.name,self.kind) )
+        print(&#34;\trange x = [%0.4g %0.4g]&#34; % (self.xmin,self.xmax))
+        print(&#34;\trange y = [%0.4g %0.4g]&#34; % (self.ymin,self.ymax))
+        print(&#34;\tcenter = [%0.4g %0.4g]&#34; % (self.xcenter,self.ycenter))
+        print(&#34;\tradius = %0.4g&#34; % self.radius)
+        print(&#34;\tshaperatio = %0.4g&#34; % self.shaperatio)
+        print(&#34;\tangle = %0.4g&#34; % self.angle)
+        return &#34;%s object: %s (beadtype=%d)&#34; % (self.kind, self.name,self.beadtype)</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="raster.Diamond" href="#raster.Diamond">Diamond</a></li>
+<li><a title="raster.Hexagon" href="#raster.Hexagon">Hexagon</a></li>
+<li><a title="raster.Pentagon" href="#raster.Pentagon">Pentagon</a></li>
+<li><a title="raster.Triangle" href="#raster.Triangle">Triangle</a></li>
+</ul>
+</dd>
+<dt id="raster.Diamond"><code class="flex name class">
+<span>class <span class="ident">Diamond</span></span>
+<span>(</span><span>counter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Diamond class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Diamond(Circle):
+    &#34;&#34;&#34; Diamond class &#34;&#34;&#34;
+    def __init__(self,counter):
+        super().__init__(counter,resolution=4)
+        self.name = &#34;diam%03d&#34; % counter[1]
+        self.kind = &#34;diamond&#34;     # kind of object</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="raster.Circle" href="#raster.Circle">Circle</a></li>
+</ul>
+</dd>
+<dt id="raster.Hexagon"><code class="flex name class">
+<span>class <span class="ident">Hexagon</span></span>
+<span>(</span><span>counter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Hexagon class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Hexagon(Circle):
+    &#34;&#34;&#34; Hexagon class &#34;&#34;&#34;
+    def __init__(self,counter):
+        super().__init__(counter,resolution=6)
+        self.name = &#34;hex%03d&#34; % counter[1]
+        self.kind = &#34;Hexagon&#34;     # kind of object</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="raster.Circle" href="#raster.Circle">Circle</a></li>
+</ul>
+</dd>
+<dt id="raster.Pentagon"><code class="flex name class">
+<span>class <span class="ident">Pentagon</span></span>
+<span>(</span><span>counter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Pentagon class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Pentagon(Circle):
+    &#34;&#34;&#34; Pentagon class &#34;&#34;&#34;
+    def __init__(self,counter):
+        super().__init__(counter,resolution=5)
+        self.name = &#34;penta%03d&#34; % counter[1]
+        self.kind = &#34;pentagon&#34;     # kind of object</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="raster.Circle" href="#raster.Circle">Circle</a></li>
+</ul>
+</dd>
+<dt id="raster.Rectangle"><code class="flex name class">
+<span>class <span class="ident">Rectangle</span></span>
+<span>(</span><span>counter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Rectangle class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Rectangle:
+    &#34;&#34;&#34; Rectangle class &#34;&#34;&#34;
+    def __init__(self,counter):
+        self.name = &#34;rect%03d&#34; % counter[1]
+        self.kind = &#34;rectangle&#34;     # kind of object
+        self.alike = &#34;circle&#34;       # similar object for plotting
+        self.beadtype = 1           # bead type
+        self.nbeads = 0             # number of beads
+        self.ismask = False         # True if beadtype == 0
+        self.isplotted = False      # True if plotted
+        self.islabelled = False     # True if labelled
+        self.resolution = None      # resolution is undefined
+        self.hlabel = {&#39;contour&#39;:[], &#39;text&#39;:[]}
+        self.index = counter[0]
+        self.subindex = counter[1]
+        
+    def __repr__(self):
+        print(&#34;%s - %s object&#34; % (self.name, self.kind))
+        print(&#34;\trange x = [%0.4g %0.4g]&#34; % (self.xmin,self.xmax))
+        print(&#34;\trange y = [%0.4g %0.4g]&#34; % (self.ymin,self.ymax))
+        print(&#34;\tcenter = [%0.4g %0.4g]&#34; % (self.xcenter,self.ycenter))
+        print(&#34;\tangle = %0.4g&#34; % self.angle)
+        return &#34;%s object: %s (beadtype=%d)&#34; % (self.kind,self.name,self.beadtype)</code></pre>
+</details>
+</dd>
+<dt id="raster.Triangle"><code class="flex name class">
+<span>class <span class="ident">Triangle</span></span>
+<span>(</span><span>counter)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Triangle class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Triangle(Circle):
+    &#34;&#34;&#34; Triangle class &#34;&#34;&#34;
+    def __init__(self,counter):
+        super().__init__(counter,resolution=3)
+        self.name = &#34;tri%03d&#34; % counter[1]
+        self.kind = &#34;triangle&#34;     # kind of object</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="raster.Circle" href="#raster.Circle">Circle</a></li>
+</ul>
+</dd>
+<dt id="raster.raster"><code class="flex name class">
+<span>class <span class="ident">raster</span></span>
+<span>(</span><span>width=100, height=100, name='default raster')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>raster class for LAMMPS SMD </p>
+<p>Constructor</p>
+<pre><code>R = raster(width=100,height=100)
+</code></pre>
+<p>Graphical objects</p>
+<pre><code>R.rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode="lower", angle=0, ismask=False])
+R.rectangle(xcenter,ycenter,width,height [, beadtype=1,mode="center", angle=0, ismask=False])
+R.circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
+R.triangle(...)
+R.diamond(...)
+R.pentagon(...)
+R.hexagon(...)
+</code></pre>
+<p>Display methods (precedence affects the result)
+R.plot()
+R.show(), R.show(extra="label",contour=True,what="beadtype" or "objindex")
+R.show(extra="labels")
+R.list()
+R.get("object")
+R.print()
+R.label("object")
+R.unlabel("object")
+R.figure()
+R.newfigure(dpi=300)</p>
+<pre><code>R.numeric()
+R.string(), R.string(what="beadtype" or "objindex"))
+R.names()
+R.print()
+</code></pre>
+<p>Clear and delete
+R.clear()
+R.clear("all")
+R.delete("object")</p>
+<p>Generate an input data object
+X = R.data()
+X.write("/tmp/myfile")</p>
+<p>initialize raster</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class raster:
+    &#34;&#34;&#34; raster class for LAMMPS SMD 
+    
+    Constructor
+    
+        R = raster(width=100,height=100)
+    
+    Graphical objects
+        
+        R.rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode=&#34;lower&#34;, angle=0, ismask=False])
+        R.rectangle(xcenter,ycenter,width,height [, beadtype=1,mode=&#34;center&#34;, angle=0, ismask=False])
+        R.circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
+        R.triangle(...)
+        R.diamond(...)
+        R.pentagon(...)
+        R.hexagon(...)
+        
+    Display methods (precedence affects the result)
+        R.plot()
+        R.show(), R.show(extra=&#34;label&#34;,contour=True,what=&#34;beadtype&#34; or &#34;objindex&#34;)
+        R.show(extra=&#34;labels&#34;)
+        R.list()
+        R.get(&#34;object&#34;)
+        R.print()
+        R.label(&#34;object&#34;)
+        R.unlabel(&#34;object&#34;)
+        R.figure()
+        R.newfigure(dpi=300)
+        
+        R.numeric()
+        R.string(), R.string(what=&#34;beadtype&#34; or &#34;objindex&#34;))
+        R.names()
+        R.print()
+        
+    Clear and delete
+        R.clear()
+        R.clear(&#34;all&#34;)
+        R.delete(&#34;object&#34;)
+
+    Generate an input data object
+        X = R.data()
+        X.write(&#34;/tmp/myfile&#34;)
+    
+    &#34;&#34;&#34;
+    
+    # CONSTRUCTOR ---------------------------- 
+    def __init__(self,width=100,height=100,name=&#34;default raster&#34;):
+        &#34;&#34;&#34; initialize raster &#34;&#34;&#34;
+        self.name = name
+        self.width = width
+        self.height = height
+        self.xcenter= width/2
+        self.ycenter = height/2
+        self.objects = {}
+        self.nobjects = 0    # total number of objects (alive)
+        self.nbeads = 0
+        self.counter = {&#34;triangle&#34;:0,
+                        &#34;diamond&#34;:0,
+                        &#34;rectangle&#34;:0,
+                        &#34;pentagon&#34;:0,
+                        &#34;hexagon&#34;:0,
+                        &#34;circle&#34;:0,
+                        &#34;all&#34;:0}
+        self.fontsize = 10   # font size for labels
+        self.imbead = np.zeros((height,width),dtype=np.int8)
+        self.imobj = np.zeros((height,width),dtype=np.int8)
+        self.hfig = [] # figure handle
+        self.dpi = 200
+        # generic SMD properties (to be rescaled)
+        self.volume = 1
+        self.mass = 1
+        self.radius = 1
+        self.contactradius = 1
+        self.velocities = [0,0,0]
+        self.forces =[0,0,0]
+        
+    # DATA ---------------------------- 
+    def data(self):
+        &#34;&#34;&#34; return a pizza.data object &#34;&#34;&#34;
+        n = self.length()
+        i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
+        X = data3()  # empty pizza.data3.data object
+        X.title = self.name + &#34;(raster)&#34;
+        X.headers = {&#39;atoms&#39;: n,
+                      &#39;atom types&#39;: self.count()[-1][0],
+                      &#39;xlo xhi&#39;: (0.5, self.width-0.5),
+                      &#39;ylo yhi&#39;: (0.5, self.height-0.5),
+                      &#39;zlo zhi&#39;: (0, 0)}
+        # [ATOMS] section
+        X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)      # id
+        X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)      # Type
+        X.append(&#39;Atoms&#39;,self.imobj[i,j],True,&#34;mol&#34;)        # mol
+        X.append(&#39;Atoms&#39;,self.volume,False,&#34;c_vol&#34;)         # c_vol
+        X.append(&#39;Atoms&#39;,self.mass,False,&#34;mass&#34;)            # mass
+        X.append(&#39;Atoms&#39;,self.radius,False,&#34;radius&#34;)        # radius
+        X.append(&#39;Atoms&#39;,self.contactradius,False,&#34;c_contact_radius&#34;) # c_contact_radius
+        X.append(&#39;Atoms&#39;,j+0.5,False,&#34;x&#34;)                   # x
+        X.append(&#39;Atoms&#39;,i+0.5,False,&#34;y&#34;)                   # y
+        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                       # z
+        X.append(&#39;Atoms&#39;,self.forces[0],False,&#34;f_1[1]&#34;)     # force along x
+        X.append(&#39;Atoms&#39;,self.forces[1],False,&#34;f_1[2]&#34;)     # force along y
+        X.append(&#39;Atoms&#39;,self.forces[2],False,&#34;f_1[3]&#34;)     # force along z
+        # [VELOCITIES] section
+        X.append(&#39;Velocities&#39;,list(range(1,n+1)),True,&#34;id&#34;) # id
+        X.append(&#39;Velocities&#39;,self.velocities[0],False,&#34;vx&#34;) # vx
+        X.append(&#39;Velocities&#39;,self.velocities[1],False,&#34;vy&#34;) # vy
+        X.append(&#39;Velocities&#39;,self.velocities[2],False,&#34;vz&#34;) # vz
+        # pseudo-filename
+        X.flist = [&#34;%dx%d raster (%s)&#34; % (self.width,self.height,self.name)]
+        return X
+     
+    # LENGTH ---------------------------- 
+    def length(self,t=None,what=&#34;beadtype&#34;):
+        &#34;&#34;&#34; returns the total number of beads length(type,&#34;beadtype&#34;) &#34;&#34;&#34;
+        if what == &#34;beadtype&#34;:
+            num = self.imbead
+        elif what == &#34;objindex&#34;:
+            num = self.imobj
+        else:
+            raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)
+        if t==None:
+            return np.count_nonzero(num&gt;0)
+        else:
+            return np.count_nonzero(num==t)
+        
+    # NUMERIC ---------------------------- 
+    def numeric(self):
+        &#34;&#34;&#34; retrieve the image as a numpy.array &#34;&#34;&#34;
+        return self.imbead, self.imobj
+
+    # STRING ---------------------------- 
+    def string(self,what=&#34;beadtype&#34;):
+        &#34;&#34;&#34; convert the image as ASCII strings &#34;&#34;&#34;
+        if what == &#34;beadtype&#34;:
+            num = np.flipud(duplicate(self.imbead))
+        elif what == &#34;objindex&#34;:
+            num = np.flipud(duplicate(self.imobj))
+        else:
+            raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)
+        num[num&gt;0] = num[num&gt;0] + 65
+        num[num==0] = 32
+        num = list(num)
+        return [&#34;&#34;.join(map(chr,x)) for x in num]
+        
+    # GET ---------------------------- 
+    def get(self,name):
+        &#34;&#34;&#34; returns the object &#34;&#34;&#34;
+        if name in self.objects:
+            return self.objects[name]
+        else:
+            raise ValueError(&#39;the object &#34;%s&#34; does not exist, use list()&#39; % name)
+        
+    # CLEAR ---------------------------- 
+    def clear(self,what=&#34;nothing&#34;):
+        &#34;&#34;&#34; clear the plotting area, use clear(&#34;all&#34;)) to remove all objects &#34;&#34;&#34;
+        self.imbead = np.zeros((self.height,self.width),dtype=np.int8)
+        self.imobj = np.zeros((self.height,self.width),dtype=np.int8)
+        for o in self.names():
+            if what==&#34;all&#34;:
+                self.delete(o)
+            else:
+                self.objects[o].isplotted = False
+                self.objects[o].islabelled = False
+                if not self.objects[o].ismask:
+                    self.nbeads -= self.objects[o].nbeads
+                self.objects[o].nbeads = 0  # number of beads (plotted)
+        self.figure()
+        plt.cla()
+        self.show()
+
+    # DISP method ---------------------------- 
+    def __repr__(self):
+        &#34;&#34;&#34; display method &#34;&#34;&#34;
+        ctyp = self.count() # count objects (not beads)
+        print(&#34;-&#34;*40)
+        print(&#39;RASTER area &#34;%s&#34; with %d objects&#39; % (self.name,self.nobjects))
+        print(&#34;-&#34;*40)
+        print(&#34;&lt;- grid size -&gt;&#34;)
+        print(&#34;\twidth: %d&#34; % self.width)
+        print(&#34;\theight: %d&#34; % self.height)
+        print(&#34;&lt;- bead types -&gt;&#34;)
+        nbt = 0
+        if len(ctyp):
+            for i,c in enumerate(ctyp):
+                nb = self.length(c[0])
+                nbt += nb
+                print(&#34;\t type=%d (%d objects, %d beads)&#34; % (c[0],c[1],nb))
+        else:
+            print(&#34;\tno bead assigned&#34;)
+        print(&#34;-&#34;*40)
+        return &#34;RASTER AREA %d x %d with %d objects (%d types, %d beads).&#34; % \
+        (self.width,self.height,self.nobjects,len(ctyp),nbt)
+
+    # count method ---------------------------- 
+    def count(self):
+        &#34;&#34;&#34; count objects by type &#34;&#34;&#34;
+        typlist = [self.objects[o].beadtype for o in self.names()]
+        utypes = list(set(typlist))
+        c = []
+        for t in utypes:
+            c.append((t,typlist.count(t)))
+        return c
+
+    # NAMES method ---------------------------- 
+    def names(self):
+        &#34;&#34;&#34; return the names of objects sorted as index &#34;&#34;&#34;
+        namesunsorted=namessorted=list(self.objects.keys())
+        nobj = len(namesunsorted)
+        for iobj in range(nobj):
+            namessorted[self.objects[namesunsorted[iobj]].index-1] = namesunsorted[iobj]
+        return namessorted
+        
+    # LIST method ---------------------------- 
+    def list(self):
+        &#34;&#34;&#34; list objects &#34;&#34;&#34;
+        fmt = &#34;%%%ss:&#34; % max(10,max([len(n) for n in self.names()])+2)
+        print(&#34;RASTER with %d objects&#34; % self.nobjects)
+        for o in self.objects.keys():
+            print(fmt % self.objects[o].name,&#34;%-10s&#34; % self.objects[o].kind,
+                  &#34;(beadtype=%d,object index=[%d,%d], n=%d)&#34; % \
+                      (self.objects[o].beadtype,
+                       self.objects[o].index,
+                       self.objects[o].subindex,
+                       self.objects[o].nbeads))
+            
+    # EXIST method ---------------------------- 
+    def exist(self,name):
+        &#34;&#34;&#34; exist object &#34;&#34;&#34;
+        return name in self.objects
+    
+    # DELETE method ---------------------------- 
+    def delete(self,name):
+        &#34;&#34;&#34; delete object &#34;&#34;&#34;
+        if name in self.objects: 
+            if not self.objects[name].ismask:
+                self.nbeads -= self.objects[name].nbeads
+            del self.objects[name]
+            self.nobjects -= 1
+        else:
+            raise ValueError(&#34;%d is not a valid name (use list()) to list valid objects&#34; % name)
+        R.clear()
+        R.plot()
+        R.show(extra=&#34;label&#34;)
+        
+    # VALID method
+    def valid(self,x,y):
+        &#34;&#34;&#34; validation of coordinates &#34;&#34;&#34;
+        return min(self.width,max(0,round(x))),min(self.width,max(0,round(y)))
+
+
+    # RECTANGLE ----------------------------     
+    def rectangle(self,a,b,c,d,
+                  mode=&#34;lowerleft&#34;,name=None,angle=0,
+                  beadtype=None,ismask=False):
+        &#34;&#34;&#34; 
+        rectangle object
+            rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode=&#34;lower&#34;, angle=0, ismask=False])
+            rectangle(xcenter,ycenter,width,height [, beadtype=1,mode=&#34;center&#34;, angle=0, ismask=False])
+        &#34;&#34;&#34;
+        # object creation
+        self.counter[&#34;all&#34;] += 1
+        self.counter[&#34;rectangle&#34;] += 1
+        R = Rectangle((self.counter[&#34;all&#34;],self.counter[&#34;rectangle&#34;]))
+        if name != None:
+            if self.exist(name):
+                print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
+                self.delete(name)
+            R.name = name
+        else:
+            name = R.name
+        if beadtype != None: R.beadtype = int(np.floor(beadtype))
+        if ismask: R.beadtype = 0
+        R.ismask = R.beadtype==0
+        # build vertices
+        if mode == &#34;lowerleft&#34;:
+            R.xcenter = (a+b)/2
+            R.ycenter = (c+d)/2
+            R.vertices = [
+                _rotate(a,c,R.xcenter,R.ycenter,angle),
+                _rotate(b,c,R.xcenter,R.ycenter,angle),
+                _rotate(b,d,R.xcenter,R.ycenter,angle),
+                _rotate(a,d,R.xcenter,R.ycenter,angle),
+                _rotate(a,c,R.xcenter,R.ycenter,angle)
+                ] # anti-clockwise, closed (last point repeated)
+        elif mode == &#34;center&#34;:
+            R.xcenter = a
+            R.ycenter = b
+            R.vertices = [
+                _rotate(a-c/2,b-d/2,R.xcenter,R.ycenter,angle),
+                _rotate(a+c/2,b-d/2,R.xcenter,R.ycenter,angle),
+                _rotate(a+c/2,b+d/2,R.xcenter,R.ycenter,angle),
+                _rotate(a-c/2,b+d/2,R.xcenter,R.ycenter,angle),
+                _rotate(a-c/2,b-d/2,R.xcenter,R.ycenter,angle)
+                ]
+        else:
+            raise ValueError(&#39;&#34;%s&#34; is not a recognized mode, use &#34;lowerleft&#34; (default) and &#34;center&#34; instead&#39;)
+        # build path object and range
+        R.codes =    [ path.Path.MOVETO,
+                     path.Path.LINETO,
+                     path.Path.LINETO,
+                     path.Path.LINETO,
+                     path.Path.CLOSEPOLY
+                    ]
+        R.nvertices = len(R.vertices)-1
+        R.polygon = path.Path(R.vertices,R.codes,closed=True)
+        R.polygon2plot = path.Path(R.polygon.vertices+ np.array([1,1]),R.codes,closed=True)
+        R.xmin, R.ymin = self.valid(
+            min([R.vertices[k][0] for k in range(R.nvertices)]),
+            min([R.vertices[k][1] for k in range(R.nvertices)])
+            )
+        R.xmax, R.ymax = self.valid(
+            max([R.vertices[k][0] for k in range(R.nvertices)]),
+            max([R.vertices[k][1] for k in range(R.nvertices)])
+            )
+        R.width = R.xmax - R.xmin
+        R.height = R.ymax - R.ymin
+        R.angle = angle
+        # store the object
+        self.objects[name] = R
+        self.nobjects += 1
+
+        
+    # CIRCLE ----------------------------     
+    def circle(self,xc,yc,radius,
+                  name=None,shaperatio=1,angle=0,beadtype=None,ismask=False,
+                  resolution=20,shiftangle=0):
+        &#34;&#34;&#34; 
+        circle object (or any regular polygon)
+            circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
+        &#34;&#34;&#34;
+        # object creation
+        self.counter[&#34;all&#34;] += 1
+        if resolution==3:
+            self.counter[&#34;triangle&#34;] += 1
+            G = Triangle((self.counter[&#34;all&#34;],self.counter[&#34;triangle&#34;]))
+        elif resolution==4:
+            self.counter[&#34;diamond&#34;] += 1
+            G = Diamond((self.counter[&#34;all&#34;],self.counter[&#34;diamond&#34;]))
+        elif resolution==5:
+            self.counter[&#34;pentagon&#34;] += 1
+            G = Pentagon((self.counter[&#34;all&#34;],self.counter[&#34;pentagon&#34;]))
+        elif resolution==6:
+            self.counter[&#34;hexagon&#34;] += 1
+            G = Hexagon((self.counter[&#34;all&#34;],self.counter[&#34;hexagon&#34;]))
+        else:
+            self.counter[&#34;circle&#34;] += 1
+            G = Circle((self.counter[&#34;all&#34;],self.counter[&#34;circle&#34;]),resolution=resolution)
+        if name != None:
+            if self.exist(name):
+                print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
+                self.delete(name)
+            G.name = name
+        else:
+            name = G.name
+        if beadtype != None: G.beadtype = int(np.floor(beadtype))
+        if ismask: G.beadtype = 0
+        G.ismask = G.beadtype==0
+        # build vertices
+        th = np.linspace(0,2*np.pi,G.resolution+1) +shiftangle*np.pi/180
+        xgen = xc + radius * np.cos(th)
+        ygen = yc + radius * shaperatio * np.sin(th)
+        G.xcenter, G.ycenter, G.radius = xc, yc, radius
+        G.vertices, G.codes = [], []
+        for i in range(G.resolution+1):
+            G.vertices.append(_rotate(xgen[i],ygen[i],xc,yc,angle))
+            if i==0:
+                G.codes.append(path.Path.MOVETO)
+            elif i==G.resolution:
+                G.codes.append(path.Path.CLOSEPOLY)        
+            else:
+                G.codes.append(path.Path.LINETO)
+        G.nvertices = len(G.vertices)-1
+        # build path object and range
+        G.polygon = path.Path(G.vertices,G.codes,closed=True)
+        G.polygon2plot = path.Path(G.polygon.vertices+ np.array([1,1]),G.codes,closed=True)
+        G.xmin, G.ymin = self.valid(
+            min([G.vertices[k][0] for k in range(G.nvertices)]),
+            min([G.vertices[k][1] for k in range(G.nvertices)])
+            )
+        G.xmax, G.ymax = self.valid(
+            max([G.vertices[k][0] for k in range(G.nvertices)]),
+            max([G.vertices[k][1] for k in range(G.nvertices)])
+            )
+        G.width = G.xmax - G.xmin
+        G.height = G.ymax - G.ymin
+        G.angle, G.shaperatio = angle, shaperatio
+        # store the object
+        self.objects[name] = G
+        self.nobjects += 1
+  
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # =========== pseudo methods connected to circle() ===========
+    # TRIANGLE, DIAMOND, PENTAGON, HEXAGON, -----------------------     
+    def triangle(self,xc,yc,radius,name=None,
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+        self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=3,
+           angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)
+        
+    def diamond(self,xc,yc,radius,name=None,
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=4,
+            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)
+        
+    def pentagon(self,xc,yc,radius,name=None,
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=5,
+            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)
+        
+    def hexagon(self,xc,yc,radius,name=None,
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=6,
+            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)
+        
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    # label method ---------------------------- 
+    def label(self,name,ax=plt.gca(),contour=True,edgecolor=&#34;orange&#34;,facecolor=&#34;none&#34;,linewidth=2):
+        &#34;&#34;&#34; label &#34;&#34;&#34;
+        self.figure()
+        if name in self.objects:
+            if not self.objects[name].islabelled:
+                if contour:
+                    patch = patches.PathPatch(self.objects[name].polygon2plot,
+                                              facecolor=facecolor,
+                                              edgecolor=edgecolor,
+                                              lw=linewidth)
+                    self.objects[name].hlabel[&#34;contour&#34;] = \
+                        ax.add_patch(patch)
+                else:
+                    self.objects[name].hlabel[&#34;contour&#34;] = None
+                self.objects[name].hlabel[&#34;text&#34;] = \
+                plt.text(self.objects[name].xcenter,
+                         self.objects[name].ycenter,
+                         &#34;%s\n(t=$%d$,$n_p$=%d)&#34; % (name, self.objects[name].beadtype,self.objects[name].nbeads),
+                         horizontalalignment = &#34;center&#34;,
+                         verticalalignment = &#34;center_baseline&#34;,
+                         fontsize=self.fontsize
+                         )
+                plt.show()
+                self.objects[name].islabelled = True
+        else:
+            raise ValueError(&#34;%d is not a valid name (use list()) to list valid objects&#34; % name)
+   
+    def unlabel(self,name):
+        &#34;&#34;&#34; unlabel &#34;&#34;&#34;
+        if name in self.objects:
+            if  self.objects[name].islabelled:
+                self.objects[name].hlabel[&#34;contour&#34;].remove()
+                self.objects[name].hlabel[&#34;text&#34;].remove()
+                self.objects[name].hlabel = {&#39;contour&#39;:[], &#39;text&#39;:[]}
+                self.objects[name].islabelled = False
+        else:
+            raise ValueError(&#34;%d is not a valid name (use list()) to list valid objects&#34; % name)
+        
+
+    # PLOT method ---------------------------- 
+    def plot(self):
+        &#34;&#34;&#34; plot &#34;&#34;&#34;
+        for o in self.objects:
+            if not self.objects[o].isplotted:
+                if self.objects[o].alike == &#34;circle&#34;:
+                    j,i = np.meshgrid( 
+                        range(self.objects[o].xmin-1,self.objects[o].xmax+1),
+                        range(self.objects[o].ymin-1,self.objects[o].ymax+1))
+                    points = np.vstack((j.flatten(),i.flatten())).T
+                    npoints = points.shape[0]
+                    inside = self.objects[o].polygon.contains_points(points)
+                    for k in range(npoints):
+                        if inside[k] and \
+                            points[k,0]&gt;=0 and \
+                            points[k,0]&lt;self.width and \
+                            points[k,1]&gt;=0 and \
+                            points[k,1]&lt;self.height :
+                                self.imbead[points[k,1],points[k,0]] = self.objects[o].beadtype
+                                self.imobj[points[k,1],points[k,0]] = self.objects[o].index
+                                self.objects[o].nbeads += 1
+                else:
+                    raise ValueError(&#34;Not yet implemented&#34;)
+                # store it as plotted
+                self.objects[o].isplotted = True
+                if not self.objects[o].ismask:
+                    self.nbeads += self.objects[o].nbeads
+
+
+    # SHOW method ---------------------------- 
+    def show(self,extra=&#34;none&#34;,contour=True,what=&#34;beadtype&#34;):
+        &#34;&#34;&#34; show method: show(extra=&#34;label&#34;,contour=True,what=&#34;beadtype&#34;) &#34;&#34;&#34;
+        self.figure()
+        if what==&#34;beadtype&#34;:
+            imagesc(self.imbead)
+        elif what == &#34;objindex&#34;:
+            imagesc(self.imobj)
+        else:
+            raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)        
+        if extra == &#34;label&#34;:
+            ax = plt.gca()
+            for o in self.names():
+                if not self.objects[o].ismask:
+                    self.label(o,ax=ax,contour=contour)
+            ax.set_title(&#34;raster area: %s \n (n=%d, $n_p$=%d)&#34; %\
+                      (self.name,self.length(),self.nbeads) )
+            plt.show()
+            
+    # SHOW method ---------------------------- 
+    def print(self,what=&#34;beadtype&#34;):
+        &#34;&#34;&#34; print method &#34;&#34;&#34;
+        txt = self.string(what=what)
+        for i in range(len(txt)):
+            print(txt[i],end=&#34;\n&#34;)
+         
+            
+    # FIGURE method ---------------------------- 
+    def figure(self):
+        &#34;&#34;&#34; set the current figure &#34;&#34;&#34;
+        if self.hfig==[] or not plt.fignum_exists(self.hfig.number):
+            self.newfigure()
+        plt.figure(self.hfig.number)
+    
+    # NEWFIGURE method ---------------------------- 
+    def newfigure(self):
+        &#34;&#34;&#34; create a new figure (dpi=200) &#34;&#34;&#34;
+        self.hfig = plt.figure(dpi=self.dpi)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="raster.raster.circle"><code class="name flex">
+<span>def <span class="ident">circle</span></span>(<span>self, xc, yc, radius, name=None, shaperatio=1, angle=0, beadtype=None, ismask=False, resolution=20, shiftangle=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>circle object (or any regular polygon)
+circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def circle(self,xc,yc,radius,
+              name=None,shaperatio=1,angle=0,beadtype=None,ismask=False,
+              resolution=20,shiftangle=0):
+    &#34;&#34;&#34; 
+    circle object (or any regular polygon)
+        circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
+    &#34;&#34;&#34;
+    # object creation
+    self.counter[&#34;all&#34;] += 1
+    if resolution==3:
+        self.counter[&#34;triangle&#34;] += 1
+        G = Triangle((self.counter[&#34;all&#34;],self.counter[&#34;triangle&#34;]))
+    elif resolution==4:
+        self.counter[&#34;diamond&#34;] += 1
+        G = Diamond((self.counter[&#34;all&#34;],self.counter[&#34;diamond&#34;]))
+    elif resolution==5:
+        self.counter[&#34;pentagon&#34;] += 1
+        G = Pentagon((self.counter[&#34;all&#34;],self.counter[&#34;pentagon&#34;]))
+    elif resolution==6:
+        self.counter[&#34;hexagon&#34;] += 1
+        G = Hexagon((self.counter[&#34;all&#34;],self.counter[&#34;hexagon&#34;]))
+    else:
+        self.counter[&#34;circle&#34;] += 1
+        G = Circle((self.counter[&#34;all&#34;],self.counter[&#34;circle&#34;]),resolution=resolution)
+    if name != None:
+        if self.exist(name):
+            print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
+            self.delete(name)
+        G.name = name
+    else:
+        name = G.name
+    if beadtype != None: G.beadtype = int(np.floor(beadtype))
+    if ismask: G.beadtype = 0
+    G.ismask = G.beadtype==0
+    # build vertices
+    th = np.linspace(0,2*np.pi,G.resolution+1) +shiftangle*np.pi/180
+    xgen = xc + radius * np.cos(th)
+    ygen = yc + radius * shaperatio * np.sin(th)
+    G.xcenter, G.ycenter, G.radius = xc, yc, radius
+    G.vertices, G.codes = [], []
+    for i in range(G.resolution+1):
+        G.vertices.append(_rotate(xgen[i],ygen[i],xc,yc,angle))
+        if i==0:
+            G.codes.append(path.Path.MOVETO)
+        elif i==G.resolution:
+            G.codes.append(path.Path.CLOSEPOLY)        
+        else:
+            G.codes.append(path.Path.LINETO)
+    G.nvertices = len(G.vertices)-1
+    # build path object and range
+    G.polygon = path.Path(G.vertices,G.codes,closed=True)
+    G.polygon2plot = path.Path(G.polygon.vertices+ np.array([1,1]),G.codes,closed=True)
+    G.xmin, G.ymin = self.valid(
+        min([G.vertices[k][0] for k in range(G.nvertices)]),
+        min([G.vertices[k][1] for k in range(G.nvertices)])
+        )
+    G.xmax, G.ymax = self.valid(
+        max([G.vertices[k][0] for k in range(G.nvertices)]),
+        max([G.vertices[k][1] for k in range(G.nvertices)])
+        )
+    G.width = G.xmax - G.xmin
+    G.height = G.ymax - G.ymin
+    G.angle, G.shaperatio = angle, shaperatio
+    # store the object
+    self.objects[name] = G
+    self.nobjects += 1</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.clear"><code class="name flex">
+<span>def <span class="ident">clear</span></span>(<span>self, what='nothing')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>clear the plotting area, use clear("all")) to remove all objects</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear(self,what=&#34;nothing&#34;):
+    &#34;&#34;&#34; clear the plotting area, use clear(&#34;all&#34;)) to remove all objects &#34;&#34;&#34;
+    self.imbead = np.zeros((self.height,self.width),dtype=np.int8)
+    self.imobj = np.zeros((self.height,self.width),dtype=np.int8)
+    for o in self.names():
+        if what==&#34;all&#34;:
+            self.delete(o)
+        else:
+            self.objects[o].isplotted = False
+            self.objects[o].islabelled = False
+            if not self.objects[o].ismask:
+                self.nbeads -= self.objects[o].nbeads
+            self.objects[o].nbeads = 0  # number of beads (plotted)
+    self.figure()
+    plt.cla()
+    self.show()</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.count"><code class="name flex">
+<span>def <span class="ident">count</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>count objects by type</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def count(self):
+    &#34;&#34;&#34; count objects by type &#34;&#34;&#34;
+    typlist = [self.objects[o].beadtype for o in self.names()]
+    utypes = list(set(typlist))
+    c = []
+    for t in utypes:
+        c.append((t,typlist.count(t)))
+    return c</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.data"><code class="name flex">
+<span>def <span class="ident">data</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>return a pizza.data object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def data(self):
+    &#34;&#34;&#34; return a pizza.data object &#34;&#34;&#34;
+    n = self.length()
+    i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
+    X = data3()  # empty pizza.data3.data object
+    X.title = self.name + &#34;(raster)&#34;
+    X.headers = {&#39;atoms&#39;: n,
+                  &#39;atom types&#39;: self.count()[-1][0],
+                  &#39;xlo xhi&#39;: (0.5, self.width-0.5),
+                  &#39;ylo yhi&#39;: (0.5, self.height-0.5),
+                  &#39;zlo zhi&#39;: (0, 0)}
+    # [ATOMS] section
+    X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)      # id
+    X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)      # Type
+    X.append(&#39;Atoms&#39;,self.imobj[i,j],True,&#34;mol&#34;)        # mol
+    X.append(&#39;Atoms&#39;,self.volume,False,&#34;c_vol&#34;)         # c_vol
+    X.append(&#39;Atoms&#39;,self.mass,False,&#34;mass&#34;)            # mass
+    X.append(&#39;Atoms&#39;,self.radius,False,&#34;radius&#34;)        # radius
+    X.append(&#39;Atoms&#39;,self.contactradius,False,&#34;c_contact_radius&#34;) # c_contact_radius
+    X.append(&#39;Atoms&#39;,j+0.5,False,&#34;x&#34;)                   # x
+    X.append(&#39;Atoms&#39;,i+0.5,False,&#34;y&#34;)                   # y
+    X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                       # z
+    X.append(&#39;Atoms&#39;,self.forces[0],False,&#34;f_1[1]&#34;)     # force along x
+    X.append(&#39;Atoms&#39;,self.forces[1],False,&#34;f_1[2]&#34;)     # force along y
+    X.append(&#39;Atoms&#39;,self.forces[2],False,&#34;f_1[3]&#34;)     # force along z
+    # [VELOCITIES] section
+    X.append(&#39;Velocities&#39;,list(range(1,n+1)),True,&#34;id&#34;) # id
+    X.append(&#39;Velocities&#39;,self.velocities[0],False,&#34;vx&#34;) # vx
+    X.append(&#39;Velocities&#39;,self.velocities[1],False,&#34;vy&#34;) # vy
+    X.append(&#39;Velocities&#39;,self.velocities[2],False,&#34;vz&#34;) # vz
+    # pseudo-filename
+    X.flist = [&#34;%dx%d raster (%s)&#34; % (self.width,self.height,self.name)]
+    return X</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.delete"><code class="name flex">
+<span>def <span class="ident">delete</span></span>(<span>self, name)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>delete object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete(self,name):
+    &#34;&#34;&#34; delete object &#34;&#34;&#34;
+    if name in self.objects: 
+        if not self.objects[name].ismask:
+            self.nbeads -= self.objects[name].nbeads
+        del self.objects[name]
+        self.nobjects -= 1
+    else:
+        raise ValueError(&#34;%d is not a valid name (use list()) to list valid objects&#34; % name)
+    R.clear()
+    R.plot()
+    R.show(extra=&#34;label&#34;)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.diamond"><code class="name flex">
+<span>def <span class="ident">diamond</span></span>(<span>self, xc, yc, radius, name=None, shaperatio=1, angle=0, beadtype=None, ismask=False, shiftangle=0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def diamond(self,xc,yc,radius,name=None,
+             shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+     self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=4,
+        angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.exist"><code class="name flex">
+<span>def <span class="ident">exist</span></span>(<span>self, name)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>exist object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def exist(self,name):
+    &#34;&#34;&#34; exist object &#34;&#34;&#34;
+    return name in self.objects</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.figure"><code class="name flex">
+<span>def <span class="ident">figure</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>set the current figure</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def figure(self):
+    &#34;&#34;&#34; set the current figure &#34;&#34;&#34;
+    if self.hfig==[] or not plt.fignum_exists(self.hfig.number):
+        self.newfigure()
+    plt.figure(self.hfig.number)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.get"><code class="name flex">
+<span>def <span class="ident">get</span></span>(<span>self, name)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>returns the object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get(self,name):
+    &#34;&#34;&#34; returns the object &#34;&#34;&#34;
+    if name in self.objects:
+        return self.objects[name]
+    else:
+        raise ValueError(&#39;the object &#34;%s&#34; does not exist, use list()&#39; % name)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.hexagon"><code class="name flex">
+<span>def <span class="ident">hexagon</span></span>(<span>self, xc, yc, radius, name=None, shaperatio=1, angle=0, beadtype=None, ismask=False, shiftangle=0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hexagon(self,xc,yc,radius,name=None,
+             shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+     self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=6,
+        angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.label"><code class="name flex">
+<span>def <span class="ident">label</span></span>(<span>self, name, ax=&lt;AxesSubplot:&gt;, contour=True, edgecolor='orange', facecolor='none', linewidth=2)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>label</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def label(self,name,ax=plt.gca(),contour=True,edgecolor=&#34;orange&#34;,facecolor=&#34;none&#34;,linewidth=2):
+    &#34;&#34;&#34; label &#34;&#34;&#34;
+    self.figure()
+    if name in self.objects:
+        if not self.objects[name].islabelled:
+            if contour:
+                patch = patches.PathPatch(self.objects[name].polygon2plot,
+                                          facecolor=facecolor,
+                                          edgecolor=edgecolor,
+                                          lw=linewidth)
+                self.objects[name].hlabel[&#34;contour&#34;] = \
+                    ax.add_patch(patch)
+            else:
+                self.objects[name].hlabel[&#34;contour&#34;] = None
+            self.objects[name].hlabel[&#34;text&#34;] = \
+            plt.text(self.objects[name].xcenter,
+                     self.objects[name].ycenter,
+                     &#34;%s\n(t=$%d$,$n_p$=%d)&#34; % (name, self.objects[name].beadtype,self.objects[name].nbeads),
+                     horizontalalignment = &#34;center&#34;,
+                     verticalalignment = &#34;center_baseline&#34;,
+                     fontsize=self.fontsize
+                     )
+            plt.show()
+            self.objects[name].islabelled = True
+    else:
+        raise ValueError(&#34;%d is not a valid name (use list()) to list valid objects&#34; % name)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.length"><code class="name flex">
+<span>def <span class="ident">length</span></span>(<span>self, t=None, what='beadtype')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>returns the total number of beads length(type,"beadtype")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def length(self,t=None,what=&#34;beadtype&#34;):
+    &#34;&#34;&#34; returns the total number of beads length(type,&#34;beadtype&#34;) &#34;&#34;&#34;
+    if what == &#34;beadtype&#34;:
+        num = self.imbead
+    elif what == &#34;objindex&#34;:
+        num = self.imobj
+    else:
+        raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)
+    if t==None:
+        return np.count_nonzero(num&gt;0)
+    else:
+        return np.count_nonzero(num==t)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.list"><code class="name flex">
+<span>def <span class="ident">list</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>list objects</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list(self):
+    &#34;&#34;&#34; list objects &#34;&#34;&#34;
+    fmt = &#34;%%%ss:&#34; % max(10,max([len(n) for n in self.names()])+2)
+    print(&#34;RASTER with %d objects&#34; % self.nobjects)
+    for o in self.objects.keys():
+        print(fmt % self.objects[o].name,&#34;%-10s&#34; % self.objects[o].kind,
+              &#34;(beadtype=%d,object index=[%d,%d], n=%d)&#34; % \
+                  (self.objects[o].beadtype,
+                   self.objects[o].index,
+                   self.objects[o].subindex,
+                   self.objects[o].nbeads))</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.names"><code class="name flex">
+<span>def <span class="ident">names</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>return the names of objects sorted as index</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def names(self):
+    &#34;&#34;&#34; return the names of objects sorted as index &#34;&#34;&#34;
+    namesunsorted=namessorted=list(self.objects.keys())
+    nobj = len(namesunsorted)
+    for iobj in range(nobj):
+        namessorted[self.objects[namesunsorted[iobj]].index-1] = namesunsorted[iobj]
+    return namessorted</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.newfigure"><code class="name flex">
+<span>def <span class="ident">newfigure</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>create a new figure (dpi=200)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def newfigure(self):
+    &#34;&#34;&#34; create a new figure (dpi=200) &#34;&#34;&#34;
+    self.hfig = plt.figure(dpi=self.dpi)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.numeric"><code class="name flex">
+<span>def <span class="ident">numeric</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>retrieve the image as a numpy.array</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def numeric(self):
+    &#34;&#34;&#34; retrieve the image as a numpy.array &#34;&#34;&#34;
+    return self.imbead, self.imobj</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.pentagon"><code class="name flex">
+<span>def <span class="ident">pentagon</span></span>(<span>self, xc, yc, radius, name=None, shaperatio=1, angle=0, beadtype=None, ismask=False, shiftangle=0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pentagon(self,xc,yc,radius,name=None,
+             shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+     self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=5,
+        angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.plot"><code class="name flex">
+<span>def <span class="ident">plot</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>plot</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot(self):
+    &#34;&#34;&#34; plot &#34;&#34;&#34;
+    for o in self.objects:
+        if not self.objects[o].isplotted:
+            if self.objects[o].alike == &#34;circle&#34;:
+                j,i = np.meshgrid( 
+                    range(self.objects[o].xmin-1,self.objects[o].xmax+1),
+                    range(self.objects[o].ymin-1,self.objects[o].ymax+1))
+                points = np.vstack((j.flatten(),i.flatten())).T
+                npoints = points.shape[0]
+                inside = self.objects[o].polygon.contains_points(points)
+                for k in range(npoints):
+                    if inside[k] and \
+                        points[k,0]&gt;=0 and \
+                        points[k,0]&lt;self.width and \
+                        points[k,1]&gt;=0 and \
+                        points[k,1]&lt;self.height :
+                            self.imbead[points[k,1],points[k,0]] = self.objects[o].beadtype
+                            self.imobj[points[k,1],points[k,0]] = self.objects[o].index
+                            self.objects[o].nbeads += 1
+            else:
+                raise ValueError(&#34;Not yet implemented&#34;)
+            # store it as plotted
+            self.objects[o].isplotted = True
+            if not self.objects[o].ismask:
+                self.nbeads += self.objects[o].nbeads</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.print"><code class="name flex">
+<span>def <span class="ident">print</span></span>(<span>self, what='beadtype')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>print method</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def print(self,what=&#34;beadtype&#34;):
+    &#34;&#34;&#34; print method &#34;&#34;&#34;
+    txt = self.string(what=what)
+    for i in range(len(txt)):
+        print(txt[i],end=&#34;\n&#34;)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.rectangle"><code class="name flex">
+<span>def <span class="ident">rectangle</span></span>(<span>self, a, b, c, d, mode='lowerleft', name=None, angle=0, beadtype=None, ismask=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>rectangle object
+rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode="lower", angle=0, ismask=False])
+rectangle(xcenter,ycenter,width,height [, beadtype=1,mode="center", angle=0, ismask=False])</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rectangle(self,a,b,c,d,
+              mode=&#34;lowerleft&#34;,name=None,angle=0,
+              beadtype=None,ismask=False):
+    &#34;&#34;&#34; 
+    rectangle object
+        rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode=&#34;lower&#34;, angle=0, ismask=False])
+        rectangle(xcenter,ycenter,width,height [, beadtype=1,mode=&#34;center&#34;, angle=0, ismask=False])
+    &#34;&#34;&#34;
+    # object creation
+    self.counter[&#34;all&#34;] += 1
+    self.counter[&#34;rectangle&#34;] += 1
+    R = Rectangle((self.counter[&#34;all&#34;],self.counter[&#34;rectangle&#34;]))
+    if name != None:
+        if self.exist(name):
+            print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
+            self.delete(name)
+        R.name = name
+    else:
+        name = R.name
+    if beadtype != None: R.beadtype = int(np.floor(beadtype))
+    if ismask: R.beadtype = 0
+    R.ismask = R.beadtype==0
+    # build vertices
+    if mode == &#34;lowerleft&#34;:
+        R.xcenter = (a+b)/2
+        R.ycenter = (c+d)/2
+        R.vertices = [
+            _rotate(a,c,R.xcenter,R.ycenter,angle),
+            _rotate(b,c,R.xcenter,R.ycenter,angle),
+            _rotate(b,d,R.xcenter,R.ycenter,angle),
+            _rotate(a,d,R.xcenter,R.ycenter,angle),
+            _rotate(a,c,R.xcenter,R.ycenter,angle)
+            ] # anti-clockwise, closed (last point repeated)
+    elif mode == &#34;center&#34;:
+        R.xcenter = a
+        R.ycenter = b
+        R.vertices = [
+            _rotate(a-c/2,b-d/2,R.xcenter,R.ycenter,angle),
+            _rotate(a+c/2,b-d/2,R.xcenter,R.ycenter,angle),
+            _rotate(a+c/2,b+d/2,R.xcenter,R.ycenter,angle),
+            _rotate(a-c/2,b+d/2,R.xcenter,R.ycenter,angle),
+            _rotate(a-c/2,b-d/2,R.xcenter,R.ycenter,angle)
+            ]
+    else:
+        raise ValueError(&#39;&#34;%s&#34; is not a recognized mode, use &#34;lowerleft&#34; (default) and &#34;center&#34; instead&#39;)
+    # build path object and range
+    R.codes =    [ path.Path.MOVETO,
+                 path.Path.LINETO,
+                 path.Path.LINETO,
+                 path.Path.LINETO,
+                 path.Path.CLOSEPOLY
+                ]
+    R.nvertices = len(R.vertices)-1
+    R.polygon = path.Path(R.vertices,R.codes,closed=True)
+    R.polygon2plot = path.Path(R.polygon.vertices+ np.array([1,1]),R.codes,closed=True)
+    R.xmin, R.ymin = self.valid(
+        min([R.vertices[k][0] for k in range(R.nvertices)]),
+        min([R.vertices[k][1] for k in range(R.nvertices)])
+        )
+    R.xmax, R.ymax = self.valid(
+        max([R.vertices[k][0] for k in range(R.nvertices)]),
+        max([R.vertices[k][1] for k in range(R.nvertices)])
+        )
+    R.width = R.xmax - R.xmin
+    R.height = R.ymax - R.ymin
+    R.angle = angle
+    # store the object
+    self.objects[name] = R
+    self.nobjects += 1</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.show"><code class="name flex">
+<span>def <span class="ident">show</span></span>(<span>self, extra='none', contour=True, what='beadtype')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>show method: show(extra="label",contour=True,what="beadtype")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def show(self,extra=&#34;none&#34;,contour=True,what=&#34;beadtype&#34;):
+    &#34;&#34;&#34; show method: show(extra=&#34;label&#34;,contour=True,what=&#34;beadtype&#34;) &#34;&#34;&#34;
+    self.figure()
+    if what==&#34;beadtype&#34;:
+        imagesc(self.imbead)
+    elif what == &#34;objindex&#34;:
+        imagesc(self.imobj)
+    else:
+        raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)        
+    if extra == &#34;label&#34;:
+        ax = plt.gca()
+        for o in self.names():
+            if not self.objects[o].ismask:
+                self.label(o,ax=ax,contour=contour)
+        ax.set_title(&#34;raster area: %s \n (n=%d, $n_p$=%d)&#34; %\
+                  (self.name,self.length(),self.nbeads) )
+        plt.show()</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.string"><code class="name flex">
+<span>def <span class="ident">string</span></span>(<span>self, what='beadtype')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>convert the image as ASCII strings</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def string(self,what=&#34;beadtype&#34;):
+    &#34;&#34;&#34; convert the image as ASCII strings &#34;&#34;&#34;
+    if what == &#34;beadtype&#34;:
+        num = np.flipud(duplicate(self.imbead))
+    elif what == &#34;objindex&#34;:
+        num = np.flipud(duplicate(self.imobj))
+    else:
+        raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)
+    num[num&gt;0] = num[num&gt;0] + 65
+    num[num==0] = 32
+    num = list(num)
+    return [&#34;&#34;.join(map(chr,x)) for x in num]</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.triangle"><code class="name flex">
+<span>def <span class="ident">triangle</span></span>(<span>self, xc, yc, radius, name=None, shaperatio=1, angle=0, beadtype=None, ismask=False, shiftangle=0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def triangle(self,xc,yc,radius,name=None,
+             shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0):
+    self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=3,
+       angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.unlabel"><code class="name flex">
+<span>def <span class="ident">unlabel</span></span>(<span>self, name)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>unlabel</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unlabel(self,name):
+    &#34;&#34;&#34; unlabel &#34;&#34;&#34;
+    if name in self.objects:
+        if  self.objects[name].islabelled:
+            self.objects[name].hlabel[&#34;contour&#34;].remove()
+            self.objects[name].hlabel[&#34;text&#34;].remove()
+            self.objects[name].hlabel = {&#39;contour&#39;:[], &#39;text&#39;:[]}
+            self.objects[name].islabelled = False
+    else:
+        raise ValueError(&#34;%d is not a valid name (use list()) to list valid objects&#34; % name)</code></pre>
+</details>
+</dd>
+<dt id="raster.raster.valid"><code class="name flex">
+<span>def <span class="ident">valid</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>validation of coordinates</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def valid(self,x,y):
+    &#34;&#34;&#34; validation of coordinates &#34;&#34;&#34;
+    return min(self.width,max(0,round(x))),min(self.width,max(0,round(y)))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="raster.imagesc" href="#raster.imagesc">imagesc</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="raster.Circle" href="#raster.Circle">Circle</a></code></h4>
+</li>
+<li>
+<h4><code><a title="raster.Diamond" href="#raster.Diamond">Diamond</a></code></h4>
+</li>
+<li>
+<h4><code><a title="raster.Hexagon" href="#raster.Hexagon">Hexagon</a></code></h4>
+</li>
+<li>
+<h4><code><a title="raster.Pentagon" href="#raster.Pentagon">Pentagon</a></code></h4>
+</li>
+<li>
+<h4><code><a title="raster.Rectangle" href="#raster.Rectangle">Rectangle</a></code></h4>
+</li>
+<li>
+<h4><code><a title="raster.Triangle" href="#raster.Triangle">Triangle</a></code></h4>
+</li>
+<li>
+<h4><code><a title="raster.raster" href="#raster.raster">raster</a></code></h4>
+<ul class="two-column">
+<li><code><a title="raster.raster.circle" href="#raster.raster.circle">circle</a></code></li>
+<li><code><a title="raster.raster.clear" href="#raster.raster.clear">clear</a></code></li>
+<li><code><a title="raster.raster.count" href="#raster.raster.count">count</a></code></li>
+<li><code><a title="raster.raster.data" href="#raster.raster.data">data</a></code></li>
+<li><code><a title="raster.raster.delete" href="#raster.raster.delete">delete</a></code></li>
+<li><code><a title="raster.raster.diamond" href="#raster.raster.diamond">diamond</a></code></li>
+<li><code><a title="raster.raster.exist" href="#raster.raster.exist">exist</a></code></li>
+<li><code><a title="raster.raster.figure" href="#raster.raster.figure">figure</a></code></li>
+<li><code><a title="raster.raster.get" href="#raster.raster.get">get</a></code></li>
+<li><code><a title="raster.raster.hexagon" href="#raster.raster.hexagon">hexagon</a></code></li>
+<li><code><a title="raster.raster.label" href="#raster.raster.label">label</a></code></li>
+<li><code><a title="raster.raster.length" href="#raster.raster.length">length</a></code></li>
+<li><code><a title="raster.raster.list" href="#raster.raster.list">list</a></code></li>
+<li><code><a title="raster.raster.names" href="#raster.raster.names">names</a></code></li>
+<li><code><a title="raster.raster.newfigure" href="#raster.raster.newfigure">newfigure</a></code></li>
+<li><code><a title="raster.raster.numeric" href="#raster.raster.numeric">numeric</a></code></li>
+<li><code><a title="raster.raster.pentagon" href="#raster.raster.pentagon">pentagon</a></code></li>
+<li><code><a title="raster.raster.plot" href="#raster.raster.plot">plot</a></code></li>
+<li><code><a title="raster.raster.print" href="#raster.raster.print">print</a></code></li>
+<li><code><a title="raster.raster.rectangle" href="#raster.raster.rectangle">rectangle</a></code></li>
+<li><code><a title="raster.raster.show" href="#raster.raster.show">show</a></code></li>
+<li><code><a title="raster.raster.string" href="#raster.raster.string">string</a></code></li>
+<li><code><a title="raster.raster.triangle" href="#raster.raster.triangle">triangle</a></code></li>
+<li><code><a title="raster.raster.unlabel" href="#raster.raster.unlabel">unlabel</a></code></li>
+<li><code><a title="raster.raster.valid" href="#raster.raster.valid">valid</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

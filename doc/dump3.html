@@ -1,0 +1,4918 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>dump3 API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>dump3</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Pizza.py toolkit, www.cs.sandia.gov/~sjplimp/pizza.html
+# Steve Plimpton, sjplimp@sandia.gov, Sandia National Laboratories
+#
+# Copyright (2005) Sandia Corporation.  Under the terms of Contract
+# DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+# certain rights in this software.  This software is distributed under
+# the GNU General Public License.
+#
+# ==== Code converted to pyton 3.x ====
+# INRAE\olivier.vitrac@agroparistech.fr
+
+# History of additions and improvements
+# 2022-01-25 first conversion to Python 3.x (rewritting when necessary)
+# 2022-02-03 add new displays, and the class frame and the method frame()
+# 2022-02-08 add the method kind(), the property type, the operator + (for merging)
+# 2022-02-09 vecs accepts inputs as list or tuple: [&#34;id&#34;,&#34;x&#34;,&#34;y&#34;,&#34;z&#34;]
+# 2022-02-10 kind has 2 internal styles (&#34;vxyz&#34; and &#34;xyz&#34;) and can be supplied with a user style
+
+# ======================================
+# dump tool
+
+oneline = &#34;Read, write, manipulate dump files and particle attributes&#34;
+
+docstr = &#34;&#34;&#34;
+d = dump(&#34;dump.one&#34;)              read in one or more dump files
+d = dump(&#34;dump.1 dump.2.gz&#34;)      can be gzipped
+d = dump(&#34;dump.*&#34;)                wildcard expands to multiple files
+d = dump(&#34;dump.*&#34;,0)              two args = store filenames, but don&#39;t read
+
+  incomplete and duplicate snapshots are deleted
+  atoms will be unscaled if stored in files as scaled
+  self-describing column names assigned 
+
+time = d.next()                   read next snapshot from dump files
+
+  used with 2-argument constructor to allow reading snapshots one-at-a-time
+  snapshot will be skipped only if another snapshot has same time stamp
+  return time stamp of snapshot read
+  return -1 if no snapshots left or last snapshot is incomplete
+  no column name assignment or unscaling is performed
+
+d.map(1,&#34;id&#34;,3,&#34;x&#34;)               assign names to columns (1-N)
+
+  not needed if dump file is self-describing
+  
+d.tselect.all()                   select all timesteps
+d.tselect.one(N)                  select only timestep N
+d.tselect.none()                  deselect all timesteps
+d.tselect.skip(M)                 select every Mth step
+d.tselect.test(&#34;$t &gt;= 100 and $t &lt; 10000&#34;)      select matching timesteps
+d.delete()                        delete non-selected timesteps
+
+  selecting a timestep also selects all atoms in the timestep
+  skip() and test() only select from currently selected timesteps
+  test() uses a Python Boolean expression with $t for timestep value
+    Python comparison syntax: == != &lt; &gt; &lt;= &gt;= and or
+
+d.aselect.all()                               select all atoms in all steps
+d.aselect.all(N)                              select all atoms in one step
+d.aselect.test(&#34;$id &gt; 100 and $type == 2&#34;)    select match atoms in all steps
+d.aselect.test(&#34;$id &gt; 100 and $type == 2&#34;,N)  select matching atoms in one step
+
+  all() with no args selects atoms from currently selected timesteps
+  test() with one arg selects atoms from currently selected timesteps
+  test() sub-selects from currently selected atoms
+  test() uses a Python Boolean expression with $ for atom attributes
+    Python comparison syntax: == != &lt; &gt; &lt;= &gt;= and or
+    $name must end with a space
+
+d.write(&#34;file&#34;)                    write selected steps/atoms to dump file
+d.write(&#34;file&#34;,head,app)           write selected steps/atoms to dump file
+d.scatter(&#34;tmp&#34;)                   write selected steps/atoms to multiple files
+
+  write() can be specified with 2 additional flags
+    head = 0/1 for no/yes snapshot header, app = 0/1 for write vs append
+  scatter() files are given timestep suffix: e.g. tmp.0, tmp.100, etc
+
+d.scale()                          scale x,y,z to 0-1 for all timesteps
+d.scale(100)                       scale atom coords for timestep N
+d.unscale()                        unscale x,y,z to box size to all timesteps
+d.unscale(1000)                    unscale atom coords for timestep N
+d.wrap()                           wrap x,y,z into periodic box via ix,iy,iz
+d.unwrap()                         unwrap x,y,z out of box via ix,iy,iz
+d.owrap(&#34;other&#34;)                   wrap x,y,z to same image as another atom
+d.sort()                           sort atoms by atom ID in all selected steps
+d.sort(&#34;x&#34;)                        sort atoms by column value in all steps
+d.sort(1000)                       sort atoms in timestep N
+
+  scale(), unscale(), wrap(), unwrap(), owrap() operate on all steps and atoms
+  wrap(), unwrap(), owrap() require ix,iy,iz be defined
+  owrap() requires a column be defined which contains an atom ID
+    name of that column is the argument to owrap()
+    x,y,z for each atom is wrapped to same image as the associated atom ID
+    useful for wrapping all molecule&#39;s atoms the same so it is contiguous
+
+m1,m2 = d.minmax(&#34;type&#34;)               find min/max values for a column
+d.set(&#34;$ke = $vx * $vx + $vy * $vy&#34;)   set a column to a computed value
+d.setv(&#34;type&#34;,vector)                  set a column to a vector of values
+d.spread(&#34;ke&#34;,N,&#34;color&#34;)               2nd col = N ints spread over 1st col
+d.clone(1000,&#34;color&#34;)                  clone timestep N values to other steps
+
+  minmax() operates on selected timesteps and atoms
+  set() operates on selected timesteps and atoms
+    left hand side column is created if necessary
+    left-hand side column is unset or unchanged for non-selected atoms
+    equation is in Python syntax
+    use $ for column names, $name must end with a space
+  setv() operates on selected timesteps and atoms
+    if column label does not exist, column is created
+    values in vector are assigned sequentially to atoms, so may want to sort()
+    length of vector must match # of selected atoms
+  spread() operates on selected timesteps and atoms
+    min and max are found for 1st specified column across all selected atoms
+    atom&#39;s value is linear mapping (1-N) between min and max
+    that is stored in 2nd column (created if needed)
+    useful for creating a color map
+  clone() operates on selected timesteps and atoms
+    values at every timestep are set to value at timestep N for that atom ID
+    useful for propagating a color map
+
+t = d.time()                       return vector of selected timestep values
+fx,fy,... = d.atom(100,&#34;fx&#34;,&#34;fy&#34;,...)   return vector(s) for atom ID N
+fx,fy,... = d.vecs(1000,&#34;fx&#34;,&#34;fy&#34;,...)  return vector(s) for timestep N
+
+  atom() returns vectors with one value for each selected timestep
+  vecs() returns vectors with one value for each selected atom in the timestep
+
+index,time,flag = d.iterator(0/1)          loop over dump snapshots
+time,box,atoms,bonds,tris,lines = d.viz(index)   return list of viz objects
+d.atype = &#34;color&#34;                          set column returned as &#34;type&#34; by viz
+d.extra(obj)                               extract bond/tri/line info from obj
+
+  iterator() loops over selected timesteps
+  iterator() called with arg = 0 first time, with arg = 1 on subsequent calls
+    index = index within dump object (0 to # of snapshots)
+    time = timestep value
+    flag = -1 when iteration is done, 1 otherwise
+  viz() returns info for selected atoms for specified timestep index
+    can also call as viz(time,1) and will find index of preceding snapshot
+    time = timestep value
+    box = \[xlo,ylo,zlo,xhi,yhi,zhi\]
+    atoms = id,type,x,y,z for each atom as 2d array
+    bonds = id,type,x1,y1,z1,x2,y2,z2,t1,t2 for each bond as 2d array
+      if extra() used to define bonds, else NULL
+    tris = id,type,x1,y1,z1,x2,y2,z2,x3,y3,z3,nx,ny,nz for each tri as 2d array
+      if extra() used to define tris, else NULL
+    lines = id,type,x1,y1,z1,x2,y2,z2 for each line as 2d array
+      if extra() used to define lines, else NULL
+  atype is column name viz() will return as atom type (def = &#34;type&#34;)
+  extra() extracts bonds/tris/lines from obj each time viz() is called
+    obj can be data object for bonds, cdata object for tris and lines, 
+      bdump object for bonds, tdump object for tris, ldump object for lines.
+      mdump object for tris
+&#34;&#34;&#34;
+
+# History
+#   8/05, Steve Plimpton (SNL): original version
+#   12/09, David Hart (SNL): allow use of NumPy or Numeric
+
+# ToDo list
+#   try to optimize this line in read_snap: words += f.readline().split()
+#   allow $name in aselect.test() and set() to end with non-space
+#   should next() snapshot be auto-unscaled ?
+
+# Variables
+#   flist = list of dump file names
+#   increment = 1 if reading snapshots one-at-a-time
+#   nextfile = which file to read from via next()
+#   eof = ptr into current file for where to read via next()
+#   scale_original = 0/1/-1 if coords were read in as unscaled/scaled/unknown
+#   nsnaps = # of snapshots
+#   nselect = # of selected snapshots
+#   snaps = list of snapshots
+#   names = dictionary of column names:
+#     key = &#34;id&#34;, value = column # (0 to M-1)
+#   tselect = class for time selection
+#   aselect = class for atom selection
+#   atype = name of vector used as atom type by viz extract
+#   bondflag = 0 if no bonds, 1 if they are defined statically, 2 if dynamic
+#   bondlist = static list of bonds to return w/ viz() for all snapshots
+#   triflag = 0 if no tris, 1 if they are defined statically, 2 if dynamic
+#   trilist = static list of tris to return w/ viz() for all snapshots
+#   lineflag = 0 if no lines, 1 if they are defined statically, 2 if dynamic
+#   linelist = static list of lines to return w/ viz() for all snapshots
+#   objextra = object to get bonds,tris,lines from dynamically
+#   Snap = one snapshot
+#     time = time stamp
+#     tselect = 0/1 if this snapshot selected
+#     natoms = # of atoms
+#     boxstr = format string after BOX BOUNDS, if it exists
+#     triclinic = 0/1 for orthogonal/triclinic based on BOX BOUNDS fields
+#     nselect = # of selected atoms in this snapshot
+#     aselect[i] = 0/1 for each atom
+#     xlo,xhi,ylo,yhi,zlo,zhi,xy,xz,yz = box bounds (float)
+#     atoms[i][j] = 2d array of floats, i = 0 to natoms-1, j = 0 to ncols-1
+
+# Imports and external programs
+
+import sys, re, glob, types  # commands
+from os import popen
+from math import *  # any function could be used by set() - required for eval
+
+try:
+    import numpy as np
+
+    oldnumeric = False
+except:
+    import Numeric as np
+
+    oldnumeric = True
+
+try:
+    from DEFAULTS import PIZZA_GUNZIP
+except:
+    PIZZA_GUNZIP = &#34;gunzip&#34;
+
+# Class definition
+
+
+class dump:
+
+    # --------------------------------------------------------------------
+
+    def __init__(self, *list):
+        self.snaps = []
+        self.nsnaps = self.nselect = 0
+        self.names = {}
+        self.tselect = tselect(self)
+        self.aselect = aselect(self)
+        self.atype = &#34;type&#34;
+        self.bondflag = 0
+        self.bondlist = []
+        self.triflag = 0
+        self.trilist = []
+        self.lineflag = 0
+        self.linelist = []
+        self.objextra = None
+
+        # flist = list of all dump file names
+
+        words = list[0].split()
+        self.flist = []
+        for word in words:
+            self.flist += glob.glob(word)
+        if len(self.flist) == 0 and len(list) == 1:
+            raise ValueError(&#34;no dump file specified&#34;)
+
+        if len(list) == 1:
+            self.increment = 0
+            self.read_all()
+        else:
+            self.increment = 1
+            self.nextfile = 0
+            self.eof = 0
+
+    # --------------------------------------------------------------------
+    
+    def __repr__(self):
+        times = self.time();
+        ntimes = len(times)
+        lastime = times[-1];
+        fields = self.names;
+        print(&#34;Dump file: %s\ncontains %d frames (tend=%0.4g)\nwith fields&#34; % \
+              (self.flist[0],ntimes,lastime) )
+        for k  in sorted(fields,key=fields.get,reverse=False):
+            print(&#34;\t%02d: %s&#34; % (fields[k],k) )
+        ret = &#39;LAMMPS dump object with %d properties and %d frames (tend=%0.4g, - source=&#34;%s&#34;&#39; % \
+            (len(fields),ntimes,lastime,self.flist[0])
+        return ret
+
+    # --------------------------------------------------------------------
+
+    def read_all(self):
+
+        # read all snapshots from each file
+        # test for gzipped files
+
+        for file in self.flist:
+            if file[-3:] == &#34;.gz&#34;:
+                f = popen(&#34;%s -c %s&#34; % (PIZZA_GUNZIP, file), &#34;r&#34;)
+            else:
+                f = open(file)
+
+            snap = self.read_snapshot(f)
+            while snap:
+                self.snaps.append(snap)
+                print(snap.time, file=sys.stdout, flush=True, end=&#34; &#34;)
+                snap = self.read_snapshot(f)
+
+            f.close()
+        print
+
+        # sort entries by timestep, cull duplicates
+
+        self.snaps.sort()  # self.snaps.sort(self.compare_time)  #%% to be fixed in the future (OV)
+        self.cull()
+        self.nsnaps = len(self.snaps)
+        print(&#34;read %d snapshots&#34; % (self.nsnaps))
+
+        # select all timesteps and atoms
+
+        self.tselect.all()
+
+        # print column assignments
+
+        if len(self.names):
+            print(&#34;assigned columns:&#34;, &#34;,&#34;.join(list(self.names.keys())))
+        else:
+            print(&#34;no column assignments made&#34;)
+
+        # if snapshots are scaled, unscale them
+
+        if (
+            (not &#34;x&#34; in self.names)
+            or (not &#34;y&#34; in self.names)
+            or (not &#34;z&#34; in self.names)
+        ):
+            print(&#34;dump scaling status is unknown&#34;)
+        elif self.nsnaps &gt; 0:
+            if self.scale_original == 1:
+                self.unscale()
+            elif self.scale_original == 0:
+                print(&#34;dump is already unscaled&#34;)
+            else:
+                print(&#34;dump scaling status is unknown&#34;)
+
+    # --------------------------------------------------------------------
+    # read next snapshot from list of files
+
+    def next(self):
+
+        if not self.increment:
+            raise ValueError(&#34;cannot read incrementally&#34;)
+
+        # read next snapshot in current file using eof as pointer
+        # if fail, try next file
+        # if new snapshot time stamp already exists, read next snapshot
+
+        while 1:
+            f = open(self.flist[self.nextfile], &#34;rb&#34;)
+            f.seek(self.eof)
+            snap = self.read_snapshot(f)
+            if not snap:
+                self.nextfile += 1
+                if self.nextfile == len(self.flist):
+                    return -1
+                f.close()
+                self.eof = 0
+                continue
+            self.eof = f.tell()
+            f.close()
+            try:
+                self.findtime(snap.time)
+                continue
+            except:
+                break
+
+        # select the new snapshot with all its atoms
+
+        self.snaps.append(snap)
+        snap = self.snaps[self.nsnaps]
+        snap.tselect = 1
+        snap.nselect = snap.natoms
+        for i in range(snap.natoms):
+            snap.aselect[i] = 1
+        self.nsnaps += 1
+        self.nselect += 1
+
+        return snap.time
+
+    # --------------------------------------------------------------------
+    # read a single snapshot from file f
+    # return snapshot or 0 if failed
+    # for first snapshot only:
+    #   assign column names (file must be self-describing)
+    #   set scale_original to 0/1/-1 for unscaled/scaled/unknown
+    #   convert xs,xu to x in names
+
+    def read_snapshot(self, f):
+        try:
+            snap = Snap()
+            item = f.readline()
+            snap.time = int(f.readline().split()[0])  # just grab 1st field
+            item = f.readline()
+            snap.natoms = int(f.readline())
+
+            snap.aselect = np.zeros(snap.natoms)
+
+            item = f.readline()
+            words = item.split(&#34;BOUNDS &#34;)
+            if len(words) == 1:
+                snap.boxstr = &#34;&#34;
+            else:
+                snap.boxstr = words[1].strip()
+            if &#34;xy&#34; in snap.boxstr:
+                snap.triclinic = 1
+            else:
+                snap.triclinic = 0
+
+            words = f.readline().split()
+            if len(words) == 2:
+                snap.xlo, snap.xhi, snap.xy = float(words[0]), float(words[1]), 0.0
+            else:
+                snap.xlo, snap.xhi, snap.xy = (
+                    float(words[0]),
+                    float(words[1]),
+                    float(words[2]),
+                )
+
+            words = f.readline().split()
+            if len(words) == 2:
+                snap.ylo, snap.yhi, snap.xz = float(words[0]), float(words[1]), 0.0
+            else:
+                snap.ylo, snap.yhi, snap.xz = (
+                    float(words[0]),
+                    float(words[1]),
+                    float(words[2]),
+                )
+
+            words = f.readline().split()
+            if len(words) == 2:
+                snap.zlo, snap.zhi, snap.yz = float(words[0]), float(words[1]), 0.0
+            else:
+                snap.zlo, snap.zhi, snap.yz = (
+                    float(words[0]),
+                    float(words[1]),
+                    float(words[2]),
+                )
+
+            item = f.readline()
+            if len(self.names) == 0:
+                self.scale_original = -1
+                xflag = yflag = zflag = -1
+                words = item.split()[2:]
+                if len(words):
+                    for i in range(len(words)):
+                        if words[i] == &#34;x&#34; or words[i] == &#34;xu&#34;:
+                            xflag = 0
+                            self.names[&#34;x&#34;] = i
+                        elif words[i] == &#34;xs&#34; or words[i] == &#34;xsu&#34;:
+                            xflag = 1
+                            self.names[&#34;x&#34;] = i
+                        elif words[i] == &#34;y&#34; or words[i] == &#34;yu&#34;:
+                            yflag = 0
+                            self.names[&#34;y&#34;] = i
+                        elif words[i] == &#34;ys&#34; or words[i] == &#34;ysu&#34;:
+                            yflag = 1
+                            self.names[&#34;y&#34;] = i
+                        elif words[i] == &#34;z&#34; or words[i] == &#34;zu&#34;:
+                            zflag = 0
+                            self.names[&#34;z&#34;] = i
+                        elif words[i] == &#34;zs&#34; or words[i] == &#34;zsu&#34;:
+                            zflag = 1
+                            self.names[&#34;z&#34;] = i
+                        else:
+                            self.names[words[i]] = i
+                    if xflag == 0 and yflag == 0 and zflag == 0:
+                        self.scale_original = 0
+                    if xflag == 1 and yflag == 1 and zflag == 1:
+                        self.scale_original = 1
+
+            if snap.natoms:
+                words = f.readline().split()
+                ncol = len(words)
+                for i in range(1, snap.natoms):
+                    words += f.readline().split()
+                floats = list(map(float, words))
+                if oldnumeric:
+                    atoms = np.zeros((snap.natoms, ncol), np.float64)
+                else:
+                    atoms = np.zeros((snap.natoms, ncol), np.float64)
+                start = 0
+                stop = ncol
+                for i in range(snap.natoms):
+                    atoms[i] = floats[start:stop]
+                    start = stop
+                    stop += ncol
+            else:
+                atoms = None
+            snap.atoms = atoms
+            return snap
+        except:
+            return 0
+
+    # --------------------------------------------------------------------
+    # map atom column names
+
+    def map(self, *pairs):
+        if len(pairs) % 2 != 0:
+            raise ValueError(&#34;dump map() requires pairs of mappings&#34;)
+        for i in range(0, len(pairs), 2):
+            j = i + 1
+            self.names[pairs[j]] = pairs[i] - 1
+
+    # --------------------------------------------------------------------
+    # delete unselected snapshots
+
+    def delete(self):
+        ndel = i = 0
+        while i &lt; self.nsnaps:
+            if not self.snaps[i].tselect:
+                del self.snaps[i]
+                self.nsnaps -= 1
+                ndel += 1
+            else:
+                i += 1
+        print(&#34;%d snapshots deleted&#34; % ndel)
+        print(&#34;%d snapshots remaining&#34; % self.nsnaps)
+
+    # --------------------------------------------------------------------
+    # scale coords to 0-1 for all snapshots or just one
+    # use 6 params as h-matrix to treat orthongonal or triclinic boxes
+
+    def scale(self, *list):
+        if len(list) == 0:
+            print(&#34;Scaling dump ...&#34;)
+            x = self.names[&#34;x&#34;]
+            y = self.names[&#34;y&#34;]
+            z = self.names[&#34;z&#34;]
+            for snap in self.snaps:
+                self.scale_one(snap, x, y, z)
+        else:
+            i = self.findtime(list[0])
+            x = self.names[&#34;x&#34;]
+            y = self.names[&#34;y&#34;]
+            z = self.names[&#34;z&#34;]
+            self.scale_one(self.snaps[i], x, y, z)
+
+    # --------------------------------------------------------------------
+
+    def scale_one(self, snap, x, y, z):
+        if snap.xy == 0.0 and snap.xz == 0.0 and snap.yz == 0.0:
+            xprdinv = 1.0 / (snap.xhi - snap.xlo)
+            yprdinv = 1.0 / (snap.yhi - snap.ylo)
+            zprdinv = 1.0 / (snap.zhi - snap.zlo)
+            atoms = snap.atoms
+            if atoms != None:
+                atoms[:, x] = (atoms[:, x] - snap.xlo) * xprdinv
+                atoms[:, y] = (atoms[:, y] - snap.ylo) * yprdinv
+                atoms[:, z] = (atoms[:, z] - snap.zlo) * zprdinv
+        else:
+            xlo_bound = snap.xlo
+            xhi_bound = snap.xhi
+            ylo_bound = snap.ylo
+            yhi_bound = snap.yhi
+            zlo_bound = snap.zlo
+            zhi_bound = snap.zhi
+            xy = snap.xy
+            xz = snap.xz
+            yz = snap.yz
+            xlo = xlo_bound - min((0.0, xy, xz, xy + xz))
+            xhi = xhi_bound - max((0.0, xy, xz, xy + xz))
+            ylo = ylo_bound - min((0.0, yz))
+            yhi = yhi_bound - max((0.0, yz))
+            zlo = zlo_bound
+            zhi = zhi_bound
+            h0 = xhi - xlo
+            h1 = yhi - ylo
+            h2 = zhi - zlo
+            h3 = yz
+            h4 = xz
+            h5 = xy
+            h0inv = 1.0 / h0
+            h1inv = 1.0 / h1
+            h2inv = 1.0 / h2
+            h3inv = yz / (h1 * h2)
+            h4inv = (h3 * h5 - h1 * h4) / (h0 * h1 * h2)
+            h5inv = xy / (h0 * h1)
+            atoms = snap.atoms
+            if atoms != None:
+                atoms[:, x] = (
+                    (atoms[:, x] - snap.xlo) * h0inv
+                    + (atoms[:, y] - snap.ylo) * h5inv
+                    + (atoms[:, z] - snap.zlo) * h4inv
+                )
+                atoms[:, y] = (atoms[:, y] - snap.ylo) * h1inv + (
+                    atoms[:, z] - snap.zlo
+                ) * h3inv
+                atoms[:, z] = (atoms[:, z] - snap.zlo) * h2inv
+
+    # --------------------------------------------------------------------
+    # unscale coords from 0-1 to box size for all snapshots or just one
+    # use 6 params as h-matrix to treat orthongonal or triclinic boxes
+
+    def unscale(self, *list):
+        if len(list) == 0:
+            print(&#34;Unscaling dump ...&#34;)
+            x = self.names[&#34;x&#34;]
+            y = self.names[&#34;y&#34;]
+            z = self.names[&#34;z&#34;]
+            for snap in self.snaps:
+                self.unscale_one(snap, x, y, z)
+        else:
+            i = self.findtime(list[0])
+            x = self.names[&#34;x&#34;]
+            y = self.names[&#34;y&#34;]
+            z = self.names[&#34;z&#34;]
+            self.unscale_one(self.snaps[i], x, y, z)
+
+    # --------------------------------------------------------------------
+
+    def unscale_one(self, snap, x, y, z):
+        if snap.xy == 0.0 and snap.xz == 0.0 and snap.yz == 0.0:
+            xprd = snap.xhi - snap.xlo
+            yprd = snap.yhi - snap.ylo
+            zprd = snap.zhi - snap.zlo
+            atoms = snap.atoms
+            if atoms != None:
+                atoms[:, x] = snap.xlo + atoms[:, x] * xprd
+                atoms[:, y] = snap.ylo + atoms[:, y] * yprd
+                atoms[:, z] = snap.zlo + atoms[:, z] * zprd
+        else:
+            xlo_bound = snap.xlo
+            xhi_bound = snap.xhi
+            ylo_bound = snap.ylo
+            yhi_bound = snap.yhi
+            zlo_bound = snap.zlo
+            zhi_bound = snap.zhi
+            xy = snap.xy
+            xz = snap.xz
+            yz = snap.yz
+            xlo = xlo_bound - min((0.0, xy, xz, xy + xz))
+            xhi = xhi_bound - max((0.0, xy, xz, xy + xz))
+            ylo = ylo_bound - min((0.0, yz))
+            yhi = yhi_bound - max((0.0, yz))
+            zlo = zlo_bound
+            zhi = zhi_bound
+            h0 = xhi - xlo
+            h1 = yhi - ylo
+            h2 = zhi - zlo
+            h3 = yz
+            h4 = xz
+            h5 = xy
+            atoms = snap.atoms
+            if atoms != None:
+                atoms[:, x] = (
+                    snap.xlo + atoms[:, x] * h0 + atoms[:, y] * h5 + atoms[:, z] * h4
+                )
+                atoms[:, y] = snap.ylo + atoms[:, y] * h1 + atoms[:, z] * h3
+                atoms[:, z] = snap.zlo + atoms[:, z] * h2
+
+    # --------------------------------------------------------------------
+    # wrap coords from outside box to inside
+
+    def wrap(self):
+        print(&#34;Wrapping dump ...&#34;)
+
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        ix = self.names[&#34;ix&#34;]
+        iy = self.names[&#34;iy&#34;]
+        iz = self.names[&#34;iz&#34;]
+
+        for snap in self.snaps:
+            xprd = snap.xhi - snap.xlo
+            yprd = snap.yhi - snap.ylo
+            zprd = snap.zhi - snap.zlo
+            atoms = snap.atoms
+            atoms[:, x] -= atoms[:, ix] * xprd
+            atoms[:, y] -= atoms[:, iy] * yprd
+            atoms[:, z] -= atoms[:, iz] * zprd
+
+    # --------------------------------------------------------------------
+    # unwrap coords from inside box to outside
+
+    def unwrap(self):
+        print(&#34;Unwrapping dump ...&#34;)
+
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        ix = self.names[&#34;ix&#34;]
+        iy = self.names[&#34;iy&#34;]
+        iz = self.names[&#34;iz&#34;]
+
+        for snap in self.snaps:
+            xprd = snap.xhi - snap.xlo
+            yprd = snap.yhi - snap.ylo
+            zprd = snap.zhi - snap.zlo
+            atoms = snap.atoms
+            atoms[:, x] += atoms[:, ix] * xprd
+            atoms[:, y] += atoms[:, iy] * yprd
+            atoms[:, z] += atoms[:, iz] * zprd
+
+    # --------------------------------------------------------------------
+    # wrap coords to same image as atom ID stored in &#34;other&#34; column
+    # if dynamic extra lines or triangles defined, owrap them as well
+
+    def owrap(self, other):
+        print(&#34;Wrapping to other ...&#34;)
+
+        id = self.names[&#34;id&#34;]
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        ix = self.names[&#34;ix&#34;]
+        iy = self.names[&#34;iy&#34;]
+        iz = self.names[&#34;iz&#34;]
+        iother = self.names[other]
+
+        for snap in self.snaps:
+            xprd = snap.xhi - snap.xlo
+            yprd = snap.yhi - snap.ylo
+            zprd = snap.zhi - snap.zlo
+            atoms = snap.atoms
+            ids = {}
+            for i in range(snap.natoms):
+                ids[atoms[i][id]] = i
+            for i in range(snap.natoms):
+                j = ids[atoms[i][iother]]
+                atoms[i][x] += (atoms[i][ix] - atoms[j][ix]) * xprd
+                atoms[i][y] += (atoms[i][iy] - atoms[j][iy]) * yprd
+                atoms[i][z] += (atoms[i][iz] - atoms[j][iz]) * zprd
+            # should bonds also be owrapped ?
+            if self.lineflag == 2 or self.triflag == 2:
+                self.objextra.owrap(
+                    snap.time, xprd, yprd, zprd, ids, atoms, iother, ix, iy, iz
+                )
+
+    # --------------------------------------------------------------------
+    # convert column names assignment to a string, in column order
+
+    def names2str(self):
+        # &lt;--  Python 2.x  --&gt;
+        # pairs = self.names.items()
+        # values = self.names.values()
+        # ncol = len(pairs)
+        # str = &#34;&#34;
+        # for i in range(ncol):
+        #   if i in values: str += pairs[values.index(i)][0] + &#39; &#39;
+        # &lt;--  Python 3.x  --&gt;
+        str = &#34;&#34;
+        for k in sorted(self.names, key=self.names.get, reverse=False):
+            str += k + &#34; &#34;
+        return str
+
+    # --------------------------------------------------------------------
+    # sort atoms by atom ID in all selected timesteps by default
+    # if arg = string, sort all steps by that column
+    # if arg = numeric, sort atoms in single step
+
+    def sort(self, *listarg):
+        if len(listarg) == 0:
+            print(&#34;Sorting selected snapshots ...&#34;)
+            id = self.names[&#34;id&#34;]
+            for snap in self.snaps:
+                if snap.tselect:
+                    self.sort_one(snap, id)
+        elif type(listarg[0]) is types.StringType:
+            print(&#34;Sorting selected snapshots by %s ...&#34; % listarg[0])
+            id = self.names[listarg[0]]
+            for snap in self.snaps:
+                if snap.tselect:
+                    self.sort_one(snap, id)
+        else:
+            i = self.findtime(listarg[0])
+            id = self.names[&#34;id&#34;]
+            self.sort_one(self.snaps[i], id)
+
+    # --------------------------------------------------------------------
+    # sort a single snapshot by ID column
+
+    def sort_one(self, snap, id):
+        atoms = snap.atoms
+        ids = atoms[:, id]
+        ordering = np.argsort(ids)
+        for i in range(len(atoms[0])):
+            atoms[:, i] = np.take(atoms[:, i], ordering)
+
+    # --------------------------------------------------------------------
+    # write a single dump file from current selection
+
+    def write(self, file, header=1, append=0):
+        if len(self.snaps):
+            namestr = self.names2str()
+        if not append:
+            f = open(file, &#34;w&#34;)
+        else:
+            f = open(file, &#34;a&#34;)
+
+        if &#34;id&#34; in self.names:
+            id = self.names[&#34;id&#34;]
+        else:
+            id = -1
+        if &#34;type&#34; in self.names:
+            type = self.names[&#34;type&#34;]
+        else:
+            type = -1
+
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            print(snap.time, file=sys.stdout, flush=True)
+
+            if header:
+                print(&#34;ITEM: TIMESTEP&#34;, file=f)
+                print(snap.time, file=f)
+                print(&#34;ITEM: NUMBER OF ATOMS&#34;, file=f)
+                print(snap.nselect, file=f)
+                if snap.boxstr:
+                    print(&#34;ITEM: BOX BOUNDS&#34;, snap.boxstr, file=f)
+                else:
+                    print(&#34;ITEM: BOX BOUNDS&#34;, file=f)
+                if snap.triclinic:
+                    print(snap.xlo, snap.xhi, snap.xy, file=f)
+                    print(snap.ylo, snap.yhi, snap.xz, file=f)
+                    print(snap.zlo, snap.zhi, snap.yz, file=f)
+                else:
+                    print(snap.xlo, snap.xhi, file=f)
+                    print(snap.ylo, snap.yhi, file=f)
+                    print(snap.zlo, snap.zhi, file=f)
+                print(&#34;ITEM: ATOMS&#34;, namestr, file=f)
+
+            atoms = snap.atoms
+            nvalues = len(atoms[0])
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                line = &#34;&#34;
+                for j in range(nvalues):
+                    if j == id or j == type:
+                        line += str(int(atoms[i][j])) + &#34; &#34;
+                    else:
+                        line += str(atoms[i][j]) + &#34; &#34;
+                print(line, file=f)
+        f.close()
+        print(&#34;\n%d snapshots&#34; % self.nselect)
+
+    # --------------------------------------------------------------------
+    # write one dump file per snapshot from current selection
+
+    def scatter(self, root):
+        if len(self.snaps):
+            namestr = self.names2str()
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            print(snap.time, file=sys.stdout, flush=True)
+
+            file = root + &#34;.&#34; + str(snap.time)
+            f = open(file, &#34;w&#34;)
+            print(&#34;ITEM: TIMESTEP&#34;, file=f)
+            print(snap.time, file=f)
+            print(&#34;ITEM: NUMBER OF ATOMS&#34;, file=f)
+            print(snap.nselect, file=f)
+            if snap.boxstr:
+                print(&#34;ITEM: BOX BOUNDS&#34;, snap.boxstr, file=f)
+            else:
+                print(&#34;ITEM: BOX BOUNDS&#34;, file=f)
+            if snap.triclinic:
+                print(snap.xlo, snap.xhi, snap.xy, file=f)
+                print(snap.ylo, snap.yhi, snap.xz, file=f)
+                print(snap.zlo, snap.zhi, snap.yz, file=f)
+            else:
+                print(snap.xlo, snap.xhi, file=f)
+                print(snap.ylo, snap.yhi, file=f)
+                print(snap.zlo, snap.zhi, file=f)
+            print(&#34;ITEM: ATOMS&#34;, namestr, file=f)
+
+            atoms = snap.atoms
+            nvalues = len(atoms[0])
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                line = &#34;&#34;
+                for j in range(nvalues):
+                    if j &lt; 2:
+                        line += str(int(atoms[i][j])) + &#34; &#34;
+                    else:
+                        line += str(atoms[i][j]) + &#34; &#34;
+                print(line, file=f)
+            f.close()
+        print(&#34;\n%d snapshots&#34; % self.nselect)
+
+    # --------------------------------------------------------------------
+    # find min/max across all selected snapshots/atoms for a particular column
+
+    def minmax(self, colname):
+        icol = self.names[colname]
+        min = 1.0e20
+        max = -min
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                if atoms[i][icol] &lt; min:
+                    min = atoms[i][icol]
+                if atoms[i][icol] &gt; max:
+                    max = atoms[i][icol]
+        return (min, max)
+
+    # --------------------------------------------------------------------
+    # set a column value via an equation for all selected snapshots
+
+    def set(self, eq):
+        print(&#34;Setting ...&#34;)
+        pattern = &#34;\$\w*&#34;
+        list = re.findall(pattern, eq)
+
+        lhs = list[0][1:]
+        if not self.names.has_key(lhs):
+            self.newcolumn(lhs)
+
+        for item in list:
+            name = item[1:]
+            column = self.names[name]
+            insert = &#34;snap.atoms[i][%d]&#34; % (column)
+            eq = eq.replace(item, insert)
+        ceq = compile(eq, &#34;&#34;, &#34;single&#34;)
+
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            for i in range(snap.natoms):
+                if snap.aselect[i]:
+                    exec(ceq)
+
+    # --------------------------------------------------------------------
+    # set a column value via an input vec for all selected snapshots/atoms
+
+    def setv(self, colname, vec):
+        print(&#34;Setting ...&#34;)
+        if not self.names.has_key(colname):
+            self.newcolumn(colname)
+        icol = self.names[colname]
+
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            if snap.nselect != len(vec):
+                raise ValueError(&#34;vec length does not match # of selected atoms&#34;)
+            atoms = snap.atoms
+            m = 0
+            for i in range(snap.natoms):
+                if snap.aselect[i]:
+                    atoms[i][icol] = vec[m]
+                    m += 1
+
+    # --------------------------------------------------------------------
+    # clone value in col across selected timesteps for atoms with same ID
+
+    def clone(self, nstep, col):
+        istep = self.findtime(nstep)
+        icol = self.names[col]
+        id = self.names[&#34;id&#34;]
+        ids = {}
+        for i in range(self.snaps[istep].natoms):
+            ids[self.snaps[istep].atoms[i][id]] = i
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                j = ids[atoms[i][id]]
+                atoms[i][icol] = self.snaps[istep].atoms[j][icol]
+
+    # --------------------------------------------------------------------
+    # values in old column are spread as ints from 1-N and assigned to new column
+
+    def spread(self, old, n, new):
+        iold = self.names[old]
+        if not self.names.has_key(new):
+            self.newcolumn(new)
+        inew = self.names[new]
+
+        min, max = self.minmax(old)
+        print(&#34;min/max = &#34;, min, max)
+
+        gap = max - min
+        invdelta = n / gap
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                ivalue = int((atoms[i][iold] - min) * invdelta) + 1
+                if ivalue &gt; n:
+                    ivalue = n
+                if ivalue &lt; 1:
+                    ivalue = 1
+                atoms[i][inew] = ivalue
+
+    # --------------------------------------------------------------------
+    # return vector of selected snapshot time stamps
+
+    def time(self):
+        vec = self.nselect * [0]
+        i = 0
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            vec[i] = snap.time
+            i += 1
+        return vec
+
+    # --------------------------------------------------------------------
+    # extract vector(s) of values for atom ID n at each selected timestep
+
+    def atom(self, n, *list):
+        if len(list) == 0:
+            raise ValueError(&#34;no columns specified&#34;)
+        columns = []
+        values = []
+        for name in list:
+            columns.append(self.names[name])
+            values.append(self.nselect * [0])
+        ncol = len(columns)
+
+        id = self.names[&#34;id&#34;]
+        m = 0
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if atoms[i][id] == n:
+                    break
+            if atoms[i][id] != n:
+                raise ValueError(&#34;could not find atom ID in snapshot&#34;)
+            for j in range(ncol):
+                values[j][m] = atoms[i][columns[j]]
+            m += 1
+
+        if len(list) == 1:
+            return values[0]
+        else:
+            return values
+
+    # --------------------------------------------------------------------
+    # extract vector(s) of values for selected atoms at chosen timestep
+
+    def vecs(self, n, *colname):
+        &#34;&#34;&#34; tab = vecs(time,&#34;id&#34;,&#34;x&#34;,&#34;y&#34;) or tab = vecs(time,[&#34;id&#34;,&#34;x&#34;,&#34;y&#34;],&#34;z&#34;)  &#34;&#34;&#34;
+        snap = self.snaps[self.findtime(n)]
+
+        if len(colname) == 0:
+            raise ValueError(&#34;no columns specified&#34;)
+        if isinstance(colname[0],tuple):
+            colname = list(colname[0]) + list(colname[1:])
+        if isinstance(colname[0],list):
+            colname = colname[0] + list(colname[1:])
+        columns = []
+        values = []
+        for name in colname:
+            columns.append(self.names[name])
+            values.append(snap.nselect * [0])
+        ncol = len(columns)
+
+        m = 0
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            for j in range(ncol):
+                values[j][m] = snap.atoms[i][columns[j]]
+            m += 1
+
+        if len(colname) == 1:
+            return values[0]
+        else:
+            return values
+
+    # --------------------------------------------------------------------
+    # add a new column to every snapshot and set value to 0
+    # set the name of the column to str
+
+    def newcolumn(self, str):
+        ncol = len(self.snaps[0].atoms[0])
+        self.map(ncol + 1, str)
+        for snap in self.snaps:
+            # commented because not used
+            # atoms = snap.atoms
+            if oldnumeric:
+                newatoms = np.zeros((snap.natoms, ncol + 1), np.Float)
+            else:
+                newatoms = np.zeros((snap.natoms, ncol + 1), np.float)
+            newatoms[:, 0:ncol] = snap.atoms
+            snap.atoms = newatoms
+
+    # --------------------------------------------------------------------
+    # sort snapshots on time stamp
+
+    def compare_time(self, a, b):
+        if a.time &lt; b.time:
+            return -1
+        elif a.time &gt; b.time:
+            return 1
+        else:
+            return 0
+
+    # --------------------------------------------------------------------
+    # delete successive snapshots with duplicate time stamp
+
+    def cull(self):
+        i = 1
+        while i &lt; len(self.snaps):
+            if self.snaps[i].time == self.snaps[i - 1].time:
+                del self.snaps[i]
+            else:
+                i += 1
+
+    # --------------------------------------------------------------------
+    # iterate over selected snapshots
+
+    def iterator(self, flag):
+        start = 0
+        if flag:
+            start = self.iterate + 1
+        for i in range(start, self.nsnaps):
+            if self.snaps[i].tselect:
+                self.iterate = i
+                return i, self.snaps[i].time, 1
+        return 0, 0, -1
+
+    # --------------------------------------------------------------------
+    # return list of atoms to viz for snapshot isnap
+    # if called with flag, then index is timestep, so convert to snapshot index
+    # augment with bonds, tris, lines if extra() was invoked
+
+    def viz(self, index, flag=0):
+        if not flag:
+            isnap = index
+        else:
+            times = self.time()
+            n = len(times)
+            i = 0
+            while i &lt; n:
+                if times[i] &gt; index:
+                    break
+                i += 1
+            isnap = i - 1
+
+        snap = self.snaps[isnap]
+
+        time = snap.time
+        box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+        id = self.names[&#34;id&#34;]
+        type = self.names[self.atype]
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+
+        # create atom list needed by viz from id,type,x,y,z
+        # need Numeric/Numpy mode here
+
+        atoms = []
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            atom = snap.atoms[i]
+            atoms.append([atom[id], atom[type], atom[x], atom[y], atom[z]])
+
+        # create list of bonds from static or dynamic bond list
+        # then generate bond coords from bondlist
+        # alist = dictionary of atom IDs for atoms list
+        # lookup bond atom IDs in alist and grab their coords
+        # try is used since some atoms may be unselected
+        #   any bond with unselected atom is not added to bonds
+        # need Numeric/Numpy mode here
+
+        bonds = []
+        if self.bondflag:
+            if self.bondflag == 1:
+                bondlist = self.bondlist
+            elif self.bondflag == 2:
+                tmp1, tmp2, tmp3, bondlist, tmp4, tmp5 = self.objextra.viz(time, 1)
+            alist = {}
+            for i in range(len(atoms)):
+                alist[int(atoms[i][0])] = i
+            for bond in bondlist:
+                try:
+                    i = alist[bond[2]]
+                    j = alist[bond[3]]
+                    atom1 = atoms[i]
+                    atom2 = atoms[j]
+                    bonds.append(
+                        [
+                            bond[0],
+                            bond[1],
+                            atom1[2],
+                            atom1[3],
+                            atom1[4],
+                            atom2[2],
+                            atom2[3],
+                            atom2[4],
+                            atom1[1],
+                            atom2[1],
+                        ]
+                    )
+                except:
+                    continue
+
+        # create list of tris from static or dynamic tri list
+        # if dynamic, could eliminate tris for unselected atoms
+
+        tris = []
+        if self.triflag:
+            if self.triflag == 1:
+                tris = self.trilist
+            elif self.triflag == 2:
+                tmp1, tmp2, tmp3, tmp4, tris, tmp5 = self.objextra.viz(time, 1)
+
+        # create list of lines from static or dynamic tri list
+        # if dynamic, could eliminate lines for unselected atoms
+
+        lines = []
+        if self.lineflag:
+            if self.lineflag == 1:
+                lines = self.linelist
+            elif self.lineflag == 2:
+                tmp1, tmp2, tmp3, tmp4, tmp5, lines = self.objextra.viz(time, 1)
+
+        return time, box, atoms, bonds, tris, lines
+
+    # --------------------------------------------------------------------
+
+    def findtime(self, n):
+        for i in range(self.nsnaps):
+            if self.snaps[i].time == n:
+                return i
+        raise ValueError(&#34;no step %d exists&#34; % n)
+
+    # --------------------------------------------------------------------
+    # return maximum box size across all selected snapshots
+
+    def maxbox(self):
+        xlo = ylo = zlo = None
+        xhi = yhi = zhi = None
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            if xlo == None or snap.xlo &lt; xlo:
+                xlo = snap.xlo
+            if xhi == None or snap.xhi &gt; xhi:
+                xhi = snap.xhi
+            if ylo == None or snap.ylo &lt; ylo:
+                ylo = snap.ylo
+            if yhi == None or snap.yhi &gt; yhi:
+                yhi = snap.yhi
+            if zlo == None or snap.zlo &lt; zlo:
+                zlo = snap.zlo
+            if zhi == None or snap.zhi &gt; zhi:
+                zhi = snap.zhi
+        return [xlo, ylo, zlo, xhi, yhi, zhi]
+
+    # --------------------------------------------------------------------
+    # return maximum atom type across all selected snapshots and atoms
+
+    def maxtype(self):
+        icol = self.names[&#34;type&#34;]
+        max = 0
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                if atoms[i][icol] &gt; max:
+                    max = atoms[i][icol]
+        return int(max)
+
+    # --------------------------------------------------------------------
+    # grab bonds/tris/lines from another object
+    # if static, grab once, else store obj to grab dynamically
+
+    def extra(self, arg):
+
+        # data object, grab bonds statically
+
+        if type(arg) is types.InstanceType and &#34;.data&#34; in str(arg.__class__):
+            self.bondflag = 0
+            try:
+                bondlist = []
+                bondlines = arg.sections[&#34;Bonds&#34;]
+                for line in bondlines:
+                    words = line.split()
+                    bondlist.append(
+                        [int(words[0]), int(words[1]), int(words[2]), int(words[3])]
+                    )
+                if bondlist:
+                    self.bondflag = 1
+                    self.bondlist = bondlist
+            except:
+                raise ValueError(&#34;could not extract bonds from data object&#34;)
+
+        # cdata object, grab tris and lines statically
+
+        elif type(arg) is types.InstanceType and &#34;.cdata&#34; in str(arg.__class__):
+            self.triflag = self.lineflag = 0
+            try:
+                tmp, tmp, tmp, tmp, tris, lines = arg.viz(0)
+                if tris:
+                    self.triflag = 1
+                    self.trilist = tris
+                if lines:
+                    self.lineflag = 1
+                    self.linelist = lines
+            except:
+                raise ValueError(&#34;could not extract tris/lines from cdata object&#34;)
+
+        # mdump object, grab tris dynamically
+
+        elif type(arg) is types.InstanceType and &#34;.mdump&#34; in str(arg.__class__):
+            self.triflag = 2
+            self.objextra = arg
+
+        # bdump object, grab bonds dynamically
+
+        elif type(arg) is types.InstanceType and &#34;.bdump&#34; in str(arg.__class__):
+            self.bondflag = 2
+            self.objextra = arg
+
+        # ldump object, grab lines dynamically
+
+        elif type(arg) is types.InstanceType and &#34;.ldump&#34; in str(arg.__class__):
+            self.lineflag = 2
+            self.objextra = arg
+
+        # tdump object, grab tris dynamically
+
+        elif type(arg) is types.InstanceType and &#34;.tdump&#34; in str(arg.__class__):
+            self.triflag = 2
+            self.objextra = arg
+
+        else:
+            raise ValueError(&#34;unrecognized argument to dump.extra()&#34;)
+
+    # --------------------------------------------------------------------
+
+    def compare_atom(self, a, b):
+        if a[0] &lt; b[0]:
+            return -1
+        elif a[0] &gt; b[0]:
+            return 1
+        else:
+            return 0
+        
+    # --------------------------------------------------------------------
+
+    def frame(self,iframe):
+        &#34;&#34;&#34; simplified class to access properties of a snapshot
+        (INRAE\Olivier Vitrac) &#34;&#34;&#34;
+        nframes= len(self.time());
+        if iframe&gt;=nframes:
+            raise ValueError(&#34;the frame index should be ranged between 0 and %d&#34; % nframes)
+        elif iframe&lt;0:
+            iframe = iframe % nframes
+        times = self.time()
+        fields = self.names
+        snap = self.snaps[iframe]
+        frame = Frame()
+        frame.dumpfile = self.flist[0]
+        frame.time = times[iframe]
+        frame.description = {&#34;dumpfile&#34;: &#34;dumpobject.flist[0]&#34;, &#34;time&#34;: &#34;dumpobject.times()[]&#34;}
+        for k in sorted(fields,key=fields.get,reverse=False):
+            kvalid = k # valid key name
+            for rep in [&#34;[&#34;,&#34;]&#34;,&#34;#&#34;,&#34;~&#34;,&#34;-&#34;,&#34;_&#34;,&#34;(&#34;,&#34;)&#34;,&#34;,&#34;,&#34;.&#34;,&#34;;&#34;]:
+                kvalid = kvalid.replace(rep,&#34;&#34;)
+            frame.description[kvalid] = k
+            frame.__dict__[kvalid] = snap.atoms[:,fields[k]]
+        return frame
+
+    # --------------------------------------------------------------------
+
+    def kind(self,listtypes=None):
+        &#34;&#34;&#34; guessed kind of dump file based on column names
+        (possibility to supply a personnalized list)
+        (INRAE\Olivier Vitrac) &#34;&#34;&#34;
+        if listtypes==None:
+            listtypes = {
+                &#39;vxyz&#39;: [&#34;id&#34;,&#34;type&#34;,&#34;x&#34;,&#34;y&#34;,&#34;z&#34;,&#34;vx&#34;,&#34;vy&#34;,&#34;vz&#34;],
+                &#39;xyz&#39;: [&#34;id&#34;,&#34;type&#34;,&#34;x&#34;,&#34;y&#34;,&#34;z&#34;]
+                     }
+            internaltypes = True
+        else:
+            listtypes = {&#34;usertype&#34;:listtypes}
+            internaltypes = False
+        for t in listtypes:
+            if len(listtypes[t])==0:
+                ismatching = False
+            else:
+                ismatching = True
+                for field in listtypes[t]:
+                    ismatching = ismatching and field in self.names
+                if ismatching: break
+        if ismatching:
+            if internaltypes:
+                return t
+            else:
+                return True
+        else:
+            if internaltypes:
+                return None
+            else:
+                return False
+        
+    # --------------------------------------------------------------------
+
+    @property
+    def type(self):
+        &#34;&#34;&#34; type of dump file defined as a hash of column names &#34;&#34;&#34;
+        return hash(self.names2str())
+
+    # --------------------------------------------------------------------
+    
+    def __add__(self,o):
+        &#34;&#34;&#34; merge dump objects of the same kind/type &#34;&#34;&#34;
+        if not isinstance(o,dump):
+            raise ValueError(&#34;the second operand is not a dump object&#34;)
+        elif self.type != o.type:
+            raise ValueError(&#34;the dumps are not of the same type&#34;)
+        twofiles = self.flist[0] + &#34; &#34; + o.flist[0]
+        return dump(twofiles)
+    
+    # --------------------------------------------------------------------
+    
+
+# --------------------------------------------------------------------
+# one snapshot
+
+
+class Snap:
+    def __init__(self):
+        pass
+
+    def __eq__(self, o):
+        return self.time == o.time
+
+    def __ne__(self, o):
+        return self.time != o.time
+
+    def __lt__(self, o):
+        return self.time &lt; o.time
+
+    def __gt__(self, o):
+        return self.time &gt; o.time
+
+    def __le__(self, o):
+        return self.time &lt;= o.time
+
+    def __ge__(self, o):
+        return self.time &gt;= o.time
+    
+    def __repr__(self):
+        ret = &#34;LAMMPS Snap object from dump for t=%0.4g&#34; % self.time
+        return ret
+
+
+# --------------------------------------------------------------------
+# one Frame (close to Snap but with fields) - OV 2022-02-03
+
+class Frame:
+    &#34;&#34;&#34; Frame class &#34;&#34;&#34;
+    def __init__(self):
+        pass
+
+    def __eq__(self, o):
+        return self.time == o.time
+
+    def __ne__(self, o):
+        return self.time != o.time
+
+    def __lt__(self, o):
+        return self.time &lt; o.time
+
+    def __gt__(self, o):
+        return self.time &gt; o.time
+
+    def __le__(self, o):
+        return self.time &lt;= o.time
+
+    def __ge__(self, o):
+        return self.time &gt;= o.time
+
+    def __repr__(self):
+        print(&#34;Frame-dump object with the following fields and their match in the original dump file:\n(sorted order)&#34;)
+        print(&#34;\n&#34;.join(&#34;{}\t&lt;-\t{}&#34;.format(k, v) for k, v in sorted(self.description.items(), key=lambda t: str(t[0]))))
+        ret = &#39;LAMMPS frame object from dumpfile (&#34;%s&#34;) for t=%0.4g&#39; \
+            % (self.dumpfile,self.time)
+        return ret
+
+
+# --------------------------------------------------------------------
+# time selection class
+
+
+class tselect:
+    def __init__(self, data):
+        self.data = data
+
+    # --------------------------------------------------------------------
+
+    def all(self):
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 1
+        data.nselect = len(data.snaps)
+        data.aselect.all()
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))
+
+    # --------------------------------------------------------------------
+
+    def one(self, n):
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 0
+        i = data.findtime(n)
+        data.snaps[i].tselect = 1
+        data.nselect = 1
+        data.aselect.all()
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))
+
+    # --------------------------------------------------------------------
+
+    def none(self):
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 0
+        data.nselect = 0
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))
+
+    # --------------------------------------------------------------------
+
+    def skip(self, n):
+        data = self.data
+        count = n - 1
+        for snap in data.snaps:
+            if not snap.tselect:
+                continue
+            count += 1
+            if count == n:
+                count = 0
+                continue
+            snap.tselect = 0
+            data.nselect -= 1
+        data.aselect.all()
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))
+
+    # --------------------------------------------------------------------
+
+    def test(self, teststr):
+        data = self.data
+        snaps = data.snaps
+        # Python 2.x
+        # cmd = &#34;flag = &#34; + teststr.replace(&#34;$t&#34;,&#34;snaps[i].time&#34;)
+        # ccmd = compile(cmd,&#39;&#39;,&#39;single&#39;)
+        # Python 3.x
+        evalcmd = teststr.replace(&#34;$t&#34;, &#34;snaps[i].time&#34;)
+        for i in range(data.nsnaps):
+            if not snaps[i].tselect:
+                continue
+            # Python 2.x
+            # exec(ccmd)
+            flag = eval(evalcmd)
+            if not flag:
+                snaps[i].tselect = 0
+                data.nselect -= 1
+        data.aselect.all()
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))
+
+
+# --------------------------------------------------------------------
+# atom selection class
+
+
+class aselect:
+    def __init__(self, data):
+        self.data = data
+
+    # --------------------------------------------------------------------
+
+    def all(self, *args):
+        data = self.data
+        if len(args) == 0:  # all selected timesteps
+            for snap in data.snaps:
+                if not snap.tselect:
+                    continue
+                for i in range(snap.natoms):
+                    snap.aselect[i] = 1
+                snap.nselect = snap.natoms
+        else:  # one timestep
+            n = data.findtime(args[0])
+            snap = data.snaps[n]
+            for i in range(snap.natoms):
+                snap.aselect[i] = 1
+            snap.nselect = snap.natoms
+
+    # --------------------------------------------------------------------
+
+    def test(self, teststr, *args):
+        data = self.data
+
+        # replace all $var with snap.atoms references and compile test string
+
+        pattern = &#34;\$\w*&#34;
+        list = re.findall(pattern, teststr)
+        for item in list:
+            name = item[1:]
+            column = data.names[name]
+            insert = &#34;snap.atoms[i][%d]&#34; % column
+            teststr = teststr.replace(item, insert)
+        # Python 2.x
+        # cmd = &#34;flag = &#34; + teststr
+        # ccmd = compile(cmd,&#39;&#39;,&#39;single&#39;)
+        # Python 3.x
+        evalcmd = teststr
+        if len(args) == 0:  # all selected timesteps
+            for snap in data.snaps:
+                if not snap.tselect:
+                    continue
+                for i in range(snap.natoms):
+                    if not snap.aselect[i]:
+                        continue
+                    # Python 2.x
+                    # exec(ccmd)
+                    # Python 3.x
+                    flag = eval(evalcmd)
+                    if not flag:
+                        snap.aselect[i] = 0
+                        snap.nselect -= 1
+            for i in range(data.nsnaps):
+                if data.snaps[i].tselect:
+                    print(
+                        &#34;%d atoms of %d selected in first step %d&#34;
+                        % (
+                            data.snaps[i].nselect,
+                            data.snaps[i].natoms,
+                            data.snaps[i].time,
+                        )
+                    )
+                    break
+            for i in range(data.nsnaps - 1, -1, -1):
+                if data.snaps[i].tselect:
+                    print(
+                        &#34;%d atoms of %d selected in last step %d&#34;
+                        % (
+                            data.snaps[i].nselect,
+                            data.snaps[i].natoms,
+                            data.snaps[i].time,
+                        )
+                    )
+                    break
+
+        else:  # one timestep
+            n = data.findtime(args[0])
+            snap = data.snaps[n]
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                # Python 2.x
+                # exec(ccmd)
+                # Python 3.x
+                flag = eval(evalcmd)
+                if not flag:
+                    snap.aselect[i] = 0
+                    snap.nselect -= 1
+
+
+# %% DEBUG
+# ===================================================   
+# main()
+# ===================================================   
+# for debugging purposes (code called as a script)
+# the code is called from here
+# ===================================================
+if __name__ == &#39;__main__&#39;:
+    f1 = &#34;../data/play_data/dump.play.1frames&#34;
+    f2 = &#34;../data/play_data/dump.play.50frames&#34;
+    X1 = dump(f1)
+    X1.kind()
+    X1.type
+    X50 = dump(f2)
+    X50.kind()
+    X50.type
+    X = X50 + X1
+    xy=X.vecs(82500,(&#39;x&#39;,&#39;y&#39;))</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="dump3.Frame"><code class="flex name class">
+<span>class <span class="ident">Frame</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Frame class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Frame:
+    &#34;&#34;&#34; Frame class &#34;&#34;&#34;
+    def __init__(self):
+        pass
+
+    def __eq__(self, o):
+        return self.time == o.time
+
+    def __ne__(self, o):
+        return self.time != o.time
+
+    def __lt__(self, o):
+        return self.time &lt; o.time
+
+    def __gt__(self, o):
+        return self.time &gt; o.time
+
+    def __le__(self, o):
+        return self.time &lt;= o.time
+
+    def __ge__(self, o):
+        return self.time &gt;= o.time
+
+    def __repr__(self):
+        print(&#34;Frame-dump object with the following fields and their match in the original dump file:\n(sorted order)&#34;)
+        print(&#34;\n&#34;.join(&#34;{}\t&lt;-\t{}&#34;.format(k, v) for k, v in sorted(self.description.items(), key=lambda t: str(t[0]))))
+        ret = &#39;LAMMPS frame object from dumpfile (&#34;%s&#34;) for t=%0.4g&#39; \
+            % (self.dumpfile,self.time)
+        return ret</code></pre>
+</details>
+</dd>
+<dt id="dump3.Snap"><code class="flex name class">
+<span>class <span class="ident">Snap</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Snap:
+    def __init__(self):
+        pass
+
+    def __eq__(self, o):
+        return self.time == o.time
+
+    def __ne__(self, o):
+        return self.time != o.time
+
+    def __lt__(self, o):
+        return self.time &lt; o.time
+
+    def __gt__(self, o):
+        return self.time &gt; o.time
+
+    def __le__(self, o):
+        return self.time &lt;= o.time
+
+    def __ge__(self, o):
+        return self.time &gt;= o.time
+    
+    def __repr__(self):
+        ret = &#34;LAMMPS Snap object from dump for t=%0.4g&#34; % self.time
+        return ret</code></pre>
+</details>
+</dd>
+<dt id="dump3.aselect"><code class="flex name class">
+<span>class <span class="ident">aselect</span></span>
+<span>(</span><span>data)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class aselect:
+    def __init__(self, data):
+        self.data = data
+
+    # --------------------------------------------------------------------
+
+    def all(self, *args):
+        data = self.data
+        if len(args) == 0:  # all selected timesteps
+            for snap in data.snaps:
+                if not snap.tselect:
+                    continue
+                for i in range(snap.natoms):
+                    snap.aselect[i] = 1
+                snap.nselect = snap.natoms
+        else:  # one timestep
+            n = data.findtime(args[0])
+            snap = data.snaps[n]
+            for i in range(snap.natoms):
+                snap.aselect[i] = 1
+            snap.nselect = snap.natoms
+
+    # --------------------------------------------------------------------
+
+    def test(self, teststr, *args):
+        data = self.data
+
+        # replace all $var with snap.atoms references and compile test string
+
+        pattern = &#34;\$\w*&#34;
+        list = re.findall(pattern, teststr)
+        for item in list:
+            name = item[1:]
+            column = data.names[name]
+            insert = &#34;snap.atoms[i][%d]&#34; % column
+            teststr = teststr.replace(item, insert)
+        # Python 2.x
+        # cmd = &#34;flag = &#34; + teststr
+        # ccmd = compile(cmd,&#39;&#39;,&#39;single&#39;)
+        # Python 3.x
+        evalcmd = teststr
+        if len(args) == 0:  # all selected timesteps
+            for snap in data.snaps:
+                if not snap.tselect:
+                    continue
+                for i in range(snap.natoms):
+                    if not snap.aselect[i]:
+                        continue
+                    # Python 2.x
+                    # exec(ccmd)
+                    # Python 3.x
+                    flag = eval(evalcmd)
+                    if not flag:
+                        snap.aselect[i] = 0
+                        snap.nselect -= 1
+            for i in range(data.nsnaps):
+                if data.snaps[i].tselect:
+                    print(
+                        &#34;%d atoms of %d selected in first step %d&#34;
+                        % (
+                            data.snaps[i].nselect,
+                            data.snaps[i].natoms,
+                            data.snaps[i].time,
+                        )
+                    )
+                    break
+            for i in range(data.nsnaps - 1, -1, -1):
+                if data.snaps[i].tselect:
+                    print(
+                        &#34;%d atoms of %d selected in last step %d&#34;
+                        % (
+                            data.snaps[i].nselect,
+                            data.snaps[i].natoms,
+                            data.snaps[i].time,
+                        )
+                    )
+                    break
+
+        else:  # one timestep
+            n = data.findtime(args[0])
+            snap = data.snaps[n]
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                # Python 2.x
+                # exec(ccmd)
+                # Python 3.x
+                flag = eval(evalcmd)
+                if not flag:
+                    snap.aselect[i] = 0
+                    snap.nselect -= 1</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="dump3.aselect.all"><code class="name flex">
+<span>def <span class="ident">all</span></span>(<span>self, *args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def all(self, *args):
+    data = self.data
+    if len(args) == 0:  # all selected timesteps
+        for snap in data.snaps:
+            if not snap.tselect:
+                continue
+            for i in range(snap.natoms):
+                snap.aselect[i] = 1
+            snap.nselect = snap.natoms
+    else:  # one timestep
+        n = data.findtime(args[0])
+        snap = data.snaps[n]
+        for i in range(snap.natoms):
+            snap.aselect[i] = 1
+        snap.nselect = snap.natoms</code></pre>
+</details>
+</dd>
+<dt id="dump3.aselect.test"><code class="name flex">
+<span>def <span class="ident">test</span></span>(<span>self, teststr, *args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test(self, teststr, *args):
+    data = self.data
+
+    # replace all $var with snap.atoms references and compile test string
+
+    pattern = &#34;\$\w*&#34;
+    list = re.findall(pattern, teststr)
+    for item in list:
+        name = item[1:]
+        column = data.names[name]
+        insert = &#34;snap.atoms[i][%d]&#34; % column
+        teststr = teststr.replace(item, insert)
+    # Python 2.x
+    # cmd = &#34;flag = &#34; + teststr
+    # ccmd = compile(cmd,&#39;&#39;,&#39;single&#39;)
+    # Python 3.x
+    evalcmd = teststr
+    if len(args) == 0:  # all selected timesteps
+        for snap in data.snaps:
+            if not snap.tselect:
+                continue
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                # Python 2.x
+                # exec(ccmd)
+                # Python 3.x
+                flag = eval(evalcmd)
+                if not flag:
+                    snap.aselect[i] = 0
+                    snap.nselect -= 1
+        for i in range(data.nsnaps):
+            if data.snaps[i].tselect:
+                print(
+                    &#34;%d atoms of %d selected in first step %d&#34;
+                    % (
+                        data.snaps[i].nselect,
+                        data.snaps[i].natoms,
+                        data.snaps[i].time,
+                    )
+                )
+                break
+        for i in range(data.nsnaps - 1, -1, -1):
+            if data.snaps[i].tselect:
+                print(
+                    &#34;%d atoms of %d selected in last step %d&#34;
+                    % (
+                        data.snaps[i].nselect,
+                        data.snaps[i].natoms,
+                        data.snaps[i].time,
+                    )
+                )
+                break
+
+    else:  # one timestep
+        n = data.findtime(args[0])
+        snap = data.snaps[n]
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            # Python 2.x
+            # exec(ccmd)
+            # Python 3.x
+            flag = eval(evalcmd)
+            if not flag:
+                snap.aselect[i] = 0
+                snap.nselect -= 1</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dump3.dump"><code class="flex name class">
+<span>class <span class="ident">dump</span></span>
+<span>(</span><span>*list)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class dump:
+
+    # --------------------------------------------------------------------
+
+    def __init__(self, *list):
+        self.snaps = []
+        self.nsnaps = self.nselect = 0
+        self.names = {}
+        self.tselect = tselect(self)
+        self.aselect = aselect(self)
+        self.atype = &#34;type&#34;
+        self.bondflag = 0
+        self.bondlist = []
+        self.triflag = 0
+        self.trilist = []
+        self.lineflag = 0
+        self.linelist = []
+        self.objextra = None
+
+        # flist = list of all dump file names
+
+        words = list[0].split()
+        self.flist = []
+        for word in words:
+            self.flist += glob.glob(word)
+        if len(self.flist) == 0 and len(list) == 1:
+            raise ValueError(&#34;no dump file specified&#34;)
+
+        if len(list) == 1:
+            self.increment = 0
+            self.read_all()
+        else:
+            self.increment = 1
+            self.nextfile = 0
+            self.eof = 0
+
+    # --------------------------------------------------------------------
+    
+    def __repr__(self):
+        times = self.time();
+        ntimes = len(times)
+        lastime = times[-1];
+        fields = self.names;
+        print(&#34;Dump file: %s\ncontains %d frames (tend=%0.4g)\nwith fields&#34; % \
+              (self.flist[0],ntimes,lastime) )
+        for k  in sorted(fields,key=fields.get,reverse=False):
+            print(&#34;\t%02d: %s&#34; % (fields[k],k) )
+        ret = &#39;LAMMPS dump object with %d properties and %d frames (tend=%0.4g, - source=&#34;%s&#34;&#39; % \
+            (len(fields),ntimes,lastime,self.flist[0])
+        return ret
+
+    # --------------------------------------------------------------------
+
+    def read_all(self):
+
+        # read all snapshots from each file
+        # test for gzipped files
+
+        for file in self.flist:
+            if file[-3:] == &#34;.gz&#34;:
+                f = popen(&#34;%s -c %s&#34; % (PIZZA_GUNZIP, file), &#34;r&#34;)
+            else:
+                f = open(file)
+
+            snap = self.read_snapshot(f)
+            while snap:
+                self.snaps.append(snap)
+                print(snap.time, file=sys.stdout, flush=True, end=&#34; &#34;)
+                snap = self.read_snapshot(f)
+
+            f.close()
+        print
+
+        # sort entries by timestep, cull duplicates
+
+        self.snaps.sort()  # self.snaps.sort(self.compare_time)  #%% to be fixed in the future (OV)
+        self.cull()
+        self.nsnaps = len(self.snaps)
+        print(&#34;read %d snapshots&#34; % (self.nsnaps))
+
+        # select all timesteps and atoms
+
+        self.tselect.all()
+
+        # print column assignments
+
+        if len(self.names):
+            print(&#34;assigned columns:&#34;, &#34;,&#34;.join(list(self.names.keys())))
+        else:
+            print(&#34;no column assignments made&#34;)
+
+        # if snapshots are scaled, unscale them
+
+        if (
+            (not &#34;x&#34; in self.names)
+            or (not &#34;y&#34; in self.names)
+            or (not &#34;z&#34; in self.names)
+        ):
+            print(&#34;dump scaling status is unknown&#34;)
+        elif self.nsnaps &gt; 0:
+            if self.scale_original == 1:
+                self.unscale()
+            elif self.scale_original == 0:
+                print(&#34;dump is already unscaled&#34;)
+            else:
+                print(&#34;dump scaling status is unknown&#34;)
+
+    # --------------------------------------------------------------------
+    # read next snapshot from list of files
+
+    def next(self):
+
+        if not self.increment:
+            raise ValueError(&#34;cannot read incrementally&#34;)
+
+        # read next snapshot in current file using eof as pointer
+        # if fail, try next file
+        # if new snapshot time stamp already exists, read next snapshot
+
+        while 1:
+            f = open(self.flist[self.nextfile], &#34;rb&#34;)
+            f.seek(self.eof)
+            snap = self.read_snapshot(f)
+            if not snap:
+                self.nextfile += 1
+                if self.nextfile == len(self.flist):
+                    return -1
+                f.close()
+                self.eof = 0
+                continue
+            self.eof = f.tell()
+            f.close()
+            try:
+                self.findtime(snap.time)
+                continue
+            except:
+                break
+
+        # select the new snapshot with all its atoms
+
+        self.snaps.append(snap)
+        snap = self.snaps[self.nsnaps]
+        snap.tselect = 1
+        snap.nselect = snap.natoms
+        for i in range(snap.natoms):
+            snap.aselect[i] = 1
+        self.nsnaps += 1
+        self.nselect += 1
+
+        return snap.time
+
+    # --------------------------------------------------------------------
+    # read a single snapshot from file f
+    # return snapshot or 0 if failed
+    # for first snapshot only:
+    #   assign column names (file must be self-describing)
+    #   set scale_original to 0/1/-1 for unscaled/scaled/unknown
+    #   convert xs,xu to x in names
+
+    def read_snapshot(self, f):
+        try:
+            snap = Snap()
+            item = f.readline()
+            snap.time = int(f.readline().split()[0])  # just grab 1st field
+            item = f.readline()
+            snap.natoms = int(f.readline())
+
+            snap.aselect = np.zeros(snap.natoms)
+
+            item = f.readline()
+            words = item.split(&#34;BOUNDS &#34;)
+            if len(words) == 1:
+                snap.boxstr = &#34;&#34;
+            else:
+                snap.boxstr = words[1].strip()
+            if &#34;xy&#34; in snap.boxstr:
+                snap.triclinic = 1
+            else:
+                snap.triclinic = 0
+
+            words = f.readline().split()
+            if len(words) == 2:
+                snap.xlo, snap.xhi, snap.xy = float(words[0]), float(words[1]), 0.0
+            else:
+                snap.xlo, snap.xhi, snap.xy = (
+                    float(words[0]),
+                    float(words[1]),
+                    float(words[2]),
+                )
+
+            words = f.readline().split()
+            if len(words) == 2:
+                snap.ylo, snap.yhi, snap.xz = float(words[0]), float(words[1]), 0.0
+            else:
+                snap.ylo, snap.yhi, snap.xz = (
+                    float(words[0]),
+                    float(words[1]),
+                    float(words[2]),
+                )
+
+            words = f.readline().split()
+            if len(words) == 2:
+                snap.zlo, snap.zhi, snap.yz = float(words[0]), float(words[1]), 0.0
+            else:
+                snap.zlo, snap.zhi, snap.yz = (
+                    float(words[0]),
+                    float(words[1]),
+                    float(words[2]),
+                )
+
+            item = f.readline()
+            if len(self.names) == 0:
+                self.scale_original = -1
+                xflag = yflag = zflag = -1
+                words = item.split()[2:]
+                if len(words):
+                    for i in range(len(words)):
+                        if words[i] == &#34;x&#34; or words[i] == &#34;xu&#34;:
+                            xflag = 0
+                            self.names[&#34;x&#34;] = i
+                        elif words[i] == &#34;xs&#34; or words[i] == &#34;xsu&#34;:
+                            xflag = 1
+                            self.names[&#34;x&#34;] = i
+                        elif words[i] == &#34;y&#34; or words[i] == &#34;yu&#34;:
+                            yflag = 0
+                            self.names[&#34;y&#34;] = i
+                        elif words[i] == &#34;ys&#34; or words[i] == &#34;ysu&#34;:
+                            yflag = 1
+                            self.names[&#34;y&#34;] = i
+                        elif words[i] == &#34;z&#34; or words[i] == &#34;zu&#34;:
+                            zflag = 0
+                            self.names[&#34;z&#34;] = i
+                        elif words[i] == &#34;zs&#34; or words[i] == &#34;zsu&#34;:
+                            zflag = 1
+                            self.names[&#34;z&#34;] = i
+                        else:
+                            self.names[words[i]] = i
+                    if xflag == 0 and yflag == 0 and zflag == 0:
+                        self.scale_original = 0
+                    if xflag == 1 and yflag == 1 and zflag == 1:
+                        self.scale_original = 1
+
+            if snap.natoms:
+                words = f.readline().split()
+                ncol = len(words)
+                for i in range(1, snap.natoms):
+                    words += f.readline().split()
+                floats = list(map(float, words))
+                if oldnumeric:
+                    atoms = np.zeros((snap.natoms, ncol), np.float64)
+                else:
+                    atoms = np.zeros((snap.natoms, ncol), np.float64)
+                start = 0
+                stop = ncol
+                for i in range(snap.natoms):
+                    atoms[i] = floats[start:stop]
+                    start = stop
+                    stop += ncol
+            else:
+                atoms = None
+            snap.atoms = atoms
+            return snap
+        except:
+            return 0
+
+    # --------------------------------------------------------------------
+    # map atom column names
+
+    def map(self, *pairs):
+        if len(pairs) % 2 != 0:
+            raise ValueError(&#34;dump map() requires pairs of mappings&#34;)
+        for i in range(0, len(pairs), 2):
+            j = i + 1
+            self.names[pairs[j]] = pairs[i] - 1
+
+    # --------------------------------------------------------------------
+    # delete unselected snapshots
+
+    def delete(self):
+        ndel = i = 0
+        while i &lt; self.nsnaps:
+            if not self.snaps[i].tselect:
+                del self.snaps[i]
+                self.nsnaps -= 1
+                ndel += 1
+            else:
+                i += 1
+        print(&#34;%d snapshots deleted&#34; % ndel)
+        print(&#34;%d snapshots remaining&#34; % self.nsnaps)
+
+    # --------------------------------------------------------------------
+    # scale coords to 0-1 for all snapshots or just one
+    # use 6 params as h-matrix to treat orthongonal or triclinic boxes
+
+    def scale(self, *list):
+        if len(list) == 0:
+            print(&#34;Scaling dump ...&#34;)
+            x = self.names[&#34;x&#34;]
+            y = self.names[&#34;y&#34;]
+            z = self.names[&#34;z&#34;]
+            for snap in self.snaps:
+                self.scale_one(snap, x, y, z)
+        else:
+            i = self.findtime(list[0])
+            x = self.names[&#34;x&#34;]
+            y = self.names[&#34;y&#34;]
+            z = self.names[&#34;z&#34;]
+            self.scale_one(self.snaps[i], x, y, z)
+
+    # --------------------------------------------------------------------
+
+    def scale_one(self, snap, x, y, z):
+        if snap.xy == 0.0 and snap.xz == 0.0 and snap.yz == 0.0:
+            xprdinv = 1.0 / (snap.xhi - snap.xlo)
+            yprdinv = 1.0 / (snap.yhi - snap.ylo)
+            zprdinv = 1.0 / (snap.zhi - snap.zlo)
+            atoms = snap.atoms
+            if atoms != None:
+                atoms[:, x] = (atoms[:, x] - snap.xlo) * xprdinv
+                atoms[:, y] = (atoms[:, y] - snap.ylo) * yprdinv
+                atoms[:, z] = (atoms[:, z] - snap.zlo) * zprdinv
+        else:
+            xlo_bound = snap.xlo
+            xhi_bound = snap.xhi
+            ylo_bound = snap.ylo
+            yhi_bound = snap.yhi
+            zlo_bound = snap.zlo
+            zhi_bound = snap.zhi
+            xy = snap.xy
+            xz = snap.xz
+            yz = snap.yz
+            xlo = xlo_bound - min((0.0, xy, xz, xy + xz))
+            xhi = xhi_bound - max((0.0, xy, xz, xy + xz))
+            ylo = ylo_bound - min((0.0, yz))
+            yhi = yhi_bound - max((0.0, yz))
+            zlo = zlo_bound
+            zhi = zhi_bound
+            h0 = xhi - xlo
+            h1 = yhi - ylo
+            h2 = zhi - zlo
+            h3 = yz
+            h4 = xz
+            h5 = xy
+            h0inv = 1.0 / h0
+            h1inv = 1.0 / h1
+            h2inv = 1.0 / h2
+            h3inv = yz / (h1 * h2)
+            h4inv = (h3 * h5 - h1 * h4) / (h0 * h1 * h2)
+            h5inv = xy / (h0 * h1)
+            atoms = snap.atoms
+            if atoms != None:
+                atoms[:, x] = (
+                    (atoms[:, x] - snap.xlo) * h0inv
+                    + (atoms[:, y] - snap.ylo) * h5inv
+                    + (atoms[:, z] - snap.zlo) * h4inv
+                )
+                atoms[:, y] = (atoms[:, y] - snap.ylo) * h1inv + (
+                    atoms[:, z] - snap.zlo
+                ) * h3inv
+                atoms[:, z] = (atoms[:, z] - snap.zlo) * h2inv
+
+    # --------------------------------------------------------------------
+    # unscale coords from 0-1 to box size for all snapshots or just one
+    # use 6 params as h-matrix to treat orthongonal or triclinic boxes
+
+    def unscale(self, *list):
+        if len(list) == 0:
+            print(&#34;Unscaling dump ...&#34;)
+            x = self.names[&#34;x&#34;]
+            y = self.names[&#34;y&#34;]
+            z = self.names[&#34;z&#34;]
+            for snap in self.snaps:
+                self.unscale_one(snap, x, y, z)
+        else:
+            i = self.findtime(list[0])
+            x = self.names[&#34;x&#34;]
+            y = self.names[&#34;y&#34;]
+            z = self.names[&#34;z&#34;]
+            self.unscale_one(self.snaps[i], x, y, z)
+
+    # --------------------------------------------------------------------
+
+    def unscale_one(self, snap, x, y, z):
+        if snap.xy == 0.0 and snap.xz == 0.0 and snap.yz == 0.0:
+            xprd = snap.xhi - snap.xlo
+            yprd = snap.yhi - snap.ylo
+            zprd = snap.zhi - snap.zlo
+            atoms = snap.atoms
+            if atoms != None:
+                atoms[:, x] = snap.xlo + atoms[:, x] * xprd
+                atoms[:, y] = snap.ylo + atoms[:, y] * yprd
+                atoms[:, z] = snap.zlo + atoms[:, z] * zprd
+        else:
+            xlo_bound = snap.xlo
+            xhi_bound = snap.xhi
+            ylo_bound = snap.ylo
+            yhi_bound = snap.yhi
+            zlo_bound = snap.zlo
+            zhi_bound = snap.zhi
+            xy = snap.xy
+            xz = snap.xz
+            yz = snap.yz
+            xlo = xlo_bound - min((0.0, xy, xz, xy + xz))
+            xhi = xhi_bound - max((0.0, xy, xz, xy + xz))
+            ylo = ylo_bound - min((0.0, yz))
+            yhi = yhi_bound - max((0.0, yz))
+            zlo = zlo_bound
+            zhi = zhi_bound
+            h0 = xhi - xlo
+            h1 = yhi - ylo
+            h2 = zhi - zlo
+            h3 = yz
+            h4 = xz
+            h5 = xy
+            atoms = snap.atoms
+            if atoms != None:
+                atoms[:, x] = (
+                    snap.xlo + atoms[:, x] * h0 + atoms[:, y] * h5 + atoms[:, z] * h4
+                )
+                atoms[:, y] = snap.ylo + atoms[:, y] * h1 + atoms[:, z] * h3
+                atoms[:, z] = snap.zlo + atoms[:, z] * h2
+
+    # --------------------------------------------------------------------
+    # wrap coords from outside box to inside
+
+    def wrap(self):
+        print(&#34;Wrapping dump ...&#34;)
+
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        ix = self.names[&#34;ix&#34;]
+        iy = self.names[&#34;iy&#34;]
+        iz = self.names[&#34;iz&#34;]
+
+        for snap in self.snaps:
+            xprd = snap.xhi - snap.xlo
+            yprd = snap.yhi - snap.ylo
+            zprd = snap.zhi - snap.zlo
+            atoms = snap.atoms
+            atoms[:, x] -= atoms[:, ix] * xprd
+            atoms[:, y] -= atoms[:, iy] * yprd
+            atoms[:, z] -= atoms[:, iz] * zprd
+
+    # --------------------------------------------------------------------
+    # unwrap coords from inside box to outside
+
+    def unwrap(self):
+        print(&#34;Unwrapping dump ...&#34;)
+
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        ix = self.names[&#34;ix&#34;]
+        iy = self.names[&#34;iy&#34;]
+        iz = self.names[&#34;iz&#34;]
+
+        for snap in self.snaps:
+            xprd = snap.xhi - snap.xlo
+            yprd = snap.yhi - snap.ylo
+            zprd = snap.zhi - snap.zlo
+            atoms = snap.atoms
+            atoms[:, x] += atoms[:, ix] * xprd
+            atoms[:, y] += atoms[:, iy] * yprd
+            atoms[:, z] += atoms[:, iz] * zprd
+
+    # --------------------------------------------------------------------
+    # wrap coords to same image as atom ID stored in &#34;other&#34; column
+    # if dynamic extra lines or triangles defined, owrap them as well
+
+    def owrap(self, other):
+        print(&#34;Wrapping to other ...&#34;)
+
+        id = self.names[&#34;id&#34;]
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        ix = self.names[&#34;ix&#34;]
+        iy = self.names[&#34;iy&#34;]
+        iz = self.names[&#34;iz&#34;]
+        iother = self.names[other]
+
+        for snap in self.snaps:
+            xprd = snap.xhi - snap.xlo
+            yprd = snap.yhi - snap.ylo
+            zprd = snap.zhi - snap.zlo
+            atoms = snap.atoms
+            ids = {}
+            for i in range(snap.natoms):
+                ids[atoms[i][id]] = i
+            for i in range(snap.natoms):
+                j = ids[atoms[i][iother]]
+                atoms[i][x] += (atoms[i][ix] - atoms[j][ix]) * xprd
+                atoms[i][y] += (atoms[i][iy] - atoms[j][iy]) * yprd
+                atoms[i][z] += (atoms[i][iz] - atoms[j][iz]) * zprd
+            # should bonds also be owrapped ?
+            if self.lineflag == 2 or self.triflag == 2:
+                self.objextra.owrap(
+                    snap.time, xprd, yprd, zprd, ids, atoms, iother, ix, iy, iz
+                )
+
+    # --------------------------------------------------------------------
+    # convert column names assignment to a string, in column order
+
+    def names2str(self):
+        # &lt;--  Python 2.x  --&gt;
+        # pairs = self.names.items()
+        # values = self.names.values()
+        # ncol = len(pairs)
+        # str = &#34;&#34;
+        # for i in range(ncol):
+        #   if i in values: str += pairs[values.index(i)][0] + &#39; &#39;
+        # &lt;--  Python 3.x  --&gt;
+        str = &#34;&#34;
+        for k in sorted(self.names, key=self.names.get, reverse=False):
+            str += k + &#34; &#34;
+        return str
+
+    # --------------------------------------------------------------------
+    # sort atoms by atom ID in all selected timesteps by default
+    # if arg = string, sort all steps by that column
+    # if arg = numeric, sort atoms in single step
+
+    def sort(self, *listarg):
+        if len(listarg) == 0:
+            print(&#34;Sorting selected snapshots ...&#34;)
+            id = self.names[&#34;id&#34;]
+            for snap in self.snaps:
+                if snap.tselect:
+                    self.sort_one(snap, id)
+        elif type(listarg[0]) is types.StringType:
+            print(&#34;Sorting selected snapshots by %s ...&#34; % listarg[0])
+            id = self.names[listarg[0]]
+            for snap in self.snaps:
+                if snap.tselect:
+                    self.sort_one(snap, id)
+        else:
+            i = self.findtime(listarg[0])
+            id = self.names[&#34;id&#34;]
+            self.sort_one(self.snaps[i], id)
+
+    # --------------------------------------------------------------------
+    # sort a single snapshot by ID column
+
+    def sort_one(self, snap, id):
+        atoms = snap.atoms
+        ids = atoms[:, id]
+        ordering = np.argsort(ids)
+        for i in range(len(atoms[0])):
+            atoms[:, i] = np.take(atoms[:, i], ordering)
+
+    # --------------------------------------------------------------------
+    # write a single dump file from current selection
+
+    def write(self, file, header=1, append=0):
+        if len(self.snaps):
+            namestr = self.names2str()
+        if not append:
+            f = open(file, &#34;w&#34;)
+        else:
+            f = open(file, &#34;a&#34;)
+
+        if &#34;id&#34; in self.names:
+            id = self.names[&#34;id&#34;]
+        else:
+            id = -1
+        if &#34;type&#34; in self.names:
+            type = self.names[&#34;type&#34;]
+        else:
+            type = -1
+
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            print(snap.time, file=sys.stdout, flush=True)
+
+            if header:
+                print(&#34;ITEM: TIMESTEP&#34;, file=f)
+                print(snap.time, file=f)
+                print(&#34;ITEM: NUMBER OF ATOMS&#34;, file=f)
+                print(snap.nselect, file=f)
+                if snap.boxstr:
+                    print(&#34;ITEM: BOX BOUNDS&#34;, snap.boxstr, file=f)
+                else:
+                    print(&#34;ITEM: BOX BOUNDS&#34;, file=f)
+                if snap.triclinic:
+                    print(snap.xlo, snap.xhi, snap.xy, file=f)
+                    print(snap.ylo, snap.yhi, snap.xz, file=f)
+                    print(snap.zlo, snap.zhi, snap.yz, file=f)
+                else:
+                    print(snap.xlo, snap.xhi, file=f)
+                    print(snap.ylo, snap.yhi, file=f)
+                    print(snap.zlo, snap.zhi, file=f)
+                print(&#34;ITEM: ATOMS&#34;, namestr, file=f)
+
+            atoms = snap.atoms
+            nvalues = len(atoms[0])
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                line = &#34;&#34;
+                for j in range(nvalues):
+                    if j == id or j == type:
+                        line += str(int(atoms[i][j])) + &#34; &#34;
+                    else:
+                        line += str(atoms[i][j]) + &#34; &#34;
+                print(line, file=f)
+        f.close()
+        print(&#34;\n%d snapshots&#34; % self.nselect)
+
+    # --------------------------------------------------------------------
+    # write one dump file per snapshot from current selection
+
+    def scatter(self, root):
+        if len(self.snaps):
+            namestr = self.names2str()
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            print(snap.time, file=sys.stdout, flush=True)
+
+            file = root + &#34;.&#34; + str(snap.time)
+            f = open(file, &#34;w&#34;)
+            print(&#34;ITEM: TIMESTEP&#34;, file=f)
+            print(snap.time, file=f)
+            print(&#34;ITEM: NUMBER OF ATOMS&#34;, file=f)
+            print(snap.nselect, file=f)
+            if snap.boxstr:
+                print(&#34;ITEM: BOX BOUNDS&#34;, snap.boxstr, file=f)
+            else:
+                print(&#34;ITEM: BOX BOUNDS&#34;, file=f)
+            if snap.triclinic:
+                print(snap.xlo, snap.xhi, snap.xy, file=f)
+                print(snap.ylo, snap.yhi, snap.xz, file=f)
+                print(snap.zlo, snap.zhi, snap.yz, file=f)
+            else:
+                print(snap.xlo, snap.xhi, file=f)
+                print(snap.ylo, snap.yhi, file=f)
+                print(snap.zlo, snap.zhi, file=f)
+            print(&#34;ITEM: ATOMS&#34;, namestr, file=f)
+
+            atoms = snap.atoms
+            nvalues = len(atoms[0])
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                line = &#34;&#34;
+                for j in range(nvalues):
+                    if j &lt; 2:
+                        line += str(int(atoms[i][j])) + &#34; &#34;
+                    else:
+                        line += str(atoms[i][j]) + &#34; &#34;
+                print(line, file=f)
+            f.close()
+        print(&#34;\n%d snapshots&#34; % self.nselect)
+
+    # --------------------------------------------------------------------
+    # find min/max across all selected snapshots/atoms for a particular column
+
+    def minmax(self, colname):
+        icol = self.names[colname]
+        min = 1.0e20
+        max = -min
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                if atoms[i][icol] &lt; min:
+                    min = atoms[i][icol]
+                if atoms[i][icol] &gt; max:
+                    max = atoms[i][icol]
+        return (min, max)
+
+    # --------------------------------------------------------------------
+    # set a column value via an equation for all selected snapshots
+
+    def set(self, eq):
+        print(&#34;Setting ...&#34;)
+        pattern = &#34;\$\w*&#34;
+        list = re.findall(pattern, eq)
+
+        lhs = list[0][1:]
+        if not self.names.has_key(lhs):
+            self.newcolumn(lhs)
+
+        for item in list:
+            name = item[1:]
+            column = self.names[name]
+            insert = &#34;snap.atoms[i][%d]&#34; % (column)
+            eq = eq.replace(item, insert)
+        ceq = compile(eq, &#34;&#34;, &#34;single&#34;)
+
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            for i in range(snap.natoms):
+                if snap.aselect[i]:
+                    exec(ceq)
+
+    # --------------------------------------------------------------------
+    # set a column value via an input vec for all selected snapshots/atoms
+
+    def setv(self, colname, vec):
+        print(&#34;Setting ...&#34;)
+        if not self.names.has_key(colname):
+            self.newcolumn(colname)
+        icol = self.names[colname]
+
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            if snap.nselect != len(vec):
+                raise ValueError(&#34;vec length does not match # of selected atoms&#34;)
+            atoms = snap.atoms
+            m = 0
+            for i in range(snap.natoms):
+                if snap.aselect[i]:
+                    atoms[i][icol] = vec[m]
+                    m += 1
+
+    # --------------------------------------------------------------------
+    # clone value in col across selected timesteps for atoms with same ID
+
+    def clone(self, nstep, col):
+        istep = self.findtime(nstep)
+        icol = self.names[col]
+        id = self.names[&#34;id&#34;]
+        ids = {}
+        for i in range(self.snaps[istep].natoms):
+            ids[self.snaps[istep].atoms[i][id]] = i
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                j = ids[atoms[i][id]]
+                atoms[i][icol] = self.snaps[istep].atoms[j][icol]
+
+    # --------------------------------------------------------------------
+    # values in old column are spread as ints from 1-N and assigned to new column
+
+    def spread(self, old, n, new):
+        iold = self.names[old]
+        if not self.names.has_key(new):
+            self.newcolumn(new)
+        inew = self.names[new]
+
+        min, max = self.minmax(old)
+        print(&#34;min/max = &#34;, min, max)
+
+        gap = max - min
+        invdelta = n / gap
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                ivalue = int((atoms[i][iold] - min) * invdelta) + 1
+                if ivalue &gt; n:
+                    ivalue = n
+                if ivalue &lt; 1:
+                    ivalue = 1
+                atoms[i][inew] = ivalue
+
+    # --------------------------------------------------------------------
+    # return vector of selected snapshot time stamps
+
+    def time(self):
+        vec = self.nselect * [0]
+        i = 0
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            vec[i] = snap.time
+            i += 1
+        return vec
+
+    # --------------------------------------------------------------------
+    # extract vector(s) of values for atom ID n at each selected timestep
+
+    def atom(self, n, *list):
+        if len(list) == 0:
+            raise ValueError(&#34;no columns specified&#34;)
+        columns = []
+        values = []
+        for name in list:
+            columns.append(self.names[name])
+            values.append(self.nselect * [0])
+        ncol = len(columns)
+
+        id = self.names[&#34;id&#34;]
+        m = 0
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if atoms[i][id] == n:
+                    break
+            if atoms[i][id] != n:
+                raise ValueError(&#34;could not find atom ID in snapshot&#34;)
+            for j in range(ncol):
+                values[j][m] = atoms[i][columns[j]]
+            m += 1
+
+        if len(list) == 1:
+            return values[0]
+        else:
+            return values
+
+    # --------------------------------------------------------------------
+    # extract vector(s) of values for selected atoms at chosen timestep
+
+    def vecs(self, n, *colname):
+        &#34;&#34;&#34; tab = vecs(time,&#34;id&#34;,&#34;x&#34;,&#34;y&#34;) or tab = vecs(time,[&#34;id&#34;,&#34;x&#34;,&#34;y&#34;],&#34;z&#34;)  &#34;&#34;&#34;
+        snap = self.snaps[self.findtime(n)]
+
+        if len(colname) == 0:
+            raise ValueError(&#34;no columns specified&#34;)
+        if isinstance(colname[0],tuple):
+            colname = list(colname[0]) + list(colname[1:])
+        if isinstance(colname[0],list):
+            colname = colname[0] + list(colname[1:])
+        columns = []
+        values = []
+        for name in colname:
+            columns.append(self.names[name])
+            values.append(snap.nselect * [0])
+        ncol = len(columns)
+
+        m = 0
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            for j in range(ncol):
+                values[j][m] = snap.atoms[i][columns[j]]
+            m += 1
+
+        if len(colname) == 1:
+            return values[0]
+        else:
+            return values
+
+    # --------------------------------------------------------------------
+    # add a new column to every snapshot and set value to 0
+    # set the name of the column to str
+
+    def newcolumn(self, str):
+        ncol = len(self.snaps[0].atoms[0])
+        self.map(ncol + 1, str)
+        for snap in self.snaps:
+            # commented because not used
+            # atoms = snap.atoms
+            if oldnumeric:
+                newatoms = np.zeros((snap.natoms, ncol + 1), np.Float)
+            else:
+                newatoms = np.zeros((snap.natoms, ncol + 1), np.float)
+            newatoms[:, 0:ncol] = snap.atoms
+            snap.atoms = newatoms
+
+    # --------------------------------------------------------------------
+    # sort snapshots on time stamp
+
+    def compare_time(self, a, b):
+        if a.time &lt; b.time:
+            return -1
+        elif a.time &gt; b.time:
+            return 1
+        else:
+            return 0
+
+    # --------------------------------------------------------------------
+    # delete successive snapshots with duplicate time stamp
+
+    def cull(self):
+        i = 1
+        while i &lt; len(self.snaps):
+            if self.snaps[i].time == self.snaps[i - 1].time:
+                del self.snaps[i]
+            else:
+                i += 1
+
+    # --------------------------------------------------------------------
+    # iterate over selected snapshots
+
+    def iterator(self, flag):
+        start = 0
+        if flag:
+            start = self.iterate + 1
+        for i in range(start, self.nsnaps):
+            if self.snaps[i].tselect:
+                self.iterate = i
+                return i, self.snaps[i].time, 1
+        return 0, 0, -1
+
+    # --------------------------------------------------------------------
+    # return list of atoms to viz for snapshot isnap
+    # if called with flag, then index is timestep, so convert to snapshot index
+    # augment with bonds, tris, lines if extra() was invoked
+
+    def viz(self, index, flag=0):
+        if not flag:
+            isnap = index
+        else:
+            times = self.time()
+            n = len(times)
+            i = 0
+            while i &lt; n:
+                if times[i] &gt; index:
+                    break
+                i += 1
+            isnap = i - 1
+
+        snap = self.snaps[isnap]
+
+        time = snap.time
+        box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+        id = self.names[&#34;id&#34;]
+        type = self.names[self.atype]
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+
+        # create atom list needed by viz from id,type,x,y,z
+        # need Numeric/Numpy mode here
+
+        atoms = []
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            atom = snap.atoms[i]
+            atoms.append([atom[id], atom[type], atom[x], atom[y], atom[z]])
+
+        # create list of bonds from static or dynamic bond list
+        # then generate bond coords from bondlist
+        # alist = dictionary of atom IDs for atoms list
+        # lookup bond atom IDs in alist and grab their coords
+        # try is used since some atoms may be unselected
+        #   any bond with unselected atom is not added to bonds
+        # need Numeric/Numpy mode here
+
+        bonds = []
+        if self.bondflag:
+            if self.bondflag == 1:
+                bondlist = self.bondlist
+            elif self.bondflag == 2:
+                tmp1, tmp2, tmp3, bondlist, tmp4, tmp5 = self.objextra.viz(time, 1)
+            alist = {}
+            for i in range(len(atoms)):
+                alist[int(atoms[i][0])] = i
+            for bond in bondlist:
+                try:
+                    i = alist[bond[2]]
+                    j = alist[bond[3]]
+                    atom1 = atoms[i]
+                    atom2 = atoms[j]
+                    bonds.append(
+                        [
+                            bond[0],
+                            bond[1],
+                            atom1[2],
+                            atom1[3],
+                            atom1[4],
+                            atom2[2],
+                            atom2[3],
+                            atom2[4],
+                            atom1[1],
+                            atom2[1],
+                        ]
+                    )
+                except:
+                    continue
+
+        # create list of tris from static or dynamic tri list
+        # if dynamic, could eliminate tris for unselected atoms
+
+        tris = []
+        if self.triflag:
+            if self.triflag == 1:
+                tris = self.trilist
+            elif self.triflag == 2:
+                tmp1, tmp2, tmp3, tmp4, tris, tmp5 = self.objextra.viz(time, 1)
+
+        # create list of lines from static or dynamic tri list
+        # if dynamic, could eliminate lines for unselected atoms
+
+        lines = []
+        if self.lineflag:
+            if self.lineflag == 1:
+                lines = self.linelist
+            elif self.lineflag == 2:
+                tmp1, tmp2, tmp3, tmp4, tmp5, lines = self.objextra.viz(time, 1)
+
+        return time, box, atoms, bonds, tris, lines
+
+    # --------------------------------------------------------------------
+
+    def findtime(self, n):
+        for i in range(self.nsnaps):
+            if self.snaps[i].time == n:
+                return i
+        raise ValueError(&#34;no step %d exists&#34; % n)
+
+    # --------------------------------------------------------------------
+    # return maximum box size across all selected snapshots
+
+    def maxbox(self):
+        xlo = ylo = zlo = None
+        xhi = yhi = zhi = None
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            if xlo == None or snap.xlo &lt; xlo:
+                xlo = snap.xlo
+            if xhi == None or snap.xhi &gt; xhi:
+                xhi = snap.xhi
+            if ylo == None or snap.ylo &lt; ylo:
+                ylo = snap.ylo
+            if yhi == None or snap.yhi &gt; yhi:
+                yhi = snap.yhi
+            if zlo == None or snap.zlo &lt; zlo:
+                zlo = snap.zlo
+            if zhi == None or snap.zhi &gt; zhi:
+                zhi = snap.zhi
+        return [xlo, ylo, zlo, xhi, yhi, zhi]
+
+    # --------------------------------------------------------------------
+    # return maximum atom type across all selected snapshots and atoms
+
+    def maxtype(self):
+        icol = self.names[&#34;type&#34;]
+        max = 0
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atoms = snap.atoms
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                if atoms[i][icol] &gt; max:
+                    max = atoms[i][icol]
+        return int(max)
+
+    # --------------------------------------------------------------------
+    # grab bonds/tris/lines from another object
+    # if static, grab once, else store obj to grab dynamically
+
+    def extra(self, arg):
+
+        # data object, grab bonds statically
+
+        if type(arg) is types.InstanceType and &#34;.data&#34; in str(arg.__class__):
+            self.bondflag = 0
+            try:
+                bondlist = []
+                bondlines = arg.sections[&#34;Bonds&#34;]
+                for line in bondlines:
+                    words = line.split()
+                    bondlist.append(
+                        [int(words[0]), int(words[1]), int(words[2]), int(words[3])]
+                    )
+                if bondlist:
+                    self.bondflag = 1
+                    self.bondlist = bondlist
+            except:
+                raise ValueError(&#34;could not extract bonds from data object&#34;)
+
+        # cdata object, grab tris and lines statically
+
+        elif type(arg) is types.InstanceType and &#34;.cdata&#34; in str(arg.__class__):
+            self.triflag = self.lineflag = 0
+            try:
+                tmp, tmp, tmp, tmp, tris, lines = arg.viz(0)
+                if tris:
+                    self.triflag = 1
+                    self.trilist = tris
+                if lines:
+                    self.lineflag = 1
+                    self.linelist = lines
+            except:
+                raise ValueError(&#34;could not extract tris/lines from cdata object&#34;)
+
+        # mdump object, grab tris dynamically
+
+        elif type(arg) is types.InstanceType and &#34;.mdump&#34; in str(arg.__class__):
+            self.triflag = 2
+            self.objextra = arg
+
+        # bdump object, grab bonds dynamically
+
+        elif type(arg) is types.InstanceType and &#34;.bdump&#34; in str(arg.__class__):
+            self.bondflag = 2
+            self.objextra = arg
+
+        # ldump object, grab lines dynamically
+
+        elif type(arg) is types.InstanceType and &#34;.ldump&#34; in str(arg.__class__):
+            self.lineflag = 2
+            self.objextra = arg
+
+        # tdump object, grab tris dynamically
+
+        elif type(arg) is types.InstanceType and &#34;.tdump&#34; in str(arg.__class__):
+            self.triflag = 2
+            self.objextra = arg
+
+        else:
+            raise ValueError(&#34;unrecognized argument to dump.extra()&#34;)
+
+    # --------------------------------------------------------------------
+
+    def compare_atom(self, a, b):
+        if a[0] &lt; b[0]:
+            return -1
+        elif a[0] &gt; b[0]:
+            return 1
+        else:
+            return 0
+        
+    # --------------------------------------------------------------------
+
+    def frame(self,iframe):
+        &#34;&#34;&#34; simplified class to access properties of a snapshot
+        (INRAE\Olivier Vitrac) &#34;&#34;&#34;
+        nframes= len(self.time());
+        if iframe&gt;=nframes:
+            raise ValueError(&#34;the frame index should be ranged between 0 and %d&#34; % nframes)
+        elif iframe&lt;0:
+            iframe = iframe % nframes
+        times = self.time()
+        fields = self.names
+        snap = self.snaps[iframe]
+        frame = Frame()
+        frame.dumpfile = self.flist[0]
+        frame.time = times[iframe]
+        frame.description = {&#34;dumpfile&#34;: &#34;dumpobject.flist[0]&#34;, &#34;time&#34;: &#34;dumpobject.times()[]&#34;}
+        for k in sorted(fields,key=fields.get,reverse=False):
+            kvalid = k # valid key name
+            for rep in [&#34;[&#34;,&#34;]&#34;,&#34;#&#34;,&#34;~&#34;,&#34;-&#34;,&#34;_&#34;,&#34;(&#34;,&#34;)&#34;,&#34;,&#34;,&#34;.&#34;,&#34;;&#34;]:
+                kvalid = kvalid.replace(rep,&#34;&#34;)
+            frame.description[kvalid] = k
+            frame.__dict__[kvalid] = snap.atoms[:,fields[k]]
+        return frame
+
+    # --------------------------------------------------------------------
+
+    def kind(self,listtypes=None):
+        &#34;&#34;&#34; guessed kind of dump file based on column names
+        (possibility to supply a personnalized list)
+        (INRAE\Olivier Vitrac) &#34;&#34;&#34;
+        if listtypes==None:
+            listtypes = {
+                &#39;vxyz&#39;: [&#34;id&#34;,&#34;type&#34;,&#34;x&#34;,&#34;y&#34;,&#34;z&#34;,&#34;vx&#34;,&#34;vy&#34;,&#34;vz&#34;],
+                &#39;xyz&#39;: [&#34;id&#34;,&#34;type&#34;,&#34;x&#34;,&#34;y&#34;,&#34;z&#34;]
+                     }
+            internaltypes = True
+        else:
+            listtypes = {&#34;usertype&#34;:listtypes}
+            internaltypes = False
+        for t in listtypes:
+            if len(listtypes[t])==0:
+                ismatching = False
+            else:
+                ismatching = True
+                for field in listtypes[t]:
+                    ismatching = ismatching and field in self.names
+                if ismatching: break
+        if ismatching:
+            if internaltypes:
+                return t
+            else:
+                return True
+        else:
+            if internaltypes:
+                return None
+            else:
+                return False
+        
+    # --------------------------------------------------------------------
+
+    @property
+    def type(self):
+        &#34;&#34;&#34; type of dump file defined as a hash of column names &#34;&#34;&#34;
+        return hash(self.names2str())
+
+    # --------------------------------------------------------------------
+    
+    def __add__(self,o):
+        &#34;&#34;&#34; merge dump objects of the same kind/type &#34;&#34;&#34;
+        if not isinstance(o,dump):
+            raise ValueError(&#34;the second operand is not a dump object&#34;)
+        elif self.type != o.type:
+            raise ValueError(&#34;the dumps are not of the same type&#34;)
+        twofiles = self.flist[0] + &#34; &#34; + o.flist[0]
+        return dump(twofiles)
+    
+    # --------------------------------------------------------------------</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="dump3.dump.type"><code class="name">var <span class="ident">type</span></code></dt>
+<dd>
+<div class="desc"><p>type of dump file defined as a hash of column names</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def type(self):
+    &#34;&#34;&#34; type of dump file defined as a hash of column names &#34;&#34;&#34;
+    return hash(self.names2str())</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="dump3.dump.atom"><code class="name flex">
+<span>def <span class="ident">atom</span></span>(<span>self, n, *list)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def atom(self, n, *list):
+    if len(list) == 0:
+        raise ValueError(&#34;no columns specified&#34;)
+    columns = []
+    values = []
+    for name in list:
+        columns.append(self.names[name])
+        values.append(self.nselect * [0])
+    ncol = len(columns)
+
+    id = self.names[&#34;id&#34;]
+    m = 0
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        atoms = snap.atoms
+        for i in range(snap.natoms):
+            if atoms[i][id] == n:
+                break
+        if atoms[i][id] != n:
+            raise ValueError(&#34;could not find atom ID in snapshot&#34;)
+        for j in range(ncol):
+            values[j][m] = atoms[i][columns[j]]
+        m += 1
+
+    if len(list) == 1:
+        return values[0]
+    else:
+        return values</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>self, nstep, col)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(self, nstep, col):
+    istep = self.findtime(nstep)
+    icol = self.names[col]
+    id = self.names[&#34;id&#34;]
+    ids = {}
+    for i in range(self.snaps[istep].natoms):
+        ids[self.snaps[istep].atoms[i][id]] = i
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        atoms = snap.atoms
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            j = ids[atoms[i][id]]
+            atoms[i][icol] = self.snaps[istep].atoms[j][icol]</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.compare_atom"><code class="name flex">
+<span>def <span class="ident">compare_atom</span></span>(<span>self, a, b)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compare_atom(self, a, b):
+    if a[0] &lt; b[0]:
+        return -1
+    elif a[0] &gt; b[0]:
+        return 1
+    else:
+        return 0</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.compare_time"><code class="name flex">
+<span>def <span class="ident">compare_time</span></span>(<span>self, a, b)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compare_time(self, a, b):
+    if a.time &lt; b.time:
+        return -1
+    elif a.time &gt; b.time:
+        return 1
+    else:
+        return 0</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.cull"><code class="name flex">
+<span>def <span class="ident">cull</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cull(self):
+    i = 1
+    while i &lt; len(self.snaps):
+        if self.snaps[i].time == self.snaps[i - 1].time:
+            del self.snaps[i]
+        else:
+            i += 1</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.delete"><code class="name flex">
+<span>def <span class="ident">delete</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete(self):
+    ndel = i = 0
+    while i &lt; self.nsnaps:
+        if not self.snaps[i].tselect:
+            del self.snaps[i]
+            self.nsnaps -= 1
+            ndel += 1
+        else:
+            i += 1
+    print(&#34;%d snapshots deleted&#34; % ndel)
+    print(&#34;%d snapshots remaining&#34; % self.nsnaps)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.extra"><code class="name flex">
+<span>def <span class="ident">extra</span></span>(<span>self, arg)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extra(self, arg):
+
+    # data object, grab bonds statically
+
+    if type(arg) is types.InstanceType and &#34;.data&#34; in str(arg.__class__):
+        self.bondflag = 0
+        try:
+            bondlist = []
+            bondlines = arg.sections[&#34;Bonds&#34;]
+            for line in bondlines:
+                words = line.split()
+                bondlist.append(
+                    [int(words[0]), int(words[1]), int(words[2]), int(words[3])]
+                )
+            if bondlist:
+                self.bondflag = 1
+                self.bondlist = bondlist
+        except:
+            raise ValueError(&#34;could not extract bonds from data object&#34;)
+
+    # cdata object, grab tris and lines statically
+
+    elif type(arg) is types.InstanceType and &#34;.cdata&#34; in str(arg.__class__):
+        self.triflag = self.lineflag = 0
+        try:
+            tmp, tmp, tmp, tmp, tris, lines = arg.viz(0)
+            if tris:
+                self.triflag = 1
+                self.trilist = tris
+            if lines:
+                self.lineflag = 1
+                self.linelist = lines
+        except:
+            raise ValueError(&#34;could not extract tris/lines from cdata object&#34;)
+
+    # mdump object, grab tris dynamically
+
+    elif type(arg) is types.InstanceType and &#34;.mdump&#34; in str(arg.__class__):
+        self.triflag = 2
+        self.objextra = arg
+
+    # bdump object, grab bonds dynamically
+
+    elif type(arg) is types.InstanceType and &#34;.bdump&#34; in str(arg.__class__):
+        self.bondflag = 2
+        self.objextra = arg
+
+    # ldump object, grab lines dynamically
+
+    elif type(arg) is types.InstanceType and &#34;.ldump&#34; in str(arg.__class__):
+        self.lineflag = 2
+        self.objextra = arg
+
+    # tdump object, grab tris dynamically
+
+    elif type(arg) is types.InstanceType and &#34;.tdump&#34; in str(arg.__class__):
+        self.triflag = 2
+        self.objextra = arg
+
+    else:
+        raise ValueError(&#34;unrecognized argument to dump.extra()&#34;)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.findtime"><code class="name flex">
+<span>def <span class="ident">findtime</span></span>(<span>self, n)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def findtime(self, n):
+    for i in range(self.nsnaps):
+        if self.snaps[i].time == n:
+            return i
+    raise ValueError(&#34;no step %d exists&#34; % n)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.frame"><code class="name flex">
+<span>def <span class="ident">frame</span></span>(<span>self, iframe)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>simplified class to access properties of a snapshot
+(INRAE\Olivier Vitrac)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def frame(self,iframe):
+    &#34;&#34;&#34; simplified class to access properties of a snapshot
+    (INRAE\Olivier Vitrac) &#34;&#34;&#34;
+    nframes= len(self.time());
+    if iframe&gt;=nframes:
+        raise ValueError(&#34;the frame index should be ranged between 0 and %d&#34; % nframes)
+    elif iframe&lt;0:
+        iframe = iframe % nframes
+    times = self.time()
+    fields = self.names
+    snap = self.snaps[iframe]
+    frame = Frame()
+    frame.dumpfile = self.flist[0]
+    frame.time = times[iframe]
+    frame.description = {&#34;dumpfile&#34;: &#34;dumpobject.flist[0]&#34;, &#34;time&#34;: &#34;dumpobject.times()[]&#34;}
+    for k in sorted(fields,key=fields.get,reverse=False):
+        kvalid = k # valid key name
+        for rep in [&#34;[&#34;,&#34;]&#34;,&#34;#&#34;,&#34;~&#34;,&#34;-&#34;,&#34;_&#34;,&#34;(&#34;,&#34;)&#34;,&#34;,&#34;,&#34;.&#34;,&#34;;&#34;]:
+            kvalid = kvalid.replace(rep,&#34;&#34;)
+        frame.description[kvalid] = k
+        frame.__dict__[kvalid] = snap.atoms[:,fields[k]]
+    return frame</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.iterator"><code class="name flex">
+<span>def <span class="ident">iterator</span></span>(<span>self, flag)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def iterator(self, flag):
+    start = 0
+    if flag:
+        start = self.iterate + 1
+    for i in range(start, self.nsnaps):
+        if self.snaps[i].tselect:
+            self.iterate = i
+            return i, self.snaps[i].time, 1
+    return 0, 0, -1</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.kind"><code class="name flex">
+<span>def <span class="ident">kind</span></span>(<span>self, listtypes=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>guessed kind of dump file based on column names
+(possibility to supply a personnalized list)
+(INRAE\Olivier Vitrac)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def kind(self,listtypes=None):
+    &#34;&#34;&#34; guessed kind of dump file based on column names
+    (possibility to supply a personnalized list)
+    (INRAE\Olivier Vitrac) &#34;&#34;&#34;
+    if listtypes==None:
+        listtypes = {
+            &#39;vxyz&#39;: [&#34;id&#34;,&#34;type&#34;,&#34;x&#34;,&#34;y&#34;,&#34;z&#34;,&#34;vx&#34;,&#34;vy&#34;,&#34;vz&#34;],
+            &#39;xyz&#39;: [&#34;id&#34;,&#34;type&#34;,&#34;x&#34;,&#34;y&#34;,&#34;z&#34;]
+                 }
+        internaltypes = True
+    else:
+        listtypes = {&#34;usertype&#34;:listtypes}
+        internaltypes = False
+    for t in listtypes:
+        if len(listtypes[t])==0:
+            ismatching = False
+        else:
+            ismatching = True
+            for field in listtypes[t]:
+                ismatching = ismatching and field in self.names
+            if ismatching: break
+    if ismatching:
+        if internaltypes:
+            return t
+        else:
+            return True
+    else:
+        if internaltypes:
+            return None
+        else:
+            return False</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.map"><code class="name flex">
+<span>def <span class="ident">map</span></span>(<span>self, *pairs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def map(self, *pairs):
+    if len(pairs) % 2 != 0:
+        raise ValueError(&#34;dump map() requires pairs of mappings&#34;)
+    for i in range(0, len(pairs), 2):
+        j = i + 1
+        self.names[pairs[j]] = pairs[i] - 1</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.maxbox"><code class="name flex">
+<span>def <span class="ident">maxbox</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def maxbox(self):
+    xlo = ylo = zlo = None
+    xhi = yhi = zhi = None
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        if xlo == None or snap.xlo &lt; xlo:
+            xlo = snap.xlo
+        if xhi == None or snap.xhi &gt; xhi:
+            xhi = snap.xhi
+        if ylo == None or snap.ylo &lt; ylo:
+            ylo = snap.ylo
+        if yhi == None or snap.yhi &gt; yhi:
+            yhi = snap.yhi
+        if zlo == None or snap.zlo &lt; zlo:
+            zlo = snap.zlo
+        if zhi == None or snap.zhi &gt; zhi:
+            zhi = snap.zhi
+    return [xlo, ylo, zlo, xhi, yhi, zhi]</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.maxtype"><code class="name flex">
+<span>def <span class="ident">maxtype</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def maxtype(self):
+    icol = self.names[&#34;type&#34;]
+    max = 0
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        atoms = snap.atoms
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            if atoms[i][icol] &gt; max:
+                max = atoms[i][icol]
+    return int(max)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.minmax"><code class="name flex">
+<span>def <span class="ident">minmax</span></span>(<span>self, colname)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def minmax(self, colname):
+    icol = self.names[colname]
+    min = 1.0e20
+    max = -min
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        atoms = snap.atoms
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            if atoms[i][icol] &lt; min:
+                min = atoms[i][icol]
+            if atoms[i][icol] &gt; max:
+                max = atoms[i][icol]
+    return (min, max)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.names2str"><code class="name flex">
+<span>def <span class="ident">names2str</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def names2str(self):
+    # &lt;--  Python 2.x  --&gt;
+    # pairs = self.names.items()
+    # values = self.names.values()
+    # ncol = len(pairs)
+    # str = &#34;&#34;
+    # for i in range(ncol):
+    #   if i in values: str += pairs[values.index(i)][0] + &#39; &#39;
+    # &lt;--  Python 3.x  --&gt;
+    str = &#34;&#34;
+    for k in sorted(self.names, key=self.names.get, reverse=False):
+        str += k + &#34; &#34;
+    return str</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.newcolumn"><code class="name flex">
+<span>def <span class="ident">newcolumn</span></span>(<span>self, str)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def newcolumn(self, str):
+    ncol = len(self.snaps[0].atoms[0])
+    self.map(ncol + 1, str)
+    for snap in self.snaps:
+        # commented because not used
+        # atoms = snap.atoms
+        if oldnumeric:
+            newatoms = np.zeros((snap.natoms, ncol + 1), np.Float)
+        else:
+            newatoms = np.zeros((snap.natoms, ncol + 1), np.float)
+        newatoms[:, 0:ncol] = snap.atoms
+        snap.atoms = newatoms</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.next"><code class="name flex">
+<span>def <span class="ident">next</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def next(self):
+
+    if not self.increment:
+        raise ValueError(&#34;cannot read incrementally&#34;)
+
+    # read next snapshot in current file using eof as pointer
+    # if fail, try next file
+    # if new snapshot time stamp already exists, read next snapshot
+
+    while 1:
+        f = open(self.flist[self.nextfile], &#34;rb&#34;)
+        f.seek(self.eof)
+        snap = self.read_snapshot(f)
+        if not snap:
+            self.nextfile += 1
+            if self.nextfile == len(self.flist):
+                return -1
+            f.close()
+            self.eof = 0
+            continue
+        self.eof = f.tell()
+        f.close()
+        try:
+            self.findtime(snap.time)
+            continue
+        except:
+            break
+
+    # select the new snapshot with all its atoms
+
+    self.snaps.append(snap)
+    snap = self.snaps[self.nsnaps]
+    snap.tselect = 1
+    snap.nselect = snap.natoms
+    for i in range(snap.natoms):
+        snap.aselect[i] = 1
+    self.nsnaps += 1
+    self.nselect += 1
+
+    return snap.time</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.owrap"><code class="name flex">
+<span>def <span class="ident">owrap</span></span>(<span>self, other)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def owrap(self, other):
+    print(&#34;Wrapping to other ...&#34;)
+
+    id = self.names[&#34;id&#34;]
+    x = self.names[&#34;x&#34;]
+    y = self.names[&#34;y&#34;]
+    z = self.names[&#34;z&#34;]
+    ix = self.names[&#34;ix&#34;]
+    iy = self.names[&#34;iy&#34;]
+    iz = self.names[&#34;iz&#34;]
+    iother = self.names[other]
+
+    for snap in self.snaps:
+        xprd = snap.xhi - snap.xlo
+        yprd = snap.yhi - snap.ylo
+        zprd = snap.zhi - snap.zlo
+        atoms = snap.atoms
+        ids = {}
+        for i in range(snap.natoms):
+            ids[atoms[i][id]] = i
+        for i in range(snap.natoms):
+            j = ids[atoms[i][iother]]
+            atoms[i][x] += (atoms[i][ix] - atoms[j][ix]) * xprd
+            atoms[i][y] += (atoms[i][iy] - atoms[j][iy]) * yprd
+            atoms[i][z] += (atoms[i][iz] - atoms[j][iz]) * zprd
+        # should bonds also be owrapped ?
+        if self.lineflag == 2 or self.triflag == 2:
+            self.objextra.owrap(
+                snap.time, xprd, yprd, zprd, ids, atoms, iother, ix, iy, iz
+            )</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.read_all"><code class="name flex">
+<span>def <span class="ident">read_all</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_all(self):
+
+    # read all snapshots from each file
+    # test for gzipped files
+
+    for file in self.flist:
+        if file[-3:] == &#34;.gz&#34;:
+            f = popen(&#34;%s -c %s&#34; % (PIZZA_GUNZIP, file), &#34;r&#34;)
+        else:
+            f = open(file)
+
+        snap = self.read_snapshot(f)
+        while snap:
+            self.snaps.append(snap)
+            print(snap.time, file=sys.stdout, flush=True, end=&#34; &#34;)
+            snap = self.read_snapshot(f)
+
+        f.close()
+    print
+
+    # sort entries by timestep, cull duplicates
+
+    self.snaps.sort()  # self.snaps.sort(self.compare_time)  #%% to be fixed in the future (OV)
+    self.cull()
+    self.nsnaps = len(self.snaps)
+    print(&#34;read %d snapshots&#34; % (self.nsnaps))
+
+    # select all timesteps and atoms
+
+    self.tselect.all()
+
+    # print column assignments
+
+    if len(self.names):
+        print(&#34;assigned columns:&#34;, &#34;,&#34;.join(list(self.names.keys())))
+    else:
+        print(&#34;no column assignments made&#34;)
+
+    # if snapshots are scaled, unscale them
+
+    if (
+        (not &#34;x&#34; in self.names)
+        or (not &#34;y&#34; in self.names)
+        or (not &#34;z&#34; in self.names)
+    ):
+        print(&#34;dump scaling status is unknown&#34;)
+    elif self.nsnaps &gt; 0:
+        if self.scale_original == 1:
+            self.unscale()
+        elif self.scale_original == 0:
+            print(&#34;dump is already unscaled&#34;)
+        else:
+            print(&#34;dump scaling status is unknown&#34;)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.read_snapshot"><code class="name flex">
+<span>def <span class="ident">read_snapshot</span></span>(<span>self, f)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_snapshot(self, f):
+    try:
+        snap = Snap()
+        item = f.readline()
+        snap.time = int(f.readline().split()[0])  # just grab 1st field
+        item = f.readline()
+        snap.natoms = int(f.readline())
+
+        snap.aselect = np.zeros(snap.natoms)
+
+        item = f.readline()
+        words = item.split(&#34;BOUNDS &#34;)
+        if len(words) == 1:
+            snap.boxstr = &#34;&#34;
+        else:
+            snap.boxstr = words[1].strip()
+        if &#34;xy&#34; in snap.boxstr:
+            snap.triclinic = 1
+        else:
+            snap.triclinic = 0
+
+        words = f.readline().split()
+        if len(words) == 2:
+            snap.xlo, snap.xhi, snap.xy = float(words[0]), float(words[1]), 0.0
+        else:
+            snap.xlo, snap.xhi, snap.xy = (
+                float(words[0]),
+                float(words[1]),
+                float(words[2]),
+            )
+
+        words = f.readline().split()
+        if len(words) == 2:
+            snap.ylo, snap.yhi, snap.xz = float(words[0]), float(words[1]), 0.0
+        else:
+            snap.ylo, snap.yhi, snap.xz = (
+                float(words[0]),
+                float(words[1]),
+                float(words[2]),
+            )
+
+        words = f.readline().split()
+        if len(words) == 2:
+            snap.zlo, snap.zhi, snap.yz = float(words[0]), float(words[1]), 0.0
+        else:
+            snap.zlo, snap.zhi, snap.yz = (
+                float(words[0]),
+                float(words[1]),
+                float(words[2]),
+            )
+
+        item = f.readline()
+        if len(self.names) == 0:
+            self.scale_original = -1
+            xflag = yflag = zflag = -1
+            words = item.split()[2:]
+            if len(words):
+                for i in range(len(words)):
+                    if words[i] == &#34;x&#34; or words[i] == &#34;xu&#34;:
+                        xflag = 0
+                        self.names[&#34;x&#34;] = i
+                    elif words[i] == &#34;xs&#34; or words[i] == &#34;xsu&#34;:
+                        xflag = 1
+                        self.names[&#34;x&#34;] = i
+                    elif words[i] == &#34;y&#34; or words[i] == &#34;yu&#34;:
+                        yflag = 0
+                        self.names[&#34;y&#34;] = i
+                    elif words[i] == &#34;ys&#34; or words[i] == &#34;ysu&#34;:
+                        yflag = 1
+                        self.names[&#34;y&#34;] = i
+                    elif words[i] == &#34;z&#34; or words[i] == &#34;zu&#34;:
+                        zflag = 0
+                        self.names[&#34;z&#34;] = i
+                    elif words[i] == &#34;zs&#34; or words[i] == &#34;zsu&#34;:
+                        zflag = 1
+                        self.names[&#34;z&#34;] = i
+                    else:
+                        self.names[words[i]] = i
+                if xflag == 0 and yflag == 0 and zflag == 0:
+                    self.scale_original = 0
+                if xflag == 1 and yflag == 1 and zflag == 1:
+                    self.scale_original = 1
+
+        if snap.natoms:
+            words = f.readline().split()
+            ncol = len(words)
+            for i in range(1, snap.natoms):
+                words += f.readline().split()
+            floats = list(map(float, words))
+            if oldnumeric:
+                atoms = np.zeros((snap.natoms, ncol), np.float64)
+            else:
+                atoms = np.zeros((snap.natoms, ncol), np.float64)
+            start = 0
+            stop = ncol
+            for i in range(snap.natoms):
+                atoms[i] = floats[start:stop]
+                start = stop
+                stop += ncol
+        else:
+            atoms = None
+        snap.atoms = atoms
+        return snap
+    except:
+        return 0</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.scale"><code class="name flex">
+<span>def <span class="ident">scale</span></span>(<span>self, *list)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def scale(self, *list):
+    if len(list) == 0:
+        print(&#34;Scaling dump ...&#34;)
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        for snap in self.snaps:
+            self.scale_one(snap, x, y, z)
+    else:
+        i = self.findtime(list[0])
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        self.scale_one(self.snaps[i], x, y, z)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.scale_one"><code class="name flex">
+<span>def <span class="ident">scale_one</span></span>(<span>self, snap, x, y, z)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def scale_one(self, snap, x, y, z):
+    if snap.xy == 0.0 and snap.xz == 0.0 and snap.yz == 0.0:
+        xprdinv = 1.0 / (snap.xhi - snap.xlo)
+        yprdinv = 1.0 / (snap.yhi - snap.ylo)
+        zprdinv = 1.0 / (snap.zhi - snap.zlo)
+        atoms = snap.atoms
+        if atoms != None:
+            atoms[:, x] = (atoms[:, x] - snap.xlo) * xprdinv
+            atoms[:, y] = (atoms[:, y] - snap.ylo) * yprdinv
+            atoms[:, z] = (atoms[:, z] - snap.zlo) * zprdinv
+    else:
+        xlo_bound = snap.xlo
+        xhi_bound = snap.xhi
+        ylo_bound = snap.ylo
+        yhi_bound = snap.yhi
+        zlo_bound = snap.zlo
+        zhi_bound = snap.zhi
+        xy = snap.xy
+        xz = snap.xz
+        yz = snap.yz
+        xlo = xlo_bound - min((0.0, xy, xz, xy + xz))
+        xhi = xhi_bound - max((0.0, xy, xz, xy + xz))
+        ylo = ylo_bound - min((0.0, yz))
+        yhi = yhi_bound - max((0.0, yz))
+        zlo = zlo_bound
+        zhi = zhi_bound
+        h0 = xhi - xlo
+        h1 = yhi - ylo
+        h2 = zhi - zlo
+        h3 = yz
+        h4 = xz
+        h5 = xy
+        h0inv = 1.0 / h0
+        h1inv = 1.0 / h1
+        h2inv = 1.0 / h2
+        h3inv = yz / (h1 * h2)
+        h4inv = (h3 * h5 - h1 * h4) / (h0 * h1 * h2)
+        h5inv = xy / (h0 * h1)
+        atoms = snap.atoms
+        if atoms != None:
+            atoms[:, x] = (
+                (atoms[:, x] - snap.xlo) * h0inv
+                + (atoms[:, y] - snap.ylo) * h5inv
+                + (atoms[:, z] - snap.zlo) * h4inv
+            )
+            atoms[:, y] = (atoms[:, y] - snap.ylo) * h1inv + (
+                atoms[:, z] - snap.zlo
+            ) * h3inv
+            atoms[:, z] = (atoms[:, z] - snap.zlo) * h2inv</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.scatter"><code class="name flex">
+<span>def <span class="ident">scatter</span></span>(<span>self, root)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def scatter(self, root):
+    if len(self.snaps):
+        namestr = self.names2str()
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        print(snap.time, file=sys.stdout, flush=True)
+
+        file = root + &#34;.&#34; + str(snap.time)
+        f = open(file, &#34;w&#34;)
+        print(&#34;ITEM: TIMESTEP&#34;, file=f)
+        print(snap.time, file=f)
+        print(&#34;ITEM: NUMBER OF ATOMS&#34;, file=f)
+        print(snap.nselect, file=f)
+        if snap.boxstr:
+            print(&#34;ITEM: BOX BOUNDS&#34;, snap.boxstr, file=f)
+        else:
+            print(&#34;ITEM: BOX BOUNDS&#34;, file=f)
+        if snap.triclinic:
+            print(snap.xlo, snap.xhi, snap.xy, file=f)
+            print(snap.ylo, snap.yhi, snap.xz, file=f)
+            print(snap.zlo, snap.zhi, snap.yz, file=f)
+        else:
+            print(snap.xlo, snap.xhi, file=f)
+            print(snap.ylo, snap.yhi, file=f)
+            print(snap.zlo, snap.zhi, file=f)
+        print(&#34;ITEM: ATOMS&#34;, namestr, file=f)
+
+        atoms = snap.atoms
+        nvalues = len(atoms[0])
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            line = &#34;&#34;
+            for j in range(nvalues):
+                if j &lt; 2:
+                    line += str(int(atoms[i][j])) + &#34; &#34;
+                else:
+                    line += str(atoms[i][j]) + &#34; &#34;
+            print(line, file=f)
+        f.close()
+    print(&#34;\n%d snapshots&#34; % self.nselect)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.set"><code class="name flex">
+<span>def <span class="ident">set</span></span>(<span>self, eq)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set(self, eq):
+    print(&#34;Setting ...&#34;)
+    pattern = &#34;\$\w*&#34;
+    list = re.findall(pattern, eq)
+
+    lhs = list[0][1:]
+    if not self.names.has_key(lhs):
+        self.newcolumn(lhs)
+
+    for item in list:
+        name = item[1:]
+        column = self.names[name]
+        insert = &#34;snap.atoms[i][%d]&#34; % (column)
+        eq = eq.replace(item, insert)
+    ceq = compile(eq, &#34;&#34;, &#34;single&#34;)
+
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        for i in range(snap.natoms):
+            if snap.aselect[i]:
+                exec(ceq)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.setv"><code class="name flex">
+<span>def <span class="ident">setv</span></span>(<span>self, colname, vec)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setv(self, colname, vec):
+    print(&#34;Setting ...&#34;)
+    if not self.names.has_key(colname):
+        self.newcolumn(colname)
+    icol = self.names[colname]
+
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        if snap.nselect != len(vec):
+            raise ValueError(&#34;vec length does not match # of selected atoms&#34;)
+        atoms = snap.atoms
+        m = 0
+        for i in range(snap.natoms):
+            if snap.aselect[i]:
+                atoms[i][icol] = vec[m]
+                m += 1</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.sort"><code class="name flex">
+<span>def <span class="ident">sort</span></span>(<span>self, *listarg)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sort(self, *listarg):
+    if len(listarg) == 0:
+        print(&#34;Sorting selected snapshots ...&#34;)
+        id = self.names[&#34;id&#34;]
+        for snap in self.snaps:
+            if snap.tselect:
+                self.sort_one(snap, id)
+    elif type(listarg[0]) is types.StringType:
+        print(&#34;Sorting selected snapshots by %s ...&#34; % listarg[0])
+        id = self.names[listarg[0]]
+        for snap in self.snaps:
+            if snap.tselect:
+                self.sort_one(snap, id)
+    else:
+        i = self.findtime(listarg[0])
+        id = self.names[&#34;id&#34;]
+        self.sort_one(self.snaps[i], id)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.sort_one"><code class="name flex">
+<span>def <span class="ident">sort_one</span></span>(<span>self, snap, id)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sort_one(self, snap, id):
+    atoms = snap.atoms
+    ids = atoms[:, id]
+    ordering = np.argsort(ids)
+    for i in range(len(atoms[0])):
+        atoms[:, i] = np.take(atoms[:, i], ordering)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.spread"><code class="name flex">
+<span>def <span class="ident">spread</span></span>(<span>self, old, n, new)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def spread(self, old, n, new):
+    iold = self.names[old]
+    if not self.names.has_key(new):
+        self.newcolumn(new)
+    inew = self.names[new]
+
+    min, max = self.minmax(old)
+    print(&#34;min/max = &#34;, min, max)
+
+    gap = max - min
+    invdelta = n / gap
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        atoms = snap.atoms
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            ivalue = int((atoms[i][iold] - min) * invdelta) + 1
+            if ivalue &gt; n:
+                ivalue = n
+            if ivalue &lt; 1:
+                ivalue = 1
+            atoms[i][inew] = ivalue</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.time"><code class="name flex">
+<span>def <span class="ident">time</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def time(self):
+    vec = self.nselect * [0]
+    i = 0
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        vec[i] = snap.time
+        i += 1
+    return vec</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.unscale"><code class="name flex">
+<span>def <span class="ident">unscale</span></span>(<span>self, *list)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unscale(self, *list):
+    if len(list) == 0:
+        print(&#34;Unscaling dump ...&#34;)
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        for snap in self.snaps:
+            self.unscale_one(snap, x, y, z)
+    else:
+        i = self.findtime(list[0])
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+        self.unscale_one(self.snaps[i], x, y, z)</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.unscale_one"><code class="name flex">
+<span>def <span class="ident">unscale_one</span></span>(<span>self, snap, x, y, z)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unscale_one(self, snap, x, y, z):
+    if snap.xy == 0.0 and snap.xz == 0.0 and snap.yz == 0.0:
+        xprd = snap.xhi - snap.xlo
+        yprd = snap.yhi - snap.ylo
+        zprd = snap.zhi - snap.zlo
+        atoms = snap.atoms
+        if atoms != None:
+            atoms[:, x] = snap.xlo + atoms[:, x] * xprd
+            atoms[:, y] = snap.ylo + atoms[:, y] * yprd
+            atoms[:, z] = snap.zlo + atoms[:, z] * zprd
+    else:
+        xlo_bound = snap.xlo
+        xhi_bound = snap.xhi
+        ylo_bound = snap.ylo
+        yhi_bound = snap.yhi
+        zlo_bound = snap.zlo
+        zhi_bound = snap.zhi
+        xy = snap.xy
+        xz = snap.xz
+        yz = snap.yz
+        xlo = xlo_bound - min((0.0, xy, xz, xy + xz))
+        xhi = xhi_bound - max((0.0, xy, xz, xy + xz))
+        ylo = ylo_bound - min((0.0, yz))
+        yhi = yhi_bound - max((0.0, yz))
+        zlo = zlo_bound
+        zhi = zhi_bound
+        h0 = xhi - xlo
+        h1 = yhi - ylo
+        h2 = zhi - zlo
+        h3 = yz
+        h4 = xz
+        h5 = xy
+        atoms = snap.atoms
+        if atoms != None:
+            atoms[:, x] = (
+                snap.xlo + atoms[:, x] * h0 + atoms[:, y] * h5 + atoms[:, z] * h4
+            )
+            atoms[:, y] = snap.ylo + atoms[:, y] * h1 + atoms[:, z] * h3
+            atoms[:, z] = snap.zlo + atoms[:, z] * h2</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.unwrap"><code class="name flex">
+<span>def <span class="ident">unwrap</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unwrap(self):
+    print(&#34;Unwrapping dump ...&#34;)
+
+    x = self.names[&#34;x&#34;]
+    y = self.names[&#34;y&#34;]
+    z = self.names[&#34;z&#34;]
+    ix = self.names[&#34;ix&#34;]
+    iy = self.names[&#34;iy&#34;]
+    iz = self.names[&#34;iz&#34;]
+
+    for snap in self.snaps:
+        xprd = snap.xhi - snap.xlo
+        yprd = snap.yhi - snap.ylo
+        zprd = snap.zhi - snap.zlo
+        atoms = snap.atoms
+        atoms[:, x] += atoms[:, ix] * xprd
+        atoms[:, y] += atoms[:, iy] * yprd
+        atoms[:, z] += atoms[:, iz] * zprd</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.vecs"><code class="name flex">
+<span>def <span class="ident">vecs</span></span>(<span>self, n, *colname)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>tab = vecs(time,"id","x","y") or tab = vecs(time,["id","x","y"],"z")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def vecs(self, n, *colname):
+    &#34;&#34;&#34; tab = vecs(time,&#34;id&#34;,&#34;x&#34;,&#34;y&#34;) or tab = vecs(time,[&#34;id&#34;,&#34;x&#34;,&#34;y&#34;],&#34;z&#34;)  &#34;&#34;&#34;
+    snap = self.snaps[self.findtime(n)]
+
+    if len(colname) == 0:
+        raise ValueError(&#34;no columns specified&#34;)
+    if isinstance(colname[0],tuple):
+        colname = list(colname[0]) + list(colname[1:])
+    if isinstance(colname[0],list):
+        colname = colname[0] + list(colname[1:])
+    columns = []
+    values = []
+    for name in colname:
+        columns.append(self.names[name])
+        values.append(snap.nselect * [0])
+    ncol = len(columns)
+
+    m = 0
+    for i in range(snap.natoms):
+        if not snap.aselect[i]:
+            continue
+        for j in range(ncol):
+            values[j][m] = snap.atoms[i][columns[j]]
+        m += 1
+
+    if len(colname) == 1:
+        return values[0]
+    else:
+        return values</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.viz"><code class="name flex">
+<span>def <span class="ident">viz</span></span>(<span>self, index, flag=0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def viz(self, index, flag=0):
+    if not flag:
+        isnap = index
+    else:
+        times = self.time()
+        n = len(times)
+        i = 0
+        while i &lt; n:
+            if times[i] &gt; index:
+                break
+            i += 1
+        isnap = i - 1
+
+    snap = self.snaps[isnap]
+
+    time = snap.time
+    box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+    id = self.names[&#34;id&#34;]
+    type = self.names[self.atype]
+    x = self.names[&#34;x&#34;]
+    y = self.names[&#34;y&#34;]
+    z = self.names[&#34;z&#34;]
+
+    # create atom list needed by viz from id,type,x,y,z
+    # need Numeric/Numpy mode here
+
+    atoms = []
+    for i in range(snap.natoms):
+        if not snap.aselect[i]:
+            continue
+        atom = snap.atoms[i]
+        atoms.append([atom[id], atom[type], atom[x], atom[y], atom[z]])
+
+    # create list of bonds from static or dynamic bond list
+    # then generate bond coords from bondlist
+    # alist = dictionary of atom IDs for atoms list
+    # lookup bond atom IDs in alist and grab their coords
+    # try is used since some atoms may be unselected
+    #   any bond with unselected atom is not added to bonds
+    # need Numeric/Numpy mode here
+
+    bonds = []
+    if self.bondflag:
+        if self.bondflag == 1:
+            bondlist = self.bondlist
+        elif self.bondflag == 2:
+            tmp1, tmp2, tmp3, bondlist, tmp4, tmp5 = self.objextra.viz(time, 1)
+        alist = {}
+        for i in range(len(atoms)):
+            alist[int(atoms[i][0])] = i
+        for bond in bondlist:
+            try:
+                i = alist[bond[2]]
+                j = alist[bond[3]]
+                atom1 = atoms[i]
+                atom2 = atoms[j]
+                bonds.append(
+                    [
+                        bond[0],
+                        bond[1],
+                        atom1[2],
+                        atom1[3],
+                        atom1[4],
+                        atom2[2],
+                        atom2[3],
+                        atom2[4],
+                        atom1[1],
+                        atom2[1],
+                    ]
+                )
+            except:
+                continue
+
+    # create list of tris from static or dynamic tri list
+    # if dynamic, could eliminate tris for unselected atoms
+
+    tris = []
+    if self.triflag:
+        if self.triflag == 1:
+            tris = self.trilist
+        elif self.triflag == 2:
+            tmp1, tmp2, tmp3, tmp4, tris, tmp5 = self.objextra.viz(time, 1)
+
+    # create list of lines from static or dynamic tri list
+    # if dynamic, could eliminate lines for unselected atoms
+
+    lines = []
+    if self.lineflag:
+        if self.lineflag == 1:
+            lines = self.linelist
+        elif self.lineflag == 2:
+            tmp1, tmp2, tmp3, tmp4, tmp5, lines = self.objextra.viz(time, 1)
+
+    return time, box, atoms, bonds, tris, lines</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.wrap"><code class="name flex">
+<span>def <span class="ident">wrap</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrap(self):
+    print(&#34;Wrapping dump ...&#34;)
+
+    x = self.names[&#34;x&#34;]
+    y = self.names[&#34;y&#34;]
+    z = self.names[&#34;z&#34;]
+    ix = self.names[&#34;ix&#34;]
+    iy = self.names[&#34;iy&#34;]
+    iz = self.names[&#34;iz&#34;]
+
+    for snap in self.snaps:
+        xprd = snap.xhi - snap.xlo
+        yprd = snap.yhi - snap.ylo
+        zprd = snap.zhi - snap.zlo
+        atoms = snap.atoms
+        atoms[:, x] -= atoms[:, ix] * xprd
+        atoms[:, y] -= atoms[:, iy] * yprd
+        atoms[:, z] -= atoms[:, iz] * zprd</code></pre>
+</details>
+</dd>
+<dt id="dump3.dump.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, file, header=1, append=0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write(self, file, header=1, append=0):
+    if len(self.snaps):
+        namestr = self.names2str()
+    if not append:
+        f = open(file, &#34;w&#34;)
+    else:
+        f = open(file, &#34;a&#34;)
+
+    if &#34;id&#34; in self.names:
+        id = self.names[&#34;id&#34;]
+    else:
+        id = -1
+    if &#34;type&#34; in self.names:
+        type = self.names[&#34;type&#34;]
+    else:
+        type = -1
+
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        print(snap.time, file=sys.stdout, flush=True)
+
+        if header:
+            print(&#34;ITEM: TIMESTEP&#34;, file=f)
+            print(snap.time, file=f)
+            print(&#34;ITEM: NUMBER OF ATOMS&#34;, file=f)
+            print(snap.nselect, file=f)
+            if snap.boxstr:
+                print(&#34;ITEM: BOX BOUNDS&#34;, snap.boxstr, file=f)
+            else:
+                print(&#34;ITEM: BOX BOUNDS&#34;, file=f)
+            if snap.triclinic:
+                print(snap.xlo, snap.xhi, snap.xy, file=f)
+                print(snap.ylo, snap.yhi, snap.xz, file=f)
+                print(snap.zlo, snap.zhi, snap.yz, file=f)
+            else:
+                print(snap.xlo, snap.xhi, file=f)
+                print(snap.ylo, snap.yhi, file=f)
+                print(snap.zlo, snap.zhi, file=f)
+            print(&#34;ITEM: ATOMS&#34;, namestr, file=f)
+
+        atoms = snap.atoms
+        nvalues = len(atoms[0])
+        for i in range(snap.natoms):
+            if not snap.aselect[i]:
+                continue
+            line = &#34;&#34;
+            for j in range(nvalues):
+                if j == id or j == type:
+                    line += str(int(atoms[i][j])) + &#34; &#34;
+                else:
+                    line += str(atoms[i][j]) + &#34; &#34;
+            print(line, file=f)
+    f.close()
+    print(&#34;\n%d snapshots&#34; % self.nselect)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dump3.tselect"><code class="flex name class">
+<span>class <span class="ident">tselect</span></span>
+<span>(</span><span>data)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class tselect:
+    def __init__(self, data):
+        self.data = data
+
+    # --------------------------------------------------------------------
+
+    def all(self):
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 1
+        data.nselect = len(data.snaps)
+        data.aselect.all()
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))
+
+    # --------------------------------------------------------------------
+
+    def one(self, n):
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 0
+        i = data.findtime(n)
+        data.snaps[i].tselect = 1
+        data.nselect = 1
+        data.aselect.all()
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))
+
+    # --------------------------------------------------------------------
+
+    def none(self):
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 0
+        data.nselect = 0
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))
+
+    # --------------------------------------------------------------------
+
+    def skip(self, n):
+        data = self.data
+        count = n - 1
+        for snap in data.snaps:
+            if not snap.tselect:
+                continue
+            count += 1
+            if count == n:
+                count = 0
+                continue
+            snap.tselect = 0
+            data.nselect -= 1
+        data.aselect.all()
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))
+
+    # --------------------------------------------------------------------
+
+    def test(self, teststr):
+        data = self.data
+        snaps = data.snaps
+        # Python 2.x
+        # cmd = &#34;flag = &#34; + teststr.replace(&#34;$t&#34;,&#34;snaps[i].time&#34;)
+        # ccmd = compile(cmd,&#39;&#39;,&#39;single&#39;)
+        # Python 3.x
+        evalcmd = teststr.replace(&#34;$t&#34;, &#34;snaps[i].time&#34;)
+        for i in range(data.nsnaps):
+            if not snaps[i].tselect:
+                continue
+            # Python 2.x
+            # exec(ccmd)
+            flag = eval(evalcmd)
+            if not flag:
+                snaps[i].tselect = 0
+                data.nselect -= 1
+        data.aselect.all()
+        print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="dump3.tselect.all"><code class="name flex">
+<span>def <span class="ident">all</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def all(self):
+    data = self.data
+    for snap in data.snaps:
+        snap.tselect = 1
+    data.nselect = len(data.snaps)
+    data.aselect.all()
+    print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))</code></pre>
+</details>
+</dd>
+<dt id="dump3.tselect.none"><code class="name flex">
+<span>def <span class="ident">none</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def none(self):
+    data = self.data
+    for snap in data.snaps:
+        snap.tselect = 0
+    data.nselect = 0
+    print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))</code></pre>
+</details>
+</dd>
+<dt id="dump3.tselect.one"><code class="name flex">
+<span>def <span class="ident">one</span></span>(<span>self, n)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def one(self, n):
+    data = self.data
+    for snap in data.snaps:
+        snap.tselect = 0
+    i = data.findtime(n)
+    data.snaps[i].tselect = 1
+    data.nselect = 1
+    data.aselect.all()
+    print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))</code></pre>
+</details>
+</dd>
+<dt id="dump3.tselect.skip"><code class="name flex">
+<span>def <span class="ident">skip</span></span>(<span>self, n)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def skip(self, n):
+    data = self.data
+    count = n - 1
+    for snap in data.snaps:
+        if not snap.tselect:
+            continue
+        count += 1
+        if count == n:
+            count = 0
+            continue
+        snap.tselect = 0
+        data.nselect -= 1
+    data.aselect.all()
+    print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))</code></pre>
+</details>
+</dd>
+<dt id="dump3.tselect.test"><code class="name flex">
+<span>def <span class="ident">test</span></span>(<span>self, teststr)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test(self, teststr):
+    data = self.data
+    snaps = data.snaps
+    # Python 2.x
+    # cmd = &#34;flag = &#34; + teststr.replace(&#34;$t&#34;,&#34;snaps[i].time&#34;)
+    # ccmd = compile(cmd,&#39;&#39;,&#39;single&#39;)
+    # Python 3.x
+    evalcmd = teststr.replace(&#34;$t&#34;, &#34;snaps[i].time&#34;)
+    for i in range(data.nsnaps):
+        if not snaps[i].tselect:
+            continue
+        # Python 2.x
+        # exec(ccmd)
+        flag = eval(evalcmd)
+        if not flag:
+            snaps[i].tselect = 0
+            data.nselect -= 1
+    data.aselect.all()
+    print(&#34;%d snapshots selected out of %d&#34; % (data.nselect, data.nsnaps))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="dump3.Frame" href="#dump3.Frame">Frame</a></code></h4>
+</li>
+<li>
+<h4><code><a title="dump3.Snap" href="#dump3.Snap">Snap</a></code></h4>
+</li>
+<li>
+<h4><code><a title="dump3.aselect" href="#dump3.aselect">aselect</a></code></h4>
+<ul class="">
+<li><code><a title="dump3.aselect.all" href="#dump3.aselect.all">all</a></code></li>
+<li><code><a title="dump3.aselect.test" href="#dump3.aselect.test">test</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dump3.dump" href="#dump3.dump">dump</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dump3.dump.atom" href="#dump3.dump.atom">atom</a></code></li>
+<li><code><a title="dump3.dump.clone" href="#dump3.dump.clone">clone</a></code></li>
+<li><code><a title="dump3.dump.compare_atom" href="#dump3.dump.compare_atom">compare_atom</a></code></li>
+<li><code><a title="dump3.dump.compare_time" href="#dump3.dump.compare_time">compare_time</a></code></li>
+<li><code><a title="dump3.dump.cull" href="#dump3.dump.cull">cull</a></code></li>
+<li><code><a title="dump3.dump.delete" href="#dump3.dump.delete">delete</a></code></li>
+<li><code><a title="dump3.dump.extra" href="#dump3.dump.extra">extra</a></code></li>
+<li><code><a title="dump3.dump.findtime" href="#dump3.dump.findtime">findtime</a></code></li>
+<li><code><a title="dump3.dump.frame" href="#dump3.dump.frame">frame</a></code></li>
+<li><code><a title="dump3.dump.iterator" href="#dump3.dump.iterator">iterator</a></code></li>
+<li><code><a title="dump3.dump.kind" href="#dump3.dump.kind">kind</a></code></li>
+<li><code><a title="dump3.dump.map" href="#dump3.dump.map">map</a></code></li>
+<li><code><a title="dump3.dump.maxbox" href="#dump3.dump.maxbox">maxbox</a></code></li>
+<li><code><a title="dump3.dump.maxtype" href="#dump3.dump.maxtype">maxtype</a></code></li>
+<li><code><a title="dump3.dump.minmax" href="#dump3.dump.minmax">minmax</a></code></li>
+<li><code><a title="dump3.dump.names2str" href="#dump3.dump.names2str">names2str</a></code></li>
+<li><code><a title="dump3.dump.newcolumn" href="#dump3.dump.newcolumn">newcolumn</a></code></li>
+<li><code><a title="dump3.dump.next" href="#dump3.dump.next">next</a></code></li>
+<li><code><a title="dump3.dump.owrap" href="#dump3.dump.owrap">owrap</a></code></li>
+<li><code><a title="dump3.dump.read_all" href="#dump3.dump.read_all">read_all</a></code></li>
+<li><code><a title="dump3.dump.read_snapshot" href="#dump3.dump.read_snapshot">read_snapshot</a></code></li>
+<li><code><a title="dump3.dump.scale" href="#dump3.dump.scale">scale</a></code></li>
+<li><code><a title="dump3.dump.scale_one" href="#dump3.dump.scale_one">scale_one</a></code></li>
+<li><code><a title="dump3.dump.scatter" href="#dump3.dump.scatter">scatter</a></code></li>
+<li><code><a title="dump3.dump.set" href="#dump3.dump.set">set</a></code></li>
+<li><code><a title="dump3.dump.setv" href="#dump3.dump.setv">setv</a></code></li>
+<li><code><a title="dump3.dump.sort" href="#dump3.dump.sort">sort</a></code></li>
+<li><code><a title="dump3.dump.sort_one" href="#dump3.dump.sort_one">sort_one</a></code></li>
+<li><code><a title="dump3.dump.spread" href="#dump3.dump.spread">spread</a></code></li>
+<li><code><a title="dump3.dump.time" href="#dump3.dump.time">time</a></code></li>
+<li><code><a title="dump3.dump.type" href="#dump3.dump.type">type</a></code></li>
+<li><code><a title="dump3.dump.unscale" href="#dump3.dump.unscale">unscale</a></code></li>
+<li><code><a title="dump3.dump.unscale_one" href="#dump3.dump.unscale_one">unscale_one</a></code></li>
+<li><code><a title="dump3.dump.unwrap" href="#dump3.dump.unwrap">unwrap</a></code></li>
+<li><code><a title="dump3.dump.vecs" href="#dump3.dump.vecs">vecs</a></code></li>
+<li><code><a title="dump3.dump.viz" href="#dump3.dump.viz">viz</a></code></li>
+<li><code><a title="dump3.dump.wrap" href="#dump3.dump.wrap">wrap</a></code></li>
+<li><code><a title="dump3.dump.write" href="#dump3.dump.write">write</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dump3.tselect" href="#dump3.tselect">tselect</a></code></h4>
+<ul class="">
+<li><code><a title="dump3.tselect.all" href="#dump3.tselect.all">all</a></code></li>
+<li><code><a title="dump3.tselect.none" href="#dump3.tselect.none">none</a></code></li>
+<li><code><a title="dump3.tselect.one" href="#dump3.tselect.one">one</a></code></li>
+<li><code><a title="dump3.tselect.skip" href="#dump3.tselect.skip">skip</a></code></li>
+<li><code><a title="dump3.tselect.test" href="#dump3.tselect.test">test</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>
