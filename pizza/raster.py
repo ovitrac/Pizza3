@@ -49,7 +49,7 @@
         
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-02-06
+# INRAE\Olivier Vitrac - rev. 2022-02-13
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -59,6 +59,7 @@
 # 2022-02-10 add figure(), newfigure(), count()
 # 2022-02-11 improve display, add data()
 # 2022-02-12 major release, fully compatible with pizza.data3.data
+# 2022-02-13 the example (<F5>) has been modified R.plot() should precedes R.list()
 
 
 # %% Imports and private library
@@ -727,8 +728,8 @@ if __name__ == '__main__':
     R.hexagon(47,85,12,name='H1',beadtype=5,angle=90)
     
     R.label("rect003")
-    R.list()
     R.plot()
+    R.list()
     R.show()
     
     R.clear()
@@ -739,7 +740,6 @@ if __name__ == '__main__':
     R.unlabel('rect1')
     
     X=R.data()
-    print(X)
     
 # %% another example    
     S = raster(width=1000,height=1000)
