@@ -11,9 +11,10 @@
 
 # list of public classes: data, dump, raster, struct
 
-# $ last revision - 2022-02-11 $
+# $ last revision - 2022-02-13 $
 
 from pizza.data3 import data
 from pizza.dump3 import dump
 from pizza.raster import raster
+from pizza.forcefield import *
 from pizza.private.struct import struct
