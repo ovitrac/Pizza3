@@ -9,12 +9,22 @@
 #    2) in your Python code
 #    import pizza *
 
-# list of public classes: data, dump, raster, struct
+# list of public classes: data, dump, raster, script, forcefield, struct, param
 
-# $ last revision - 2022-02-13 $
+# $ last revision - 2022-02-19 $
 
+# input data objects and methods
 from pizza.data3 import data
+# dump objects and methods
 from pizza.dump3 import dump
+# 2D sketching methods (3D pending)
 from pizza.raster import raster
+# script engine and methods
+from pizza.script import *
+# forcefield objects and derived classes
 from pizza.forcefield import *
-from pizza.private.struct import struct
+# basic tools à la Matlab
+# including a feature similar to MS/alias() from INRAE/MS Toolbox
+from pizza.private.struct import struct,param
+
+# other libraries will be added there

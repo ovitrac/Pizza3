@@ -109,11 +109,12 @@
 # History
 # 2022-02-12 early version
 # 2022-02-13 release candidate
+# 2022-02-20 made compatible with the update private.struct.py
 
 # %% Dependencies
-import types, math  # import math to authorize all math expressions in parameters
+import types
 # All forcefield parameters are stored à la Matlab in a structure
-from private.struct import struct
+from private.struct import param
 
 
 # %% Parent class (not to be called directly)
@@ -122,28 +123,13 @@ from private.struct import struct
 #   recommendation 2: __dict__ list only properties in the instance,
 #                     use getallattributes() to see all attributes
 
-# wrapper of struct class (used to rename type and ftype)
-class parameterforcefield(struct):
-    """ class of forcefields parameters """
-    # override
-    type = "forcefield"
-    ftype = "parameter"
-    
-    # magic constructor
-    def __init__(self,**kwargs):
-        """ constructor """
-        super().__init__(**kwargs)
-    
-    # formateval (note that ^ is accepted in exponents to be compatible with LAMMPS)
-    def formateval(self,s):
-        """ evaluate strings, format method wrapper """
-        tmp = struct()
-        for key,value in self.__dict__.items():
-            if isinstance(value,str):
-                tmp.setattr(key, eval(tmp.format(value.replace("^","**"))))
-            else:
-                tmp.setattr(key, value)
-        return tmp.format(s)  
+# container of forcefield parameters
+class parameterforcefield(param):
+    """ class of forcefields parameters, derived from param """
+    _type = "FF"
+    _fulltype = "forcefield"
+    _ftype = "parameter"
+     
     
 # core class
 class forcefield():
@@ -429,7 +415,7 @@ class solidfood(tlsph):
 
 
 
-# BEGIN MATERIAL: SOLID FOOD ========================================
+# BEGIN MATERIAL: RIGID WALLS ========================================
 class rigidwall(none):
     """ rigid walls (smd:none): use rigidwalls() or solidfood(beadtype=index, userid="myfood") """
     
@@ -449,7 +435,9 @@ class rigidwall(none):
             )
 
         
-# END MATERIAL: SOLID FOOD ==========================================
+# END MATERIAL: RIGID WALLS ==========================================
+
+
 # %% DEBUG  
 # ===================================================   
 # main()
