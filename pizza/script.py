@@ -13,6 +13,32 @@
         
         Variables can be inherited between sections using + or += operator
         
+    Toy example
+        G = globalsection()
+        print(G)
+        c = initializesection()
+        print(c)
+        g = geometrysection()
+        print(g)
+        d = discretizationsection()
+        print(d)
+        b = boundarysection()
+        print(b)
+        i = interactionsection()
+        print(i)
+        t = integrationsection()
+        print(t)
+        d = dumpsection()
+        print(d)
+        s = statussection()
+        print(s)
+        r = runsection()
+        print(r)
+        
+        # all sections as a single script
+        myscript = G+c+g+d+b+i+t+d+s+r
+        print("\n"*4,'='*80,'\n\n this is the full script\n\n','='*80,'\n')
+        print(myscript.do())
 
 
 Created on Sat Feb 19 11:00:43 2022
@@ -26,9 +52,11 @@ Created on Sat Feb 19 11:00:43 2022
 
 # Revision history
 # 2022/02/20 RC with documentation and 10 section templates
+# 2022/02/21 add + += operators, expand help
 
 # %% Dependencies
 import types
+from copy import copy as duplicate
 # All forcefield parameters are stored à la Matlab in a structure
 from private.struct import param
 
@@ -81,11 +109,21 @@ class script():
                   text= "$my text"            
             )
         
-        Use the print() and the method do() to get the script interpreted
+        NOTE1: Use the print() and the method do() to get the script interpreted
         
-        DEFINITIONS can be pretified using DEFINITIONS.generator()
+        NOTE2: DEFINITIONS can be pretified using DEFINITIONS.generator()
         
-        Variables can extracted from a template using TEMPLATE.scan()
+        NOTE3: Variables can extracted from a template using TEMPLATE.scan()
+        
+        NOTE4: Scripts can be joined (from top down to bottom).
+        The first definitions keep higher precedence. Please do not use
+        a variable twice with different contents.
+        
+        myscript = s1 + s2 + s3 will propagate the definitions
+        without overwritting previous values). myscript will be
+        defined as s1 (same name, position, userid, etc.)
+    
+        myscript += s appends the script section s to myscript
         
         
     """
@@ -157,7 +195,25 @@ class script():
         else:
             return ""
 
+    # override +
+    def __add__(self,s):
+        """ overload addition operator """
+        if isinstance(s,script):
+            dup = duplicate(self)
+            dup.DEFINITIONS = dup.DEFINITIONS + s.DEFINITIONS
+            dup.TEMPLATE = "\n".join([dup.TEMPLATE,s.TEMPLATE])
+            return dup
+        raise TypeError("the second operand must a script object")
 
+    # override +=
+    def _iadd__(self,s):
+        """ overload addition operator """
+        if isinstance(s,script):
+            self.DEFINITIONS = self.DEFINITIONS + s.DEFINITIONS
+            self.TEMPLATE = "\n".join([self.TEMPLATE,s.TEMPLATE])
+        else:
+            raise TypeError("the second operand must a script object")
+                
 
 # %% Parent classes of script sessions (to be derived)
 # navigate with the outline window
@@ -623,7 +679,7 @@ class statussection(script):
     
 # %% Run section template
 class runsection(script):
-    """ LAMMPS script: XXXX session """
+    """ LAMMPS script: run session """
     name = "run"
     description = name+" section"
     position = 9
@@ -674,3 +730,8 @@ if __name__ == '__main__':
     print(s)
     r = runsection()
     print(r)
+    
+    # all sections as a single script
+    myscript = G+c+g+d+b+i+t+d+s+r
+    print("\n"*4,'='*80,'\n\n this is the full script\n\n','='*80,'\n')
+    print(myscript.do())
