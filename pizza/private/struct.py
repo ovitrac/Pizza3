@@ -16,11 +16,13 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-02-19 integration of the derived class param()
 # 2022-02-20 code optimization, iterable class- major update
 # 2022-02-26 clarify in the help the precedence s=s1+s2
+# 2022-02-28 display nested structures
 
 # Dependencies
 from math import * # import math to authorize all math expressions in parameters
 import types       # to check types
 import re          # regular expression
+import numpy as np
 from copy import copy as duplicate # to duplicate objects
 
 # core struct cal
@@ -250,7 +252,10 @@ class struct():
             print(line)
             for key,value in self.__dict__.items():
                 if key not in self._excludedattr:
-                    print(fmt % key,value)
+                    if isinstance(value,(int,float,str,list,tuple,np.ndarray,np.generic)):
+                        print(fmt % key,value)
+                    else:
+                        print(fmt % key,type(value))
                     if self._evalfeature and isinstance(value,str):
                         print(fmteval % "",tmp.getattr(key))
             print(line)

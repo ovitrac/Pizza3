@@ -54,7 +54,8 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-02-20 RC with documentation and 10 section templates
 # 2022-02-21 add + += operators, expand help
 # 2022-02-26 add USER to enable instance variables with higher precendence
-# 2022-02-27 add write() method and & operator
+# 2022-02-27 add write() method and overload & operator
+# 2022-02-28 overload * (+ expansion) and ** (& expansion) operators
 
 # %% Dependencies
 import types
@@ -229,8 +230,10 @@ class script():
     position = 0                            # 0 = root
     section = 0                             # section (0=undef)
     userid = "undefined"                    # user name
-    version = 0                             # version
-    verbose = False                         # set it to True to force verbosity            
+    version = 0.21                          # version
+    verbose = False                         # set it to True to force verbosity
+    _contact = ("INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr",
+                "INRAE\SAYFOOD\william.jenkinson@agroparistech.fr")
     
     SECTIONS = ["NONE","GLOBAL","INITIALIZE","GEOMETRY","DISCRETIZATION",
                 "BOUNDARY","INTERACTIONS","INTEGRATION","DUMP","STATUS","RUN"]
@@ -328,7 +331,26 @@ class script():
             dup.TEMPLATE = "\n".join([self.do(),s.do()])
             return dup
         raise TypeError("the second operand must a script object")
+ 
+    # override *
+    def __mul__(self,ntimes):
+        """ overload * operator """
+        if isinstance(ntimes, int) and ntimes>0:
+           res = duplicate(self)
+           if ntimes>1:
+               for n in range(1,ntimes): res += self
+           return res
+        raise ValueError("multiplicator should be a strictly positive integer")
 
+    def __pow__(self,ntimes):
+        """ overload ** operator """
+        if isinstance(ntimes, int) and ntimes>0:
+           res = duplicate(self)
+           if ntimes>1:
+               for n in range(1,ntimes): res = res & self
+           return res
+        raise ValueError("multiplicator should be a strictly positive integer")
+        
     # write file
     def write(self, file):
         f = open(file, "w")

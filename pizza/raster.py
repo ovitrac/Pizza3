@@ -45,6 +45,7 @@
         
     Create a pizza.dump3.dump object
         X = R.data()
+        X=R.data(scale=(1,1),center=(0,0))
         X.write("/tmp/myfile")
         
 """
@@ -60,6 +61,7 @@
 # 2022-02-11 improve display, add data()
 # 2022-02-12 major release, fully compatible with pizza.data3.data
 # 2022-02-13 the example (<F5>) has been modified R.plot() should precedes R.list()
+# 2022-02-28 update write files for SMD, add scale and center to R.data()
 
 
 # %% Imports and private library
@@ -97,6 +99,7 @@ class raster:
     Constructor
     
         R = raster(width=100,height=100)
+        scale and center are only used with R.data()
     
     Graphical objects
         
@@ -131,7 +134,7 @@ class raster:
         R.delete("object")
 
     Generate an input data object
-        X = R.data()
+        X = R.data() or X=R.data(scale=(1,1),center=(0,0))
         X.write("/tmp/myfile")
     
     """
@@ -162,37 +165,43 @@ class raster:
         # generic SMD properties (to be rescaled)
         self.volume = 1
         self.mass = 1
-        self.radius = 1
-        self.contactradius = 1
+        self.radius = 1.5
+        self.contactradius = 0.5
         self.velocities = [0,0,0]
         self.forces =[0,0,0]
         
     # DATA ---------------------------- 
-    def data(self):
-        """ return a pizza.data object """
+    def data(self,scale=(1,1),center=(0,0)):
+        """
+        data(scale=(scalex,scaley),center=(centerx,centery))
+        return a pizza.data object  """
+        if not isinstance(scale,tuple) or len(scale)!=2:
+            raise ValueError("scale must be tuple (scalex,scaley)")
+        if not isinstance(center,tuple) or len(scale)!=2:
+            raise ValueError("center must be tuple (centerx,centery)")
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + "(raster)"
         X.headers = {'atoms': n,
                       'atom types': self.count()[-1][0],
-                      'xlo xhi': (0.5, self.width-0.5),
-                      'ylo yhi': (0.5, self.height-0.5),
-                      'zlo zhi': (0, 0)}
+                      'xlo xhi': ((0.5-center[0])*scale[0], (self.width-0.5-center[0])*scale[0]),
+                      'ylo yhi': ((0.5-center[1])*scale[1], (self.height-0.5-center[1])*scale[1]),
+                      'zlo zhi': (0, 0.5*np.sqrt(scale[0]*scale[1]))}
         # [ATOMS] section
         X.append('Atoms',list(range(1,n+1)),True,"id")      # id
         X.append('Atoms',self.imbead[i,j],True,"type")      # Type
-        X.append('Atoms',self.imobj[i,j],True,"mol")        # mol
+        X.append('Atoms',1,True,"mol")                      # mol
         X.append('Atoms',self.volume,False,"c_vol")         # c_vol
         X.append('Atoms',self.mass,False,"mass")            # mass
         X.append('Atoms',self.radius,False,"radius")        # radius
         X.append('Atoms',self.contactradius,False,"c_contact_radius") # c_contact_radius
-        X.append('Atoms',j+0.5,False,"x")                   # x
-        X.append('Atoms',i+0.5,False,"y")                   # y
-        X.append('Atoms',0,False,"z")                       # z
-        X.append('Atoms',self.forces[0],False,"f_1[1]")     # force along x
-        X.append('Atoms',self.forces[1],False,"f_1[2]")     # force along y
-        X.append('Atoms',self.forces[2],False,"f_1[3]")     # force along z
+        X.append('Atoms',(j+0.5-center[0])*scale[0],False,"x")        # x
+        X.append('Atoms',(i+0.5-center[1])*scale[1],False,"y")        # y
+        X.append('Atoms',0,False,"z")                                 # z
+        X.append('Atoms',(j+0.5-center[0])*scale[0],False,"x0")       # x0
+        X.append('Atoms',(i+0.5-center[1])*scale[1],False,"y0")       # y0
+        X.append('Atoms',0,False,"z0")                                # z0
         # [VELOCITIES] section
         X.append('Velocities',list(range(1,n+1)),True,"id") # id
         X.append('Velocities',self.velocities[0],False,"vx") # vx

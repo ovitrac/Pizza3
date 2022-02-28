@@ -32,8 +32,8 @@
               def __init__(self, beadtype=1, userid=None):
                   super().__init__()
                   if userid!=None: self.userid = userid
-                  self.name["material"] = "short of the material"
-                  self.description["material"] = "full description"
+                  self.name.material"] = "short of the material"
+                  self.description.material"] = "full description"
                   self.beadtype = beadtype
                   self.parameters = parameterforcefield(
                       param1 = value1,
@@ -110,11 +110,12 @@
 # 2022-02-12 early version
 # 2022-02-13 release candidate
 # 2022-02-20 made compatible with the update private.struct.py
+# 2022-02-28 fix class inheritance with mutable type, update is carried with + and struct()
 
 # %% Dependencies
 import types
 # All forcefield parameters are stored à la Matlab in a structure
-from private.struct import param
+from private.struct import struct,param
 
 
 # %% Parent class (not to be called directly)
@@ -136,8 +137,8 @@ class forcefield():
     """ core forcefield class (not to be called directly) """
     
     # Main attributes (instance independent)
-    name = {"forcefield":"undefined", "style":"undefined", "material":"undefined"}
-    description = {"forcefield":"missing", "style":"missing", "material":"missing"}
+    name = struct(forcefield="undefined", style="undefined", material="undefined")
+    description = struct(forcefield="missing", style="missing", material="missing")
     beadtype = 1  # default bead type
     parameters = parameterforcefield() # empty parameters object
     userid = "undefined"
@@ -156,14 +157,14 @@ class forcefield():
     # The method provides full help for the end-user
     def __repr__(self):
         """ disp method """
-        stamp = self.name["forcefield"]+":"+self.name["style"]+":"+self.name["material"]
+        stamp = self.name.forcefield+":"+self.name.style+":"+self.name.material
         self.printheader("%s | version=%0.3g" % (self.userid,self.version),filler="=")
         print("  Bead of type %d = [%s]" % (self.beadtype,stamp))
         print(self.parameters)
         self.printheader("description",filler=".")
-        print("\t# \t%s" % self.description["forcefield"])
-        print("\t# \t%s" % self.description["style"])
-        print("\t# \t%s" % self.description["material"])
+        print("\t# \t%s" % self.description.forcefield)
+        print("\t# \t%s" % self.description.style)
+        print("\t# \t%s" % self.description.material)
         self.printheader("methods")
         print("\t   >>> replace FFi,FFj by your variable names <<<")
         print("\tTo assign a type, use: FFi.beadtype = integer value")
@@ -241,12 +242,8 @@ class forcefield():
 # BEGIN PAIR-STYLE FORCEFIELD ===========================
 class smd(forcefield):
     """ SMD forcefield """
-    
-    # forcefield documentation
-    def __init__(self):
-        super().__init__()
-        self.name["forcefield"] = "LAMMPS:SMD"
-        self.description["forcefield"] = "LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)"
+    name = forcefield.name + struct(forcefield="LAMMPS:SMD")
+    description = forcefield.description + struct(forcefield="LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)")
     
     # forcefield definition (LAMMPS code between triple """)
     PAIR_STYLE = """
@@ -260,12 +257,8 @@ class smd(forcefield):
 # BEGIN PAIR-COEFF FORCEFIELD ===========================
 class ulsph(smd):
     """ SMD:ULSPH forcefield (updated Lagrangian) """
-    
-    # style documentation
-    def __init__(self):
-        super().__init__()
-        self.name["style"] = "ulsph"
-        self.description["style"] = "SMD:ULSPH - updated Langrangian for fluids - SPH-like"
+    name = smd.name + struct(style="ulsph")
+    description = smd.description + struct(style="SMD:ULSPH - updated Langrangian for fluids - SPH-like")
 
     # style definition (LAMMPS code between triple """)
     PAIR_DIAGCOEFF = """
@@ -283,13 +276,9 @@ class ulsph(smd):
 
 # BEGIN PAIR-COEFF FORCEFIELD ===========================
 class tlsph(smd):
-    """ SMD:TLSPH forcefield (updated Lagrangian) """
-    
-    # style documentation
-    def __init__(self):
-        super().__init__()
-        self.name["style"] = "tlsph"
-        self.description["style"] = "SMD:TLSPH - total Langrangian for solids"
+    """ SMD:TLSPH forcefield (total Lagrangian) """
+    name = smd.name + struct(syle="tlsph")
+    description = smd.description + struct(style="SMD:TLSPH - total Langrangian for solids")
 
     # style definition (LAMMPS code between triple """)
     PAIR_DIAGCOEFF = """
@@ -309,12 +298,8 @@ class tlsph(smd):
 # BEGIN PAIR-COEFF FORCEFIELD ===========================
 class none(smd):
     """ SMD:TLSPH forcefield (updated Lagrangian) """
-    
-    # style documentation
-    def __init__(self):
-        super().__init__()
-        self.name["style"] = "none"
-        self.description["style"] = "no interactions"
+    name = smd.name + struct(style="none")
+    description = smd.description + struct(style="no interactions")
 
     # style definition (LAMMPS code between triple """)
     PAIR_DIAGCOEFF = """
@@ -323,7 +308,7 @@ class none(smd):
     """
     PAIR_OFFDIAGCOEFF = """
     # [comment] Off-diagonal pair coefficient (generic)
-    pair_coeff      %d %d none
+    pair_coeff      %d %d smd/hertz ${contact_stiffness}
     """
 # END PAIR-COEFF FORCEFIELD ===========================
 
@@ -337,8 +322,8 @@ class none(smd):
 #       def __init__(self, beadtype=1, userid=None):
 #           super().__init__()
 #           if userid!=None: self.userid = userid
-#           self.name["material"] = "short of the material"
-#           self.description["material"] = "full description"
+#           self.name.material"] = "short of the material"
+#           self.description.material"] = "full description"
 #           self.beadtype = beadtype
 #           self.parameters = parameterforcefield(
 #               param1 = value1,
@@ -351,18 +336,16 @@ class none(smd):
 
 # BEGIN MATERIAL: WATER ========================================
 class water(ulsph):
-    """ water material (smd:ulsph): use water() or water(beadtype=index, userid="myfluid") """
-    
+    """ water material (smd:ulsph): use water() or water(beadtype=index, userid="myfluid", USER=...) """
+    name = ulsph.name + struct(material="water")
+    description = ulsph.description + struct(material="water beads - SPH-like")
     userid = 'water'
     version = 0.1
     
     # constructor (do not forgert to include the constuctor)
-    def __init__(self, beadtype=1, userid=None):
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         """ water forcefield: water(beadtype=index, userid="myfluid") """
-        super().__init__()
         if userid!=None: self.userid = userid
-        self.name["material"] = "water"
-        self.description["material"] = "water beads - SPH-like"
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
             # water-water interactions
@@ -374,28 +357,27 @@ class water(ulsph):
             # hertz contacts
             contact_scale = 1.5,
             contact_stiffness = '2.5*${c0}^2*${rho}'
-            )
+            ) + USER # update with user properties if any
         
 # END MATERIAL: WATER ==========================================
 
 
 # BEGIN MATERIAL: SOLID FOOD ========================================
 class solidfood(tlsph):
-    """ solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid="myfood") """
-    
+    """ solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid="myfood", USER=...) """
+    name = tlsph.name + struct(material="solidfood")
+    description = tlsph.description + struct(material="food beads - solid behavior")
     userid = 'solidfood'
     version = 0.1
     
     # constructor (do not forgert to include the constuctor)
-    def __init__(self, beadtype=1, userid=None):
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         """ food forcefield: solidfood(beadtype=index, userid="myfood") """
-        super().__init__()
+        # super().__init__()
         if userid!=None: self.userid = userid
-        self.name["material"] = "solidfood"
-        self.description["material"] = "food beads - solid behavior"
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
-            # water-water interactions
+            # food-food interactions
             rho = 1000,
             c0 = 10.0,
             E = '5*${c0}^2*${rho}',
@@ -409,7 +391,7 @@ class solidfood(tlsph):
             # hertz contacts
             contact_scale = 1.5,
             contact_stiffness = '2.5*${c0}^2*${rho}'
-            )
+            ) + USER # update with user properties if any
         
 # END MATERIAL: SOLID FOOD ==========================================
 
@@ -417,22 +399,24 @@ class solidfood(tlsph):
 
 # BEGIN MATERIAL: RIGID WALLS ========================================
 class rigidwall(none):
-    """ rigid walls (smd:none): use rigidwalls() or solidfood(beadtype=index, userid="myfood") """
-    
+    """ rigid walls (smd:none): use rigidwall() or rigidwall(beadtype=index, userid="wall", USER=...) """
+    name = none.name + struct(material="walls")
+    description = none.description + struct(material="rigid walls")
     userid = 'solidfood'
     version = 0.1
     
     # constructor (do not forgert to include the constuctor)
-    def __init__(self, beadtype=1, userid=None):
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         """ food forcefield: solidfood(beadtype=index, userid="mywall") """
-        super().__init__()
+        # super().__init__()
         if userid!=None: self.userid = userid
-        self.name["material"] = "walls"
-        self.description["material"] = "rigid walls"
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
+            rho = 3000,
+            c0 = 10.0,
+            contact_stiffness = '2.5*${c0}^2*${rho}',
             contact_scale = 1.5
-            )
+            ) + USER # update with user properties if any
 
         
 # END MATERIAL: RIGID WALLS ==========================================
