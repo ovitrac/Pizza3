@@ -51,8 +51,10 @@ Created on Sat Feb 19 11:00:43 2022
 
 
 # Revision history
-# 2022/02/20 RC with documentation and 10 section templates
-# 2022/02/21 add + += operators, expand help
+# 2022-02-20 RC with documentation and 10 section templates
+# 2022-02-21 add + += operators, expand help
+# 2022-02-26 add USER to enable instance variables with higher precendence
+# 2022-02-27 add write() method and & operator
 
 # %% Dependencies
 import types
@@ -109,6 +111,14 @@ class script():
                   text= "$my text"            
             )
         
+        
+        Recommandation: Split a large script into a small classes or actions
+        An example of use could be: 
+            move1 = translation(displacement=10)+rotation(angle=30)
+            move2 = shear(rate=0.1)+rotation(angle=20)
+            bigmove = move1+move2+move1
+            script = bigmove.do() generates the script
+        
         NOTE1: Use the print() and the method do() to get the script interpreted
         
         NOTE2: DEFINITIONS can be pretified using DEFINITIONS.generator()
@@ -125,7 +135,93 @@ class script():
     
         myscript += s appends the script section s to myscript
         
+        NOTE5: rules of precedence when script are concatenated
+        The attributes from the class (name, description...) are kept from the left
+        The values of the right overwrite all DEFINITIONS
         
+        NOTE6: user variables (instance variables) can set with USER or at the construction
+        myclass_instance = myclass(myvariable = myvalue)
+        myclass_instance.USER.myvariable = myvalue
+        
+        NOTE7: how to change variables for all instances at once?
+        In the example below, let x is a global variable (instance independent)
+        and y a local variable (instance dependent)
+        instance1 = myclass(y=1) --> y=1 in instance1
+        instance2 = myclass(y=2) --> y=2 in instance2
+        instance3.USER.y=3 --> y=3 in instance3
+        instance1.DEFINITIONS.x = 10 --> x=10 in all instances (1,2,3)
+
+        If x is also defined in the USER section, its value will be used        
+        Setting instance3.USER.x = 30 will assign x=30 only in instance3
+        
+        NOTE8: if a the script is used with different values for a smae parameter
+        use the operator & to concatenate the results instead of the script
+        example: load(file="myfile1") & load(file="myfile2) & load(file="myfile3")+...
+        
+        --------------------------[ FULL EXAMPLE ]-----------------------------
+
+        # Import the class
+        from pizza.script import *
+        
+        # Override the class globalsection
+        class scriptexample(globalsection):
+            description = "demonstrate commutativity of additions"
+            verbose = True
+            
+            DEFINITIONS = scriptdata(
+                X = 10,
+                Y = 20,
+                R1 = "${X}+${Y}",
+                R2 = "${Y}+${X}"
+                )
+            TEMPLATE = "" "
+            # Property of the addition
+            ${R1} = ${X} + ${Y}
+            ${R2} = ${Y} + ${X}
+         "" "
+            
+        # derived from scriptexample, X and Y are reused
+        class scriptexample2(scriptexample):
+            description = "demonstrate commutativity of multiplications"
+            verbose = True
+            DEFINITIONS = scriptexample.DEFINITIONS + scriptdata(
+                R3 = "${X} * ${Y}",
+                R4 = "${Y} * ${X}",        
+                )            
+            TEMPLATE = "" "
+            # Property of the multiplication
+            ${R3} = ${X} * ${Y}
+            ${R4} = ${Y} * ${X}
+         "" "
+        
+        # call the first class and override the values X and Y
+        s1 = scriptexample()
+        s1.USER.X = 1  # method 1 of override
+        s1.USER.Y = 2
+        s1.do()
+        # call the second class and override the values X and Y
+        s2 = scriptexample2(X=1000,Y=2000) # method 2
+        s2.do()
+        # Merge the two scripts
+        s = s1+s2
+        print("this is my full script")
+        s.description
+        s.do()
+        
+        # The result for s1 is
+            3 = 1 + 2
+            3 = 2 + 1
+        # The result for s2 is
+            2000000 = 1000 * 2000
+            2000000 = 2000 * 1000
+        # The result for s=s1+s2 is
+            # Property of the addition
+            3000 = 1000 + 2000
+            3000 = 2000 + 1000 
+            # Property of the multiplication
+            2000000 = 1000 * 2000
+            2000000 = 2000 * 1000
+    
     """
     type = "script"                         # type (class name)
     name = "empty script"                   # name
@@ -138,11 +234,18 @@ class script():
     
     SECTIONS = ["NONE","GLOBAL","INITIALIZE","GEOMETRY","DISCRETIZATION",
                 "BOUNDARY","INTERACTIONS","INTEGRATION","DUMP","STATUS","RUN"]
+   
+    # Main class variables
+    # These definitions are for instances
     DEFINITIONS = scriptdata()
     TEMPLATE = """
         # empty LAMMPS script
     """
     
+    # constructor
+    def __init__(self,**userdefinitions):
+        """ constructor adding instance definitions stored in USER """
+        self.USER = scriptdata(**userdefinitions)
     
     # print method for headers (static, no implicit argument)
     @staticmethod
@@ -181,7 +284,8 @@ class script():
     # Generate the script
     def do(self,printflag=True):
         """ generate the script """
-        cmd = self.DEFINITIONS.formateval(self.TEMPLATE)
+        inputs = self.DEFINITIONS + self.USER
+        cmd = inputs.formateval(self.TEMPLATE)
         cmd = cmd.replace("[comment]",f"[position {self.position}:{self.userid}]")
         if printflag: print(cmd)
         return cmd
@@ -201,6 +305,7 @@ class script():
         if isinstance(s,script):
             dup = duplicate(self)
             dup.DEFINITIONS = dup.DEFINITIONS + s.DEFINITIONS
+            dup.USER = dup.USER + s.USER
             dup.TEMPLATE = "\n".join([dup.TEMPLATE,s.TEMPLATE])
             return dup
         raise TypeError("the second operand must a script object")
@@ -210,11 +315,26 @@ class script():
         """ overload addition operator """
         if isinstance(s,script):
             self.DEFINITIONS = self.DEFINITIONS + s.DEFINITIONS
+            self.USER = self.USER + s.USER
             self.TEMPLATE = "\n".join([self.TEMPLATE,s.TEMPLATE])
         else:
             raise TypeError("the second operand must a script object")
-                
+            
+    # override &
+    def __and__(self,s):
+        """ overload and operator """
+        if isinstance(s,script):
+            dup = duplicate(self)
+            dup.TEMPLATE = "\n".join([self.do(),s.do()])
+            return dup
+        raise TypeError("the second operand must a script object")
 
+    # write file
+    def write(self, file):
+        f = open(file, "w")
+        print(self.do(),file=f)
+        f.close()
+        
 # %% Parent classes of script sessions (to be derived)
 # navigate with the outline window
 
@@ -253,7 +373,7 @@ class globalsection(script):
                  Cp= "1.0 # heat capacity -- not used here"
                   )
     
-    DEFINITIONS += MATERIALS # apprend MATERIALS data
+    DEFINITIONS += MATERIALS # append MATERIALS data
     
     TEMPLATE = """
 # :GLOBAL SECTION:

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Matlab-like Structure class
+Matlab MS.alias like class (with MS = Molecular Studio, author Olivier V.)
 
 Created on Sun Jan 23 14:19:03 2022
 
@@ -14,6 +15,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-02-12 add type, format
 # 2022-02-19 integration of the derived class param()
 # 2022-02-20 code optimization, iterable class- major update
+# 2022-02-26 clarify in the help the precedence s=s1+s2
 
 # Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -68,6 +70,7 @@ class struct():
         
     
     Concatenate or remove structures
+    Note: the definitions in the most right structure will overwrite existing values
         a=struct(a=1,b=2)
         b=struct(c=3,d="d",e="e")
         c=a+b
