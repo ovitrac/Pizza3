@@ -264,7 +264,11 @@ class struct():
         
     def format(self,s):
         """ format a string with field (use {field} as placeholders) """
-        return s.replace("${","{").format(**self.__dict__)
+        try:
+            return s.replace("${","{").format(**self.__dict__)
+        except KeyError:
+            print(f'\n Missing {self._ftype} unable interpret the expression:\n\t"{s}"')
+            raise
 
     def fromkeys(self,keys):
         """ returns a structure from keys """

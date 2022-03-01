@@ -10,7 +10,7 @@ Created on Fri Feb 25 13:52:08 2022
 
 # Revision history
 # 2022-02-28 early version, almost functional (dump and run missing)
-# 2022-03-01 release candidate
+# 2022-03-01 release candidate, full documentation, better style
 
 # generic dependencies
 import datetime, os, socket, getpass
@@ -23,8 +23,41 @@ from pizza.private.struct import struct
 
 # %% Initialization template
 class initialization(globalsection):
-    """ initialize LAMMPS core-shell model"""
-    description = "syntax: initialization(var1=val1,var2=val2,...)"
+    """ 
+    workshop0.initialization()
+    workshop0.initialization(param1=value1,param2=value2)
+    
+        Initialize LAMMPS core-shell model of workshop0
+        
+        Example
+        -------
+        init = initialization(boundary=["p","f","p"],dimension=2)
+        init.USER.boundary=["p","f","p"] # works also
+        init.do()                       # shows the script
+        
+        Comments:
+            Set parameters at during the first call or use the USER atrribute to do it
+            The method do() shows the content of the script
+            type init +ENTER to see all accessible DEFINITIONS and TEMPLATE
+            
+        How to generate a complex script
+        ---------------------------------
+          fullscript = init+geom+groups+physgravity+forcefield+\
+              initthermo+equilsteps+dump+moves
+          fullscript.write("tmp/myscript.inp")
+          
+          Comments:
+              Several scripts can be combined with the operator +
+              As a result, values set in DEFINITIONS are shared between all scripts
+              Use: fullscript.write("tmp/myscript.inp") to generate a LAMMPS file
+              Use: fullscript.do() to show the script
+              type fullscript +ENTER to see all details
+            
+        Previous step/class: none
+        Next step/class: load()
+        
+    """
+    description = "initialization(var1=val1,var2=val2,...)"
     userid = "initialization"               # user name
     version = 1.0                           # version
     
@@ -32,12 +65,12 @@ class initialization(globalsection):
     DEFINITIONS = scriptdata(
                 units= "$ si",
             dimension= 2,
-             boundary= "$ p f p", # simulation box boundaries
-          comm_modify= "$ vel yes",
+             boundary= ["p","f","p"], # simulation box boundaries
+          comm_modify= ["vel","yes"],
            comm_style= "$ tiled",
-          atom_modify= "$ map array",
+          atom_modify= ["map","array"],
                newton= "$ off",
-              neighbor= "$ 1 bin",
+              neighbor= [1,"bin"],
     neigh_modify_every= 5, 
     neigh_modify_delay= 0,
     neigh_modify_check= "$ yes",
@@ -68,7 +101,28 @@ atom_style	${atom_style}
 
 # %% Initialization template
 class load(geometrysection):
-    """ load geometry """
+    """ 
+    workshop0.load(local="$workingdir",file="$filename")
+    
+        Load geometry models and assign bead indices (first digits)
+        
+        Example
+        -------
+        wdir = "$ ../datafile"
+        geom = load(local=wdir,file="$ 2_Top_mod.lmp",mode="") & \
+               load(local=wdir,file="$ 1_Bottom_mod.lmp") & \
+               load(local=wdir,file="$ 3_thin_shell_outer_mod.lmp") & \
+               load(local=wdir,file="$ 4_thin_shell_inner_mod.lmp")       
+               
+        Comments:
+            Use "$" to define a chain without evaluation
+            Use "&" (and) to link several actions (same script with different values)
+            mode = "" is used to avoid "add append"
+            
+        Previous step/class: initialization()
+        Next step/class: group()        
+        
+    """
     description = 'syntax: load(local="$ /my/folder/",file="$ my file")'
     userid = "load()"
     version = 1.0
@@ -82,37 +136,104 @@ class load(geometrysection):
     # Template
     TEMPLATE = \
     """read_data ${local}/${file} ${mode}"""
-  
+
+
+# group beads together
 class group(geometrysection):
-    """ create groups """
-    description = 'group(name="$ mygroup",type="$ 1 2 3")'
+    """ 
+    workshop0.group(name="$groupname",type=1 or [1,2,3..])
+    
+        Set group of beads based on their types
+        
+        Example
+        -------
+        groups = group(name="$ solid",type=[1,2,3]) & \
+                 group(name="$ tlsph",type=[1,2,3]) & \
+                 group(name="$ fluid",type=4) & \
+                 group(name="$ ulsph",type=4) & \
+                 group(name="$ moving1",type=1) & \
+                 group(name="$ moving2",type=2)    
+               
+        Comments:
+            Use "$" to define a chain without evaluation
+            Use "&" (and) to link several actions (same script with different values)
+            type can be either int or list
+            
+        Previous step/class: load()
+        Next step/class: gravity()        
+        
+    """
+    description = 'group(name="$mygroup",type=[1,2,3])'
     userid = "group()"
     version = 1.0
     
     # group definition
     DEFINITIONS = scriptdata(
         name = "$ solid",
-        type = "$ 1 2 3"
+        type = [1,2,3]
         )
     #template
     TEMPLATE = """group ${name} ${type}"""
 
+
+# Set gravity in simulation
 class gravity(initializesection):
-    """ apply gravity """
-    description = 'gravity(g=9.81,vector="$ 0 1 0")'
+    """ 
+    workshop0.gravity(g=9.81,vector=[0,1,0])
+    
+        Set gravity for simulation (intensity and orientation)
+        
+        Example
+        -------
+        physgravity = gravity(g=0)  
+               
+        Comments:
+            In 2D, gravity should be along y (i.e., [0,1,0])
+            Use "&" (and) to link several actions (same script with different values)
+            type can be either int or list
+            
+        Previous step/class: group()
+        Next step/class: interactions()        
+        
+    """
+    description = 'gravity(g=9.81,vector=[0,1,0])'
     userid = "gravity()"
     version = 1.0
     
     # group definition
     DEFINITIONS = scriptdata(
              g = 9.81,
-        vector = "$ 0 1 0"
+        vector = [0,1,0]
         )
     #template
-    TEMPLATE = """fix gfix all gravity ${g} vector ${vector} """
+    TEMPLATE = """fix gfix all gravity ${g} vector ${vector}"""
     
+    
+# set interactions
 class interactions(initialization,interactionsection):
-    """ set forcefield """
+    """ 
+    workshop0.interactions(top=1,bottom=2,solid=3,fluid=4)
+    
+        Set forcefields for workshop
+        
+        Example
+        -------
+        forcefield = interactions(top=1,bottom=2,solid=3,fluid=4)
+        forcefield.FLUID.rho = 951
+        forcefield.refresh() # mandatory after a value modification
+               
+        Comments:
+            Assign bead types to the four labels "top","bottom","solid","fluid"
+            Use  forcefield.FLUID to set a fluid properties
+            Idem with forcefield.SOLID, forcefield.WALL
+            Note1: update the all definitions with forcefield.refresh()
+            Note2: forcefields have complex defitions, please refer to the code
+                   and the class forcefield()
+            
+        Previous step/class: gravity()
+        Next step/class: thermo()        
+        
+    """
     description = 'interactions(top=1,bottom=2,solid=3,fluid=4)'
     userid = "interactions()"
     version = 1.0
@@ -187,19 +308,40 @@ class interactions(initialization,interactionsection):
 
 # %% Equilibration and dynamics
 class thermo(integrationsection):
+    """ 
+    workshop0.thermo(adjust_radius = [1.01,10,15],limit_velocity=1000)
+    
+        Set default parameters for time integration
+        
+        Example
+        -------
+        initthermo = thermo()
+               
+        Comments:
+            Do not change the parameters without reading the "style" manual
+            
+            
+        Previous step/class: interactions()
+        Next step/class: equilibration()        
+        
+    """
+    description = 'thermo(param=value...)'
+    userid = "thermo()"
+    version = 1.0
+    
     DEFINITIONS = scriptdata(
               dt = 0.1,
-   adjust_redius = "$ 1.01 10 15",
+   adjust_radius = [1.01,10,15],
   limit_velocity = 1000,
          thermo = 50,
-  thermo_modify = "$ lost ignore",
-        balance = "$ 500 0.9 rcb" # load balancing for MPI
+  thermo_modify = ["lost","ignore"],
+        balance = [500, 0.9, "rcb"] # load balancing for MPI
         )
     
     TEMPLATE = """
 #   Time integration conditions
 fix             dtfix fluid smd/adjust_dt ${dt} # dynamically adjust time increment every step
-fix             integration_fix fluid smd/integrate_ulsph adjust_radius ${limit_velocity}
+fix             integration_fix fluid smd/integrate_ulsph adjust_radius ${adjust_radius}
 fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity ${limit_velocity}
 fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity ${limit_velocity}
 fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity ${limit_velocity}
@@ -211,9 +353,32 @@ fix             balance_fix all balance ${balance}
 """
 
 class equilibration(integrationsection):
-    """ equilibration(mode="init",limit_velocity=1000,run=1000)  """
+    """ 
+    workshop0.equilibration(mode="init|slow|fast",limit_velocity=1000,run=1000)
+    
+        Equilibrate the simulation with various limit_velocities
+        
+        Example
+        -------
+        equilsteps = equilibration(mode="init",run=[1000,2000]) & \
+                     equilibration(mode="fast",limit_velocity=1000,run=1000) & \
+                     equilibration(mode="slow",limit_velocity=0.01,run=1000) & \
+                     equilibration(mode="fast",limit_velocity=1000,run=1000)
+               
+        Comments:
+            Heuristic, please update the flavor to your case
+            
+            
+        Previous step/class: thermo()
+        Next step/class: smddump()        
+        
+    """
+    description = 'equilibration(mode="init",limit_velocity=1000,run=1000)'
+    userid = "equilibration()"
+    version = 1.0
+    
     DEFINITIONS = scriptdata(
-        velocity = " $0 0 0",
+        velocity = [0,0,0],
         limit_velocity = 0.01,
         run = [1000,1000]
         )
@@ -223,29 +388,53 @@ class equilibration(integrationsection):
             self.TEMPLATE = f"#   Equilibration {mode}" + """
 fix             movement1 moving1 smd/setvel ${velocity}
 fix             movement2 moving2 smd/setvel ${velocity}
-run		${run[0]}
+run		${run_0_}
 fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity ${limit_velocity}
 fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity ${limit_velocity}
 fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity ${limit_velocity}
-run		${run[1]}
+run		${run_1_}
 """
         else:
             self.TEMPLATE = f"#   Equilibration {mode}" + """
 fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity ${limit_velocity}
 fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity ${limit_velocity}
 fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity ${limit_velocity}
-run		${run[0]}
+run		${run_0_}
 """
+        # populate run values and create run_0_,run_1_
         self.USER = scriptdata(**args)
-        if 'run' in self.USER and not isinstance(self.USER.run,list):
-            self.USER.run = [self.USER.run]
+        tmp = self.DEFINITIONS + self.USER
+        if 'run' in tmp:
+            if isinstance(tmp.run,(int,float)): tmp.run = [tmp.run]
+            for irun in range(len(tmp.run)):
+                self.USER.setattr(f"run_{irun}_",tmp.run[irun])
         
         
 
 
 # %% DUMP SECTION
 class smddump(dumpsection):
-    """ dump section """
+    """ 
+    workshop0.smddump(outstep=1000,outputfile="$myfile")
+    
+        Dump file format for SMD
+        
+        Example
+        -------
+        dump = smddump(outstep=5000,outputfile="$ dump.workshop0")
+               
+        Comments:
+            outstep = dump every outstep
+            outputfile = dump filename
+            
+        Previous step/class: equilibration()
+        Next step/class: translation()        
+    """
+    
+    description = 'smddump(outstep=1000,outputfile="$myfile")'
+    userid = "smddump()"
+    version = 1.0
+    
     DEFINITIONS = scriptdata(
         outstep = 7000,
      outputfile = "$ dump.file"
@@ -270,7 +459,29 @@ dump_modify     dump_id first yes
 
 # %% DISPLACEMENTS and integration
 class translation(runsection):
-    """ translation """
+    """ 
+    workshop0.translation(velocity1=[],velocity2=[],force=[],run=5000)
+    
+        Translates top and bottom according to set velocities or forces
+        
+        Example
+        -------
+        moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) & \
+                translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) & \
+                translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) & \
+                rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+               
+        Comments:
+            Refer to TEMPLATE for details
+           
+        Previous step/class: smddump()
+        Next step/class: rampforce()        
+    """
+    
+    description = 'translation(velocity1=[],velocity2=[],force=[],run=5000)'
+    userid = "smddump()"
+    version = 1.0
+    
     DEFINITIONS = scriptdata(
         velocity1 = [0,-1,0],
         velocity2 = [0,1,0],
@@ -279,21 +490,44 @@ class translation(runsection):
         )
     TEMPLATE = """
 #   Translation
-fix             movement1 moving1 smd/setvel ${velocity1[0]} ${velocity1[1]} ${velocity1[2]}
-fix             movement2 moving2 smd/setvel ${velocity2[0]} ${velocity2[1]} ${velocity2[2]}
-fix             force1 moving1 setforce ${force[0]} ${force[1]} ${force[2]}
+fix             movement1 moving1 smd/setvel ${velocity1}
+fix             movement2 moving2 smd/setvel ${velocity2}
+fix             force1 moving1 setforce ${force}
 run		${run}
 """
 
 class rampforce(runsection):
-    """ force ramp """
+    """ 
+    workshop0.rampforec(ramp=(-1,10),run=5000)
+    
+        Applies a force ramp
+        
+        Example
+        -------
+        moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) & \
+                translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) & \
+                translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) & \
+                rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+               
+        Comments:
+            Refer to TEMPLATE for details
+            The ramp must be defined with a Tuple (mandatory)
+           
+        Previous step/class: translation()
+        Next step/class: none        
+    """
+    
+    description = "rampforec(ramp=(-1,10),run=5000)"
+    userid = "smddump()"
+    version = 1.0
+    
     DEFINITIONS = scriptdata(
         ramp = (-1,10),
         run = 5000
         )
     TEMPLATE = """
 #   Force ramp
-variable        ramp equal ramp(${ramp[0]},${ramp[1]})
+variable        ramp equal ramp(${ramp})
 fix             movement1 moving1 smd/setvel 0 NULL 0
 fix             movement2 moving2 smd/setvel 0 0 0
 fix             force1 moving1 setforce 0 v_ramp 0
@@ -324,12 +558,12 @@ if __name__ == '__main__':
            load(local=wdir,file="$ 4_thin_shell_inner_mod.lmp")
     # create groups
     # help with groups.description
-    groups = group(name="$ solid",type="$ 1 2 3") & \
-             group(name="$ tlsph",type="$ 1 2 3") & \
-             group(name="$ fluid",type="$ 4") & \
-             group(name="$ ulsph",type="$ 4") & \
-             group(name="$ moving1",type="$ 1") & \
-             group(name="$ moving2",type="$ 2")
+    groups = group(name="$ solid",type=[1,2,3]) & \
+             group(name="$ tlsph",type=[1,2,3]) & \
+             group(name="$ fluid",type=4) & \
+             group(name="$ ulsph",type=4) & \
+             group(name="$ moving1",type=1) & \
+             group(name="$ moving2",type=2)
     # add gravity
     # help with physgravity.description
     physgravity = gravity(g=0)

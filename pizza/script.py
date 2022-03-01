@@ -56,6 +56,7 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-02-26 add USER to enable instance variables with higher precendence
 # 2022-02-27 add write() method and overload & operator
 # 2022-02-28 overload * (+ expansion) and ** (& expansion) operators
+# 2022-03-01 expand lists (with space as separator) and tupples (with ,)
 
 # %% Dependencies
 import types
@@ -63,6 +64,8 @@ from copy import copy as duplicate
 # All forcefield parameters are stored à la Matlab in a structure
 from private.struct import param
 
+# span vector into a single string
+def span(vector,sep=" ",left="",right=""): return left+sep.join(map(str,vector))+right
 
 # %% Parent class (not to be called directly)
 # container of script definitions
@@ -158,6 +161,10 @@ class script():
         NOTE8: if a the script is used with different values for a smae parameter
         use the operator & to concatenate the results instead of the script
         example: load(file="myfile1") & load(file="myfile2) & load(file="myfile3")+...
+                                             
+        NOTE9: lists (e.g., [1,2,'a',3] are expanded ("1 2 a 3")
+               tuples (e.g. (1,2)) are expanded ("1,2")
+               It is easier to read ["lost","ignore"] than "$ lost ignore"
         
         --------------------------[ FULL EXAMPLE ]-----------------------------
 
@@ -288,6 +295,11 @@ class script():
     def do(self,printflag=True):
         """ generate the script """
         inputs = self.DEFINITIONS + self.USER
+        for k in inputs.keys():
+            if isinstance(inputs.getattr(k),list):
+                inputs.setattr(k,"$ "+span(inputs.getattr(k)))
+            elif isinstance(inputs.getattr(k),tuple):
+                inputs.setattr(k,"$ "+span(inputs.getattr(k),sep=","))
         cmd = inputs.formateval(self.TEMPLATE)
         cmd = cmd.replace("[comment]",f"[position {self.position}:{self.userid}]")
         if printflag: print(cmd)

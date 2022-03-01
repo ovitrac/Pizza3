@@ -30,3 +30,4 @@ from pizza.script import *
 from pizza.private.struct import struct,param
 
 # other libraries will be added there
+from workshop0 import *

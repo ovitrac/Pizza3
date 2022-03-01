@@ -58,6 +58,7 @@ T = R.string()
 R.print()</p>
 <p>Create a pizza.dump3.dump object
 X = R.data()
+X=R.data(scale=(1,1),center=(0,0))
 X.write("/tmp/myfile")</p>
 <details class="source">
 <summary>
@@ -110,6 +111,7 @@ X.write("/tmp/myfile")</p>
         
     Create a pizza.dump3.dump object
         X = R.data()
+        X=R.data(scale=(1,1),center=(0,0))
         X.write(&#34;/tmp/myfile&#34;)
         
 &#34;&#34;&#34;
@@ -125,6 +127,7 @@ X.write("/tmp/myfile")</p>
 # 2022-02-11 improve display, add data()
 # 2022-02-12 major release, fully compatible with pizza.data3.data
 # 2022-02-13 the example (&lt;F5&gt;) has been modified R.plot() should precedes R.list()
+# 2022-02-28 update write files for SMD, add scale and center to R.data()
 
 
 # %% Imports and private library
@@ -162,6 +165,7 @@ class raster:
     Constructor
     
         R = raster(width=100,height=100)
+        scale and center are only used with R.data()
     
     Graphical objects
         
@@ -196,7 +200,7 @@ class raster:
         R.delete(&#34;object&#34;)
 
     Generate an input data object
-        X = R.data()
+        X = R.data() or X=R.data(scale=(1,1),center=(0,0))
         X.write(&#34;/tmp/myfile&#34;)
     
     &#34;&#34;&#34;
@@ -227,37 +231,43 @@ class raster:
         # generic SMD properties (to be rescaled)
         self.volume = 1
         self.mass = 1
-        self.radius = 1
-        self.contactradius = 1
+        self.radius = 1.5
+        self.contactradius = 0.5
         self.velocities = [0,0,0]
         self.forces =[0,0,0]
         
     # DATA ---------------------------- 
-    def data(self):
-        &#34;&#34;&#34; return a pizza.data object &#34;&#34;&#34;
+    def data(self,scale=(1,1),center=(0,0)):
+        &#34;&#34;&#34;
+        data(scale=(scalex,scaley),center=(centerx,centery))
+        return a pizza.data object  &#34;&#34;&#34;
+        if not isinstance(scale,tuple) or len(scale)!=2:
+            raise ValueError(&#34;scale must be tuple (scalex,scaley)&#34;)
+        if not isinstance(center,tuple) or len(scale)!=2:
+            raise ValueError(&#34;center must be tuple (centerx,centery)&#34;)
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + &#34;(raster)&#34;
         X.headers = {&#39;atoms&#39;: n,
                       &#39;atom types&#39;: self.count()[-1][0],
-                      &#39;xlo xhi&#39;: (0.5, self.width-0.5),
-                      &#39;ylo yhi&#39;: (0.5, self.height-0.5),
-                      &#39;zlo zhi&#39;: (0, 0)}
+                      &#39;xlo xhi&#39;: ((0.5-center[0])*scale[0], (self.width-0.5-center[0])*scale[0]),
+                      &#39;ylo yhi&#39;: ((0.5-center[1])*scale[1], (self.height-0.5-center[1])*scale[1]),
+                      &#39;zlo zhi&#39;: (0, 0.5*np.sqrt(scale[0]*scale[1]))}
         # [ATOMS] section
         X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)      # id
         X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)      # Type
-        X.append(&#39;Atoms&#39;,self.imobj[i,j],True,&#34;mol&#34;)        # mol
+        X.append(&#39;Atoms&#39;,1,True,&#34;mol&#34;)                      # mol
         X.append(&#39;Atoms&#39;,self.volume,False,&#34;c_vol&#34;)         # c_vol
         X.append(&#39;Atoms&#39;,self.mass,False,&#34;mass&#34;)            # mass
         X.append(&#39;Atoms&#39;,self.radius,False,&#34;radius&#34;)        # radius
         X.append(&#39;Atoms&#39;,self.contactradius,False,&#34;c_contact_radius&#34;) # c_contact_radius
-        X.append(&#39;Atoms&#39;,j+0.5,False,&#34;x&#34;)                   # x
-        X.append(&#39;Atoms&#39;,i+0.5,False,&#34;y&#34;)                   # y
-        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                       # z
-        X.append(&#39;Atoms&#39;,self.forces[0],False,&#34;f_1[1]&#34;)     # force along x
-        X.append(&#39;Atoms&#39;,self.forces[1],False,&#34;f_1[2]&#34;)     # force along y
-        X.append(&#39;Atoms&#39;,self.forces[2],False,&#34;f_1[3]&#34;)     # force along z
+        X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x&#34;)        # x
+        X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y&#34;)        # y
+        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                                 # z
+        X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x0&#34;)       # x0
+        X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y0&#34;)       # y0
+        X.append(&#39;Atoms&#39;,0,False,&#34;z0&#34;)                                # z0
         # [VELOCITIES] section
         X.append(&#39;Velocities&#39;,list(range(1,n+1)),True,&#34;id&#34;) # id
         X.append(&#39;Velocities&#39;,self.velocities[0],False,&#34;vx&#34;) # vx
@@ -1023,6 +1033,7 @@ if __name__ == &#39;__main__&#39;:
 <div class="desc"><p>raster class for LAMMPS SMD </p>
 <p>Constructor</p>
 <pre><code>R = raster(width=100,height=100)
+scale and center are only used with R.data()
 </code></pre>
 <p>Graphical objects</p>
 <pre><code>R.rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode="lower", angle=0, ismask=False])
@@ -1054,7 +1065,7 @@ R.clear()
 R.clear("all")
 R.delete("object")</p>
 <p>Generate an input data object
-X = R.data()
+X = R.data() or X=R.data(scale=(1,1),center=(0,0))
 X.write("/tmp/myfile")</p>
 <p>initialize raster</p></div>
 <details class="source">
@@ -1067,6 +1078,7 @@ X.write("/tmp/myfile")</p>
     Constructor
     
         R = raster(width=100,height=100)
+        scale and center are only used with R.data()
     
     Graphical objects
         
@@ -1101,7 +1113,7 @@ X.write("/tmp/myfile")</p>
         R.delete(&#34;object&#34;)
 
     Generate an input data object
-        X = R.data()
+        X = R.data() or X=R.data(scale=(1,1),center=(0,0))
         X.write(&#34;/tmp/myfile&#34;)
     
     &#34;&#34;&#34;
@@ -1132,37 +1144,43 @@ X.write("/tmp/myfile")</p>
         # generic SMD properties (to be rescaled)
         self.volume = 1
         self.mass = 1
-        self.radius = 1
-        self.contactradius = 1
+        self.radius = 1.5
+        self.contactradius = 0.5
         self.velocities = [0,0,0]
         self.forces =[0,0,0]
         
     # DATA ---------------------------- 
-    def data(self):
-        &#34;&#34;&#34; return a pizza.data object &#34;&#34;&#34;
+    def data(self,scale=(1,1),center=(0,0)):
+        &#34;&#34;&#34;
+        data(scale=(scalex,scaley),center=(centerx,centery))
+        return a pizza.data object  &#34;&#34;&#34;
+        if not isinstance(scale,tuple) or len(scale)!=2:
+            raise ValueError(&#34;scale must be tuple (scalex,scaley)&#34;)
+        if not isinstance(center,tuple) or len(scale)!=2:
+            raise ValueError(&#34;center must be tuple (centerx,centery)&#34;)
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + &#34;(raster)&#34;
         X.headers = {&#39;atoms&#39;: n,
                       &#39;atom types&#39;: self.count()[-1][0],
-                      &#39;xlo xhi&#39;: (0.5, self.width-0.5),
-                      &#39;ylo yhi&#39;: (0.5, self.height-0.5),
-                      &#39;zlo zhi&#39;: (0, 0)}
+                      &#39;xlo xhi&#39;: ((0.5-center[0])*scale[0], (self.width-0.5-center[0])*scale[0]),
+                      &#39;ylo yhi&#39;: ((0.5-center[1])*scale[1], (self.height-0.5-center[1])*scale[1]),
+                      &#39;zlo zhi&#39;: (0, 0.5*np.sqrt(scale[0]*scale[1]))}
         # [ATOMS] section
         X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)      # id
         X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)      # Type
-        X.append(&#39;Atoms&#39;,self.imobj[i,j],True,&#34;mol&#34;)        # mol
+        X.append(&#39;Atoms&#39;,1,True,&#34;mol&#34;)                      # mol
         X.append(&#39;Atoms&#39;,self.volume,False,&#34;c_vol&#34;)         # c_vol
         X.append(&#39;Atoms&#39;,self.mass,False,&#34;mass&#34;)            # mass
         X.append(&#39;Atoms&#39;,self.radius,False,&#34;radius&#34;)        # radius
         X.append(&#39;Atoms&#39;,self.contactradius,False,&#34;c_contact_radius&#34;) # c_contact_radius
-        X.append(&#39;Atoms&#39;,j+0.5,False,&#34;x&#34;)                   # x
-        X.append(&#39;Atoms&#39;,i+0.5,False,&#34;y&#34;)                   # y
-        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                       # z
-        X.append(&#39;Atoms&#39;,self.forces[0],False,&#34;f_1[1]&#34;)     # force along x
-        X.append(&#39;Atoms&#39;,self.forces[1],False,&#34;f_1[2]&#34;)     # force along y
-        X.append(&#39;Atoms&#39;,self.forces[2],False,&#34;f_1[3]&#34;)     # force along z
+        X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x&#34;)        # x
+        X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y&#34;)        # y
+        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                                 # z
+        X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x0&#34;)       # x0
+        X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y0&#34;)       # y0
+        X.append(&#39;Atoms&#39;,0,False,&#34;z0&#34;)                                # z0
         # [VELOCITIES] section
         X.append(&#39;Velocities&#39;,list(range(1,n+1)),True,&#34;id&#34;) # id
         X.append(&#39;Velocities&#39;,self.velocities[0],False,&#34;vx&#34;) # vx
@@ -1712,39 +1730,46 @@ circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False]
 </details>
 </dd>
 <dt id="raster.raster.data"><code class="name flex">
-<span>def <span class="ident">data</span></span>(<span>self)</span>
+<span>def <span class="ident">data</span></span>(<span>self, scale=(1, 1), center=(0, 0))</span>
 </code></dt>
 <dd>
-<div class="desc"><p>return a pizza.data object</p></div>
+<div class="desc"><p>data(scale=(scalex,scaley),center=(centerx,centery))
+return a pizza.data object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def data(self):
-    &#34;&#34;&#34; return a pizza.data object &#34;&#34;&#34;
+<pre><code class="python">def data(self,scale=(1,1),center=(0,0)):
+    &#34;&#34;&#34;
+    data(scale=(scalex,scaley),center=(centerx,centery))
+    return a pizza.data object  &#34;&#34;&#34;
+    if not isinstance(scale,tuple) or len(scale)!=2:
+        raise ValueError(&#34;scale must be tuple (scalex,scaley)&#34;)
+    if not isinstance(center,tuple) or len(scale)!=2:
+        raise ValueError(&#34;center must be tuple (centerx,centery)&#34;)
     n = self.length()
     i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
     X = data3()  # empty pizza.data3.data object
     X.title = self.name + &#34;(raster)&#34;
     X.headers = {&#39;atoms&#39;: n,
                   &#39;atom types&#39;: self.count()[-1][0],
-                  &#39;xlo xhi&#39;: (0.5, self.width-0.5),
-                  &#39;ylo yhi&#39;: (0.5, self.height-0.5),
-                  &#39;zlo zhi&#39;: (0, 0)}
+                  &#39;xlo xhi&#39;: ((0.5-center[0])*scale[0], (self.width-0.5-center[0])*scale[0]),
+                  &#39;ylo yhi&#39;: ((0.5-center[1])*scale[1], (self.height-0.5-center[1])*scale[1]),
+                  &#39;zlo zhi&#39;: (0, 0.5*np.sqrt(scale[0]*scale[1]))}
     # [ATOMS] section
     X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)      # id
     X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)      # Type
-    X.append(&#39;Atoms&#39;,self.imobj[i,j],True,&#34;mol&#34;)        # mol
+    X.append(&#39;Atoms&#39;,1,True,&#34;mol&#34;)                      # mol
     X.append(&#39;Atoms&#39;,self.volume,False,&#34;c_vol&#34;)         # c_vol
     X.append(&#39;Atoms&#39;,self.mass,False,&#34;mass&#34;)            # mass
     X.append(&#39;Atoms&#39;,self.radius,False,&#34;radius&#34;)        # radius
     X.append(&#39;Atoms&#39;,self.contactradius,False,&#34;c_contact_radius&#34;) # c_contact_radius
-    X.append(&#39;Atoms&#39;,j+0.5,False,&#34;x&#34;)                   # x
-    X.append(&#39;Atoms&#39;,i+0.5,False,&#34;y&#34;)                   # y
-    X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                       # z
-    X.append(&#39;Atoms&#39;,self.forces[0],False,&#34;f_1[1]&#34;)     # force along x
-    X.append(&#39;Atoms&#39;,self.forces[1],False,&#34;f_1[2]&#34;)     # force along y
-    X.append(&#39;Atoms&#39;,self.forces[2],False,&#34;f_1[3]&#34;)     # force along z
+    X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x&#34;)        # x
+    X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y&#34;)        # y
+    X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                                 # z
+    X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x0&#34;)       # x0
+    X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y0&#34;)       # y0
+    X.append(&#39;Atoms&#39;,0,False,&#34;z0&#34;)                                # z0
     # [VELOCITIES] section
     X.append(&#39;Velocities&#39;,list(range(1,n+1)),True,&#34;id&#34;) # id
     X.append(&#39;Velocities&#39;,self.velocities[0],False,&#34;vx&#34;) # vx

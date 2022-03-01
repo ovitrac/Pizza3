@@ -1,0 +1,161 @@
+# Automatic LAMMPS script (version 0.21)
+# olivi@LX-Olivier2021:/home/olivi/billy/python
+# mar. 01 mars 2022 23:40:02 
+
+# INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr
+# INRAE\SAYFOOD\william.jenkinson@agroparistech.fr
+
+
+
+# SCHEME INITIALIZATION
+units       si
+dimension	2
+boundary    p f p
+comm_modify vel yes
+comm_style  tiled
+atom_modify map array
+newton off
+neighbor	1 bin
+neigh_modify    every 5 delay 0 check yes
+
+atom_style	smd
+ 
+read_data ../datafile/2_Top_mod.lmp 
+read_data ../datafile/1_Bottom_mod.lmp add append
+read_data ../datafile/3_thin_shell_outer_mod.lmp add append
+read_data ../datafile/4_thin_shell_inner_mod.lmp add append
+group solid 1 2 3
+group tlsph 1 2 3
+group fluid 4
+group ulsph 4
+group moving1 1
+group moving2 2
+fix gfix all gravity 0 vector 0 1 0
+
+# ===== [ BEGIN FORCEFIELD SECTION ] ================================================================================
+    # [4:fluid] PAIR STYLE SMD
+    pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
+                                   smd/tlsph smd/hertz 1.5
+    
+    # [4:fluid x 4:fluid] Pair diagonal coefficient ulsph
+    pair_coeff      4 4 smd/ulsph *COMMON 951 10.0 1.0 1.0 0 &
+                    *EOS_TAIT 7 &
+                    *END
+    
+    # [3:solid x 3:solid] Diagonal pair coefficient tlsph
+    pair_coeff      3 3 smd/tlsph *COMMON 1100 5500000.0 0.3 1.0 0.0 10 1.0 &
+                    *STRENGTH_LINEAR_PLASTIC 550000.0 0 &
+                    *EOS_LINEAR &
+                    *END
+    
+    # [1:top x 1:top] Diagonal pair coefficient tlsph
+    pair_coeff      1 1 none
+    
+    # [2:bottom x 2:bottom] Diagonal pair coefficient tlsph
+    pair_coeff      2 2 none
+    
+    # [2:bottom x 1:top] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 1 smd/hertz 15000000.0
+    
+    # [2:bottom x 4:fluid] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 4 smd/hertz 15000000.0
+    
+    # [2:bottom x 3:solid] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 3 smd/hertz 15000000.0
+    
+    # [1:top x 4:fluid] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 4 smd/hertz 15000000.0
+    
+    # [1:top x 3:solid] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 3 smd/hertz 15000000.0
+    
+    # [3:solid x 4:fluid] Off-diagonal pair coefficient (generic)
+    pair_coeff      3 4 smd/hertz 5500000.0
+    
+# ===== [ END FORCEFIELD SECTION ] ==================================================================================
+
+
+#   Time integration conditions
+fix             dtfix fluid smd/adjust_dt 0.1 # dynamically adjust time increment every step
+fix             integration_fix fluid smd/integrate_ulsph adjust_radius 1.01 10 15
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity 0.01
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity 0.01
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity 0.01
+#   thermo
+thermo		   50
+thermo_modify  lost ignore
+#   balancing
+fix             balance_fix all balance 500 0.9 rcb
+
+#   Equilibration init
+fix             movement1 moving1 smd/setvel 0 0 0
+fix             movement2 moving2 smd/setvel 0 0 0
+run		1000
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity 0.01
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity 0.01
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity 0.01
+run		2000
+
+#   Equilibration fast
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity 1000
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity 1000
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity 1000
+run		1000
+
+#   Equilibration slow
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity 0.01
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity 0.01
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity 0.01
+run		1000
+
+#   Equilibration fast
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity 1000
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity 1000
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity 1000
+run		1000
+
+
+#   Computes
+compute         eint all smd/internal/energy
+compute         contact_radius all smd/contact/radius
+compute         S solid smd/tlsph/stress
+compute         nn fluid smd/ulsph/num/neighs
+compute         epl solid smd/plastic/strain
+compute         vol all smd/vol
+compute         rho all smd/rho
+
+#   Dump file
+dump            dump_id all custom 5000 dump.workshop0 id type x y z &
+                fx fy fz vx vy vz c_eint c_contact_radius mol &
+                c_S[1] c_S[2] c_S[3] c_S[4] mass c_epl c_vol c_rho c_nn proc
+dump_modify     dump_id first yes
+
+
+#   Translation
+fix             movement1 moving1 smd/setvel 0 -1 0
+fix             movement2 moving2 smd/setvel 0 1 0
+fix             force1 moving1 setforce 0 0 0
+run		5000
+
+
+#   Translation
+fix             movement1 moving1 smd/setvel 0 -0.1 0
+fix             movement2 moving2 smd/setvel 0 0.1 0
+fix             force1 moving1 setforce 0 0 0
+run		2000
+
+
+#   Translation
+fix             movement1 moving1 smd/setvel 0 0 0
+fix             movement2 moving2 smd/setvel 0 0 0
+fix             force1 moving1 setforce 0 -1 0
+run		21000
+
+
+#   Force ramp
+variable        ramp equal ramp(-1,-10)
+fix             movement1 moving1 smd/setvel 0 NULL 0
+fix             movement2 moving2 smd/setvel 0 0 0
+fix             force1 moving1 setforce 0 v_ramp 0
+run		21000
+
