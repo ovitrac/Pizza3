@@ -17,6 +17,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-02-20 code optimization, iterable class- major update
 # 2022-02-26 clarify in the help the precedence s=s1+s2
 # 2022-02-28 display nested structures
+# 2022-03-01 implement value as list
 
 # Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -406,7 +407,7 @@ class param(struct):
                         tmp.setattr(key,valuesafe) # empty content
                     else:
                         tmp.setattr(key, eval(tmp.format(valuesafe)))
-            elif isinstance(value,(int,float)): # already a number
+            elif isinstance(value,(int,float,list,tuple)): # already a number
                 tmp.setattr(key, value) # store the value with the key
             else: # unsupported types
                 if s.find("{"+key+"}")>=0:
