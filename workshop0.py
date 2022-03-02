@@ -1,16 +1,139 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Workshop 1 - main file
+    Workshop 0 - main file
+    
+        Write a LAMMPS code directy from Python from codelets (Python script templates)
+        Typical section code with variables (strings, expressions, vectors, lists)
+        are coded with "codelets" (dynamics scripts of the class pizza.script())
+        Variables values can be overidden.
+        
+        
+        Each codelet (pizza.script object) set two main variables
+        
+            DEFINITIONS coding for the variables, some examples follows:
+                strings: "$ this is a string # comment"
+                 vector: [1,0,1]
+                   list: ["p","f","p"] or [500, 0.9, "rcb"]
+                 tupple: (-10,2)
+             expression: '50*${c0}^2*${rho}' with variables and mathematical operators or functions
+             
+                   
+            TEMPLATE the python code with variable names:
+                ${variable} will be replaced by its value (possibly after evaluation)
+                ${expression}
 
-Created on Fri Feb 25 13:52:08 2022
+             NOTE1: Indexing is authorized in DEFINITIONS but not in TEMPLATES
+                   Vectors and lists are expanded/flattened as strings when evaluated
+                 run = [500,1000]
+                 run0 = "${run[0]}"
+                 run1 = "${run[1]}"
+                 
+             NOTE2: Vectors and lists are expanded with " " as separator
+                    Tuples are expanded with "," as separator
 
-@author: olivi
+        Values of definitions and new variables can be set at runtime
+            mycodelet = codelet()
+            mycodelet.USER.var1 = 1
+            mycodelet.USER.var2 = 2
+            
+        Several instances may be run with different values
+            mycodelet1 = codelet(var=1)
+            mycodelet2 = codelet(var=2)
+            mycodelet1.USER.var1 = 10
+            mycodelet1.USER.var2 = 20
+
+        Codelets can be multievaluated with the operator "&" (and)
+            mycodelet = codelet(var=1) & codelet(var=2) & ...
+            with all variables defined in each instance of codelet
+            
+        Codelets can be combined with the operator "+" (plus)
+            mycodelet = codelet_1(var1=1) + codelet_2(var2=2)
+            with the definition of variable var1 passed to codelet_2
+            note: in the example above, codelet_2 can a function of var1, var2
+            note: if the same variable is defined in two codelets, the last 
+                  definition is used
+            note: mycodelet can be also multievaluated:
+                  mycodelet(var1=1,var2=2) & mycodelet(var1=10,var2=20)
+                  
+        Codelets can be displayed, converted to stings, written in a file
+            mycodelet + ENTER to display it
+            mycodelet.DEFINITIONS to see the definitions
+            mycodelet.USER to see user definitions
+            mycodelet.TEMPLATE shows the TEMPLATE
+            note: It is not recommended to change TEMPLATE in instances
+                  (all instances will be affected)
+           
+            mycodelet.do() evaluates the codelet as string
+            
+            mycodelet.write("inp.mylammpsscript") write a LAMMPS script
+            
+            
+        Creating your codelets (beyond the scope of the workshop).
+            All codelets should be of or derived from the class pizza.script()
+            class newcodelet(oldcodelet)
+                description = "blah, blah"
+                useid = "newcodelet()"
+                version = 0
+                DEFINTIONS = scriptdata(
+                    var1 = 1,
+                    var2 = 2
+                    )
+                TEMPLATE = "" "
+                # LAMMPS code
+                "" "
+                
+    USAGE:
+        from workshop0 import *
+        
+        use name_of_the_codelet.description to see the syntax
+        
+        codelet = name_of_the_codelet(var1,var2)
+        fullscript = codelet1 + codelet2 + codelet3
+        fullscript.write("mylammpsscript.inp")
+    
+    
+    LIST OF CODELETS:
+        
+        -- initialization --
+        
+            initialization()    ---> initialize the framework
+            load()              ---> load input data (examples from data() and raster() objects)
+            group()             ---> group beads
+            gravity()           ---> set gravity
+            interactions()      ---> set forcefield
+            
+            note: load() and groups() are designed to be multievaluated
+            
+        -- equilibration --
+        
+            thermo()            ---> pseudo thermostat initialization, and computes
+            equilibration()     ---> equilibration steps
+            
+            note: equilibration() is designed to be multievaluated
+            
+        -- dump --
+            
+            smddump()
+            
+            note: dump are framework depended, set all outputs for SMD
+            
+        -- displacements --
+        
+            translation()       ---> translation of rigid objects
+            rampforce()         ---> set forces
+            
+
+
+Created on Fri Feb 25 13:52:08 2022 - revised on 2022-03-02
+
+@author: olivi,billy
 """
 
 # Revision history
 # 2022-02-28 early version, almost functional (dump and run missing)
 # 2022-03-01 release candidate, full documentation, better style
+# 2022-03-02 full documentation for the workshop
 
 # generic dependencies
 import datetime, os, socket, getpass
