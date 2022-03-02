@@ -62,7 +62,7 @@
 # 2022-02-12 major release, fully compatible with pizza.data3.data
 # 2022-02-13 the example (<F5>) has been modified R.plot() should precedes R.list()
 # 2022-02-28 update write files for SMD, add scale and center to R.data()
-
+# 2022-03-02 fix data(): xlo and ylow (beads should not overlap the boundary), scale radii, volumes
 
 # %% Imports and private library
 from copy import copy as duplicate
@@ -179,23 +179,25 @@ class raster:
             raise ValueError("scale must be tuple (scalex,scaley)")
         if not isinstance(center,tuple) or len(scale)!=2:
             raise ValueError("center must be tuple (centerx,centery)")
+        scalez = np.sqrt(scale[0]*scale[1])
+        scalevol = scale[0]*scale[1]*scalez
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + "(raster)"
         X.headers = {'atoms': n,
                       'atom types': self.count()[-1][0],
-                      'xlo xhi': ((0.5-center[0])*scale[0], (self.width-0.5-center[0])*scale[0]),
-                      'ylo yhi': ((0.5-center[1])*scale[1], (self.height-0.5-center[1])*scale[1]),
-                      'zlo zhi': (0, 0.5*np.sqrt(scale[0]*scale[1]))}
+                      'xlo xhi': ((0.0-center[0])*scale[0], (self.width-0.0-center[0])*scale[0]),
+                      'ylo yhi': ((0.0-center[1])*scale[1], (self.height-0.0-center[1])*scale[1]),
+                      'zlo zhi': (0, scalez)}
         # [ATOMS] section
-        X.append('Atoms',list(range(1,n+1)),True,"id")      # id
-        X.append('Atoms',self.imbead[i,j],True,"type")      # Type
-        X.append('Atoms',1,True,"mol")                      # mol
-        X.append('Atoms',self.volume,False,"c_vol")         # c_vol
-        X.append('Atoms',self.mass,False,"mass")            # mass
-        X.append('Atoms',self.radius,False,"radius")        # radius
-        X.append('Atoms',self.contactradius,False,"c_contact_radius") # c_contact_radius
+        X.append('Atoms',list(range(1,n+1)),True,"id")       # id
+        X.append('Atoms',self.imbead[i,j],True,"type")       # Type
+        X.append('Atoms',1,True,"mol")                       # mol
+        X.append('Atoms',self.volume*scalevol,False,"c_vol") # c_vol
+        X.append('Atoms',self.mass*scalevol,False,"mass")    # mass
+        X.append('Atoms',self.radius*scalez,False,"radius")         # radius
+        X.append('Atoms',self.contactradius*scalez,False,"c_contact_radius") # c_contact_radius
         X.append('Atoms',(j+0.5-center[0])*scale[0],False,"x")        # x
         X.append('Atoms',(i+0.5-center[1])*scale[1],False,"y")        # y
         X.append('Atoms',0,False,"z")                                 # z

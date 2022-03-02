@@ -134,6 +134,7 @@ Created on Fri Feb 25 13:52:08 2022 - revised on 2022-03-02
 # 2022-02-28 early version, almost functional (dump and run missing)
 # 2022-03-01 release candidate, full documentation, better style
 # 2022-03-02 full documentation for the workshop
+# 2022-03-02 fix neighbor in initialization() and example
 
 # generic dependencies
 import datetime, os, socket, getpass
@@ -157,6 +158,8 @@ class initialization(globalsection):
         init = initialization(boundary=["p","f","p"],dimension=2)
         init.USER.boundary=["p","f","p"] # works also
         init.do()                       # shows the script
+        bead_kernel_radius = put the value of the kernel radius of the bead
+        init.USER.neighbor = [bead_kernel_radius,"bin"]
         
         Comments:
             Set parameters at during the first call or use the USER atrribute to do it
@@ -668,8 +671,8 @@ run		${run}
 if __name__ == '__main__':
     
     # initizalization of the scheme (note that c0 is note used in DEFINITIONS)
-    init = initialization(c0=12) # 12 to see how to change sound velocity
-    init.c0 = 13                 # works also
+    bead_kernel_radius = 1.5
+    init = initialization(neighbor =[bead_kernel_radius,"bin"])
     init.do()                    # shows the script
     
     # read input data

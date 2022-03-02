@@ -111,6 +111,7 @@
 # 2022-02-13 release candidate
 # 2022-02-20 made compatible with the update private.struct.py
 # 2022-02-28 fix class inheritance with mutable type, update is carried with + and struct()
+# 2022-03-02 fix off-diagonal order for i,j
 
 # %% Dependencies
 import types
@@ -219,7 +220,7 @@ class forcefield():
         if j==i:
             if i>1: j=i-1
             else: j=i+1
-        cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (i,j)
+        cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (min(i,j),max(j,i))
         cmd = cmd.replace("[comment]","{comment}").format(comment=("[%d:%s x %d:%s]" % (i,self.userid,j,oname)))
         if printflag: print(cmd)
         return cmd
