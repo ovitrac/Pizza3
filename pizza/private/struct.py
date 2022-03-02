@@ -18,6 +18,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-02-26 clarify in the help the precedence s=s1+s2
 # 2022-02-28 display nested structures
 # 2022-03-01 implement value as list
+# 2022-03-02 display correctly class names (not instances)
 
 # Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -255,6 +256,8 @@ class struct():
                 if key not in self._excludedattr:
                     if isinstance(value,(int,float,str,list,tuple,np.ndarray,np.generic)):
                         print(fmt % key,value)
+                    elif isinstance(value,type):
+                        print(fmt % key,str(value))
                     else:
                         print(fmt % key,type(value))
                     if self._evalfeature and isinstance(value,str):

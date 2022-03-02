@@ -57,12 +57,14 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-02-27 add write() method and overload & operator
 # 2022-02-28 overload * (+ expansion) and ** (& expansion) operators
 # 2022-03-01 expand lists (with space as separator) and tupples (with ,)
+# 2022-03-02 first implementation of objectdata(), object container pending
 
 # %% Dependencies
 import types
 from copy import copy as duplicate
 # All forcefield parameters are stored à la Matlab in a structure
-from private.struct import param
+from forcefield import *
+from private.struct import param,struct
 
 # span vector into a single string
 def span(vector,sep=" ",left="",right=""): return left+sep.join(map(str,vector))+right
@@ -75,6 +77,32 @@ class scriptdata(param):
     _fulltype = "script data"
     _ftype = "definition"
      
+# object data
+class objectdata(struct):
+    """ class of script object """
+    _type = "SOD"
+    _fulltype = "script object"
+    _ftype = "propertie"
+    
+    def __init__(self, name="undef",
+                 fullname="",
+                 style="smd",
+                 forcefield=rigidwall,
+                 beadtype=1):
+        if fullname=="":
+            fullname = name + " object definition"
+        super(objectdata,self).__init__(
+            name=name,
+            fullname=fullname,
+            style=style,
+            forcefield=forcefield(beadtype=beadtype, userid=name),
+            beadtype=beadtype)
+        
+# object container (special kind of list)
+class objectcontainer(list):
+    """ object container """
+    pass
+
 # core class (please derive this class when you use it, do not alter it)
 class script():
     """ 

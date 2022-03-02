@@ -4,12 +4,12 @@
     Workshop 0 - main file
     
         Write a LAMMPS code directy from Python from codelets (Python script templates)
-        Typical section code with variables (strings, expressions, vectors, lists)
+        Typical section LAMMPS code with variables (strings, expressions, vectors, lists)
         are coded with "codelets" (dynamics scripts of the class pizza.script())
-        Variables values can be overidden.
+        Variables values can be defined from placeholders and subsequently overidden.
         
         
-        Each codelet (pizza.script object) set two main variables
+        Each codelet (pizza.script object) sets two main variables
         
             DEFINITIONS coding for the variables, some examples follows:
                 strings: "$ this is a string # comment"
@@ -19,7 +19,7 @@
              expression: '50*${c0}^2*${rho}' with variables and mathematical operators or functions
              
                    
-            TEMPLATE the python code with variable names:
+            TEMPLATE is a string with placeholders/variables:
                 ${variable} will be replaced by its value (possibly after evaluation)
                 ${expression}
 
@@ -56,7 +56,7 @@
             note: mycodelet can be also multievaluated:
                   mycodelet(var1=1,var2=2) & mycodelet(var1=10,var2=20)
                   
-        Codelets can be displayed, converted to stings, written in a file
+        Codelets can be displayed, converted to stings, written to a file
             mycodelet + ENTER to display it
             mycodelet.DEFINITIONS to see the definitions
             mycodelet.USER to see user definitions
@@ -135,6 +135,7 @@ Created on Fri Feb 25 13:52:08 2022 - revised on 2022-03-02
 # 2022-03-01 release candidate, full documentation, better style
 # 2022-03-02 full documentation for the workshop
 # 2022-03-02 fix neighbor in initialization() and example
+# 2022-03-02 first post-workshop0 fixes (others are coming before forking as workshop1)
 
 # generic dependencies
 import datetime, os, socket, getpass
@@ -267,18 +268,18 @@ class load(geometrysection):
 # group beads together
 class group(geometrysection):
     """ 
-    workshop0.group(name="$groupname",type=1 or [1,2,3..])
+    workshop0.group(name="$groupname",beadtype=1 or [1,2,3..])
     
         Set group of beads based on their types
         
         Example
         -------
-        groups = group(name="$ solid",type=[1,2,3]) & \
-                 group(name="$ tlsph",type=[1,2,3]) & \
-                 group(name="$ fluid",type=4) & \
-                 group(name="$ ulsph",type=4) & \
-                 group(name="$ moving1",type=1) & \
-                 group(name="$ moving2",type=2)    
+        groups = group(name="$ solid",beadtype=[1,2,3]) & \
+                 group(name="$ tlsph",beadtype=[1,2,3]) & \
+                 group(name="$ fluid",beadtype=4) & \
+                 group(name="$ ulsph",beadtype=4) & \
+                 group(name="$ moving1",beadtype=1) & \
+                 group(name="$ moving2",beadtype=2)    
                
         Comments:
             Use "$" to define a chain without evaluation
@@ -289,17 +290,17 @@ class group(geometrysection):
         Next step/class: gravity()        
         
     """
-    description = 'group(name="$mygroup",type=[1,2,3])'
+    description = 'group(name="$mygroup",beadtype=[1,2,3])'
     userid = "group()"
     version = 1.0
     
     # group definition
     DEFINITIONS = scriptdata(
         name = "$ solid",
-        type = [1,2,3]
+        beadtype = [1,2,3]
         )
     #template
-    TEMPLATE = """group ${name} ${type}"""
+    TEMPLATE = """group ${name} ${beadtype}"""
 
 
 # Set gravity in simulation
