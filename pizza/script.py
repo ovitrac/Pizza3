@@ -58,6 +58,7 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-02-28 overload * (+ expansion) and ** (& expansion) operators
 # 2022-03-01 expand lists (with space as separator) and tupples (with ,)
 # 2022-03-02 first implementation of objectdata(), object container pending
+# 2022-03-03 full implementation of objectdata() and objectcontainer()
 
 # %% Dependencies
 import types
@@ -69,8 +70,9 @@ from private.struct import param,struct
 # span vector into a single string
 def span(vector,sep=" ",left="",right=""): return left+sep.join(map(str,vector))+right
 
-# %% Parent class (not to be called directly)
-# container of script definitions
+# %% Parent class (not intended to be called directly except objectdata)
+# containers for scripts, objectdata and their list
+
 class scriptdata(param):
     """ class of script parameters """
     _type = "SD"
@@ -88,7 +90,8 @@ class objectdata(struct):
                  fullname="",
                  style="smd",
                  forcefield=rigidwall,
-                 beadtype=1):
+                 beadtype=1,
+                 groups=[]):
         if fullname=="":
             fullname = name + " object definition"
         super(objectdata,self).__init__(
@@ -98,12 +101,77 @@ class objectdata(struct):
             forcefield=forcefield(beadtype=beadtype, userid=name),
             beadtype=beadtype)
         
+    def __add__(self, o):
+        if isinstance(o,objectdata):
+            if o.name != self.name:
+                if o.beadtype == self.beadtype:
+                   o.beadtype =  self.beadtype+1
+                return objectcontainer(self,o)
+            else:
+                raise ValueError('the object "%s" already exists' % o.name)
+        elif isinstance(o,objectcontainer):
+            return objectcontainer(self)+o
+        else:
+            return ValueError("The object should a script object or its container")
+            
+        
 # object container (special kind of list)
-class objectcontainer(list):
-    """ object container """
-    pass
+class objectcontainer(struct):
+    """ class of script object container/list """
+    _type = "SOD container"
+    _fulltype = "script object container/list"
+    _ftype = "object"
+    
+    def __init__(self,*sod):
+        super(objectcontainer,self).__init__()
+        beadtypemax = 0
+        names = []
+        for k in range(len(sod)):
+            if isinstance(sod[k],objectdata):
+                if sod[k].beadtype<beadtypemax or sod[k].beadtype==None:
+                    beadtypemax +=1
+                    sod[k].beadtype = beadtypemax
+                if sod[k].name not in names:
+                    self.setattr(sod[k].name,sod[k])
+                    beadtypemax = sod[k].beadtype
+                else:
+                    raise ValueError('the script object "%s" already exists' % sod[k].name)
+                names.append(sod[k].name)
+            else:
+                raise ValueError("the argument #%d is not a script object")
 
-# core class (please derive this class when you use it, do not alter it)
+    def __add__(self, sod):
+        beadlist = [self.getattr(k).beadtype for k in self.keys()]
+        dup = duplicate(self)
+        if isinstance(sod,objectdata):
+            if sod.name not in self.keys():
+                if sod.beadtype not in beadlist:
+                    dup.setattr(sod.name, sod)
+                    beadlist.append(sod.beadtype)
+                    print(beadlist)
+                    return dup
+                else:
+                    raise ValueError('%s(beadtype=%d) is already in use, same beadtype' \
+                                     % (sod.name,sod.beadtype))
+            else:
+                raise ValueError('the object "%s" is already in the list' % sod.name)
+        elif isinstance(sod,objectcontainer):
+            for k in sod.keys():
+                if k not in dup.keys():
+                    if sod.getattr(k).beadtype not in beadlist:
+                        dup.setattr(k,sod.getattr(k))
+                        beadlist.append(sod.getattr(k).beadtype)
+                    else:
+                        raise ValueError('%s(beadtype=%d) is already in use, same beadtype' \
+                                         % (k,sod.getattr(k).beadtype))
+                else:
+                    raise ValueError('the object "%s" is already in the list' % k)
+            return dup
+        else:
+            raise ValueError("the argument #%d is not a script object or a script object container/list")
+            
+
+# %% core class (please derive this class when you use it, do not alter it)
 class script():
     """ 
         core script class (flexible design)
@@ -892,6 +960,12 @@ class runsection(script):
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':
+    # a=objectdata(name="a"); b=objectdata(name="b");
+    # objectcontainer(a)
+    # c=a+b
+    # d = objectdata(name="d",beadtype=3)
+    # e = a +b +d
+    
     G = globalsection()
     print(G)
     c = initializesection()
