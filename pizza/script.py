@@ -148,7 +148,6 @@ class objectcontainer(struct):
                 if sod.beadtype not in beadlist:
                     dup.setattr(sod.name, sod)
                     beadlist.append(sod.beadtype)
-                    print(beadlist)
                     return dup
                 else:
                     raise ValueError('%s(beadtype=%d) is already in use, same beadtype' \
