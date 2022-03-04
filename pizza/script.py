@@ -57,8 +57,10 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-02-27 add write() method and overload & operator
 # 2022-02-28 overload * (+ expansion) and ** (& expansion) operators
 # 2022-03-01 expand lists (with space as separator) and tupples (with ,)
-# 2022-03-02 first implementation of objectdata(), object container pending
-# 2022-03-03 full implementation of objectdata() and objectcontainer()
+# 2022-03-02 first implementation of scriptobject(), object container pending
+# 2022-03-03 extensions  of scriptobject() and scriptobjectgroup()
+# 2022-03-04 finalization of scriptobject() and scriptobjectgroup()
+
 
 # %% Dependencies
 import types
@@ -70,105 +72,231 @@ from private.struct import param,struct
 # span vector into a single string
 def span(vector,sep=" ",left="",right=""): return left+sep.join(map(str,vector))+right
 
-# %% Parent class (not intended to be called directly except objectdata)
-# containers for scripts, objectdata and their list
+# %% Top generic classes for storing script data and objects
+# they are not intended to be used outside script data and objects
 
 class scriptdata(param):
-    """ class of script parameters """
+    """ 
+        class of script parameters 
+            Typical constructor:
+                DEFINITIONS = scriptdata(
+                    var1 = value1,
+                    var2 = value2
+                    )
+        See script, struct, param to get review all methods attached to it
+    """
     _type = "SD"
     _fulltype = "script data"
     _ftype = "definition"
+
      
-# object data
-class objectdata(struct):
-    """ class of script object """
-    _type = "SOD"
+# object data (for scripts)
+class scriptobject(struct):
+    """ 
+        class of script object 
+            OBJ = scriptobject(...)
+            Implemented properties:
+                beadtype=1,2,...
+                name="short name"
+                fullname = "comprehensive name"
+                style = "smd"
+                forcefield = any valid forcefield (default = rigidwall)
+        
+        group objects with OBJ1+OBJ2... into scriptobjectgroups
+        
+        objects can be compared and sorted based on beadtype and name
+        
+    """
+    _type = "SO"
     _fulltype = "script object"
     _ftype = "propertie"
     
-    def __init__(self, name="undef",
+    def __init__(self, 
+                 beadtype=1,
+                 name="undefined",
                  fullname="",
                  style="smd",
                  forcefield=rigidwall,
-                 beadtype=1,
                  groups=[]):
         if fullname=="":
             fullname = name + " object definition"
-        super(objectdata,self).__init__(
+        super(scriptobject,self).__init__(
             name=name,
             fullname=fullname,
             style=style,
             forcefield=forcefield(beadtype=beadtype, userid=name),
             beadtype=beadtype)
+
+    def __str__(self):
+        """ string representation """
+        return f"{self._fulltype} | type={self.beadtype} | name={self.name}"
+
         
-    def __add__(self, o):
-        if isinstance(o,objectdata):
-            if o.name != self.name:
-                if o.beadtype == self.beadtype:
-                   o.beadtype =  self.beadtype+1
-                return objectcontainer(self,o)
+    def __add__(self, SO):
+        if isinstance(SO,scriptobject):
+            if SO.name != self.name:
+                if SO.beadtype == self.beadtype:
+                   SO.beadtype =  self.beadtype+1
+                return scriptobjectgroup(self,SO)
             else:
-                raise ValueError('the object "%s" already exists' % o.name)
-        elif isinstance(o,objectcontainer):
-            return objectcontainer(self)+o
+                raise ValueError('the object "%s" already exists' % SO.name)
+        elif isinstance(SO,scriptobjectgroup):
+            return scriptobjectgroup(self)+SO
         else:
             return ValueError("The object should a script object or its container")
-            
         
-# object container (special kind of list)
-class objectcontainer(struct):
-    """ class of script object container/list """
-    _type = "SOD container"
-    _fulltype = "script object container/list"
+    def __eq__(self, SO):
+        return (self.beadtype == SO.beadtype) and (self.name == SO.name)
+
+    def __ne__(self, SO):
+        return (self.beadtype != SO.beadtype) or (self.name != SO.name)
+
+    def __lt__(self, SO):
+        return self.beadtype < SO.beadtype
+
+    def __gt__(self, SO):
+        return self.beadtype > SO.beadtype
+
+    def __le__(self, SO):
+        return self.beadtype <= SO.beadtype
+
+    def __ge__(self, SO):
+        return self.beadtype >= SO.beadtype
+                    
+        
+# group of script objects  (special kind of list)
+class scriptobjectgroup(struct):
+    """ 
+        class of script object group
+            script object groups are built from script objects OBJ1, OBJ2,..
+            GRP = scriptobjectgroup(OBJ1,OBJ2,...)
+            GRP = OBJ1+OBJ2+...
+            
+        note: each beadtype occurs once in the group (if not an error message is generated)
+            
+        List of methods
+            group(group=1,groupname="mygroup") returns a dictionary
+            select([1,2,4]) selects objects with matching beadtypes
+            
+        List of properties
+            converted data: list, str, zip, beadtype, name
+            numeric: len, min, max, minmax
+        
+        Full syntax
+            GRP.select([1,2]).group(groupname="test",group=1) returns
+        {'test': {'group': 1, 'beadtype': [1, 2], 'name': ['a', 'b']}}
+        
+    """
+    _type = "SOG"
+    _fulltype = "script object group"
     _ftype = "object"
     
-    def __init__(self,*sod):
-        super(objectcontainer,self).__init__()
+    def __init__(self,*SOgroup):
+        """ SOG constructor """
+        super(scriptobjectgroup,self).__init__()
         beadtypemax = 0
         names = []
-        for k in range(len(sod)):
-            if isinstance(sod[k],objectdata):
-                if sod[k].beadtype<beadtypemax or sod[k].beadtype==None:
+        for k in range(len(SOgroup)):
+            if isinstance(SOgroup[k],scriptobject):
+                if SOgroup[k].beadtype<beadtypemax or SOgroup[k].beadtype==None:
                     beadtypemax +=1
-                    sod[k].beadtype = beadtypemax
-                if sod[k].name not in names:
-                    self.setattr(sod[k].name,sod[k])
-                    beadtypemax = sod[k].beadtype
+                    SOgroup[k].beadtype = beadtypemax
+                if SOgroup[k].name not in names:
+                    self.setattr(SOgroup[k].name,SOgroup[k])
+                    beadtypemax = SOgroup[k].beadtype
                 else:
-                    raise ValueError('the script object "%s" already exists' % sod[k].name)
-                names.append(sod[k].name)
+                    raise ValueError('the script object "%s" already exists' % SOgroup[k].name)
+                names.append(SOgroup[k].name)
             else:
                 raise ValueError("the argument #%d is not a script object")
 
-    def __add__(self, sod):
-        beadlist = [self.getattr(k).beadtype for k in self.keys()]
+    def __str__(self):
+        """ string representation """
+        return f"{self._fulltype} with {len(self)} {self._ftype}s ({span(self.beadtype)})"
+
+    def __add__(self, SOgroup):
+        """ overload + """
+        beadlist = self.beadtype
         dup = duplicate(self)
-        if isinstance(sod,objectdata):
-            if sod.name not in self.keys():
-                if sod.beadtype not in beadlist:
-                    dup.setattr(sod.name, sod)
-                    beadlist.append(sod.beadtype)
+        if isinstance(SOgroup,scriptobject):
+            if SOgroup.name not in self.keys():
+                if SOgroup.beadtype not in beadlist:
+                    dup.setattr(SOgroup.name, SOgroup)
+                    beadlist.append(SOgroup.beadtype)
                     return dup
                 else:
                     raise ValueError('%s(beadtype=%d) is already in use, same beadtype' \
-                                     % (sod.name,sod.beadtype))
+                                     % (SOgroup.name,SOgroup.beadtype))
             else:
-                raise ValueError('the object "%s" is already in the list' % sod.name)
-        elif isinstance(sod,objectcontainer):
-            for k in sod.keys():
+                raise ValueError('the object "%s" is already in the list' % SOgroup.name)
+        elif isinstance(SOgroup,scriptobjectgroup):
+            for k in SOgroup.keys():
                 if k not in dup.keys():
-                    if sod.getattr(k).beadtype not in beadlist:
-                        dup.setattr(k,sod.getattr(k))
-                        beadlist.append(sod.getattr(k).beadtype)
+                    if SOgroup.getattr(k).beadtype not in beadlist:
+                        dup.setattr(k,SOgroup.getattr(k))
+                        beadlist.append(SOgroup.getattr(k).beadtype)
                     else:
                         raise ValueError('%s(beadtype=%d) is already in use, same beadtype' \
-                                         % (k,sod.getattr(k).beadtype))
+                                         % (k,SOgroup.getattr(k).beadtype))
                 else:
                     raise ValueError('the object "%s" is already in the list' % k)
             return dup
         else:
-            raise ValueError("the argument #%d is not a script object or a script object container/list")
-            
+            raise ValueError("the argument #%d is not a script object or a script object group")
+    
+    @property
+    def list(self):
+        """ convert into a list """
+        return sorted(self)
+    
+    @property
+    def zip(self):
+        """ zip beadtypes and names """
+        return [(self.getattr(k).beadtype,self.getattr(k).name) for k in self.keys()]
+    
+    @property
+    def name(self):
+        """ "return the list of names """
+        return [x for _, x in sorted(self.zip)]
+    
+    @property
+    def beadtype(self):
+        """ returns the beads in the group """
+        return sorted([self.getattr(k).beadtype for k in self.keys()])
+    
+    @property
+    def str(self):
+        return span(self.beadtype)
+    
+    @property
+    def minmax(self):
+        """ returns the min,max of beadtype """
+        return self.min,self.max
+    
+    @property
+    def min(self):
+        """ returns the min of beadtype """
+        return min(self.beadtype)
+    
+    @property
+    def max(self):
+        """ returns the max of beadtype """
+        return max(self.beadtype)
+    
+    def group(self,groupname="undefined group",group=1):
+        """ create a group with name """
+        return {groupname: {"group":1, "beadtype":self.beadtype, "name":self.name}}
+    
+    def select(self,keeplist=None):
+        """ select bead from a keep beadlist """
+        if keeplist==None: keeplist = list(range(self.min,self.max+1))
+        if not isinstance(keeplist,list): keeplist = [keeplist]
+        dup = scriptobjectgroup()
+        for b,n in self.zip:
+            if b in keeplist:
+                dup = dup + self.getattr(n)
+        return dup
+    
 
 # %% core class (please derive this class when you use it, do not alter it)
 class script():
@@ -959,11 +1087,15 @@ class runsection(script):
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':
-    # a=objectdata(name="a"); b=objectdata(name="b");
-    # objectcontainer(a)
-    # c=a+b
-    # d = objectdata(name="d",beadtype=3)
-    # e = a +b +d
+    """
+        a=scriptobject(name="a"); b=scriptobject(name="b");
+        scriptobjectgroup(a)
+        c=a+b
+        d = scriptobject(name="d",beadtype=3)
+        e = a +b +d
+        e.select(1)
+        
+    """
     
     G = globalsection()
     print(G)

@@ -19,6 +19,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-02-28 display nested structures
 # 2022-03-01 implement value as list
 # 2022-03-02 display correctly class names (not instances)
+# 2022-03-04 add str()
 
 # Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -256,6 +257,8 @@ class struct():
                 if key not in self._excludedattr:
                     if isinstance(value,(int,float,str,list,tuple,np.ndarray,np.generic)):
                         print(fmt % key,value)
+                    elif isinstance(value,struct):
+                        print(fmt % key,value.__str__())
                     elif isinstance(value,type):
                         print(fmt % key,str(value))
                     else:
@@ -264,6 +267,9 @@ class struct():
                         print(fmteval % "",tmp.getattr(key))
             print(line)
             return f"{self._fulltype} ({self._type} object) with {len(self.__dict__)} {self._ftype}s"
+
+    def __str__(self):
+        return f"{self._fulltype} ({self._type} object) with {len(self.__dict__)} {self._ftype}s"
         
     def format(self,s):
         """ format a string with field (use {field} as placeholders) """
