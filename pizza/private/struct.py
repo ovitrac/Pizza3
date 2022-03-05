@@ -21,6 +21,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-03-02 display correctly class names (not instances)
 # 2022-03-04 add str()
 # 2022-03-05 add __copy__ and __deepcopy__ methods
+# 2022-03-05 AttributeError replaces KeyError in getattr() exceptions (required for for pdoc3)
 
 # Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -148,7 +149,7 @@ class struct():
         """ get value """
         if key in self.keys():
             return self.__dict__[key]
-        raise KeyError(f'the {self._ftype} "{key}" does not exist')
+        raise AttributeError(f'the {self._ftype} "{key}" does not exist')
     
     def hasattr(self,key):
         """ return true if the field exist """

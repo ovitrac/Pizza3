@@ -1,0 +1,2078 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>workshop0 API documentation</title>
+<meta name="description" content="Workshop 0 - main file …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>workshop0</code></h1>
+</header>
+<section id="section-intro">
+<p>Workshop 0 - main file</p>
+<pre><code>    Write a LAMMPS code directy from Python from codelets (Python script templates)
+    Typical section LAMMPS code with variables (strings, expressions, vectors, lists)
+    are coded with "codelets" (dynamics scripts of the class pizza.script())
+    Variables values can be defined from placeholders and subsequently overidden.
+
+
+    Each codelet (pizza.script object) sets two main variables
+
+        DEFINITIONS coding for the variables, some examples follows:
+            strings: "$ this is a string # comment"
+             vector: [1,0,1]
+               list: ["p","f","p"] or [500, 0.9, "rcb"]
+             tupple: (-10,2)
+         expression: '50*${c0}^2*${rho}' with variables and mathematical operators or functions
+
+
+        TEMPLATE is a string with placeholders/variables:
+            ${variable} will be replaced by its value (possibly after evaluation)
+            ${expression}
+
+         NOTE1: Indexing is authorized in DEFINITIONS but not in TEMPLATES
+               Vectors and lists are expanded/flattened as strings when evaluated
+             run = [500,1000]
+             run0 = "${run[0]}"
+             run1 = "${run[1]}"
+
+         NOTE2: Vectors and lists are expanded with " " as separator
+                Tuples are expanded with "," as separator
+
+    Values of definitions and new variables can be set at runtime
+        mycodelet = codelet()
+        mycodelet.USER.var1 = 1
+        mycodelet.USER.var2 = 2
+
+    Several instances may be run with different values
+        mycodelet1 = codelet(var=1)
+        mycodelet2 = codelet(var=2)
+        mycodelet1.USER.var1 = 10
+        mycodelet1.USER.var2 = 20
+
+    Codelets can be multievaluated with the operator "&amp;" (and)
+        mycodelet = codelet(var=1) &amp; codelet(var=2) &amp; ...
+        with all variables defined in each instance of codelet
+
+    Codelets can be combined with the operator "+" (plus)
+        mycodelet = codelet_1(var1=1) + codelet_2(var2=2)
+        with the definition of variable var1 passed to codelet_2
+        note: in the example above, codelet_2 can a function of var1, var2
+        note: if the same variable is defined in two codelets, the last 
+              definition is used
+        note: mycodelet can be also multievaluated:
+              mycodelet(var1=1,var2=2) &amp; mycodelet(var1=10,var2=20)
+
+    Codelets can be displayed, converted to stings, written to a file
+        mycodelet + ENTER to display it
+        mycodelet.DEFINITIONS to see the definitions
+        mycodelet.USER to see user definitions
+        mycodelet.TEMPLATE shows the TEMPLATE
+        note: It is not recommended to change TEMPLATE in instances
+              (all instances will be affected)
+
+        mycodelet.do() evaluates the codelet as string
+
+        mycodelet.write("inp.mylammpsscript") write a LAMMPS script
+
+
+    Creating your codelets (beyond the scope of the workshop).
+        All codelets should be of or derived from the class pizza.script()
+        class newcodelet(oldcodelet)
+            description = "blah, blah"
+            useid = "newcodelet()"
+            version = 0
+            DEFINTIONS = scriptdata(
+                var1 = 1,
+                var2 = 2
+                )
+            TEMPLATE = "" "
+            # LAMMPS code
+            "" "
+
+USAGE:
+    from workshop0 import *
+
+    use name_of_the_codelet.description to see the syntax
+
+    codelet = name_of_the_codelet(var1,var2)
+    fullscript = codelet1 + codelet2 + codelet3
+    fullscript.write("mylammpsscript.inp")
+
+
+LIST OF CODELETS:
+
+    -- initialization --
+
+        initialization()    ---&gt; initialize the framework
+        load()              ---&gt; load input data (examples from data() and raster() objects)
+        group()             ---&gt; group beads
+        gravity()           ---&gt; set gravity
+        interactions()      ---&gt; set forcefield
+
+        note: load() and groups() are designed to be multievaluated
+
+    -- equilibration --
+
+        thermo()            ---&gt; pseudo thermostat initialization, and computes
+        equilibration()     ---&gt; equilibration steps
+
+        note: equilibration() is designed to be multievaluated
+
+    -- dump --
+
+        smddump()
+
+        note: dump are framework depended, set all outputs for SMD
+
+    -- displacements --
+
+        translation()       ---&gt; translation of rigid objects
+        rampforce()         ---&gt; set forces
+</code></pre>
+<p>Created on Fri Feb 25 13:52:08 2022 - revised on 2022-03-02</p>
+<p>@author: olivi,billy</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+    Workshop 0 - main file
+    
+        Write a LAMMPS code directy from Python from codelets (Python script templates)
+        Typical section LAMMPS code with variables (strings, expressions, vectors, lists)
+        are coded with &#34;codelets&#34; (dynamics scripts of the class pizza.script())
+        Variables values can be defined from placeholders and subsequently overidden.
+        
+        
+        Each codelet (pizza.script object) sets two main variables
+        
+            DEFINITIONS coding for the variables, some examples follows:
+                strings: &#34;$ this is a string # comment&#34;
+                 vector: [1,0,1]
+                   list: [&#34;p&#34;,&#34;f&#34;,&#34;p&#34;] or [500, 0.9, &#34;rcb&#34;]
+                 tupple: (-10,2)
+             expression: &#39;50*${c0}^2*${rho}&#39; with variables and mathematical operators or functions
+             
+                   
+            TEMPLATE is a string with placeholders/variables:
+                ${variable} will be replaced by its value (possibly after evaluation)
+                ${expression}
+
+             NOTE1: Indexing is authorized in DEFINITIONS but not in TEMPLATES
+                   Vectors and lists are expanded/flattened as strings when evaluated
+                 run = [500,1000]
+                 run0 = &#34;${run[0]}&#34;
+                 run1 = &#34;${run[1]}&#34;
+                 
+             NOTE2: Vectors and lists are expanded with &#34; &#34; as separator
+                    Tuples are expanded with &#34;,&#34; as separator
+
+        Values of definitions and new variables can be set at runtime
+            mycodelet = codelet()
+            mycodelet.USER.var1 = 1
+            mycodelet.USER.var2 = 2
+            
+        Several instances may be run with different values
+            mycodelet1 = codelet(var=1)
+            mycodelet2 = codelet(var=2)
+            mycodelet1.USER.var1 = 10
+            mycodelet1.USER.var2 = 20
+
+        Codelets can be multievaluated with the operator &#34;&amp;&#34; (and)
+            mycodelet = codelet(var=1) &amp; codelet(var=2) &amp; ...
+            with all variables defined in each instance of codelet
+            
+        Codelets can be combined with the operator &#34;+&#34; (plus)
+            mycodelet = codelet_1(var1=1) + codelet_2(var2=2)
+            with the definition of variable var1 passed to codelet_2
+            note: in the example above, codelet_2 can a function of var1, var2
+            note: if the same variable is defined in two codelets, the last 
+                  definition is used
+            note: mycodelet can be also multievaluated:
+                  mycodelet(var1=1,var2=2) &amp; mycodelet(var1=10,var2=20)
+                  
+        Codelets can be displayed, converted to stings, written to a file
+            mycodelet + ENTER to display it
+            mycodelet.DEFINITIONS to see the definitions
+            mycodelet.USER to see user definitions
+            mycodelet.TEMPLATE shows the TEMPLATE
+            note: It is not recommended to change TEMPLATE in instances
+                  (all instances will be affected)
+           
+            mycodelet.do() evaluates the codelet as string
+            
+            mycodelet.write(&#34;inp.mylammpsscript&#34;) write a LAMMPS script
+            
+            
+        Creating your codelets (beyond the scope of the workshop).
+            All codelets should be of or derived from the class pizza.script()
+            class newcodelet(oldcodelet)
+                description = &#34;blah, blah&#34;
+                useid = &#34;newcodelet()&#34;
+                version = 0
+                DEFINTIONS = scriptdata(
+                    var1 = 1,
+                    var2 = 2
+                    )
+                TEMPLATE = &#34;&#34; &#34;
+                # LAMMPS code
+                &#34;&#34; &#34;
+                
+    USAGE:
+        from workshop0 import *
+        
+        use name_of_the_codelet.description to see the syntax
+        
+        codelet = name_of_the_codelet(var1,var2)
+        fullscript = codelet1 + codelet2 + codelet3
+        fullscript.write(&#34;mylammpsscript.inp&#34;)
+    
+    
+    LIST OF CODELETS:
+        
+        -- initialization --
+        
+            initialization()    ---&gt; initialize the framework
+            load()              ---&gt; load input data (examples from data() and raster() objects)
+            group()             ---&gt; group beads
+            gravity()           ---&gt; set gravity
+            interactions()      ---&gt; set forcefield
+            
+            note: load() and groups() are designed to be multievaluated
+            
+        -- equilibration --
+        
+            thermo()            ---&gt; pseudo thermostat initialization, and computes
+            equilibration()     ---&gt; equilibration steps
+            
+            note: equilibration() is designed to be multievaluated
+            
+        -- dump --
+            
+            smddump()
+            
+            note: dump are framework depended, set all outputs for SMD
+            
+        -- displacements --
+        
+            translation()       ---&gt; translation of rigid objects
+            rampforce()         ---&gt; set forces
+            
+
+
+Created on Fri Feb 25 13:52:08 2022 - revised on 2022-03-02
+
+@author: olivi,billy
+&#34;&#34;&#34;
+
+# Revision history
+# 2022-02-28 early version, almost functional (dump and run missing)
+# 2022-03-01 release candidate, full documentation, better style
+# 2022-03-02 full documentation for the workshop
+# 2022-03-02 fix neighbor in initialization() and example
+# 2022-03-02 first post-workshop0 fixes (others are coming before forking as workshop1)
+
+# generic dependencies
+import datetime, os, socket, getpass
+
+# import script, forcefield and struct classes
+from pizza.script import *
+from pizza.forcefield import *
+from pizza.private.struct import struct
+
+
+# %% Initialization template
+class initialization(globalsection):
+    &#34;&#34;&#34; 
+    workshop0.initialization()
+    workshop0.initialization(param1=value1,param2=value2)
+    
+        Initialize LAMMPS core-shell model of workshop0
+        
+        Example
+        -------
+        init = initialization(boundary=[&#34;p&#34;,&#34;f&#34;,&#34;p&#34;],dimension=2)
+        init.USER.boundary=[&#34;p&#34;,&#34;f&#34;,&#34;p&#34;] # works also
+        init.do()                       # shows the script
+        bead_kernel_radius = put the value of the kernel radius of the bead
+        init.USER.neighbor = [bead_kernel_radius,&#34;bin&#34;]
+        
+        Comments:
+            Set parameters at during the first call or use the USER atrribute to do it
+            The method do() shows the content of the script
+            type init +ENTER to see all accessible DEFINITIONS and TEMPLATE
+            
+        How to generate a complex script
+        ---------------------------------
+          fullscript = init+geom+groups+physgravity+forcefield+\
+              initthermo+equilsteps+dump+moves
+          fullscript.write(&#34;tmp/myscript.inp&#34;)
+          
+          Comments:
+              Several scripts can be combined with the operator +
+              As a result, values set in DEFINITIONS are shared between all scripts
+              Use: fullscript.write(&#34;tmp/myscript.inp&#34;) to generate a LAMMPS file
+              Use: fullscript.do() to show the script
+              type fullscript +ENTER to see all details
+            
+        Previous step/class: none
+        Next step/class: load()
+        
+    &#34;&#34;&#34;
+    description = &#34;initialization(var1=val1,var2=val2,...)&#34;
+    userid = &#34;initialization&#34;               # user name
+    version = 1.0                           # version
+    
+    # SMD Scheme (these variables are available everywhere)
+    DEFINITIONS = scriptdata(
+                units= &#34;$ si&#34;,
+            dimension= 2,
+             boundary= [&#34;p&#34;,&#34;f&#34;,&#34;p&#34;], # simulation box boundaries
+          comm_modify= [&#34;vel&#34;,&#34;yes&#34;],
+           comm_style= &#34;$ tiled&#34;,
+          atom_modify= [&#34;map&#34;,&#34;array&#34;],
+               newton= &#34;$ off&#34;,
+              neighbor= [1,&#34;bin&#34;],
+    neigh_modify_every= 5, 
+    neigh_modify_delay= 0,
+    neigh_modify_check= &#34;$ yes&#34;,
+            atom_style= &#34;$ smd&#34;
+            )
+    
+    # Template
+    TEMPLATE = &#34;\n\n# &#34; + &#34;\n# &#34;.join(script._contact) + &#34;\n&#34;*3 + &#34;&#34;&#34;
+# SCHEME INITIALIZATION
+units       ${units}
+dimension       ${dimension}
+boundary    ${boundary}
+comm_modify ${comm_modify}
+comm_style  ${comm_style}
+atom_modify ${atom_modify}
+newton ${newton}
+neighbor        ${neighbor}
+neigh_modify    every ${neigh_modify_every} delay ${neigh_modify_delay} check ${neigh_modify_check}
+
+atom_style      ${atom_style}
+ &#34;&#34;&#34;
+    
+
+# %% Initialization template
+class load(geometrysection):
+    &#34;&#34;&#34; 
+    workshop0.load(local=&#34;$workingdir&#34;,file=&#34;$filename&#34;)
+    
+        Load geometry models and assign bead indices (first digits)
+        
+        Example
+        -------
+        wdir = &#34;$ ../datafile&#34;
+        geom = load(local=wdir,file=&#34;$ 2_Top_mod.lmp&#34;,mode=&#34;&#34;) &amp; \
+               load(local=wdir,file=&#34;$ 1_Bottom_mod.lmp&#34;) &amp; \
+               load(local=wdir,file=&#34;$ 3_thin_shell_outer_mod.lmp&#34;) &amp; \
+               load(local=wdir,file=&#34;$ 4_thin_shell_inner_mod.lmp&#34;)       
+               
+        Comments:
+            Use &#34;$&#34; to define a chain without evaluation
+            Use &#34;&amp;&#34; (and) to link several actions (same script with different values)
+            mode = &#34;&#34; is used to avoid &#34;add append&#34;
+            
+        Previous step/class: initialization()
+        Next step/class: group()        
+        
+    &#34;&#34;&#34;
+    description = &#39;syntax: load(local=&#34;$ /my/folder/&#34;,file=&#34;$ my file&#34;)&#39;
+    userid = &#34;load()&#34;
+    version = 1.0
+    
+    # file to load
+    DEFINITIONS = scriptdata(
+            local = &#34;$ ../datafiles&#34;,  # remove the trailing /
+             file = &#34;$ 2_Top_mod.lmp&#34;,
+             mode = &#34;$ add append&#34;
+            )
+    # Template
+    TEMPLATE = \
+    &#34;&#34;&#34;read_data ${local}/${file} ${mode}&#34;&#34;&#34;
+
+
+# group beads together
+class group(geometrysection):
+    &#34;&#34;&#34; 
+    workshop0.group(name=&#34;$groupname&#34;,beadtype=1 or [1,2,3..])
+    
+        Set group of beads based on their types
+        
+        Example
+        -------
+        groups = group(name=&#34;$ solid&#34;,beadtype=[1,2,3]) &amp; \
+                 group(name=&#34;$ tlsph&#34;,beadtype=[1,2,3]) &amp; \
+                 group(name=&#34;$ fluid&#34;,beadtype=4) &amp; \
+                 group(name=&#34;$ ulsph&#34;,beadtype=4) &amp; \
+                 group(name=&#34;$ moving1&#34;,beadtype=1) &amp; \
+                 group(name=&#34;$ moving2&#34;,beadtype=2)    
+               
+        Comments:
+            Use &#34;$&#34; to define a chain without evaluation
+            Use &#34;&amp;&#34; (and) to link several actions (same script with different values)
+            type can be either int or list
+            
+        Previous step/class: load()
+        Next step/class: gravity()        
+        
+    &#34;&#34;&#34;
+    description = &#39;group(name=&#34;$mygroup&#34;,beadtype=[1,2,3])&#39;
+    userid = &#34;group()&#34;
+    version = 1.0
+    
+    # group definition
+    DEFINITIONS = scriptdata(
+        name = &#34;$ solid&#34;,
+        beadtype = [1,2,3]
+        )
+    #template
+    TEMPLATE = &#34;&#34;&#34;group ${name} ${beadtype}&#34;&#34;&#34;
+
+
+# Set gravity in simulation
+class gravity(initializesection):
+    &#34;&#34;&#34; 
+    workshop0.gravity(g=9.81,vector=[0,1,0])
+    
+        Set gravity for simulation (intensity and orientation)
+        
+        Example
+        -------
+        physgravity = gravity(g=0)  
+               
+        Comments:
+            In 2D, gravity should be along y (i.e., [0,1,0])
+            Use &#34;&amp;&#34; (and) to link several actions (same script with different values)
+            type can be either int or list
+            
+        Previous step/class: group()
+        Next step/class: interactions()        
+        
+    &#34;&#34;&#34;
+    description = &#39;gravity(g=9.81,vector=[0,1,0])&#39;
+    userid = &#34;gravity()&#34;
+    version = 1.0
+    
+    # group definition
+    DEFINITIONS = scriptdata(
+             g = 9.81,
+        vector = [0,1,0]
+        )
+    #template
+    TEMPLATE = &#34;&#34;&#34;fix gfix all gravity ${g} vector ${vector}&#34;&#34;&#34;
+    
+    
+# set interactions
+class interactions(initialization,interactionsection):
+    &#34;&#34;&#34; 
+    workshop0.interactions(top=1,bottom=2,solid=3,fluid=4)
+    
+        Set forcefields for workshop
+        
+        Example
+        -------
+        forcefield = interactions(top=1,bottom=2,solid=3,fluid=4)
+        forcefield.FLUID.rho = 951
+        forcefield.refresh() # mandatory after a value modification
+               
+        Comments:
+            Assign bead types to the four labels &#34;top&#34;,&#34;bottom&#34;,&#34;solid&#34;,&#34;fluid&#34;
+            Use  forcefield.FLUID to set a fluid properties
+            Idem with forcefield.SOLID, forcefield.WALL
+            Note1: update the all definitions with forcefield.refresh()
+            Note2: forcefields have complex defitions, please refer to the code
+                   and the class forcefield()
+            
+        Previous step/class: gravity()
+        Next step/class: thermo()        
+        
+    &#34;&#34;&#34;
+    description = &#39;interactions(top=1,bottom=2,solid=3,fluid=4)&#39;
+    userid = &#34;interactions()&#34;
+    version = 1.0
+    
+    # Properties (used in LAMMPS) - they are interpreted by the proper forcefield
+    FLUID = scriptdata(
+            rho = 950,
+            c0 = 10.0,
+            q1 = 1.0,
+            Cp = 1.0,
+            # hertz contacts
+            contact_scale = 1.5,
+            contact_stiffness = &#39;10*${c0}^2*${rho}&#39;
+        )    
+    SOLID = scriptdata(
+            rho = 1100,
+            c0 = 10.0,
+            E = &#39;50*${c0}^2*${rho}&#39;,
+            nu = 0.3, # Poisson ratio for solid objects
+            q1 = 1.0,
+            q2 = 0.0,
+            Hg = 10,
+            Cp = 1.0,
+            sigma_yield = &#39;0.1*${E}&#39;,
+            hardening = 0,
+            # hertz contacts
+            contact_scale = 1.5,
+            contact_stiffness = &#39;50*${c0}^2*${rho}&#39;
+        )
+    WALL = scriptdata(
+            rho = 3000,
+            c0 = 10.0,
+            contact_stiffness = &#39;50*${c0}^2*${rho}&#39;,
+            contact_scale = 1.5
+        )
+       
+    # Bead id set at construction
+    def __init__(self,top=1,bottom=2,solid=3,fluid=4):
+        &#34;&#34;&#34; set bead id with interactions(top=1,bottom=2,solid=3,fluid=4) &#34;&#34;&#34;
+        super().__init__() # required to initialize interactions
+        self.beadid = scriptdata(top=top,bottom=bottom,solid=solid,fluid=fluid)
+        self.forcefield = struct(
+            fluid = water(beadtype=fluid, userid=&#34;fluid&#34;, USER=self.FLUID),
+            solid = solidfood(beadtype=solid, userid=&#34;solid&#34;,USER=self.SOLID),
+            top = rigidwall(beadtype=top, userid=&#34;top&#34;, USER=self.WALL),
+            bottom = rigidwall(beadtype=bottom, userid=&#34;bottom&#34;, USER=self.WALL)
+                   )
+        self.TEMPLATE = &#34;\n# ===== [ BEGIN FORCEFIELD SECTION ] &#34;+&#34;=&#34;*80 +\
+                   self.forcefield[0].pair_style() + \
+                   self.forcefield.fluid.pair_diagcoeff() + \
+                   self.forcefield.solid.pair_diagcoeff() + \
+                   self.forcefield.top.pair_diagcoeff() + \
+                   self.forcefield.bottom.pair_diagcoeff() + \
+                   self.forcefield.bottom.pair_offdiagcoeff(self.forcefield.top) + \
+                   self.forcefield.bottom.pair_offdiagcoeff(self.forcefield.fluid) + \
+                   self.forcefield.bottom.pair_offdiagcoeff(self.forcefield.solid) + \
+                   self.forcefield.top.pair_offdiagcoeff(self.forcefield.fluid) + \
+                   self.forcefield.top.pair_offdiagcoeff(self.forcefield.solid) + \
+                   self.forcefield.solid.pair_offdiagcoeff(self.forcefield.fluid) + \
+                   &#34;\n# ===== [ END FORCEFIELD SECTION ] &#34;+&#34;=&#34;*82+&#34;\n&#34;
+        self.DEFINTIONS = scriptdata() # no definitions
+        
+    # Refresh data
+    def refresh(self):
+        &#34;&#34;&#34; refresh values &#34;&#34;&#34;
+        self.__init__(top=self.beadid.top,
+                    bottom=self.beadid.bottom,
+                    solid=self.beadid.solid,
+                    fluid=self.beadid.fluid)
+        
+
+
+# %% Equilibration and dynamics
+class thermo(integrationsection):
+    &#34;&#34;&#34; 
+    workshop0.thermo(adjust_radius = [1.01,10,15],limit_velocity=1000)
+    
+        Set default parameters for time integration
+        
+        Example
+        -------
+        initthermo = thermo()
+               
+        Comments:
+            Do not change the parameters without reading the &#34;style&#34; manual
+            
+            
+        Previous step/class: interactions()
+        Next step/class: equilibration()        
+        
+    &#34;&#34;&#34;
+    description = &#39;thermo(param=value...)&#39;
+    userid = &#34;thermo()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+              dt = 0.1,
+   adjust_radius = [1.01,10,15],
+  limit_velocity = 1000,
+         thermo = 50,
+  thermo_modify = [&#34;lost&#34;,&#34;ignore&#34;],
+        balance = [500, 0.9, &#34;rcb&#34;] # load balancing for MPI
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+#   Time integration conditions
+fix             dtfix fluid smd/adjust_dt ${dt} # dynamically adjust time increment every step
+fix             integration_fix fluid smd/integrate_ulsph adjust_radius ${adjust_radius}
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity ${limit_velocity}
+#   thermo
+thermo             ${thermo}
+thermo_modify  ${thermo_modify}
+#   balancing
+fix             balance_fix all balance ${balance}
+&#34;&#34;&#34;
+
+class equilibration(integrationsection):
+    &#34;&#34;&#34; 
+    workshop0.equilibration(mode=&#34;init|slow|fast&#34;,limit_velocity=1000,run=1000)
+    
+        Equilibrate the simulation with various limit_velocities
+        
+        Example
+        -------
+        equilsteps = equilibration(mode=&#34;init&#34;,run=[1000,2000]) &amp; \
+                     equilibration(mode=&#34;fast&#34;,limit_velocity=1000,run=1000) &amp; \
+                     equilibration(mode=&#34;slow&#34;,limit_velocity=0.01,run=1000) &amp; \
+                     equilibration(mode=&#34;fast&#34;,limit_velocity=1000,run=1000)
+               
+        Comments:
+            Heuristic, please update the flavor to your case
+            
+            
+        Previous step/class: thermo()
+        Next step/class: smddump()        
+        
+    &#34;&#34;&#34;
+    description = &#39;equilibration(mode=&#34;init&#34;,limit_velocity=1000,run=1000)&#39;
+    userid = &#34;equilibration()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+        velocity = [0,0,0],
+        limit_velocity = 0.01,
+        run = [1000,1000]
+        )
+    
+    def __init__(self,mode=&#34;init&#34;,**args):
+        if mode==&#34;init&#34;:
+            self.TEMPLATE = f&#34;#   Equilibration {mode}&#34; + &#34;&#34;&#34;
+fix             movement1 moving1 smd/setvel ${velocity}
+fix             movement2 moving2 smd/setvel ${velocity}
+run             ${run_0_}
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity ${limit_velocity}
+run             ${run_1_}
+&#34;&#34;&#34;
+        else:
+            self.TEMPLATE = f&#34;#   Equilibration {mode}&#34; + &#34;&#34;&#34;
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity ${limit_velocity}
+run             ${run_0_}
+&#34;&#34;&#34;
+        # populate run values and create run_0_,run_1_
+        self.USER = scriptdata(**args)
+        tmp = self.DEFINITIONS + self.USER
+        if &#39;run&#39; in tmp:
+            if isinstance(tmp.run,(int,float)): tmp.run = [tmp.run]
+            for irun in range(len(tmp.run)):
+                self.USER.setattr(f&#34;run_{irun}_&#34;,tmp.run[irun])
+        
+        
+
+
+# %% DUMP SECTION
+class smddump(dumpsection):
+    &#34;&#34;&#34; 
+    workshop0.smddump(outstep=1000,outputfile=&#34;$myfile&#34;)
+    
+        Dump file format for SMD
+        
+        Example
+        -------
+        dump = smddump(outstep=5000,outputfile=&#34;$ dump.workshop0&#34;)
+               
+        Comments:
+            outstep = dump every outstep
+            outputfile = dump filename
+            
+        Previous step/class: equilibration()
+        Next step/class: translation()        
+    &#34;&#34;&#34;
+    
+    description = &#39;smddump(outstep=1000,outputfile=&#34;$myfile&#34;)&#39;
+    userid = &#34;smddump()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+        outstep = 7000,
+     outputfile = &#34;$ dump.file&#34;
+        )
+
+    TEMPLATE = &#34;&#34;&#34;
+#   Computes
+compute         eint all smd/internal/energy
+compute         contact_radius all smd/contact/radius
+compute         S solid smd/tlsph/stress
+compute         nn fluid smd/ulsph/num/neighs
+compute         epl solid smd/plastic/strain
+compute         vol all smd/vol
+compute         rho all smd/rho
+
+#   Dump file
+dump            dump_id all custom ${outstep} ${outputfile} id type x y z &amp;
+                fx fy fz vx vy vz c_eint c_contact_radius mol &amp;
+                c_S[1] c_S[2] c_S[3] c_S[4] mass c_epl c_vol c_rho c_nn proc
+dump_modify     dump_id first yes
+&#34;&#34;&#34;
+
+# %% DISPLACEMENTS and integration
+class translation(runsection):
+    &#34;&#34;&#34; 
+    workshop0.translation(velocity1=[],velocity2=[],force=[],run=5000)
+    
+        Translates top and bottom according to set velocities or forces
+        
+        Example
+        -------
+        moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp; \
+                translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp; \
+                translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp; \
+                rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+               
+        Comments:
+            Refer to TEMPLATE for details
+           
+        Previous step/class: smddump()
+        Next step/class: rampforce()        
+    &#34;&#34;&#34;
+    
+    description = &#39;translation(velocity1=[],velocity2=[],force=[],run=5000)&#39;
+    userid = &#34;smddump()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+        velocity1 = [0,-1,0],
+        velocity2 = [0,1,0],
+        force = [0,0,0],
+        run = 5000
+        )
+    TEMPLATE = &#34;&#34;&#34;
+#   Translation
+fix             movement1 moving1 smd/setvel ${velocity1}
+fix             movement2 moving2 smd/setvel ${velocity2}
+fix             force1 moving1 setforce ${force}
+run             ${run}
+&#34;&#34;&#34;
+
+class rampforce(runsection):
+    &#34;&#34;&#34; 
+    workshop0.rampforec(ramp=(-1,10),run=5000)
+    
+        Applies a force ramp
+        
+        Example
+        -------
+        moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp; \
+                translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp; \
+                translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp; \
+                rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+               
+        Comments:
+            Refer to TEMPLATE for details
+            The ramp must be defined with a Tuple (mandatory)
+           
+        Previous step/class: translation()
+        Next step/class: none        
+    &#34;&#34;&#34;
+    
+    description = &#34;rampforec(ramp=(-1,10),run=5000)&#34;
+    userid = &#34;smddump()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+        ramp = (-1,10),
+        run = 5000
+        )
+    TEMPLATE = &#34;&#34;&#34;
+#   Force ramp
+variable        ramp equal ramp(${ramp})
+fix             movement1 moving1 smd/setvel 0 NULL 0
+fix             movement2 moving2 smd/setvel 0 0 0
+fix             force1 moving1 setforce 0 v_ramp 0
+run             ${run}
+&#34;&#34;&#34;
+
+
+# %% DEBUG  
+# ===================================================   
+# main()
+# ===================================================   
+# for debugging purposes (code called as a script)
+# the code is called from here
+# ===================================================
+if __name__ == &#39;__main__&#39;:
+    
+    # initizalization of the scheme (note that c0 is note used in DEFINITIONS)
+    bead_kernel_radius = 1.5
+    init = initialization(neighbor =[bead_kernel_radius,&#34;bin&#34;])
+    init.do()                    # shows the script
+    
+    # read input data
+    # help with load.description
+    wdir = &#34;$ ../datafile&#34;
+    geom = load(local=wdir,file=&#34;$ 2_Top_mod.lmp&#34;,mode=&#34;&#34;) &amp; \
+           load(local=wdir,file=&#34;$ 1_Bottom_mod.lmp&#34;) &amp; \
+           load(local=wdir,file=&#34;$ 3_thin_shell_outer_mod.lmp&#34;) &amp; \
+           load(local=wdir,file=&#34;$ 4_thin_shell_inner_mod.lmp&#34;)
+    # create groups
+    # help with groups.description
+    groups = group(name=&#34;$ solid&#34;,type=[1,2,3]) &amp; \
+             group(name=&#34;$ tlsph&#34;,type=[1,2,3]) &amp; \
+             group(name=&#34;$ fluid&#34;,type=4) &amp; \
+             group(name=&#34;$ ulsph&#34;,type=4) &amp; \
+             group(name=&#34;$ moving1&#34;,type=1) &amp; \
+             group(name=&#34;$ moving2&#34;,type=2)
+    # add gravity
+    # help with physgravity.description
+    physgravity = gravity(g=0)
+    
+    # interactions (do not forget to refresh)
+    forcefield = interactions(top=1,bottom=2,solid=3,fluid=4)
+    forcefield.FLUID.rho = 951
+    forcefield.refresh() # mandatory after a value modification
+    
+    
+    # equilibration
+    initthermo = thermo()
+    equilsteps = equilibration(mode=&#34;init&#34;,run=[1000,2000]) &amp; \
+                 equilibration(mode=&#34;fast&#34;,limit_velocity=1000,run=1000) &amp; \
+                 equilibration(mode=&#34;slow&#34;,limit_velocity=0.01,run=1000) &amp; \
+                 equilibration(mode=&#34;fast&#34;,limit_velocity=1000,run=1000)
+  
+    # dump
+    dump = smddump(outstep=5000,outputfile=&#34;$ dump.workshop0&#34;)
+    
+    # displacements
+    moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp; \
+            translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp; \
+            translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp; \
+            rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+  
+    # full script
+    fullscript = init+geom+groups+physgravity+forcefield+\
+        initthermo+equilsteps+dump+moves
+    fullscript.write(&#34;tmp/myscript.inp&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="workshop0.equilibration"><code class="flex name class">
+<span>class <span class="ident">equilibration</span></span>
+<span>(</span><span>mode='init', **args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.equilibration(mode="init|slow|fast",limit_velocity=1000,run=1000)</p>
+<pre><code>Equilibrate the simulation with various limit_velocities
+
+Example
+-------
+equilsteps = equilibration(mode="init",run=[1000,2000]) &amp;                      equilibration(mode="fast",limit_velocity=1000,run=1000) &amp;                      equilibration(mode="slow",limit_velocity=0.01,run=1000) &amp;                      equilibration(mode="fast",limit_velocity=1000,run=1000)
+
+Comments:
+    Heuristic, please update the flavor to your case
+
+
+Previous step/class: thermo()
+Next step/class: smddump()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class equilibration(integrationsection):
+    &#34;&#34;&#34; 
+    workshop0.equilibration(mode=&#34;init|slow|fast&#34;,limit_velocity=1000,run=1000)
+    
+        Equilibrate the simulation with various limit_velocities
+        
+        Example
+        -------
+        equilsteps = equilibration(mode=&#34;init&#34;,run=[1000,2000]) &amp; \
+                     equilibration(mode=&#34;fast&#34;,limit_velocity=1000,run=1000) &amp; \
+                     equilibration(mode=&#34;slow&#34;,limit_velocity=0.01,run=1000) &amp; \
+                     equilibration(mode=&#34;fast&#34;,limit_velocity=1000,run=1000)
+               
+        Comments:
+            Heuristic, please update the flavor to your case
+            
+            
+        Previous step/class: thermo()
+        Next step/class: smddump()        
+        
+    &#34;&#34;&#34;
+    description = &#39;equilibration(mode=&#34;init&#34;,limit_velocity=1000,run=1000)&#39;
+    userid = &#34;equilibration()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+        velocity = [0,0,0],
+        limit_velocity = 0.01,
+        run = [1000,1000]
+        )
+    
+    def __init__(self,mode=&#34;init&#34;,**args):
+        if mode==&#34;init&#34;:
+            self.TEMPLATE = f&#34;#   Equilibration {mode}&#34; + &#34;&#34;&#34;
+fix             movement1 moving1 smd/setvel ${velocity}
+fix             movement2 moving2 smd/setvel ${velocity}
+run             ${run_0_}
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity ${limit_velocity}
+run             ${run_1_}
+&#34;&#34;&#34;
+        else:
+            self.TEMPLATE = f&#34;#   Equilibration {mode}&#34; + &#34;&#34;&#34;
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity ${limit_velocity}
+run             ${run_0_}
+&#34;&#34;&#34;
+        # populate run values and create run_0_,run_1_
+        self.USER = scriptdata(**args)
+        tmp = self.DEFINITIONS + self.USER
+        if &#39;run&#39; in tmp:
+            if isinstance(tmp.run,(int,float)): tmp.run = [tmp.run]
+            for irun in range(len(tmp.run)):
+                self.USER.setattr(f&#34;run_{irun}_&#34;,tmp.run[irun])</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.integrationsection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.equilibration.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.equilibration.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.equilibration.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.equilibration.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop0.gravity"><code class="flex name class">
+<span>class <span class="ident">gravity</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.gravity(g=9.81,vector=[0,1,0])</p>
+<pre><code>Set gravity for simulation (intensity and orientation)
+
+Example
+-------
+physgravity = gravity(g=0)
+
+Comments:
+    In 2D, gravity should be along y (i.e., [0,1,0])
+    Use "&amp;" (and) to link several actions (same script with different values)
+    type can be either int or list
+
+Previous step/class: group()
+Next step/class: interactions()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class gravity(initializesection):
+    &#34;&#34;&#34; 
+    workshop0.gravity(g=9.81,vector=[0,1,0])
+    
+        Set gravity for simulation (intensity and orientation)
+        
+        Example
+        -------
+        physgravity = gravity(g=0)  
+               
+        Comments:
+            In 2D, gravity should be along y (i.e., [0,1,0])
+            Use &#34;&amp;&#34; (and) to link several actions (same script with different values)
+            type can be either int or list
+            
+        Previous step/class: group()
+        Next step/class: interactions()        
+        
+    &#34;&#34;&#34;
+    description = &#39;gravity(g=9.81,vector=[0,1,0])&#39;
+    userid = &#34;gravity()&#34;
+    version = 1.0
+    
+    # group definition
+    DEFINITIONS = scriptdata(
+             g = 9.81,
+        vector = [0,1,0]
+        )
+    #template
+    TEMPLATE = &#34;&#34;&#34;fix gfix all gravity ${g} vector ${vector}&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.initializesection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.gravity.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.gravity.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.gravity.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.gravity.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.gravity.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop0.group"><code class="flex name class">
+<span>class <span class="ident">group</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.group(name="$groupname",beadtype=1 or [1,2,3..])</p>
+<pre><code>Set group of beads based on their types
+
+Example
+-------
+groups = group(name="$ solid",beadtype=[1,2,3]) &amp;                  group(name="$ tlsph",beadtype=[1,2,3]) &amp;                  group(name="$ fluid",beadtype=4) &amp;                  group(name="$ ulsph",beadtype=4) &amp;                  group(name="$ moving1",beadtype=1) &amp;                  group(name="$ moving2",beadtype=2)
+
+Comments:
+    Use "$" to define a chain without evaluation
+    Use "&amp;" (and) to link several actions (same script with different values)
+    type can be either int or list
+
+Previous step/class: load()
+Next step/class: gravity()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class group(geometrysection):
+    &#34;&#34;&#34; 
+    workshop0.group(name=&#34;$groupname&#34;,beadtype=1 or [1,2,3..])
+    
+        Set group of beads based on their types
+        
+        Example
+        -------
+        groups = group(name=&#34;$ solid&#34;,beadtype=[1,2,3]) &amp; \
+                 group(name=&#34;$ tlsph&#34;,beadtype=[1,2,3]) &amp; \
+                 group(name=&#34;$ fluid&#34;,beadtype=4) &amp; \
+                 group(name=&#34;$ ulsph&#34;,beadtype=4) &amp; \
+                 group(name=&#34;$ moving1&#34;,beadtype=1) &amp; \
+                 group(name=&#34;$ moving2&#34;,beadtype=2)    
+               
+        Comments:
+            Use &#34;$&#34; to define a chain without evaluation
+            Use &#34;&amp;&#34; (and) to link several actions (same script with different values)
+            type can be either int or list
+            
+        Previous step/class: load()
+        Next step/class: gravity()        
+        
+    &#34;&#34;&#34;
+    description = &#39;group(name=&#34;$mygroup&#34;,beadtype=[1,2,3])&#39;
+    userid = &#34;group()&#34;
+    version = 1.0
+    
+    # group definition
+    DEFINITIONS = scriptdata(
+        name = &#34;$ solid&#34;,
+        beadtype = [1,2,3]
+        )
+    #template
+    TEMPLATE = &#34;&#34;&#34;group ${name} ${beadtype}&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.geometrysection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.group.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.group.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.group.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.group.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.group.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop0.initialization"><code class="flex name class">
+<span>class <span class="ident">initialization</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.initialization()
+workshop0.initialization(param1=value1,param2=value2)</p>
+<pre><code>Initialize LAMMPS core-shell model of workshop0
+
+Example
+-------
+init = initialization(boundary=["p","f","p"],dimension=2)
+init.USER.boundary=["p","f","p"] # works also
+init.do()                       # shows the script
+bead_kernel_radius = put the value of the kernel radius of the bead
+init.USER.neighbor = [bead_kernel_radius,"bin"]
+
+Comments:
+    Set parameters at during the first call or use the USER atrribute to do it
+    The method do() shows the content of the script
+    type init +ENTER to see all accessible DEFINITIONS and TEMPLATE
+
+How to generate a complex script
+---------------------------------
+  fullscript = init+geom+groups+physgravity+forcefield+              initthermo+equilsteps+dump+moves
+  fullscript.write("tmp/myscript.inp")
+
+  Comments:
+      Several scripts can be combined with the operator +
+      As a result, values set in DEFINITIONS are shared between all scripts
+      Use: fullscript.write("tmp/myscript.inp") to generate a LAMMPS file
+      Use: fullscript.do() to show the script
+      type fullscript +ENTER to see all details
+
+Previous step/class: none
+Next step/class: load()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class initialization(globalsection):
+    &#34;&#34;&#34; 
+    workshop0.initialization()
+    workshop0.initialization(param1=value1,param2=value2)
+    
+        Initialize LAMMPS core-shell model of workshop0
+        
+        Example
+        -------
+        init = initialization(boundary=[&#34;p&#34;,&#34;f&#34;,&#34;p&#34;],dimension=2)
+        init.USER.boundary=[&#34;p&#34;,&#34;f&#34;,&#34;p&#34;] # works also
+        init.do()                       # shows the script
+        bead_kernel_radius = put the value of the kernel radius of the bead
+        init.USER.neighbor = [bead_kernel_radius,&#34;bin&#34;]
+        
+        Comments:
+            Set parameters at during the first call or use the USER atrribute to do it
+            The method do() shows the content of the script
+            type init +ENTER to see all accessible DEFINITIONS and TEMPLATE
+            
+        How to generate a complex script
+        ---------------------------------
+          fullscript = init+geom+groups+physgravity+forcefield+\
+              initthermo+equilsteps+dump+moves
+          fullscript.write(&#34;tmp/myscript.inp&#34;)
+          
+          Comments:
+              Several scripts can be combined with the operator +
+              As a result, values set in DEFINITIONS are shared between all scripts
+              Use: fullscript.write(&#34;tmp/myscript.inp&#34;) to generate a LAMMPS file
+              Use: fullscript.do() to show the script
+              type fullscript +ENTER to see all details
+            
+        Previous step/class: none
+        Next step/class: load()
+        
+    &#34;&#34;&#34;
+    description = &#34;initialization(var1=val1,var2=val2,...)&#34;
+    userid = &#34;initialization&#34;               # user name
+    version = 1.0                           # version
+    
+    # SMD Scheme (these variables are available everywhere)
+    DEFINITIONS = scriptdata(
+                units= &#34;$ si&#34;,
+            dimension= 2,
+             boundary= [&#34;p&#34;,&#34;f&#34;,&#34;p&#34;], # simulation box boundaries
+          comm_modify= [&#34;vel&#34;,&#34;yes&#34;],
+           comm_style= &#34;$ tiled&#34;,
+          atom_modify= [&#34;map&#34;,&#34;array&#34;],
+               newton= &#34;$ off&#34;,
+              neighbor= [1,&#34;bin&#34;],
+    neigh_modify_every= 5, 
+    neigh_modify_delay= 0,
+    neigh_modify_check= &#34;$ yes&#34;,
+            atom_style= &#34;$ smd&#34;
+            )
+    
+    # Template
+    TEMPLATE = &#34;\n\n# &#34; + &#34;\n# &#34;.join(script._contact) + &#34;\n&#34;*3 + &#34;&#34;&#34;
+# SCHEME INITIALIZATION
+units       ${units}
+dimension       ${dimension}
+boundary    ${boundary}
+comm_modify ${comm_modify}
+comm_style  ${comm_style}
+atom_modify ${atom_modify}
+newton ${newton}
+neighbor        ${neighbor}
+neigh_modify    every ${neigh_modify_every} delay ${neigh_modify_delay} check ${neigh_modify_check}
+
+atom_style      ${atom_style}
+ &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.globalsection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="workshop0.interactions" href="#workshop0.interactions">interactions</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.initialization.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.initialization.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.initialization.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.initialization.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.initialization.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop0.interactions"><code class="flex name class">
+<span>class <span class="ident">interactions</span></span>
+<span>(</span><span>top=1, bottom=2, solid=3, fluid=4)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.interactions(top=1,bottom=2,solid=3,fluid=4)</p>
+<pre><code>Set forcefields for workshop
+
+Example
+-------
+forcefield = interactions(top=1,bottom=2,solid=3,fluid=4)
+forcefield.FLUID.rho = 951
+forcefield.refresh() # mandatory after a value modification
+
+Comments:
+    Assign bead types to the four labels "top","bottom","solid","fluid"
+    Use  forcefield.FLUID to set a fluid properties
+    Idem with forcefield.SOLID, forcefield.WALL
+    Note1: update the all definitions with forcefield.refresh()
+    Note2: forcefields have complex defitions, please refer to the code
+           and the class forcefield()
+
+Previous step/class: gravity()
+Next step/class: thermo()
+</code></pre>
+<p>set bead id with interactions(top=1,bottom=2,solid=3,fluid=4)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class interactions(initialization,interactionsection):
+    &#34;&#34;&#34; 
+    workshop0.interactions(top=1,bottom=2,solid=3,fluid=4)
+    
+        Set forcefields for workshop
+        
+        Example
+        -------
+        forcefield = interactions(top=1,bottom=2,solid=3,fluid=4)
+        forcefield.FLUID.rho = 951
+        forcefield.refresh() # mandatory after a value modification
+               
+        Comments:
+            Assign bead types to the four labels &#34;top&#34;,&#34;bottom&#34;,&#34;solid&#34;,&#34;fluid&#34;
+            Use  forcefield.FLUID to set a fluid properties
+            Idem with forcefield.SOLID, forcefield.WALL
+            Note1: update the all definitions with forcefield.refresh()
+            Note2: forcefields have complex defitions, please refer to the code
+                   and the class forcefield()
+            
+        Previous step/class: gravity()
+        Next step/class: thermo()        
+        
+    &#34;&#34;&#34;
+    description = &#39;interactions(top=1,bottom=2,solid=3,fluid=4)&#39;
+    userid = &#34;interactions()&#34;
+    version = 1.0
+    
+    # Properties (used in LAMMPS) - they are interpreted by the proper forcefield
+    FLUID = scriptdata(
+            rho = 950,
+            c0 = 10.0,
+            q1 = 1.0,
+            Cp = 1.0,
+            # hertz contacts
+            contact_scale = 1.5,
+            contact_stiffness = &#39;10*${c0}^2*${rho}&#39;
+        )    
+    SOLID = scriptdata(
+            rho = 1100,
+            c0 = 10.0,
+            E = &#39;50*${c0}^2*${rho}&#39;,
+            nu = 0.3, # Poisson ratio for solid objects
+            q1 = 1.0,
+            q2 = 0.0,
+            Hg = 10,
+            Cp = 1.0,
+            sigma_yield = &#39;0.1*${E}&#39;,
+            hardening = 0,
+            # hertz contacts
+            contact_scale = 1.5,
+            contact_stiffness = &#39;50*${c0}^2*${rho}&#39;
+        )
+    WALL = scriptdata(
+            rho = 3000,
+            c0 = 10.0,
+            contact_stiffness = &#39;50*${c0}^2*${rho}&#39;,
+            contact_scale = 1.5
+        )
+       
+    # Bead id set at construction
+    def __init__(self,top=1,bottom=2,solid=3,fluid=4):
+        &#34;&#34;&#34; set bead id with interactions(top=1,bottom=2,solid=3,fluid=4) &#34;&#34;&#34;
+        super().__init__() # required to initialize interactions
+        self.beadid = scriptdata(top=top,bottom=bottom,solid=solid,fluid=fluid)
+        self.forcefield = struct(
+            fluid = water(beadtype=fluid, userid=&#34;fluid&#34;, USER=self.FLUID),
+            solid = solidfood(beadtype=solid, userid=&#34;solid&#34;,USER=self.SOLID),
+            top = rigidwall(beadtype=top, userid=&#34;top&#34;, USER=self.WALL),
+            bottom = rigidwall(beadtype=bottom, userid=&#34;bottom&#34;, USER=self.WALL)
+                   )
+        self.TEMPLATE = &#34;\n# ===== [ BEGIN FORCEFIELD SECTION ] &#34;+&#34;=&#34;*80 +\
+                   self.forcefield[0].pair_style() + \
+                   self.forcefield.fluid.pair_diagcoeff() + \
+                   self.forcefield.solid.pair_diagcoeff() + \
+                   self.forcefield.top.pair_diagcoeff() + \
+                   self.forcefield.bottom.pair_diagcoeff() + \
+                   self.forcefield.bottom.pair_offdiagcoeff(self.forcefield.top) + \
+                   self.forcefield.bottom.pair_offdiagcoeff(self.forcefield.fluid) + \
+                   self.forcefield.bottom.pair_offdiagcoeff(self.forcefield.solid) + \
+                   self.forcefield.top.pair_offdiagcoeff(self.forcefield.fluid) + \
+                   self.forcefield.top.pair_offdiagcoeff(self.forcefield.solid) + \
+                   self.forcefield.solid.pair_offdiagcoeff(self.forcefield.fluid) + \
+                   &#34;\n# ===== [ END FORCEFIELD SECTION ] &#34;+&#34;=&#34;*82+&#34;\n&#34;
+        self.DEFINTIONS = scriptdata() # no definitions
+        
+    # Refresh data
+    def refresh(self):
+        &#34;&#34;&#34; refresh values &#34;&#34;&#34;
+        self.__init__(top=self.beadid.top,
+                    bottom=self.beadid.bottom,
+                    solid=self.beadid.solid,
+                    fluid=self.beadid.fluid)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="workshop0.initialization" href="#workshop0.initialization">initialization</a></li>
+<li>pizza.script.globalsection</li>
+<li>pizza.script.interactionsection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.interactions.FLUID"><code class="name">var <span class="ident">FLUID</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.interactions.SOLID"><code class="name">var <span class="ident">SOLID</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.interactions.WALL"><code class="name">var <span class="ident">WALL</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.interactions.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.interactions.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.interactions.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="workshop0.interactions.refresh"><code class="name flex">
+<span>def <span class="ident">refresh</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>refresh values</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def refresh(self):
+    &#34;&#34;&#34; refresh values &#34;&#34;&#34;
+    self.__init__(top=self.beadid.top,
+                bottom=self.beadid.bottom,
+                solid=self.beadid.solid,
+                fluid=self.beadid.fluid)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="workshop0.load"><code class="flex name class">
+<span>class <span class="ident">load</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.load(local="$workingdir",file="$filename")</p>
+<pre><code>Load geometry models and assign bead indices (first digits)
+
+Example
+-------
+wdir = "$ ../datafile"
+geom = load(local=wdir,file="$ 2_Top_mod.lmp",mode="") &amp;                load(local=wdir,file="$ 1_Bottom_mod.lmp") &amp;                load(local=wdir,file="$ 3_thin_shell_outer_mod.lmp") &amp;                load(local=wdir,file="$ 4_thin_shell_inner_mod.lmp")
+
+Comments:
+    Use "$" to define a chain without evaluation
+    Use "&amp;" (and) to link several actions (same script with different values)
+    mode = "" is used to avoid "add append"
+
+Previous step/class: initialization()
+Next step/class: group()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class load(geometrysection):
+    &#34;&#34;&#34; 
+    workshop0.load(local=&#34;$workingdir&#34;,file=&#34;$filename&#34;)
+    
+        Load geometry models and assign bead indices (first digits)
+        
+        Example
+        -------
+        wdir = &#34;$ ../datafile&#34;
+        geom = load(local=wdir,file=&#34;$ 2_Top_mod.lmp&#34;,mode=&#34;&#34;) &amp; \
+               load(local=wdir,file=&#34;$ 1_Bottom_mod.lmp&#34;) &amp; \
+               load(local=wdir,file=&#34;$ 3_thin_shell_outer_mod.lmp&#34;) &amp; \
+               load(local=wdir,file=&#34;$ 4_thin_shell_inner_mod.lmp&#34;)       
+               
+        Comments:
+            Use &#34;$&#34; to define a chain without evaluation
+            Use &#34;&amp;&#34; (and) to link several actions (same script with different values)
+            mode = &#34;&#34; is used to avoid &#34;add append&#34;
+            
+        Previous step/class: initialization()
+        Next step/class: group()        
+        
+    &#34;&#34;&#34;
+    description = &#39;syntax: load(local=&#34;$ /my/folder/&#34;,file=&#34;$ my file&#34;)&#39;
+    userid = &#34;load()&#34;
+    version = 1.0
+    
+    # file to load
+    DEFINITIONS = scriptdata(
+            local = &#34;$ ../datafiles&#34;,  # remove the trailing /
+             file = &#34;$ 2_Top_mod.lmp&#34;,
+             mode = &#34;$ add append&#34;
+            )
+    # Template
+    TEMPLATE = \
+    &#34;&#34;&#34;read_data ${local}/${file} ${mode}&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.geometrysection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.load.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.load.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.load.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.load.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.load.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop0.rampforce"><code class="flex name class">
+<span>class <span class="ident">rampforce</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.rampforec(ramp=(-1,10),run=5000)</p>
+<pre><code>Applies a force ramp
+
+Example
+-------
+moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp;                 translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp;                 translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp;                 rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+
+Comments:
+    Refer to TEMPLATE for details
+    The ramp must be defined with a Tuple (mandatory)
+
+Previous step/class: translation()
+Next step/class: none
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class rampforce(runsection):
+    &#34;&#34;&#34; 
+    workshop0.rampforec(ramp=(-1,10),run=5000)
+    
+        Applies a force ramp
+        
+        Example
+        -------
+        moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp; \
+                translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp; \
+                translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp; \
+                rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+               
+        Comments:
+            Refer to TEMPLATE for details
+            The ramp must be defined with a Tuple (mandatory)
+           
+        Previous step/class: translation()
+        Next step/class: none        
+    &#34;&#34;&#34;
+    
+    description = &#34;rampforec(ramp=(-1,10),run=5000)&#34;
+    userid = &#34;smddump()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+        ramp = (-1,10),
+        run = 5000
+        )
+    TEMPLATE = &#34;&#34;&#34;
+#   Force ramp
+variable        ramp equal ramp(${ramp})
+fix             movement1 moving1 smd/setvel 0 NULL 0
+fix             movement2 moving2 smd/setvel 0 0 0
+fix             force1 moving1 setforce 0 v_ramp 0
+run             ${run}
+&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.runsection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.rampforce.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.rampforce.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.rampforce.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.rampforce.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.rampforce.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop0.smddump"><code class="flex name class">
+<span>class <span class="ident">smddump</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.smddump(outstep=1000,outputfile="$myfile")</p>
+<pre><code>Dump file format for SMD
+
+Example
+-------
+dump = smddump(outstep=5000,outputfile="$ dump.workshop0")
+
+Comments:
+    outstep = dump every outstep
+    outputfile = dump filename
+
+Previous step/class: equilibration()
+Next step/class: translation()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class smddump(dumpsection):
+    &#34;&#34;&#34; 
+    workshop0.smddump(outstep=1000,outputfile=&#34;$myfile&#34;)
+    
+        Dump file format for SMD
+        
+        Example
+        -------
+        dump = smddump(outstep=5000,outputfile=&#34;$ dump.workshop0&#34;)
+               
+        Comments:
+            outstep = dump every outstep
+            outputfile = dump filename
+            
+        Previous step/class: equilibration()
+        Next step/class: translation()        
+    &#34;&#34;&#34;
+    
+    description = &#39;smddump(outstep=1000,outputfile=&#34;$myfile&#34;)&#39;
+    userid = &#34;smddump()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+        outstep = 7000,
+     outputfile = &#34;$ dump.file&#34;
+        )
+
+    TEMPLATE = &#34;&#34;&#34;
+#   Computes
+compute         eint all smd/internal/energy
+compute         contact_radius all smd/contact/radius
+compute         S solid smd/tlsph/stress
+compute         nn fluid smd/ulsph/num/neighs
+compute         epl solid smd/plastic/strain
+compute         vol all smd/vol
+compute         rho all smd/rho
+
+#   Dump file
+dump            dump_id all custom ${outstep} ${outputfile} id type x y z &amp;
+                fx fy fz vx vy vz c_eint c_contact_radius mol &amp;
+                c_S[1] c_S[2] c_S[3] c_S[4] mass c_epl c_vol c_rho c_nn proc
+dump_modify     dump_id first yes
+&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.dumpsection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.smddump.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.smddump.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.smddump.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.smddump.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.smddump.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop0.thermo"><code class="flex name class">
+<span>class <span class="ident">thermo</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.thermo(adjust_radius = [1.01,10,15],limit_velocity=1000)</p>
+<pre><code>Set default parameters for time integration
+
+Example
+-------
+initthermo = thermo()
+
+Comments:
+    Do not change the parameters without reading the "style" manual
+
+
+Previous step/class: interactions()
+Next step/class: equilibration()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class thermo(integrationsection):
+    &#34;&#34;&#34; 
+    workshop0.thermo(adjust_radius = [1.01,10,15],limit_velocity=1000)
+    
+        Set default parameters for time integration
+        
+        Example
+        -------
+        initthermo = thermo()
+               
+        Comments:
+            Do not change the parameters without reading the &#34;style&#34; manual
+            
+            
+        Previous step/class: interactions()
+        Next step/class: equilibration()        
+        
+    &#34;&#34;&#34;
+    description = &#39;thermo(param=value...)&#39;
+    userid = &#34;thermo()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+              dt = 0.1,
+   adjust_radius = [1.01,10,15],
+  limit_velocity = 1000,
+         thermo = 50,
+  thermo_modify = [&#34;lost&#34;,&#34;ignore&#34;],
+        balance = [500, 0.9, &#34;rcb&#34;] # load balancing for MPI
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+#   Time integration conditions
+fix             dtfix fluid smd/adjust_dt ${dt} # dynamically adjust time increment every step
+fix             integration_fix fluid smd/integrate_ulsph adjust_radius ${adjust_radius}
+fix             integration_fix_solid solid smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving1 moving1 smd/integrate_tlsph limit_velocity ${limit_velocity}
+fix             integration_fix_moving2 moving2 smd/integrate_tlsph limit_velocity ${limit_velocity}
+#   thermo
+thermo             ${thermo}
+thermo_modify  ${thermo_modify}
+#   balancing
+fix             balance_fix all balance ${balance}
+&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.integrationsection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.thermo.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.thermo.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.thermo.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.thermo.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.thermo.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop0.translation"><code class="flex name class">
+<span>class <span class="ident">translation</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop0.translation(velocity1=[],velocity2=[],force=[],run=5000)</p>
+<pre><code>Translates top and bottom according to set velocities or forces
+
+Example
+-------
+moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp;                 translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp;                 translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp;                 rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+
+Comments:
+    Refer to TEMPLATE for details
+
+Previous step/class: smddump()
+Next step/class: rampforce()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class translation(runsection):
+    &#34;&#34;&#34; 
+    workshop0.translation(velocity1=[],velocity2=[],force=[],run=5000)
+    
+        Translates top and bottom according to set velocities or forces
+        
+        Example
+        -------
+        moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp; \
+                translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp; \
+                translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp; \
+                rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+               
+        Comments:
+            Refer to TEMPLATE for details
+           
+        Previous step/class: smddump()
+        Next step/class: rampforce()        
+    &#34;&#34;&#34;
+    
+    description = &#39;translation(velocity1=[],velocity2=[],force=[],run=5000)&#39;
+    userid = &#34;smddump()&#34;
+    version = 1.0
+    
+    DEFINITIONS = scriptdata(
+        velocity1 = [0,-1,0],
+        velocity2 = [0,1,0],
+        force = [0,0,0],
+        run = 5000
+        )
+    TEMPLATE = &#34;&#34;&#34;
+#   Translation
+fix             movement1 moving1 smd/setvel ${velocity1}
+fix             movement2 moving2 smd/setvel ${velocity2}
+fix             force1 moving1 setforce ${force}
+run             ${run}
+&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.runsection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop0.translation.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.translation.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.translation.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.translation.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop0.translation.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="workshop0.equilibration" href="#workshop0.equilibration">equilibration</a></code></h4>
+<ul class="">
+<li><code><a title="workshop0.equilibration.DEFINITIONS" href="#workshop0.equilibration.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop0.equilibration.description" href="#workshop0.equilibration.description">description</a></code></li>
+<li><code><a title="workshop0.equilibration.userid" href="#workshop0.equilibration.userid">userid</a></code></li>
+<li><code><a title="workshop0.equilibration.version" href="#workshop0.equilibration.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop0.gravity" href="#workshop0.gravity">gravity</a></code></h4>
+<ul class="">
+<li><code><a title="workshop0.gravity.DEFINITIONS" href="#workshop0.gravity.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop0.gravity.TEMPLATE" href="#workshop0.gravity.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop0.gravity.description" href="#workshop0.gravity.description">description</a></code></li>
+<li><code><a title="workshop0.gravity.userid" href="#workshop0.gravity.userid">userid</a></code></li>
+<li><code><a title="workshop0.gravity.version" href="#workshop0.gravity.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop0.group" href="#workshop0.group">group</a></code></h4>
+<ul class="">
+<li><code><a title="workshop0.group.DEFINITIONS" href="#workshop0.group.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop0.group.TEMPLATE" href="#workshop0.group.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop0.group.description" href="#workshop0.group.description">description</a></code></li>
+<li><code><a title="workshop0.group.userid" href="#workshop0.group.userid">userid</a></code></li>
+<li><code><a title="workshop0.group.version" href="#workshop0.group.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop0.initialization" href="#workshop0.initialization">initialization</a></code></h4>
+<ul class="">
+<li><code><a title="workshop0.initialization.DEFINITIONS" href="#workshop0.initialization.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop0.initialization.TEMPLATE" href="#workshop0.initialization.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop0.initialization.description" href="#workshop0.initialization.description">description</a></code></li>
+<li><code><a title="workshop0.initialization.userid" href="#workshop0.initialization.userid">userid</a></code></li>
+<li><code><a title="workshop0.initialization.version" href="#workshop0.initialization.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop0.interactions" href="#workshop0.interactions">interactions</a></code></h4>
+<ul class="two-column">
+<li><code><a title="workshop0.interactions.FLUID" href="#workshop0.interactions.FLUID">FLUID</a></code></li>
+<li><code><a title="workshop0.interactions.SOLID" href="#workshop0.interactions.SOLID">SOLID</a></code></li>
+<li><code><a title="workshop0.interactions.WALL" href="#workshop0.interactions.WALL">WALL</a></code></li>
+<li><code><a title="workshop0.interactions.description" href="#workshop0.interactions.description">description</a></code></li>
+<li><code><a title="workshop0.interactions.refresh" href="#workshop0.interactions.refresh">refresh</a></code></li>
+<li><code><a title="workshop0.interactions.userid" href="#workshop0.interactions.userid">userid</a></code></li>
+<li><code><a title="workshop0.interactions.version" href="#workshop0.interactions.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop0.load" href="#workshop0.load">load</a></code></h4>
+<ul class="">
+<li><code><a title="workshop0.load.DEFINITIONS" href="#workshop0.load.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop0.load.TEMPLATE" href="#workshop0.load.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop0.load.description" href="#workshop0.load.description">description</a></code></li>
+<li><code><a title="workshop0.load.userid" href="#workshop0.load.userid">userid</a></code></li>
+<li><code><a title="workshop0.load.version" href="#workshop0.load.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop0.rampforce" href="#workshop0.rampforce">rampforce</a></code></h4>
+<ul class="">
+<li><code><a title="workshop0.rampforce.DEFINITIONS" href="#workshop0.rampforce.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop0.rampforce.TEMPLATE" href="#workshop0.rampforce.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop0.rampforce.description" href="#workshop0.rampforce.description">description</a></code></li>
+<li><code><a title="workshop0.rampforce.userid" href="#workshop0.rampforce.userid">userid</a></code></li>
+<li><code><a title="workshop0.rampforce.version" href="#workshop0.rampforce.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop0.smddump" href="#workshop0.smddump">smddump</a></code></h4>
+<ul class="">
+<li><code><a title="workshop0.smddump.DEFINITIONS" href="#workshop0.smddump.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop0.smddump.TEMPLATE" href="#workshop0.smddump.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop0.smddump.description" href="#workshop0.smddump.description">description</a></code></li>
+<li><code><a title="workshop0.smddump.userid" href="#workshop0.smddump.userid">userid</a></code></li>
+<li><code><a title="workshop0.smddump.version" href="#workshop0.smddump.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop0.thermo" href="#workshop0.thermo">thermo</a></code></h4>
+<ul class="">
+<li><code><a title="workshop0.thermo.DEFINITIONS" href="#workshop0.thermo.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop0.thermo.TEMPLATE" href="#workshop0.thermo.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop0.thermo.description" href="#workshop0.thermo.description">description</a></code></li>
+<li><code><a title="workshop0.thermo.userid" href="#workshop0.thermo.userid">userid</a></code></li>
+<li><code><a title="workshop0.thermo.version" href="#workshop0.thermo.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop0.translation" href="#workshop0.translation">translation</a></code></h4>
+<ul class="">
+<li><code><a title="workshop0.translation.DEFINITIONS" href="#workshop0.translation.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop0.translation.TEMPLATE" href="#workshop0.translation.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop0.translation.description" href="#workshop0.translation.description">description</a></code></li>
+<li><code><a title="workshop0.translation.userid" href="#workshop0.translation.userid">userid</a></code></li>
+<li><code><a title="workshop0.translation.version" href="#workshop0.translation.version">version</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

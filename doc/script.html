@@ -1,0 +1,4070 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>script API documentation</title>
+<meta name="description" content="The class script() and derived facilitate the coding in LAMMPS
+Each section is remplaced by a template as a class inherited from script() …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>script</code></h1>
+</header>
+<section id="section-intro">
+<p>The class script() and derived facilitate the coding in LAMMPS
+Each section is remplaced by a template as a class inherited from script()</p>
+<pre><code>The class include two important attribues
+    TEMPLATE is a string  efines between  the LAMMPS code
+    The variables used by TEMPLATE are stored in DEFINITIONS.
+    DEFINITIONS is a scripdata() object accepting scalar, mathematical expressions, 
+    text almost as in LAMMPS.
+
+    Variables can be inherited between sections using + or += operator
+
+Toy example
+    G = globalsection()
+    print(G)
+    c = initializesection()
+    print(c)
+    g = geometrysection()
+    print(g)
+    d = discretizationsection()
+    print(d)
+    b = boundarysection()
+    print(b)
+    i = interactionsection()
+    print(i)
+    t = integrationsection()
+    print(t)
+    d = dumpsection()
+    print(d)
+    s = statussection()
+    print(s)
+    r = runsection()
+    print(r)
+
+    # all sections as a single script
+    myscript = G+c+g+d+b+i+t+d+s+r
+    print("
+</code></pre>
+<p>"<em>4,'='</em>80,'</p>
+<p>this is the full script</p>
+<p>','='*80,'
+')
+print(myscript.do())</p>
+<p>Created on Sat Feb 19 11:00:43 2022</p>
+<p>@author: olivi</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+
+    The class script() and derived facilitate the coding in LAMMPS
+    Each section is remplaced by a template as a class inherited from script()
+    
+    The class include two important attribues
+        TEMPLATE is a string  efines between &#34;&#34;&#34; &#34;&#34;&#34; the LAMMPS code
+        The variables used by TEMPLATE are stored in DEFINITIONS.
+        DEFINITIONS is a scripdata() object accepting scalar, mathematical expressions, 
+        text almost as in LAMMPS.
+        
+        Variables can be inherited between sections using + or += operator
+        
+    Toy example
+        G = globalsection()
+        print(G)
+        c = initializesection()
+        print(c)
+        g = geometrysection()
+        print(g)
+        d = discretizationsection()
+        print(d)
+        b = boundarysection()
+        print(b)
+        i = interactionsection()
+        print(i)
+        t = integrationsection()
+        print(t)
+        d = dumpsection()
+        print(d)
+        s = statussection()
+        print(s)
+        r = runsection()
+        print(r)
+        
+        # all sections as a single script
+        myscript = G+c+g+d+b+i+t+d+s+r
+        print(&#34;\n&#34;*4,&#39;=&#39;*80,&#39;\n\n this is the full script\n\n&#39;,&#39;=&#39;*80,&#39;\n&#39;)
+        print(myscript.do())
+
+
+Created on Sat Feb 19 11:00:43 2022
+
+@author: olivi
+&#34;&#34;&#34;
+
+# INRAE\Olivier Vitrac - rev. 2022-02-19
+# contact: olivier.vitrac@agroparistech.fr
+
+
+# Revision history
+# 2022-02-20 RC with documentation and 10 section templates
+# 2022-02-21 add + += operators, expand help
+# 2022-02-26 add USER to enable instance variables with higher precendence
+# 2022-02-27 add write() method and overload &amp; operator
+# 2022-02-28 overload * (+ expansion) and ** (&amp; expansion) operators
+# 2022-03-01 expand lists (with space as separator) and tupples (with ,)
+# 2022-03-02 first implementation of scriptobject(), object container pending
+# 2022-03-03 extensions of scriptobject() and scriptobjectgroup()
+# 2022-03-04 consolidation of scriptobject() and scriptobjectgroup()
+# 2022-03-05 [major update] scriptobjectgroup() can generate scripts for loading, setting groups and forcefields
+
+
+# %% Dependencies
+import types
+from copy import copy as duplicate
+import datetime, os, socket, getpass
+
+# All forcefield parameters are stored à la Matlab in a structure
+from forcefield import *
+from private.struct import param,struct
+
+# span vector into a single string
+def span(vector,sep=&#34; &#34;,left=&#34;&#34;,right=&#34;&#34;): return left+sep.join(map(str,vector))+right
+
+# %% Top generic classes for storing script data and objects
+# they are not intended to be used outside script data and objects
+
+class scriptdata(param):
+    &#34;&#34;&#34; 
+        class of script parameters 
+            Typical constructor:
+                DEFINITIONS = scriptdata(
+                    var1 = value1,
+                    var2 = value2
+                    )
+        See script, struct, param to get review all methods attached to it
+    &#34;&#34;&#34;
+    _type = &#34;SD&#34;
+    _fulltype = &#34;script data&#34;
+    _ftype = &#34;definition&#34;
+
+     
+# object data (for scripts)
+class scriptobject(struct):
+    &#34;&#34;&#34; 
+        class of script object 
+            OBJ = scriptobject(...)
+            Implemented properties:
+                beadtype=1,2,...
+                name=&#34;short name&#34;
+                fullname = &#34;comprehensive name&#34;
+                filename = &#34;/path/to/your/inputfile&#34;
+                style = &#34;smd&#34;
+                forcefield = any valid forcefield instance (default = rigidwall())
+        
+        note: use a forcefield instance with the keywork USER to pass user FF parameters
+        examples:   rigidwall(USER=scriptdata(...))
+                    solidfood(USER==scriptdata(...))
+                    water(USER==scriptdata(...))
+        
+        group objects with OBJ1+OBJ2... into scriptobjectgroups
+        
+        objects can be compared and sorted based on beadtype and name
+        
+    &#34;&#34;&#34;
+    _type = &#34;SO&#34;
+    _fulltype = &#34;script object&#34;
+    _ftype = &#34;propertie&#34;
+    
+    def __init__(self, 
+                 beadtype = 1,
+                 name = &#34;undefined&#34;,
+                 fullname=&#34;&#34;,
+                 filename=&#34;&#34;,
+                 style=&#34;smd&#34;,
+                 forcefield=rigidwall(),
+                 group=[],
+                 USER = scriptdata()
+                 ):
+        if fullname==&#34;&#34;: fullname = name + &#34; object definition&#34;
+        if not isinstance(group,list): group = [group]
+        forcefield.beadtype = beadtype
+        forcefield.userid = name
+        forcefield.USER = USER
+        super(scriptobject,self).__init__(
+              beadtype = beadtype,
+                  name = name,
+              fullname = fullname,
+              filename = filename,
+                 style = style,
+            forcefield = forcefield,
+                 group = group,
+                  USER = USER
+                 )
+
+    def __str__(self):
+        &#34;&#34;&#34; string representation &#34;&#34;&#34;
+        return f&#34;{self._fulltype} | type={self.beadtype} | name={self.name}&#34;
+
+    def __add__(self, SO):
+        if isinstance(SO,scriptobject):
+            if SO.name != self.name:
+                if SO.beadtype == self.beadtype:
+                   SO.beadtype =  self.beadtype+1
+                return scriptobjectgroup(self,SO)
+            else:
+                raise ValueError(&#39;the object &#34;%s&#34; already exists&#39; % SO.name)
+        elif isinstance(SO,scriptobjectgroup):
+            return scriptobjectgroup(self)+SO
+        else:
+            return ValueError(&#34;The object should a script object or its container&#34;)
+        
+    def __eq__(self, SO):
+        return (self.beadtype == SO.beadtype) and (self.name == SO.name)
+
+    def __ne__(self, SO):
+        return (self.beadtype != SO.beadtype) or (self.name != SO.name)
+
+    def __lt__(self, SO):
+        return self.beadtype &lt; SO.beadtype
+
+    def __gt__(self, SO):
+        return self.beadtype &gt; SO.beadtype
+
+    def __le__(self, SO):
+        return self.beadtype &lt;= SO.beadtype
+
+    def __ge__(self, SO):
+        return self.beadtype &gt;= SO.beadtype
+                    
+        
+# group of script objects  (special kind of list)
+class scriptobjectgroup(struct):
+    &#34;&#34;&#34; 
+        class of script object group
+            script object groups are built from script objects OBJ1, OBJ2,..
+            GRP = scriptobjectgroup(OBJ1,OBJ2,...)
+            GRP = OBJ1+OBJ2+...
+            
+        note: each beadtype occurs once in the group (if not an error message is generated)
+            
+        List of methods
+            struct() converts data as structure
+            select([1,2,4]) selects objects with matching beadtypes
+            
+        List of properties (dynamically calculated)
+            converted data: list, str, zip, beadtype, name, groupname, group, filename
+            numeric: len, min, max, minmax
+            forcefield related: interactions, forcefield
+            script: generate the script (load,group,forcefield)
+        
+        Full syntax (toy example)
+        
+    b1 = scriptobject(name=&#34;bead 1&#34;,group = [&#34;A&#34;, &#34;B&#34;, &#34;C&#34;],filename=&#39;myfile1&#39;,forcefield=rigidwall())
+    b2 = scriptobject(name=&#34;bead 2&#34;, group = [&#34;B&#34;, &#34;C&#34;],filename = &#39;myfile1&#39;,forcefield=rigidwall())
+    b3 = scriptobject(name=&#34;bead 3&#34;, group = [&#34;B&#34;, &#34;D&#34;, &#34;E&#34;],forcefield=solidfood())
+    b4 = scriptobject(name=&#34;bead 4&#34;, group = &#34;D&#34;,beadtype = 1,filename=&#34;myfile2&#34;,forcefield=water())
+    
+        note: beadtype are incremented during the collection (effect of order)
+            
+            # generate a collection, select a typ 1 and a subgroup, generate the script for 1,2
+            
+            collection = b1+b2+b3+b4
+            grp_typ1 = collection.select(1)
+            grpB = collection.group.B
+            script12 = collection.select([1,2]).script
+        
+        note: collection.group.B returns a strcture with 6 fields
+        -----------:----------------------------------------
+            groupid: 2 &lt;-- automatic group numbering
+        groupidname: B &lt;-- group name
+          groupname: [&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;] &lt;--- snonyms
+           beadtype: [1, 2, 3] &lt;-- beads belonging to B
+               name: [&#39;bead 1&#39;, &#39;bead 2&#39;, &#39;bead 3&#39;] &lt;-- their names
+                str: group B 1 2 3 &lt;-- LAMMPS syntax
+        -----------:----------------------------------------
+        
+    &#34;&#34;&#34;
+    _type = &#34;SOG&#34;
+    _fulltype = &#34;script object group&#34;
+    _ftype = &#34;object&#34;
+    
+    def __init__(self,*SOgroup):
+        &#34;&#34;&#34; SOG constructor &#34;&#34;&#34;
+        super(scriptobjectgroup,self).__init__()
+        beadtypemax = 0
+        names = []
+        for k in range(len(SOgroup)):
+            if isinstance(SOgroup[k],scriptobject):
+                if SOgroup[k].beadtype&lt;beadtypemax or SOgroup[k].beadtype==None:
+                    beadtypemax +=1
+                    SOgroup[k].beadtype = beadtypemax
+                if SOgroup[k].name not in names:
+                    self.setattr(SOgroup[k].name,SOgroup[k])
+                    beadtypemax = SOgroup[k].beadtype
+                else:
+                    raise ValueError(&#39;the script object &#34;%s&#34; already exists&#39; % SOgroup[k].name)
+                names.append(SOgroup[k].name)
+            else:
+                raise ValueError(&#34;the argument #%d is not a script object&#34;)
+
+    def __str__(self):
+        &#34;&#34;&#34; string representation &#34;&#34;&#34;
+        return f&#34;{self._fulltype} with {len(self)} {self._ftype}s ({span(self.beadtype)})&#34;
+
+    def __add__(self, SOgroup):
+        &#34;&#34;&#34; overload + &#34;&#34;&#34;
+        beadlist = self.beadtype
+        dup = duplicate(self)
+        if isinstance(SOgroup,scriptobject):
+            if SOgroup.name not in self.keys():
+                if SOgroup.beadtype in beadlist and \
+                  (SOgroup.beadtype==None or SOgroup.beadtype==self.min):
+                      SOgroup.beadtype = self.max+1
+                if SOgroup.beadtype not in beadlist:
+                    dup.setattr(SOgroup.name, SOgroup)
+                    beadlist.append(SOgroup.beadtype)
+                    return dup
+                else:
+                    raise ValueError(&#39;%s (beadtype=%d) is already in use, same beadtype&#39; \
+                                     % (SOgroup.name,SOgroup.beadtype))
+            else:
+                raise ValueError(&#39;the object &#34;%s&#34; is already in the list&#39; % SOgroup.name)
+        elif isinstance(SOgroup,scriptobjectgroup):
+            for k in SOgroup.keys():
+                if k not in dup.keys():
+                    if SOgroup.getattr(k).beadtype not in beadlist:
+                        dup.setattr(k,SOgroup.getattr(k))
+                        beadlist.append(SOgroup.getattr(k).beadtype)
+                    else:
+                        raise ValueError(&#39;%s (beadtype=%d) is already in use, same beadtype&#39; \
+                                         % (k,SOgroup.getattr(k).beadtype))
+                else:
+                    raise ValueError(&#39;the object &#34;%s&#34; is already in the list&#39; % k)
+            return dup
+        else:
+            raise ValueError(&#34;the argument #%d is not a script object or a script object group&#34;)
+    
+    @property
+    def list(self):
+        &#34;&#34;&#34; convert into a list &#34;&#34;&#34;
+        return sorted(self)
+    
+    @property
+    def zip(self):
+        &#34;&#34;&#34; zip beadtypes and names &#34;&#34;&#34;
+        return sorted( \
+            [(self.getattr(k).beadtype,self.getattr(k).name,self.getattr(k).group,self.getattr(k).filename) \
+            for k in self.keys()])
+
+    @property
+    def n(self):
+        &#34;&#34;&#34; returns the number of bead types &#34;&#34;&#34;
+        return len(self)
+
+    @property
+    def beadtype(self):
+        &#34;&#34;&#34; returns the beads in the group &#34;&#34;&#34;
+        return [x for x,_,_,_ in self.zip]
+        
+    @property
+    def name(self):
+        &#34;&#34;&#34; &#34;return the list of names &#34;&#34;&#34;
+        return [x for _,x,_,_ in self.zip]
+    
+    @property
+    def groupname(self):
+        &#34;&#34;&#34; &#34;return the list of groupnames &#34;&#34;&#34;
+        grp = []
+        for _,_,glist,_ in self.zip:
+            for g in glist:
+                if g not in grp: grp.append(g)
+        return grp    
+
+    @property
+    def filename(self):
+        &#34;&#34;&#34; &#34;return the list of names as a dictionary &#34;&#34;&#34;
+        files = {}
+        for _,n,_,fn in self.zip:
+            if fn != &#34;&#34;: 
+                if fn not in files:
+                    files[fn] = [n]
+                else:
+                    files[fn].append(n)
+        return files
+    
+    @property
+    def str(self):
+        return span(self.beadtype)
+
+    def struct(self,groupid=1,groupidname=&#34;undef&#34;):
+        &#34;&#34;&#34; create a group with name &#34;&#34;&#34;
+        return struct(
+                groupid = groupid,
+            groupidname = groupidname,
+              groupname = self.groupname, # meaning is synonyms
+               beadtype = self.beadtype,
+                   name = self.name,
+                    str = &#34;group %s %s&#34; % (groupidname, span(self.beadtype))
+               )
+    
+    @property
+    def minmax(self):
+        &#34;&#34;&#34; returns the min,max of beadtype &#34;&#34;&#34;
+        return self.min,self.max
+    
+    @property
+    def min(self):
+        &#34;&#34;&#34; returns the min of beadtype &#34;&#34;&#34;
+        return min(self.beadtype)
+    
+    @property
+    def max(self):
+        &#34;&#34;&#34; returns the max of beadtype &#34;&#34;&#34;
+        return max(self.beadtype)
+    
+    def select(self,beadtype=None):
+        &#34;&#34;&#34; select bead from a keep beadlist &#34;&#34;&#34;
+        if beadtype==None: beadtype = list(range(self.min,self.max+1))
+        if not isinstance(beadtype,(list,tuple)): beadtype = [beadtype]
+        dup = scriptobjectgroup()
+        for b,n,_,_ in self.zip:
+            if b in beadtype:
+                dup = dup + self.getattr(n)
+        return dup
+    
+    @property
+    def group(self):
+        &#34;&#34;&#34; build groups from group (groupname contains synonyms) &#34;&#34;&#34;
+        groupdef = struct()
+        gid = 0
+        bng = self.zip
+        for g in self.groupname:
+            gid +=1
+            b =[x for x,_,gx,_ in bng if g in gx]
+            groupdef.setattr(g,self.select(b).struct(groupid = gid, groupidname = g))
+        return groupdef
+    
+    @property
+    def interactions(self):
+        # update and accumulate all forece fields
+        FF = []
+        for b in self.beadtype:
+            selection = duplicate(self.select(b)[0])
+            selection.forcefield.beadtype = selection.beadtype
+            selection.forcefield.userid = selection.name
+            FF.append(selection.forcefield)
+        # initialize interactions with pair_style
+        TEMPLATE = &#34;\n# ===== [ BEGIN FORCEFIELD SECTION ] &#34;+&#34;=&#34;*80 + \
+            FF[0].pair_style()
+        # pair diagonal terms
+        for i in range(len(FF)):
+            TEMPLATE += FF[i].pair_diagcoeff()
+        # pair off-diagonal terms
+        for j in range(1,len(FF)):
+            for i in range(0,j):
+                TEMPLATE += FF[i].pair_offdiagcoeff(FF[j])
+        # end
+        TEMPLATE += &#34;\n# ===== [ END FORCEFIELD SECTION ] &#34;+&#34;=&#34;*82+&#34;\n&#34;
+        return FF,TEMPLATE
+    
+    @property
+    def forcefield(self):
+        FF,_ = self.interactions
+        return FF
+    
+    @property
+    def script(self):
+        &#34;&#34;&#34; basic scripting from script objects &#34;&#34;&#34;
+        # load data when needed and comment which object
+        TEMPFILES = &#34;&#34;
+        isfirst = True
+        if self.filename !={}:
+            TEMPFILES = &#34;\n# ===== [ BEGIN INPUT FILES SECTION ] &#34;+&#34;=&#34;*79 + &#34;\n&#34;
+            for fn,cfn in self.filename.items():
+                TEMPFILES += span(cfn,sep=&#34;, &#34;,left=&#34;\n# load files for objects: &#34;,right=&#34;\n&#34;)
+                if isfirst:
+                    isfirst = False
+                    TEMPFILES += f&#34;read_data {fn}\n&#34;
+                else:
+                    TEMPFILES += f&#34;read_data {fn} add append\n&#34;
+            TEMPFILES += &#34;\n# ===== [ END INPUT FILES SECTION ] &#34;+&#34;=&#34;*81+&#34;\n\n&#34;
+        # define groups
+        TEMPGRP = &#34;\n# ===== [ BEGIN GROUP SECTION ] &#34;+&#34;=&#34;*85 + &#34;\n&#34;
+        for g in self.group:
+            TEMPGRP += f&#39;\n#\tDefinition of group {g.groupid}:{g.groupidname}\n&#39;
+            TEMPGRP += f&#39;#\t={span(g.name,sep=&#34;, &#34;)}\n&#39;
+            TEMPGRP += f&#39;#\tSimilar groups: {span(g.groupname,sep=&#34;, &#34;)}\n&#39;
+            TEMPGRP += f&#39;group \t {g.groupidname} \t {span(g.beadtype)}\n&#39;
+        TEMPGRP += &#34;\n# ===== [ END GROUP SECTION ] &#34;+&#34;=&#34;*87+&#34;\n\n&#34;
+        # define interactions
+        _,TEMPFF = self.interactions
+        # chain strings into a script
+        tscript = script()
+        tscript.name = &#34;scriptobject script&#34;                   # name
+        tscript.description = &#34;scriptobject script&#34;   # description
+        tscript.userid = &#34;scriptobject&#34;                    # user name
+        tscript.TEMPLATE = TEMPFILES+TEMPGRP+TEMPFF
+        return tscript
+
+# %% core class (please derive this class when you use it, do not alter it)
+class script():
+    &#34;&#34;&#34; 
+        core script class (flexible design)
+        --------------------------------------
+        
+        The class script enables to generate dynamically LAMMPS sections
+        &#34;NONE&#34;,&#34;GLOBAL&#34;,&#34;INITIALIZE&#34;,&#34;GEOMETRY&#34;,&#34;DISCRETIZATION&#34;,
+        &#34;BOUNDARY&#34;,&#34;INTERACTIONS&#34;,&#34;INTEGRATION&#34;,&#34;DUMP&#34;,&#34;STATUS&#34;,&#34;RUN&#34;
+        
+        
+        # %% This the typical construction for a class
+        class XXXXsection(script):
+            &#34;&#34; &#34; LAMMPS script: XXXX session &#34;&#34; &#34;
+            name = &#34;XXXXXX&#34;
+            description = name+&#34; section&#34;
+            position = 0
+            section = 0
+            userid = &#34;example&#34;
+            version = 0.1
+            
+            DEFINITIONS = scriptdata(
+                 value= 1,
+            expression= &#34;${value+1}&#34;,
+                  text= &#34;$my text&#34;
+                )
+            
+            TEMPLATE = &#34;&#34; &#34;
+        # :UNDEF SECTION:
+        #   to be defined
+        LAMMPS code with ${value}, ${expression}, ${text}
+            &#34;&#34; &#34;
+        
+        DEFINTIONS can be inherited from a previous section
+        DEFINITIONS = previousection.DEFINTIONS + scriptdata(
+                 value= 1,
+            expression= &#34;${value+1}&#34;,
+                  text= &#34;$my text&#34;            
+            )
+        
+        
+        Recommandation: Split a large script into a small classes or actions
+        An example of use could be: 
+            move1 = translation(displacement=10)+rotation(angle=30)
+            move2 = shear(rate=0.1)+rotation(angle=20)
+            bigmove = move1+move2+move1
+            script = bigmove.do() generates the script
+        
+        NOTE1: Use the print() and the method do() to get the script interpreted
+        
+        NOTE2: DEFINITIONS can be pretified using DEFINITIONS.generator()
+        
+        NOTE3: Variables can extracted from a template using TEMPLATE.scan()
+        
+        NOTE4: Scripts can be joined (from top down to bottom).
+        The first definitions keep higher precedence. Please do not use
+        a variable twice with different contents.
+        
+        myscript = s1 + s2 + s3 will propagate the definitions
+        without overwritting previous values). myscript will be
+        defined as s1 (same name, position, userid, etc.)
+    
+        myscript += s appends the script section s to myscript
+        
+        NOTE5: rules of precedence when script are concatenated
+        The attributes from the class (name, description...) are kept from the left
+        The values of the right overwrite all DEFINITIONS
+        
+        NOTE6: user variables (instance variables) can set with USER or at the construction
+        myclass_instance = myclass(myvariable = myvalue)
+        myclass_instance.USER.myvariable = myvalue
+        
+        NOTE7: how to change variables for all instances at once?
+        In the example below, let x is a global variable (instance independent)
+        and y a local variable (instance dependent)
+        instance1 = myclass(y=1) --&gt; y=1 in instance1
+        instance2 = myclass(y=2) --&gt; y=2 in instance2
+        instance3.USER.y=3 --&gt; y=3 in instance3
+        instance1.DEFINITIONS.x = 10 --&gt; x=10 in all instances (1,2,3)
+
+        If x is also defined in the USER section, its value will be used        
+        Setting instance3.USER.x = 30 will assign x=30 only in instance3
+        
+        NOTE8: if a the script is used with different values for a smae parameter
+        use the operator &amp; to concatenate the results instead of the script
+        example: load(file=&#34;myfile1&#34;) &amp; load(file=&#34;myfile2) &amp; load(file=&#34;myfile3&#34;)+...
+                                             
+        NOTE9: lists (e.g., [1,2,&#39;a&#39;,3] are expanded (&#34;1 2 a 3&#34;)
+               tuples (e.g. (1,2)) are expanded (&#34;1,2&#34;)
+               It is easier to read [&#34;lost&#34;,&#34;ignore&#34;] than &#34;$ lost ignore&#34;
+        
+        --------------------------[ FULL EXAMPLE ]-----------------------------
+
+        # Import the class
+        from pizza.script import *
+        
+        # Override the class globalsection
+        class scriptexample(globalsection):
+            description = &#34;demonstrate commutativity of additions&#34;
+            verbose = True
+            
+            DEFINITIONS = scriptdata(
+                X = 10,
+                Y = 20,
+                R1 = &#34;${X}+${Y}&#34;,
+                R2 = &#34;${Y}+${X}&#34;
+                )
+            TEMPLATE = &#34;&#34; &#34;
+            # Property of the addition
+            ${R1} = ${X} + ${Y}
+            ${R2} = ${Y} + ${X}
+         &#34;&#34; &#34;
+            
+        # derived from scriptexample, X and Y are reused
+        class scriptexample2(scriptexample):
+            description = &#34;demonstrate commutativity of multiplications&#34;
+            verbose = True
+            DEFINITIONS = scriptexample.DEFINITIONS + scriptdata(
+                R3 = &#34;${X} * ${Y}&#34;,
+                R4 = &#34;${Y} * ${X}&#34;,        
+                )            
+            TEMPLATE = &#34;&#34; &#34;
+            # Property of the multiplication
+            ${R3} = ${X} * ${Y}
+            ${R4} = ${Y} * ${X}
+         &#34;&#34; &#34;
+        
+        # call the first class and override the values X and Y
+        s1 = scriptexample()
+        s1.USER.X = 1  # method 1 of override
+        s1.USER.Y = 2
+        s1.do()
+        # call the second class and override the values X and Y
+        s2 = scriptexample2(X=1000,Y=2000) # method 2
+        s2.do()
+        # Merge the two scripts
+        s = s1+s2
+        print(&#34;this is my full script&#34;)
+        s.description
+        s.do()
+        
+        # The result for s1 is
+            3 = 1 + 2
+            3 = 2 + 1
+        # The result for s2 is
+            2000000 = 1000 * 2000
+            2000000 = 2000 * 1000
+        # The result for s=s1+s2 is
+            # Property of the addition
+            3000 = 1000 + 2000
+            3000 = 2000 + 1000 
+            # Property of the multiplication
+            2000000 = 1000 * 2000
+            2000000 = 2000 * 1000
+    
+    &#34;&#34;&#34;
+    type = &#34;script&#34;                         # type (class name)
+    name = &#34;empty script&#34;                   # name
+    description = &#34;it is an empty script&#34;   # description
+    position = 0                            # 0 = root
+    section = 0                             # section (0=undef)
+    userid = &#34;undefined&#34;                    # user name
+    version = 0.35                          # version
+    verbose = False                         # set it to True to force verbosity
+    _contact = (&#34;INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr&#34;,
+                &#34;INRAE\SAYFOOD\william.jenkinson@agroparistech.fr&#34;)
+    
+    SECTIONS = [&#34;NONE&#34;,&#34;GLOBAL&#34;,&#34;INITIALIZE&#34;,&#34;GEOMETRY&#34;,&#34;DISCRETIZATION&#34;,
+                &#34;BOUNDARY&#34;,&#34;INTERACTIONS&#34;,&#34;INTEGRATION&#34;,&#34;DUMP&#34;,&#34;STATUS&#34;,&#34;RUN&#34;]
+   
+    # Main class variables
+    # These definitions are for instances
+    DEFINITIONS = scriptdata()
+    TEMPLATE = &#34;&#34;&#34;
+        # empty LAMMPS script
+    &#34;&#34;&#34;
+    
+    # constructor
+    def __init__(self,**userdefinitions):
+        &#34;&#34;&#34; constructor adding instance definitions stored in USER &#34;&#34;&#34;
+        self.USER = scriptdata(**userdefinitions)
+    
+    # print method for headers (static, no implicit argument)
+    @staticmethod
+    def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
+        &#34;&#34;&#34; print header &#34;&#34;&#34;
+        if txt==&#34;&#34;:
+            print(&#34;\n&#34;+filler*(width+6)+&#34;\n&#34;)
+        else:
+            print((&#34;\n{:&#34;+filler+&#34;{align}{width}}\n&#34;).format(&#39; [ &#39;+txt+&#39; ] &#39;, align=align, width=str(width)))
+    
+    # Display/representation method
+    def __repr__(self):    
+        &#34;&#34;&#34; disp method &#34;&#34;&#34;
+        stamp = f&#34;{self.type}:{self.name}:{self.userid}&#34;
+        self.printheader(f&#34;{stamp} | version={self.version}&#34;,filler=&#34;/&#34;)
+        self.printheader(&#34;POSITION &amp; DESCRIPTION&#34;,filler=&#34;-&#34;,align=&#34;&gt;&#34;)
+        print(f&#34;     position: {self.position}&#34;)
+        print(f&#34;         role: {self.role} (section={self.section})&#34;)
+        print(f&#34;  description: {self.description}&#34;)
+        self.printheader(&#34;DEFINITIONS&#34;,filler=&#34;-&#34;,align=&#34;&gt;&#34;)
+        print(self.DEFINITIONS)
+        self.printheader(&#34;TEMPLATE&#34;,filler=&#34;-&#34;,align=&#34;&gt;&#34;)
+        if self.verbose:
+            print(self.TEMPLATE)
+            self.printheader(&#34;SCRIPT&#34;,filler=&#34;-&#34;,align=&#34;&gt;&#34;)
+        print(self.do(printflag=False))
+        self.printheader(&#34;&#34;)
+        return stamp
+
+    # Extract attributes within the class
+    def getallattributes(self):
+        &#34;&#34;&#34; advanced method to get all attributes including class ones&#34;&#34;&#34;
+        return {k: getattr(self, k) for k in dir(self) \
+                if (not k.startswith(&#39;_&#39;)) and (not isinstance(getattr(self, k),types.MethodType))}
+                   
+    # Generate the script
+    def do(self,printflag=True):
+        &#34;&#34;&#34; generate the script &#34;&#34;&#34;
+        inputs = self.DEFINITIONS + self.USER
+        for k in inputs.keys():
+            if isinstance(inputs.getattr(k),list):
+                inputs.setattr(k,&#34;$ &#34;+span(inputs.getattr(k)))
+            elif isinstance(inputs.getattr(k),tuple):
+                inputs.setattr(k,&#34;$ &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+        cmd = inputs.formateval(self.TEMPLATE)
+        cmd = cmd.replace(&#34;[comment]&#34;,f&#34;[position {self.position}:{self.userid}]&#34;)
+        if printflag: print(cmd)
+        return cmd
+    
+    # Return the role of the script (based on section)
+    @property
+    def role(self):
+        &#34;&#34;&#34; convert section index into a role (section name) &#34;&#34;&#34;
+        if self.section in range(len(self.SECTIONS)):
+            return self.SECTIONS[self.section]
+        else:
+            return &#34;&#34;
+
+    # override +
+    def __add__(self,s):
+        &#34;&#34;&#34; overload addition operator &#34;&#34;&#34;
+        if isinstance(s,script):
+            dup = duplicate(self)
+            dup.DEFINITIONS = dup.DEFINITIONS + s.DEFINITIONS
+            dup.USER = dup.USER + s.USER
+            dup.TEMPLATE = &#34;\n&#34;.join([dup.TEMPLATE,s.TEMPLATE])
+            return dup
+        raise TypeError(&#34;the second operand must a script object&#34;)
+
+    # override +=
+    def _iadd__(self,s):
+        &#34;&#34;&#34; overload addition operator &#34;&#34;&#34;
+        if isinstance(s,script):
+            self.DEFINITIONS = self.DEFINITIONS + s.DEFINITIONS
+            self.USER = self.USER + s.USER
+            self.TEMPLATE = &#34;\n&#34;.join([self.TEMPLATE,s.TEMPLATE])
+        else:
+            raise TypeError(&#34;the second operand must a script object&#34;)
+            
+    # override &amp;
+    def __and__(self,s):
+        &#34;&#34;&#34; overload and operator &#34;&#34;&#34;
+        if isinstance(s,script):
+            dup = duplicate(self)
+            dup.TEMPLATE = &#34;\n&#34;.join([self.do(),s.do()])
+            return dup
+        raise TypeError(&#34;the second operand must a script object&#34;)
+ 
+    # override *
+    def __mul__(self,ntimes):
+        &#34;&#34;&#34; overload * operator &#34;&#34;&#34;
+        if isinstance(ntimes, int) and ntimes&gt;0:
+           res = duplicate(self)
+           if ntimes&gt;1:
+               for n in range(1,ntimes): res += self
+           return res
+        raise ValueError(&#34;multiplicator should be a strictly positive integer&#34;)
+
+    def __pow__(self,ntimes):
+        &#34;&#34;&#34; overload ** operator &#34;&#34;&#34;
+        if isinstance(ntimes, int) and ntimes&gt;0:
+           res = duplicate(self)
+           if ntimes&gt;1:
+               for n in range(1,ntimes): res = res &amp; self
+           return res
+        raise ValueError(&#34;multiplicator should be a strictly positive integer&#34;)
+        
+    # write file
+    def write(self, file):
+        HEADER = f&#34;# Automatic LAMMPS script (version {script.version})\n&#34; + \
+                 f&#34;# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n&#34; + \
+                 f&#39;# {datetime.datetime.now().strftime(&#34;%c&#34;)}&#39;
+        f = open(file, &#34;w&#34;)
+        print(HEADER,&#34;\n&#34;*3,file=f)
+        print(self.do(),file=f)
+        f.close()
+        
+# %% Parent classes of script sessions (to be derived)
+# navigate with the outline window
+
+# %% Global section template
+class globalsection(script):
+    &#34;&#34;&#34; LAMMPS script: global session &#34;&#34;&#34;
+    name = &#34;global&#34;
+    description = name+&#34; section&#34;
+    position = 0
+    section = 1
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+  outputfile= &#34;$dump.mouthfeel_v5_long    # from the project of the same name&#34;,
+        tsim= &#34;500000                     # may be too long&#34;,
+     outstep= 10
+        )
+    
+    MATERIALS = scriptdata(
+         rho_saliva= &#34;1000 # mass density saliva&#34;,
+            rho_obj= &#34;1300 # mass density solid objects&#34;,
+                 c0= &#34;10.0 # speed of sound for saliva&#34;,
+                  E= &#34;5*${c0}*${c0}*${rho_saliva} # Young&#39;s modulus for solid objects&#34;,
+           Etongue1= &#34;10*${E} # Young&#39;s modulus for tongue&#34;,
+           Etongue2= &#34;2*${Etongue1} # Young&#39;s modulus for tongue&#34;,
+                 nu= &#34;0.3 # Poisson ratio for solid objects&#34;,
+        sigma_yield= &#34;0.1*${E} # plastic yield stress for solid objects&#34;,
+     hardening_food= &#34;0 # plastic hardening parameter for solid food&#34;,
+   hardening_tongue= &#34;1 # plastic hardening parameter for solid tongue&#34;,
+  contact_stiffness= &#34;2.5*${c0}^2*${rho_saliva} # contact force amplitude&#34;,
+       contact_wall= &#34;100*${contact_stiffness} # contact with wall (avoid interpenetration)&#34;,
+                 q1= &#34;1.0 # artificial viscosity&#34;,
+                 q2= &#34;0.0 # artificial viscosity&#34;,
+                 Hg= &#34;10 # Hourglass control coefficient for solid objects&#34;,
+                 Cp= &#34;1.0 # heat capacity -- not used here&#34;
+                  )
+    
+    DEFINITIONS += MATERIALS # append MATERIALS data
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :GLOBAL SECTION:
+#   avoid to set variables in LAMMPS script
+#   use DEFINITIONS field to set properties.
+#   If you need to define them, use the following syntax
+
+
+    # ####################################################################################################
+    # # GLOBAL
+    # ####################################################################################################
+     variable outputfile string &#34;${outputfile}&#34;
+     variable tsim equal ${tsim}
+     variable outstep equal ${outstep}
+    
+    # ####################################################################################################
+    # # MATERIAL PARAMETERS 
+    # ####################################################################################################
+    # variable        rho_saliva equal 1000 # mass density saliva
+    # variable        rho_obj equal 1300 # mass density solid objects
+    # variable        c0 equal 10.0 # speed of sound for saliva
+    # variable        E equal 5*${c0}*${c0}*${rho_saliva} # Young&#39;s modulus for solid objects
+    # variable        Etongue1 equal 10*${E} # Young&#39;s modulus for tongue 
+    # variable        Etongue2 equal 2*${Etongue1} # Young&#39;s modulus for tongue 
+    # variable        nu equal 0.3 # Poisson ratio for solid objects
+    # variable        sigma_yield equal 0.1*${E} # plastic yield stress for solid objects
+    # variable        hardening_food equal 0 # plastic hardening parameter for solid food
+    # variable        hardening_tongue equal 1 # plastic hardening parameter for solid tongue
+    # variable        contact_stiffness equal 2.5*${c0}^2*${rho_saliva} # contact force amplitude
+    # variable        contact_wall equal 100*${contact_stiffness} # contact with wall (avoid interpenetration)
+    # variable        q1 equal 1.0 # artificial viscosity
+    # variable        q2 equal 0.0 # artificial viscosity
+    # variable        Hg equal 10 # Hourglass control coefficient for solid objects
+    # variable        Cp equal 1.0 # heat capacity -- not used here
+    &#34;&#34;&#34;
+    
+# %% Initialize section template
+class initializesection(script):
+    &#34;&#34;&#34; LAMMPS script: global session &#34;&#34;&#34;
+    name = &#34;initialize&#34;
+    description = name+&#34; section&#34;
+    position = 1
+    section = 2
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+               units= &#34;$ si&#34;,
+           dimension= 2,
+            boundary= &#34;$ sm sm p&#34;,
+          atom_style= &#34;$smd&#34;,
+  neigh_modify_every= 5,
+  neigh_modify_delay= 0,
+         comm_modify= &#34;$ vel yes&#34;,
+              newton= &#34;$ off&#34;,
+         atom_modify= &#34;$ map array&#34;,
+          comm_style= &#34;$ tiled&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :INITIALIZE SECTION:
+#   initialize styles, dimensions, boundaries and communivation
+
+    ####################################################################################################
+    # INITIALIZE LAMMPS
+    ####################################################################################################
+    units           ${units}
+    dimension       ${dimension}
+    boundary        ${boundary}
+    atom_style      ${atom_style}
+    neigh_modify    every ${neigh_modify_every} delay ${neigh_modify_delay} check yes
+    comm_modify     ${comm_modify}
+    newton          ${newton}
+    atom_modify     ${atom_modify}
+    comm_style      ${comm_style}
+    &#34;&#34;&#34;
+    
+# %% Geometry section template
+class geometrysection(script):
+    &#34;&#34;&#34; LAMMPS script: global session &#34;&#34;&#34;
+    name = &#34;geometry&#34;
+    description = name+&#34; section&#34;
+    position = 2
+    section = 3
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+         l0= 0.05,
+       hgap= &#34;0.25        # gap to prevent direct contact at t=0 (too much enery)&#34;,
+  hsmallgap= &#34;0.1   # gap to prevent direct contact at t=0 (too much enery)&#34;,
+       hto1= &#34;0.8         # height of to1 (the tongue to1, note 1 not l)&#34;,
+       hto2= &#34;0.5         # height of to2 (the tongue to2)&#34;,
+       rsph= &#34;0.3         # radius of spherical food particles&#34;,
+       lpar= &#34;0.6         # size of prismatic particles &#34;,
+    yfloor1= &#34;${hgap}  # bottom position of to1, position of the first floor&#34;,
+     yroof1= &#34;${yfloor1}+${hto1} # bottom position of to1, position of the first floor&#34;,
+   yfloor2a= &#34;${yroof1}+${hsmallgap}  # position of the second floor / level a&#34;,
+    yroof2a= &#34;${yfloor2a}+${lpar}      # position of the second floor / level a&#34;,
+   yfloor2b= &#34;${yroof2a}+${hsmallgap} # position of the second floor / level b&#34;,
+    yroof2b= &#34;${yfloor2b}+${lpar}      # position of the second floor / level b&#34;,
+   yfloor2c= &#34;${yfloor2a}+${rsph}     # position of the second floor / level c&#34;,
+    yroof2c= &#34;${yfloor2c}+${rsph}      # position of the second floor / level c&#34;,
+   yfloor2d= &#34;${yroof2c}+${rsph}+${hsmallgap} # position of the second floor / level d&#34;,
+    yroof2d= &#34;${yfloor2d}+${rsph}      # position of the second floor / level d&#34;,
+    yfloor3= 5.0,
+     yroof3= &#34;${yfloor3}+${hto2} # bottom position of to1&#34;,
+   yfloor3a= &#34;${yfloor3}-0.6&#34;,
+    yroof3a= &#34;${yfloor3}&#34;,
+    crunchl= &#34;${yfloor3}-${yfloor2a}-0.8&#34;,
+    crunchp= 3,
+    crunchw= &#34;2*pi/${crunchp}&#34;,
+    crunchd= &#34;2*(sin((${crunchp}*${crunchw})/4)^2)/${crunchw}&#34;,
+    crunchv= &#34;${crunchl}/${crunchd}&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :GEOMETRY SECTION:
+#   Build geometry (very specific example)
+
+    ####################################################################################################
+    # CREATE INITIAL GEOMETRY
+    # note there are 4 groups (create_box 5 box)
+    # groupID 1 = saliva
+    # groupID 2 = food
+    # groupID 3 = mouth walls
+    # groupID 4 = tongue alike (part1)
+    # groupID 5 = also tongue but palate infact (part2)
+    ####################################################################################################
+    # create simulation box, a mouth, and a saliva column
+    region          box block 0 12 0 8 -0.01 0.01 units box
+    create_box      5 box
+    region          saliva1 block 0.25 1.8 1.25 3.5 EDGE EDGE units box
+    region          saliva2 block 10 11.65 1.25 4 EDGE EDGE units box
+    region          mouth block 0.15 11.85 0.15 8 -0.01 0.01 units box side out # mouth
+    lattice         sq ${l0}
+    create_atoms    1 region saliva1
+    create_atoms    1 region saliva2
+    group           saliva type 1
+    create_atoms    3 region mouth
+    group           mouth type 3
+    
+    print &#34;Crunch distance:${crunchl}&#34;  # 3.65
+    print &#34;Crunch distance:${crunchv}&#34;  # 0.1147
+    
+    
+    # bottom part of the tongue: to1 (real tongue)
+    # warning: all displacements are relative to the bottom part
+    region          to1 block 1 11 ${yfloor1} ${yroof1} EDGE EDGE units box
+    region          to2part1 block 0.5 11.5 ${yfloor3} ${yroof3} EDGE EDGE units box
+    region          to2part2 block 5.5 6 ${yfloor3a} ${yroof3a} EDGE EDGE units box
+    region          to2 union 2 to2part1 to2part2
+    create_atoms    4 region to1
+    create_atoms    5 region to2
+    group           tongue1 type 4
+    group           tongue2 type 5
+    
+    # create some solid objects to be pushed around
+    region          pr1 prism 2 2.6 ${yfloor2a} ${yroof2a} EDGE EDGE 0.3 0 0 units box
+    region          bl1 block 3 3.6 ${yfloor2a} ${yroof2a} EDGE EDGE units box
+    region          sp1 sphere 4.3 ${yfloor2c} 0 ${rsph} units box
+    region          sp2 sphere 5 ${yfloor2c} 0 ${rsph} units box
+    region          sp3 sphere 5.7 ${yfloor2c} 0 ${rsph} units box
+    region          sp4 sphere 6.4 ${yfloor2c} 0 ${rsph} units box
+    region          sp5 sphere 7.1 ${yfloor2c} 0 ${rsph} units box
+    region          sp6 sphere 6.05 ${yfloor2d} 0 ${rsph} units box
+    region          br2 block 3 3.6 ${yfloor2b} ${yroof2b} EDGE EDGE units box
+    
+    # fill the regions with atoms (note that atoms = smoothed hydrodynamics particles)
+    create_atoms    2 region pr1
+    create_atoms    2 region bl1
+    create_atoms    2 region sp1
+    create_atoms    2 region sp2
+    create_atoms    2 region sp3
+    create_atoms    2 region sp4
+    create_atoms    2 region sp5
+    create_atoms    2 region sp6
+    create_atoms    2 region br2
+    
+    # atoms of objects are grouped with two id
+    # fix apply only to groups
+    group           solidfoods type 2
+    group           tlsph type 2
+    
+    # group heavy
+    group           allheavy type 1:4 
+
+
+    &#34;&#34;&#34;
+
+    
+# %% Discretization section template
+class discretizationsection(script):
+    &#34;&#34;&#34; LAMMPS script: discretization session &#34;&#34;&#34;
+    name = &#34;discretization&#34;
+    description = name+&#34; section&#34;
+    position = 3
+    section = 4
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    # inherit properties from geometrysection
+    DEFINITIONS = geometrysection.DEFINITIONS + scriptdata(
+              h= &#34;2.5*${l0} # SPH kernel diameter&#34;,
+        vol_one= &#34;${l0}^2 # initial particle volume for 2d simulation&#34;,
+     rho_saliva= 1000,
+        rho_obj= 1300,
+           skin= &#34;${h} # Verlet list range&#34;,
+  contact_scale= 1.5
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :DISCRETIZATION SECTION:
+#   discretization
+
+    ####################################################################################################
+    # DISCRETIZATION PARAMETERS
+    ####################################################################################################
+    set             group all diameter ${h}
+    set             group all smd/contact/radius ${l0}
+    set             group all volume  ${vol_one}
+    set             group all smd/mass/density ${rho_saliva}
+    set             group solidfoods smd/mass/density ${rho_obj}
+    set             group tongue1 smd/mass/density ${rho_obj}
+    set             group tongue2 smd/mass/density ${rho_obj}
+    neighbor        ${skin} bin
+
+    &#34;&#34;&#34;
+
+    
+# %% Boundary section template
+class boundarysection(script):
+    &#34;&#34;&#34; LAMMPS script: boundary session &#34;&#34;&#34;
+    name = &#34;boundary&#34;
+    description = name+&#34; section&#34;
+    position = 4
+    section = 5
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    # inherit properties from geometrysection
+    DEFINITIONS = geometrysection.DEFINITIONS + scriptdata(
+        gravity = -9.81,
+        vector = &#34;$ 0 1 0&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :BOUNDARY SECTION:
+#   boundary section
+
+    ####################################################################################################
+    # DEFINE BOUNDARY CONDITIONS
+    #
+    # note that the the particles constituting the mouth are simply not integrated in time,
+    # thus these particles never move. This is equivalent to a fixed displacement boundary condition.
+    ####################################################################################################
+    fix             gfix allheavy gravity ${gravity} vector ${vector} # add gravity
+    
+    
+    ####################################################################################################
+    # moving top &#34;tongue&#34; (to2)
+    ####################################################################################################
+    variable vmouth equal -${crunchv}*sin(${crunchw}*time)
+    fix             move_fix_tongue2 tongue2 smd/setvel 0 v_vmouth 0
+
+    &#34;&#34;&#34;
+
+# %% Interactions section template
+class interactionsection(script):
+    &#34;&#34;&#34; LAMMPS script: interaction session &#34;&#34;&#34;
+    name = &#34;interactions&#34;
+    description = name+&#34; section&#34;
+    position = 5
+    section = 6
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = globalsection.DEFINITIONS + \
+                  geometrysection.DEFINITIONS + \
+                  discretizationsection.DEFINITIONS
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :INTERACTIONS SECTION:
+#   Please use forcefield() to make a robust code
+
+    ####################################################################################################
+    # INTERACTION PHYSICS / MATERIAL MODEL
+    # 3 different pair styles are used:
+    #     - updated Lagrangian SPH for saliva
+    #     - total Lagrangian SPH for solid objects
+    #     - a repulsive Hertzian potential for contact forces between different physical bodies
+    ####################################################################################################
+    pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &amp;
+                                   smd/tlsph smd/hertz ${contact_scale}
+    pair_coeff      1 1 smd/ulsph *COMMON ${rho_saliva} ${c0} ${q1} ${Cp} 0 &amp;
+                    *EOS_TAIT 7.0 &amp;
+                    *END
+    pair_coeff      2 2 smd/tlsph *COMMON ${rho_obj} ${E} ${nu} ${q1} ${q2} ${Hg} ${Cp} &amp;
+                    *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening_food} &amp;
+                    *EOS_LINEAR &amp;
+                    *END
+    pair_coeff      4 4 smd/tlsph *COMMON ${rho_obj} ${Etongue1} ${nu} ${q1} ${q2} ${Hg} ${Cp} &amp;
+                    *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening_tongue} &amp;
+                    *EOS_LINEAR &amp;
+                    *END
+    pair_coeff      5 5 smd/tlsph *COMMON ${rho_obj} ${Etongue2} ${nu} ${q1} ${q2} ${Hg} ${Cp} &amp;
+                    *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening_tongue} &amp;
+                    *EOS_LINEAR &amp;
+                    *END
+    
+    pair_coeff      3 3 none   # wall-wall
+    pair_coeff      1 2 smd/hertz ${contact_stiffness} # saliva-food
+    pair_coeff      1 3 smd/hertz ${contact_wall} # saliva-wall
+    pair_coeff      2 3 smd/hertz ${contact_wall} # food-wall
+    pair_coeff      2 2 smd/hertz ${contact_stiffness} # food-food
+    # add 4 (to1)
+    pair_coeff      1 4 smd/hertz ${contact_stiffness} # saliva-tongue1
+    pair_coeff      2 4 smd/hertz ${contact_stiffness} # food-tongue1
+    pair_coeff      3 4 smd/hertz ${contact_wall} # wall-tongue1
+    pair_coeff      4 4 smd/hertz ${contact_stiffness} # tongue1-tongue1
+    # add 5 (to2)
+    pair_coeff      1 5 smd/hertz ${contact_stiffness} # saliva-tongue2
+    pair_coeff      2 5 smd/hertz ${contact_stiffness} # food-tongue2
+    pair_coeff      3 5 smd/hertz ${contact_wall} # wall-tongue2
+    pair_coeff      4 5 smd/hertz ${contact_stiffness} # tongue1-tongue2
+    pair_coeff      5 5 smd/hertz ${contact_stiffness} # tongue2-tongue2
+
+    &#34;&#34;&#34;
+    
+
+# %% Time integration section template
+class integrationsection(script):
+    &#34;&#34;&#34; LAMMPS script: time integration session &#34;&#34;&#34;
+    name = &#34;time integration&#34;
+    description = name+&#34; section&#34;
+    position = 6
+    section = 7
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+              dt = 0.1,
+   adjust_redius = &#34;$ 1.01 10 15&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :INTEGRATION SECTION:
+#   Time integration conditions
+
+    fix             dtfix tlsph smd/adjust_dt ${dt} # dynamically adjust time increment every step
+    fix             integration_fix_water saliva smd/integrate_ulsph adjust_radius ${adjust_redius}
+    fix             integration_fix_solids solidfoods smd/integrate_tlsph
+    fix             integration_fix_tongue1 tongue1 smd/integrate_tlsph
+    fix             integration_fix_tongue2 tongue2 smd/integrate_tlsph
+    
+    &#34;&#34;&#34;
+
+    
+# %% Dump section template
+class dumpsection(script):
+    &#34;&#34;&#34; LAMMPS script: dump session &#34;&#34;&#34;
+    name = &#34;dump&#34;
+    description = name+&#34; section&#34;
+    position = 7
+    section = 8
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = globalsection().DEFINITIONS
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :DUMP SECTION:
+#   Dump configuration
+
+    ####################################################################################################
+    # SPECIFY TRAJECTORY OUTPUT
+    ####################################################################################################
+    compute         eint all smd/internal/energy
+    compute         contact_radius all smd/contact/radius
+    compute         S solidfoods smd/tlsph/stress
+    compute         nn saliva smd/ulsph/num/neighs
+    compute         epl solidfoods smd/plastic/strain
+    compute         vol all smd/vol
+    compute         rho all smd/rho
+    
+    dump            dump_id all custom ${outstep} ${outputfile} id type x y &amp;
+                    fx fy vx vy c_eint c_contact_radius mol &amp;
+                    c_S[1] c_S[2] c_S[4] mass radius c_epl c_vol c_rho c_nn proc
+    dump_modify     dump_id first yes
+    
+    &#34;&#34;&#34;
+
+    
+# %% Status section template
+class statussection(script):
+    &#34;&#34;&#34; LAMMPS script: status session &#34;&#34;&#34;
+    name = &#34;status&#34;
+    description = name+&#34; section&#34;
+    position = 8
+    section = 9
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+        thermo = 100
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :STATUS SECTION:
+#   Status configuration
+
+    ####################################################################################################
+    # STATUS OUTPUT
+    ####################################################################################################
+    compute         alleint all reduce sum c_eint
+    variable        etot equal pe+ke+c_alleint+f_gfix # total energy of the system
+    thermo          ${thermo}
+    thermo_style    custom step ke pe v_etot c_alleint f_dtfix dt
+    thermo_modify   lost ignore
+
+    &#34;&#34;&#34;
+    
+    
+# %% Run section template
+class runsection(script):
+    &#34;&#34;&#34; LAMMPS script: run session &#34;&#34;&#34;
+    name = &#34;run&#34;
+    description = name+&#34; section&#34;
+    position = 9
+    section = 10
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = globalsection.DEFINITIONS + scriptdata(
+        balance = &#34;$ 500 0.9 rcb&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :RUN SECTION:
+#   run configuration
+
+    ####################################################################################################
+    # RUN SIMULATION
+    ####################################################################################################
+    fix             balance_fix all balance ${balance} # load balancing for MPI
+    run             ${tsim}
+    &#34;&#34;&#34;
+    
+# %% DEBUG  
+# ===================================================   
+# main()
+# ===================================================   
+# for debugging purposes (code called as a script)
+# the code is called from here
+# ===================================================
+if __name__ == &#39;__main__&#39;:
+
+    # example of scriptobject()
+    b1 = scriptobject(name=&#34;bead 1&#34;,group = [&#34;A&#34;, &#34;B&#34;, &#34;C&#34;],filename=&#39;myfile1&#39;,forcefield=rigidwall())
+    b2 = scriptobject(name=&#34;bead 2&#34;, group = [&#34;B&#34;, &#34;C&#34;],filename = &#39;myfile1&#39;,forcefield=rigidwall())
+    b3 = scriptobject(name=&#34;bead 3&#34;, group = [&#34;B&#34;, &#34;D&#34;, &#34;E&#34;],forcefield=solidfood())
+    b4 = scriptobject(name=&#34;bead 4&#34;, group = &#34;D&#34;,beadtype = 1,filename=&#34;myfile2&#34;,forcefield=water())
+
+    collection = b1+b2+b3+b4
+    grp_typ1 = collection.select(1)
+    grpB = collection.group.B
+    
+    collection.interactions
+    
+    # main example of script()
+    G = globalsection()
+    print(G)
+    c = initializesection()
+    print(c)
+    g = geometrysection()
+    print(g)
+    d = discretizationsection()
+    print(d)
+    b = boundarysection()
+    print(b)
+    i = interactionsection()
+    print(i)
+    t = integrationsection()
+    print(t)
+    d = dumpsection()
+    print(d)
+    s = statussection()
+    print(s)
+    r = runsection()
+    print(r)
+    
+    # all sections as a single script
+    myscript = G+c+g+d+b+i+t+d+s+r
+    print(&#34;\n&#34;*4,&#39;=&#39;*80,&#39;\n\n this is the full script\n\n&#39;,&#39;=&#39;*80,&#39;\n&#39;)
+    print(myscript.do())</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="script.span"><code class="name flex">
+<span>def <span class="ident">span</span></span>(<span>vector, sep=' ', left='', right='')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def span(vector,sep=&#34; &#34;,left=&#34;&#34;,right=&#34;&#34;): return left+sep.join(map(str,vector))+right</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="script.boundarysection"><code class="flex name class">
+<span>class <span class="ident">boundarysection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: boundary session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class boundarysection(script):
+    &#34;&#34;&#34; LAMMPS script: boundary session &#34;&#34;&#34;
+    name = &#34;boundary&#34;
+    description = name+&#34; section&#34;
+    position = 4
+    section = 5
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    # inherit properties from geometrysection
+    DEFINITIONS = geometrysection.DEFINITIONS + scriptdata(
+        gravity = -9.81,
+        vector = &#34;$ 0 1 0&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :BOUNDARY SECTION:
+#   boundary section
+
+    ####################################################################################################
+    # DEFINE BOUNDARY CONDITIONS
+    #
+    # note that the the particles constituting the mouth are simply not integrated in time,
+    # thus these particles never move. This is equivalent to a fixed displacement boundary condition.
+    ####################################################################################################
+    fix             gfix allheavy gravity ${gravity} vector ${vector} # add gravity
+    
+    
+    ####################################################################################################
+    # moving top &#34;tongue&#34; (to2)
+    ####################################################################################################
+    variable vmouth equal -${crunchv}*sin(${crunchw}*time)
+    fix             move_fix_tongue2 tongue2 smd/setvel 0 v_vmouth 0
+
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.boundarysection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.boundarysection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.boundarysection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.boundarysection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.boundarysection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.boundarysection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.boundarysection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.boundarysection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="script.discretizationsection"><code class="flex name class">
+<span>class <span class="ident">discretizationsection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: discretization session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class discretizationsection(script):
+    &#34;&#34;&#34; LAMMPS script: discretization session &#34;&#34;&#34;
+    name = &#34;discretization&#34;
+    description = name+&#34; section&#34;
+    position = 3
+    section = 4
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    # inherit properties from geometrysection
+    DEFINITIONS = geometrysection.DEFINITIONS + scriptdata(
+              h= &#34;2.5*${l0} # SPH kernel diameter&#34;,
+        vol_one= &#34;${l0}^2 # initial particle volume for 2d simulation&#34;,
+     rho_saliva= 1000,
+        rho_obj= 1300,
+           skin= &#34;${h} # Verlet list range&#34;,
+  contact_scale= 1.5
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :DISCRETIZATION SECTION:
+#   discretization
+
+    ####################################################################################################
+    # DISCRETIZATION PARAMETERS
+    ####################################################################################################
+    set             group all diameter ${h}
+    set             group all smd/contact/radius ${l0}
+    set             group all volume  ${vol_one}
+    set             group all smd/mass/density ${rho_saliva}
+    set             group solidfoods smd/mass/density ${rho_obj}
+    set             group tongue1 smd/mass/density ${rho_obj}
+    set             group tongue2 smd/mass/density ${rho_obj}
+    neighbor        ${skin} bin
+
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.discretizationsection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.discretizationsection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.discretizationsection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.discretizationsection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.discretizationsection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.discretizationsection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.discretizationsection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.discretizationsection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="script.dumpsection"><code class="flex name class">
+<span>class <span class="ident">dumpsection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: dump session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class dumpsection(script):
+    &#34;&#34;&#34; LAMMPS script: dump session &#34;&#34;&#34;
+    name = &#34;dump&#34;
+    description = name+&#34; section&#34;
+    position = 7
+    section = 8
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = globalsection().DEFINITIONS
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :DUMP SECTION:
+#   Dump configuration
+
+    ####################################################################################################
+    # SPECIFY TRAJECTORY OUTPUT
+    ####################################################################################################
+    compute         eint all smd/internal/energy
+    compute         contact_radius all smd/contact/radius
+    compute         S solidfoods smd/tlsph/stress
+    compute         nn saliva smd/ulsph/num/neighs
+    compute         epl solidfoods smd/plastic/strain
+    compute         vol all smd/vol
+    compute         rho all smd/rho
+    
+    dump            dump_id all custom ${outstep} ${outputfile} id type x y &amp;
+                    fx fy vx vy c_eint c_contact_radius mol &amp;
+                    c_S[1] c_S[2] c_S[4] mass radius c_epl c_vol c_rho c_nn proc
+    dump_modify     dump_id first yes
+    
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.dumpsection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.dumpsection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.dumpsection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.dumpsection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.dumpsection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.dumpsection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.dumpsection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.dumpsection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="script.geometrysection"><code class="flex name class">
+<span>class <span class="ident">geometrysection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: global session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class geometrysection(script):
+    &#34;&#34;&#34; LAMMPS script: global session &#34;&#34;&#34;
+    name = &#34;geometry&#34;
+    description = name+&#34; section&#34;
+    position = 2
+    section = 3
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+         l0= 0.05,
+       hgap= &#34;0.25        # gap to prevent direct contact at t=0 (too much enery)&#34;,
+  hsmallgap= &#34;0.1   # gap to prevent direct contact at t=0 (too much enery)&#34;,
+       hto1= &#34;0.8         # height of to1 (the tongue to1, note 1 not l)&#34;,
+       hto2= &#34;0.5         # height of to2 (the tongue to2)&#34;,
+       rsph= &#34;0.3         # radius of spherical food particles&#34;,
+       lpar= &#34;0.6         # size of prismatic particles &#34;,
+    yfloor1= &#34;${hgap}  # bottom position of to1, position of the first floor&#34;,
+     yroof1= &#34;${yfloor1}+${hto1} # bottom position of to1, position of the first floor&#34;,
+   yfloor2a= &#34;${yroof1}+${hsmallgap}  # position of the second floor / level a&#34;,
+    yroof2a= &#34;${yfloor2a}+${lpar}      # position of the second floor / level a&#34;,
+   yfloor2b= &#34;${yroof2a}+${hsmallgap} # position of the second floor / level b&#34;,
+    yroof2b= &#34;${yfloor2b}+${lpar}      # position of the second floor / level b&#34;,
+   yfloor2c= &#34;${yfloor2a}+${rsph}     # position of the second floor / level c&#34;,
+    yroof2c= &#34;${yfloor2c}+${rsph}      # position of the second floor / level c&#34;,
+   yfloor2d= &#34;${yroof2c}+${rsph}+${hsmallgap} # position of the second floor / level d&#34;,
+    yroof2d= &#34;${yfloor2d}+${rsph}      # position of the second floor / level d&#34;,
+    yfloor3= 5.0,
+     yroof3= &#34;${yfloor3}+${hto2} # bottom position of to1&#34;,
+   yfloor3a= &#34;${yfloor3}-0.6&#34;,
+    yroof3a= &#34;${yfloor3}&#34;,
+    crunchl= &#34;${yfloor3}-${yfloor2a}-0.8&#34;,
+    crunchp= 3,
+    crunchw= &#34;2*pi/${crunchp}&#34;,
+    crunchd= &#34;2*(sin((${crunchp}*${crunchw})/4)^2)/${crunchw}&#34;,
+    crunchv= &#34;${crunchl}/${crunchd}&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :GEOMETRY SECTION:
+#   Build geometry (very specific example)
+
+    ####################################################################################################
+    # CREATE INITIAL GEOMETRY
+    # note there are 4 groups (create_box 5 box)
+    # groupID 1 = saliva
+    # groupID 2 = food
+    # groupID 3 = mouth walls
+    # groupID 4 = tongue alike (part1)
+    # groupID 5 = also tongue but palate infact (part2)
+    ####################################################################################################
+    # create simulation box, a mouth, and a saliva column
+    region          box block 0 12 0 8 -0.01 0.01 units box
+    create_box      5 box
+    region          saliva1 block 0.25 1.8 1.25 3.5 EDGE EDGE units box
+    region          saliva2 block 10 11.65 1.25 4 EDGE EDGE units box
+    region          mouth block 0.15 11.85 0.15 8 -0.01 0.01 units box side out # mouth
+    lattice         sq ${l0}
+    create_atoms    1 region saliva1
+    create_atoms    1 region saliva2
+    group           saliva type 1
+    create_atoms    3 region mouth
+    group           mouth type 3
+    
+    print &#34;Crunch distance:${crunchl}&#34;  # 3.65
+    print &#34;Crunch distance:${crunchv}&#34;  # 0.1147
+    
+    
+    # bottom part of the tongue: to1 (real tongue)
+    # warning: all displacements are relative to the bottom part
+    region          to1 block 1 11 ${yfloor1} ${yroof1} EDGE EDGE units box
+    region          to2part1 block 0.5 11.5 ${yfloor3} ${yroof3} EDGE EDGE units box
+    region          to2part2 block 5.5 6 ${yfloor3a} ${yroof3a} EDGE EDGE units box
+    region          to2 union 2 to2part1 to2part2
+    create_atoms    4 region to1
+    create_atoms    5 region to2
+    group           tongue1 type 4
+    group           tongue2 type 5
+    
+    # create some solid objects to be pushed around
+    region          pr1 prism 2 2.6 ${yfloor2a} ${yroof2a} EDGE EDGE 0.3 0 0 units box
+    region          bl1 block 3 3.6 ${yfloor2a} ${yroof2a} EDGE EDGE units box
+    region          sp1 sphere 4.3 ${yfloor2c} 0 ${rsph} units box
+    region          sp2 sphere 5 ${yfloor2c} 0 ${rsph} units box
+    region          sp3 sphere 5.7 ${yfloor2c} 0 ${rsph} units box
+    region          sp4 sphere 6.4 ${yfloor2c} 0 ${rsph} units box
+    region          sp5 sphere 7.1 ${yfloor2c} 0 ${rsph} units box
+    region          sp6 sphere 6.05 ${yfloor2d} 0 ${rsph} units box
+    region          br2 block 3 3.6 ${yfloor2b} ${yroof2b} EDGE EDGE units box
+    
+    # fill the regions with atoms (note that atoms = smoothed hydrodynamics particles)
+    create_atoms    2 region pr1
+    create_atoms    2 region bl1
+    create_atoms    2 region sp1
+    create_atoms    2 region sp2
+    create_atoms    2 region sp3
+    create_atoms    2 region sp4
+    create_atoms    2 region sp5
+    create_atoms    2 region sp6
+    create_atoms    2 region br2
+    
+    # atoms of objects are grouped with two id
+    # fix apply only to groups
+    group           solidfoods type 2
+    group           tlsph type 2
+    
+    # group heavy
+    group           allheavy type 1:4 
+
+
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.geometrysection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.geometrysection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.geometrysection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.geometrysection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.geometrysection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.geometrysection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.geometrysection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.geometrysection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="script.globalsection"><code class="flex name class">
+<span>class <span class="ident">globalsection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: global session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class globalsection(script):
+    &#34;&#34;&#34; LAMMPS script: global session &#34;&#34;&#34;
+    name = &#34;global&#34;
+    description = name+&#34; section&#34;
+    position = 0
+    section = 1
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+  outputfile= &#34;$dump.mouthfeel_v5_long    # from the project of the same name&#34;,
+        tsim= &#34;500000                     # may be too long&#34;,
+     outstep= 10
+        )
+    
+    MATERIALS = scriptdata(
+         rho_saliva= &#34;1000 # mass density saliva&#34;,
+            rho_obj= &#34;1300 # mass density solid objects&#34;,
+                 c0= &#34;10.0 # speed of sound for saliva&#34;,
+                  E= &#34;5*${c0}*${c0}*${rho_saliva} # Young&#39;s modulus for solid objects&#34;,
+           Etongue1= &#34;10*${E} # Young&#39;s modulus for tongue&#34;,
+           Etongue2= &#34;2*${Etongue1} # Young&#39;s modulus for tongue&#34;,
+                 nu= &#34;0.3 # Poisson ratio for solid objects&#34;,
+        sigma_yield= &#34;0.1*${E} # plastic yield stress for solid objects&#34;,
+     hardening_food= &#34;0 # plastic hardening parameter for solid food&#34;,
+   hardening_tongue= &#34;1 # plastic hardening parameter for solid tongue&#34;,
+  contact_stiffness= &#34;2.5*${c0}^2*${rho_saliva} # contact force amplitude&#34;,
+       contact_wall= &#34;100*${contact_stiffness} # contact with wall (avoid interpenetration)&#34;,
+                 q1= &#34;1.0 # artificial viscosity&#34;,
+                 q2= &#34;0.0 # artificial viscosity&#34;,
+                 Hg= &#34;10 # Hourglass control coefficient for solid objects&#34;,
+                 Cp= &#34;1.0 # heat capacity -- not used here&#34;
+                  )
+    
+    DEFINITIONS += MATERIALS # append MATERIALS data
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :GLOBAL SECTION:
+#   avoid to set variables in LAMMPS script
+#   use DEFINITIONS field to set properties.
+#   If you need to define them, use the following syntax
+
+
+    # ####################################################################################################
+    # # GLOBAL
+    # ####################################################################################################
+     variable outputfile string &#34;${outputfile}&#34;
+     variable tsim equal ${tsim}
+     variable outstep equal ${outstep}
+    
+    # ####################################################################################################
+    # # MATERIAL PARAMETERS 
+    # ####################################################################################################
+    # variable        rho_saliva equal 1000 # mass density saliva
+    # variable        rho_obj equal 1300 # mass density solid objects
+    # variable        c0 equal 10.0 # speed of sound for saliva
+    # variable        E equal 5*${c0}*${c0}*${rho_saliva} # Young&#39;s modulus for solid objects
+    # variable        Etongue1 equal 10*${E} # Young&#39;s modulus for tongue 
+    # variable        Etongue2 equal 2*${Etongue1} # Young&#39;s modulus for tongue 
+    # variable        nu equal 0.3 # Poisson ratio for solid objects
+    # variable        sigma_yield equal 0.1*${E} # plastic yield stress for solid objects
+    # variable        hardening_food equal 0 # plastic hardening parameter for solid food
+    # variable        hardening_tongue equal 1 # plastic hardening parameter for solid tongue
+    # variable        contact_stiffness equal 2.5*${c0}^2*${rho_saliva} # contact force amplitude
+    # variable        contact_wall equal 100*${contact_stiffness} # contact with wall (avoid interpenetration)
+    # variable        q1 equal 1.0 # artificial viscosity
+    # variable        q2 equal 0.0 # artificial viscosity
+    # variable        Hg equal 10 # Hourglass control coefficient for solid objects
+    # variable        Cp equal 1.0 # heat capacity -- not used here
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.globalsection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.globalsection.MATERIALS"><code class="name">var <span class="ident">MATERIALS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.globalsection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.globalsection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.globalsection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.globalsection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.globalsection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.globalsection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.globalsection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="script.initializesection"><code class="flex name class">
+<span>class <span class="ident">initializesection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: global session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class initializesection(script):
+    &#34;&#34;&#34; LAMMPS script: global session &#34;&#34;&#34;
+    name = &#34;initialize&#34;
+    description = name+&#34; section&#34;
+    position = 1
+    section = 2
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+               units= &#34;$ si&#34;,
+           dimension= 2,
+            boundary= &#34;$ sm sm p&#34;,
+          atom_style= &#34;$smd&#34;,
+  neigh_modify_every= 5,
+  neigh_modify_delay= 0,
+         comm_modify= &#34;$ vel yes&#34;,
+              newton= &#34;$ off&#34;,
+         atom_modify= &#34;$ map array&#34;,
+          comm_style= &#34;$ tiled&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :INITIALIZE SECTION:
+#   initialize styles, dimensions, boundaries and communivation
+
+    ####################################################################################################
+    # INITIALIZE LAMMPS
+    ####################################################################################################
+    units           ${units}
+    dimension       ${dimension}
+    boundary        ${boundary}
+    atom_style      ${atom_style}
+    neigh_modify    every ${neigh_modify_every} delay ${neigh_modify_delay} check yes
+    comm_modify     ${comm_modify}
+    newton          ${newton}
+    atom_modify     ${atom_modify}
+    comm_style      ${comm_style}
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.initializesection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.initializesection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.initializesection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.initializesection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.initializesection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.initializesection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.initializesection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.initializesection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="script.integrationsection"><code class="flex name class">
+<span>class <span class="ident">integrationsection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: time integration session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class integrationsection(script):
+    &#34;&#34;&#34; LAMMPS script: time integration session &#34;&#34;&#34;
+    name = &#34;time integration&#34;
+    description = name+&#34; section&#34;
+    position = 6
+    section = 7
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+              dt = 0.1,
+   adjust_redius = &#34;$ 1.01 10 15&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :INTEGRATION SECTION:
+#   Time integration conditions
+
+    fix             dtfix tlsph smd/adjust_dt ${dt} # dynamically adjust time increment every step
+    fix             integration_fix_water saliva smd/integrate_ulsph adjust_radius ${adjust_redius}
+    fix             integration_fix_solids solidfoods smd/integrate_tlsph
+    fix             integration_fix_tongue1 tongue1 smd/integrate_tlsph
+    fix             integration_fix_tongue2 tongue2 smd/integrate_tlsph
+    
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.integrationsection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.integrationsection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.integrationsection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.integrationsection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.integrationsection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.integrationsection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.integrationsection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.integrationsection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="script.interactionsection"><code class="flex name class">
+<span>class <span class="ident">interactionsection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: interaction session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class interactionsection(script):
+    &#34;&#34;&#34; LAMMPS script: interaction session &#34;&#34;&#34;
+    name = &#34;interactions&#34;
+    description = name+&#34; section&#34;
+    position = 5
+    section = 6
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = globalsection.DEFINITIONS + \
+                  geometrysection.DEFINITIONS + \
+                  discretizationsection.DEFINITIONS
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :INTERACTIONS SECTION:
+#   Please use forcefield() to make a robust code
+
+    ####################################################################################################
+    # INTERACTION PHYSICS / MATERIAL MODEL
+    # 3 different pair styles are used:
+    #     - updated Lagrangian SPH for saliva
+    #     - total Lagrangian SPH for solid objects
+    #     - a repulsive Hertzian potential for contact forces between different physical bodies
+    ####################################################################################################
+    pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &amp;
+                                   smd/tlsph smd/hertz ${contact_scale}
+    pair_coeff      1 1 smd/ulsph *COMMON ${rho_saliva} ${c0} ${q1} ${Cp} 0 &amp;
+                    *EOS_TAIT 7.0 &amp;
+                    *END
+    pair_coeff      2 2 smd/tlsph *COMMON ${rho_obj} ${E} ${nu} ${q1} ${q2} ${Hg} ${Cp} &amp;
+                    *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening_food} &amp;
+                    *EOS_LINEAR &amp;
+                    *END
+    pair_coeff      4 4 smd/tlsph *COMMON ${rho_obj} ${Etongue1} ${nu} ${q1} ${q2} ${Hg} ${Cp} &amp;
+                    *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening_tongue} &amp;
+                    *EOS_LINEAR &amp;
+                    *END
+    pair_coeff      5 5 smd/tlsph *COMMON ${rho_obj} ${Etongue2} ${nu} ${q1} ${q2} ${Hg} ${Cp} &amp;
+                    *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening_tongue} &amp;
+                    *EOS_LINEAR &amp;
+                    *END
+    
+    pair_coeff      3 3 none   # wall-wall
+    pair_coeff      1 2 smd/hertz ${contact_stiffness} # saliva-food
+    pair_coeff      1 3 smd/hertz ${contact_wall} # saliva-wall
+    pair_coeff      2 3 smd/hertz ${contact_wall} # food-wall
+    pair_coeff      2 2 smd/hertz ${contact_stiffness} # food-food
+    # add 4 (to1)
+    pair_coeff      1 4 smd/hertz ${contact_stiffness} # saliva-tongue1
+    pair_coeff      2 4 smd/hertz ${contact_stiffness} # food-tongue1
+    pair_coeff      3 4 smd/hertz ${contact_wall} # wall-tongue1
+    pair_coeff      4 4 smd/hertz ${contact_stiffness} # tongue1-tongue1
+    # add 5 (to2)
+    pair_coeff      1 5 smd/hertz ${contact_stiffness} # saliva-tongue2
+    pair_coeff      2 5 smd/hertz ${contact_stiffness} # food-tongue2
+    pair_coeff      3 5 smd/hertz ${contact_wall} # wall-tongue2
+    pair_coeff      4 5 smd/hertz ${contact_stiffness} # tongue1-tongue2
+    pair_coeff      5 5 smd/hertz ${contact_stiffness} # tongue2-tongue2
+
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.interactionsection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.interactionsection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.interactionsection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.interactionsection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.interactionsection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.interactionsection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.interactionsection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.interactionsection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="script.runsection"><code class="flex name class">
+<span>class <span class="ident">runsection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: run session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class runsection(script):
+    &#34;&#34;&#34; LAMMPS script: run session &#34;&#34;&#34;
+    name = &#34;run&#34;
+    description = name+&#34; section&#34;
+    position = 9
+    section = 10
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = globalsection.DEFINITIONS + scriptdata(
+        balance = &#34;$ 500 0.9 rcb&#34;
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :RUN SECTION:
+#   run configuration
+
+    ####################################################################################################
+    # RUN SIMULATION
+    ####################################################################################################
+    fix             balance_fix all balance ${balance} # load balancing for MPI
+    run             ${tsim}
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.runsection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.runsection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.runsection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.runsection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.runsection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.runsection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.runsection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.runsection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="script.script"><code class="flex name class">
+<span>class <span class="ident">script</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="core-script-class-flexible-design">core script class (flexible design)</h2>
+<p>The class script enables to generate dynamically LAMMPS sections
+"NONE","GLOBAL","INITIALIZE","GEOMETRY","DISCRETIZATION",
+"BOUNDARY","INTERACTIONS","INTEGRATION","DUMP","STATUS","RUN"</p>
+<h1 id="this-the-typical-construction-for-a-class">%% This the typical construction for a class</h1>
+<p>class XXXXsection(script):
+"" " LAMMPS script: XXXX session "" "
+name = "XXXXXX"
+description = name+" section"
+position = 0
+section = 0
+userid = "example"
+version = 0.1</p>
+<pre><code>DEFINITIONS = scriptdata(
+     value= 1,
+expression= "${value+1}",
+      text= "$my text"
+    )
+
+TEMPLATE = "" "
+</code></pre>
+<h1 id="undef-section">:UNDEF SECTION:</h1>
+<h1 id="to-be-defined">to be defined</h1>
+<p>LAMMPS code with ${value}, ${expression}, ${text}
+"" "</p>
+<p>DEFINTIONS can be inherited from a previous section
+DEFINITIONS = previousection.DEFINTIONS + scriptdata(
+value= 1,
+expression= "${value+1}",
+text= "$my text"
+<br>
+)</p>
+<p>Recommandation: Split a large script into a small classes or actions
+An example of use could be:
+move1 = translation(displacement=10)+rotation(angle=30)
+move2 = shear(rate=0.1)+rotation(angle=20)
+bigmove = move1+move2+move1
+script = bigmove.do() generates the script</p>
+<p>NOTE1: Use the print() and the method do() to get the script interpreted</p>
+<p>NOTE2: DEFINITIONS can be pretified using DEFINITIONS.generator()</p>
+<p>NOTE3: Variables can extracted from a template using TEMPLATE.scan()</p>
+<p>NOTE4: Scripts can be joined (from top down to bottom).
+The first definitions keep higher precedence. Please do not use
+a variable twice with different contents.</p>
+<p>myscript = s1 + s2 + s3 will propagate the definitions
+without overwritting previous values). myscript will be
+defined as s1 (same name, position, userid, etc.)</p>
+<p>myscript += s appends the script section s to myscript</p>
+<p>NOTE5: rules of precedence when script are concatenated
+The attributes from the class (name, description&hellip;) are kept from the left
+The values of the right overwrite all DEFINITIONS</p>
+<p>NOTE6: user variables (instance variables) can set with USER or at the construction
+myclass_instance = myclass(myvariable = myvalue)
+myclass_instance.USER.myvariable = myvalue</p>
+<p>NOTE7: how to change variables for all instances at once?
+In the example below, let x is a global variable (instance independent)
+and y a local variable (instance dependent)
+instance1 = myclass(y=1) &ndash;&gt; y=1 in instance1
+instance2 = myclass(y=2) &ndash;&gt; y=2 in instance2
+instance3.USER.y=3 &ndash;&gt; y=3 in instance3
+instance1.DEFINITIONS.x = 10 &ndash;&gt; x=10 in all instances (1,2,3)</p>
+<p>If x is also defined in the USER section, its value will be used
+<br>
+Setting instance3.USER.x = 30 will assign x=30 only in instance3</p>
+<p>NOTE8: if a the script is used with different values for a smae parameter
+use the operator &amp; to concatenate the results instead of the script
+example: load(file="myfile1") &amp; load(file="myfile2) &amp; load(file="myfile3")+&hellip;</p>
+<p>NOTE9: lists (e.g., [1,2,'a',3] are expanded ("1 2 a 3")
+tuples (e.g. (1,2)) are expanded ("1,2")
+It is easier to read ["lost","ignore"] than "$ lost ignore"</p>
+<p>--------------------------[ FULL EXAMPLE ]-----------------------------</p>
+<h1 id="import-the-class">Import the class</h1>
+<p>from pizza.script import *</p>
+<h1 id="override-the-class-globalsection">Override the class globalsection</h1>
+<p>class scriptexample(globalsection):
+description = "demonstrate commutativity of additions"
+verbose = True</p>
+<pre><code>DEFINITIONS = scriptdata(
+    X = 10,
+    Y = 20,
+    R1 = "${X}+${Y}",
+    R2 = "${Y}+${X}"
+    )
+TEMPLATE = "" "
+# Property of the addition
+${R1} = ${X} + ${Y}
+${R2} = ${Y} + ${X}
+</code></pre>
+<p>"" "</p>
+<h1 id="derived-from-scriptexample-x-and-y-are-reused">derived from scriptexample, X and Y are reused</h1>
+<p>class scriptexample2(scriptexample):
+description = "demonstrate commutativity of multiplications"
+verbose = True
+DEFINITIONS = scriptexample.DEFINITIONS + scriptdata(
+R3 = "${X} * ${Y}",
+R4 = "${Y} * ${X}",
+<br>
+)
+<br>
+TEMPLATE = "" "
+# Property of the multiplication
+${R3} = ${X} * ${Y}
+${R4} = ${Y} * ${X}
+"" "</p>
+<h1 id="call-the-first-class-and-override-the-values-x-and-y">call the first class and override the values X and Y</h1>
+<p>s1 = scriptexample()
+s1.USER.X = 1
+# method 1 of override
+s1.USER.Y = 2
+s1.do()</p>
+<h1 id="call-the-second-class-and-override-the-values-x-and-y">call the second class and override the values X and Y</h1>
+<p>s2 = scriptexample2(X=1000,Y=2000) # method 2
+s2.do()</p>
+<h1 id="merge-the-two-scripts">Merge the two scripts</h1>
+<p>s = s1+s2
+print("this is my full script")
+s.description
+s.do()</p>
+<h1 id="the-result-for-s1-is">The result for s1 is</h1>
+<pre><code>3 = 1 + 2
+3 = 2 + 1
+</code></pre>
+<h1 id="the-result-for-s2-is">The result for s2 is</h1>
+<pre><code>2000000 = 1000 * 2000
+2000000 = 2000 * 1000
+</code></pre>
+<h1 id="the-result-for-ss1s2-is">The result for s=s1+s2 is</h1>
+<pre><code># Property of the addition
+3000 = 1000 + 2000
+3000 = 2000 + 1000 
+# Property of the multiplication
+2000000 = 1000 * 2000
+2000000 = 2000 * 1000
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class script():
+    &#34;&#34;&#34; 
+        core script class (flexible design)
+        --------------------------------------
+        
+        The class script enables to generate dynamically LAMMPS sections
+        &#34;NONE&#34;,&#34;GLOBAL&#34;,&#34;INITIALIZE&#34;,&#34;GEOMETRY&#34;,&#34;DISCRETIZATION&#34;,
+        &#34;BOUNDARY&#34;,&#34;INTERACTIONS&#34;,&#34;INTEGRATION&#34;,&#34;DUMP&#34;,&#34;STATUS&#34;,&#34;RUN&#34;
+        
+        
+        # %% This the typical construction for a class
+        class XXXXsection(script):
+            &#34;&#34; &#34; LAMMPS script: XXXX session &#34;&#34; &#34;
+            name = &#34;XXXXXX&#34;
+            description = name+&#34; section&#34;
+            position = 0
+            section = 0
+            userid = &#34;example&#34;
+            version = 0.1
+            
+            DEFINITIONS = scriptdata(
+                 value= 1,
+            expression= &#34;${value+1}&#34;,
+                  text= &#34;$my text&#34;
+                )
+            
+            TEMPLATE = &#34;&#34; &#34;
+        # :UNDEF SECTION:
+        #   to be defined
+        LAMMPS code with ${value}, ${expression}, ${text}
+            &#34;&#34; &#34;
+        
+        DEFINTIONS can be inherited from a previous section
+        DEFINITIONS = previousection.DEFINTIONS + scriptdata(
+                 value= 1,
+            expression= &#34;${value+1}&#34;,
+                  text= &#34;$my text&#34;            
+            )
+        
+        
+        Recommandation: Split a large script into a small classes or actions
+        An example of use could be: 
+            move1 = translation(displacement=10)+rotation(angle=30)
+            move2 = shear(rate=0.1)+rotation(angle=20)
+            bigmove = move1+move2+move1
+            script = bigmove.do() generates the script
+        
+        NOTE1: Use the print() and the method do() to get the script interpreted
+        
+        NOTE2: DEFINITIONS can be pretified using DEFINITIONS.generator()
+        
+        NOTE3: Variables can extracted from a template using TEMPLATE.scan()
+        
+        NOTE4: Scripts can be joined (from top down to bottom).
+        The first definitions keep higher precedence. Please do not use
+        a variable twice with different contents.
+        
+        myscript = s1 + s2 + s3 will propagate the definitions
+        without overwritting previous values). myscript will be
+        defined as s1 (same name, position, userid, etc.)
+    
+        myscript += s appends the script section s to myscript
+        
+        NOTE5: rules of precedence when script are concatenated
+        The attributes from the class (name, description...) are kept from the left
+        The values of the right overwrite all DEFINITIONS
+        
+        NOTE6: user variables (instance variables) can set with USER or at the construction
+        myclass_instance = myclass(myvariable = myvalue)
+        myclass_instance.USER.myvariable = myvalue
+        
+        NOTE7: how to change variables for all instances at once?
+        In the example below, let x is a global variable (instance independent)
+        and y a local variable (instance dependent)
+        instance1 = myclass(y=1) --&gt; y=1 in instance1
+        instance2 = myclass(y=2) --&gt; y=2 in instance2
+        instance3.USER.y=3 --&gt; y=3 in instance3
+        instance1.DEFINITIONS.x = 10 --&gt; x=10 in all instances (1,2,3)
+
+        If x is also defined in the USER section, its value will be used        
+        Setting instance3.USER.x = 30 will assign x=30 only in instance3
+        
+        NOTE8: if a the script is used with different values for a smae parameter
+        use the operator &amp; to concatenate the results instead of the script
+        example: load(file=&#34;myfile1&#34;) &amp; load(file=&#34;myfile2) &amp; load(file=&#34;myfile3&#34;)+...
+                                             
+        NOTE9: lists (e.g., [1,2,&#39;a&#39;,3] are expanded (&#34;1 2 a 3&#34;)
+               tuples (e.g. (1,2)) are expanded (&#34;1,2&#34;)
+               It is easier to read [&#34;lost&#34;,&#34;ignore&#34;] than &#34;$ lost ignore&#34;
+        
+        --------------------------[ FULL EXAMPLE ]-----------------------------
+
+        # Import the class
+        from pizza.script import *
+        
+        # Override the class globalsection
+        class scriptexample(globalsection):
+            description = &#34;demonstrate commutativity of additions&#34;
+            verbose = True
+            
+            DEFINITIONS = scriptdata(
+                X = 10,
+                Y = 20,
+                R1 = &#34;${X}+${Y}&#34;,
+                R2 = &#34;${Y}+${X}&#34;
+                )
+            TEMPLATE = &#34;&#34; &#34;
+            # Property of the addition
+            ${R1} = ${X} + ${Y}
+            ${R2} = ${Y} + ${X}
+         &#34;&#34; &#34;
+            
+        # derived from scriptexample, X and Y are reused
+        class scriptexample2(scriptexample):
+            description = &#34;demonstrate commutativity of multiplications&#34;
+            verbose = True
+            DEFINITIONS = scriptexample.DEFINITIONS + scriptdata(
+                R3 = &#34;${X} * ${Y}&#34;,
+                R4 = &#34;${Y} * ${X}&#34;,        
+                )            
+            TEMPLATE = &#34;&#34; &#34;
+            # Property of the multiplication
+            ${R3} = ${X} * ${Y}
+            ${R4} = ${Y} * ${X}
+         &#34;&#34; &#34;
+        
+        # call the first class and override the values X and Y
+        s1 = scriptexample()
+        s1.USER.X = 1  # method 1 of override
+        s1.USER.Y = 2
+        s1.do()
+        # call the second class and override the values X and Y
+        s2 = scriptexample2(X=1000,Y=2000) # method 2
+        s2.do()
+        # Merge the two scripts
+        s = s1+s2
+        print(&#34;this is my full script&#34;)
+        s.description
+        s.do()
+        
+        # The result for s1 is
+            3 = 1 + 2
+            3 = 2 + 1
+        # The result for s2 is
+            2000000 = 1000 * 2000
+            2000000 = 2000 * 1000
+        # The result for s=s1+s2 is
+            # Property of the addition
+            3000 = 1000 + 2000
+            3000 = 2000 + 1000 
+            # Property of the multiplication
+            2000000 = 1000 * 2000
+            2000000 = 2000 * 1000
+    
+    &#34;&#34;&#34;
+    type = &#34;script&#34;                         # type (class name)
+    name = &#34;empty script&#34;                   # name
+    description = &#34;it is an empty script&#34;   # description
+    position = 0                            # 0 = root
+    section = 0                             # section (0=undef)
+    userid = &#34;undefined&#34;                    # user name
+    version = 0.35                          # version
+    verbose = False                         # set it to True to force verbosity
+    _contact = (&#34;INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr&#34;,
+                &#34;INRAE\SAYFOOD\william.jenkinson@agroparistech.fr&#34;)
+    
+    SECTIONS = [&#34;NONE&#34;,&#34;GLOBAL&#34;,&#34;INITIALIZE&#34;,&#34;GEOMETRY&#34;,&#34;DISCRETIZATION&#34;,
+                &#34;BOUNDARY&#34;,&#34;INTERACTIONS&#34;,&#34;INTEGRATION&#34;,&#34;DUMP&#34;,&#34;STATUS&#34;,&#34;RUN&#34;]
+   
+    # Main class variables
+    # These definitions are for instances
+    DEFINITIONS = scriptdata()
+    TEMPLATE = &#34;&#34;&#34;
+        # empty LAMMPS script
+    &#34;&#34;&#34;
+    
+    # constructor
+    def __init__(self,**userdefinitions):
+        &#34;&#34;&#34; constructor adding instance definitions stored in USER &#34;&#34;&#34;
+        self.USER = scriptdata(**userdefinitions)
+    
+    # print method for headers (static, no implicit argument)
+    @staticmethod
+    def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
+        &#34;&#34;&#34; print header &#34;&#34;&#34;
+        if txt==&#34;&#34;:
+            print(&#34;\n&#34;+filler*(width+6)+&#34;\n&#34;)
+        else:
+            print((&#34;\n{:&#34;+filler+&#34;{align}{width}}\n&#34;).format(&#39; [ &#39;+txt+&#39; ] &#39;, align=align, width=str(width)))
+    
+    # Display/representation method
+    def __repr__(self):    
+        &#34;&#34;&#34; disp method &#34;&#34;&#34;
+        stamp = f&#34;{self.type}:{self.name}:{self.userid}&#34;
+        self.printheader(f&#34;{stamp} | version={self.version}&#34;,filler=&#34;/&#34;)
+        self.printheader(&#34;POSITION &amp; DESCRIPTION&#34;,filler=&#34;-&#34;,align=&#34;&gt;&#34;)
+        print(f&#34;     position: {self.position}&#34;)
+        print(f&#34;         role: {self.role} (section={self.section})&#34;)
+        print(f&#34;  description: {self.description}&#34;)
+        self.printheader(&#34;DEFINITIONS&#34;,filler=&#34;-&#34;,align=&#34;&gt;&#34;)
+        print(self.DEFINITIONS)
+        self.printheader(&#34;TEMPLATE&#34;,filler=&#34;-&#34;,align=&#34;&gt;&#34;)
+        if self.verbose:
+            print(self.TEMPLATE)
+            self.printheader(&#34;SCRIPT&#34;,filler=&#34;-&#34;,align=&#34;&gt;&#34;)
+        print(self.do(printflag=False))
+        self.printheader(&#34;&#34;)
+        return stamp
+
+    # Extract attributes within the class
+    def getallattributes(self):
+        &#34;&#34;&#34; advanced method to get all attributes including class ones&#34;&#34;&#34;
+        return {k: getattr(self, k) for k in dir(self) \
+                if (not k.startswith(&#39;_&#39;)) and (not isinstance(getattr(self, k),types.MethodType))}
+                   
+    # Generate the script
+    def do(self,printflag=True):
+        &#34;&#34;&#34; generate the script &#34;&#34;&#34;
+        inputs = self.DEFINITIONS + self.USER
+        for k in inputs.keys():
+            if isinstance(inputs.getattr(k),list):
+                inputs.setattr(k,&#34;$ &#34;+span(inputs.getattr(k)))
+            elif isinstance(inputs.getattr(k),tuple):
+                inputs.setattr(k,&#34;$ &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+        cmd = inputs.formateval(self.TEMPLATE)
+        cmd = cmd.replace(&#34;[comment]&#34;,f&#34;[position {self.position}:{self.userid}]&#34;)
+        if printflag: print(cmd)
+        return cmd
+    
+    # Return the role of the script (based on section)
+    @property
+    def role(self):
+        &#34;&#34;&#34; convert section index into a role (section name) &#34;&#34;&#34;
+        if self.section in range(len(self.SECTIONS)):
+            return self.SECTIONS[self.section]
+        else:
+            return &#34;&#34;
+
+    # override +
+    def __add__(self,s):
+        &#34;&#34;&#34; overload addition operator &#34;&#34;&#34;
+        if isinstance(s,script):
+            dup = duplicate(self)
+            dup.DEFINITIONS = dup.DEFINITIONS + s.DEFINITIONS
+            dup.USER = dup.USER + s.USER
+            dup.TEMPLATE = &#34;\n&#34;.join([dup.TEMPLATE,s.TEMPLATE])
+            return dup
+        raise TypeError(&#34;the second operand must a script object&#34;)
+
+    # override +=
+    def _iadd__(self,s):
+        &#34;&#34;&#34; overload addition operator &#34;&#34;&#34;
+        if isinstance(s,script):
+            self.DEFINITIONS = self.DEFINITIONS + s.DEFINITIONS
+            self.USER = self.USER + s.USER
+            self.TEMPLATE = &#34;\n&#34;.join([self.TEMPLATE,s.TEMPLATE])
+        else:
+            raise TypeError(&#34;the second operand must a script object&#34;)
+            
+    # override &amp;
+    def __and__(self,s):
+        &#34;&#34;&#34; overload and operator &#34;&#34;&#34;
+        if isinstance(s,script):
+            dup = duplicate(self)
+            dup.TEMPLATE = &#34;\n&#34;.join([self.do(),s.do()])
+            return dup
+        raise TypeError(&#34;the second operand must a script object&#34;)
+ 
+    # override *
+    def __mul__(self,ntimes):
+        &#34;&#34;&#34; overload * operator &#34;&#34;&#34;
+        if isinstance(ntimes, int) and ntimes&gt;0:
+           res = duplicate(self)
+           if ntimes&gt;1:
+               for n in range(1,ntimes): res += self
+           return res
+        raise ValueError(&#34;multiplicator should be a strictly positive integer&#34;)
+
+    def __pow__(self,ntimes):
+        &#34;&#34;&#34; overload ** operator &#34;&#34;&#34;
+        if isinstance(ntimes, int) and ntimes&gt;0:
+           res = duplicate(self)
+           if ntimes&gt;1:
+               for n in range(1,ntimes): res = res &amp; self
+           return res
+        raise ValueError(&#34;multiplicator should be a strictly positive integer&#34;)
+        
+    # write file
+    def write(self, file):
+        HEADER = f&#34;# Automatic LAMMPS script (version {script.version})\n&#34; + \
+                 f&#34;# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n&#34; + \
+                 f&#39;# {datetime.datetime.now().strftime(&#34;%c&#34;)}&#39;
+        f = open(file, &#34;w&#34;)
+        print(HEADER,&#34;\n&#34;*3,file=f)
+        print(self.do(),file=f)
+        f.close()</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="script.boundarysection" href="#script.boundarysection">boundarysection</a></li>
+<li><a title="script.discretizationsection" href="#script.discretizationsection">discretizationsection</a></li>
+<li><a title="script.dumpsection" href="#script.dumpsection">dumpsection</a></li>
+<li><a title="script.geometrysection" href="#script.geometrysection">geometrysection</a></li>
+<li><a title="script.globalsection" href="#script.globalsection">globalsection</a></li>
+<li><a title="script.initializesection" href="#script.initializesection">initializesection</a></li>
+<li><a title="script.integrationsection" href="#script.integrationsection">integrationsection</a></li>
+<li><a title="script.interactionsection" href="#script.interactionsection">interactionsection</a></li>
+<li><a title="script.runsection" href="#script.runsection">runsection</a></li>
+<li><a title="script.statussection" href="#script.statussection">statussection</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.script.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.SECTIONS"><code class="name">var <span class="ident">SECTIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.type"><code class="name">var <span class="ident">type</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.verbose"><code class="name">var <span class="ident">verbose</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.script.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Static methods</h3>
+<dl>
+<dt id="script.script.printheader"><code class="name flex">
+<span>def <span class="ident">printheader</span></span>(<span>txt, align='^', width=80, filler='~')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>print header</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
+    &#34;&#34;&#34; print header &#34;&#34;&#34;
+    if txt==&#34;&#34;:
+        print(&#34;\n&#34;+filler*(width+6)+&#34;\n&#34;)
+    else:
+        print((&#34;\n{:&#34;+filler+&#34;{align}{width}}\n&#34;).format(&#39; [ &#39;+txt+&#39; ] &#39;, align=align, width=str(width)))</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="script.script.role"><code class="name">var <span class="ident">role</span></code></dt>
+<dd>
+<div class="desc"><p>convert section index into a role (section name)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def role(self):
+    &#34;&#34;&#34; convert section index into a role (section name) &#34;&#34;&#34;
+    if self.section in range(len(self.SECTIONS)):
+        return self.SECTIONS[self.section]
+    else:
+        return &#34;&#34;</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="script.script.do"><code class="name flex">
+<span>def <span class="ident">do</span></span>(<span>self, printflag=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>generate the script</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def do(self,printflag=True):
+    &#34;&#34;&#34; generate the script &#34;&#34;&#34;
+    inputs = self.DEFINITIONS + self.USER
+    for k in inputs.keys():
+        if isinstance(inputs.getattr(k),list):
+            inputs.setattr(k,&#34;$ &#34;+span(inputs.getattr(k)))
+        elif isinstance(inputs.getattr(k),tuple):
+            inputs.setattr(k,&#34;$ &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+    cmd = inputs.formateval(self.TEMPLATE)
+    cmd = cmd.replace(&#34;[comment]&#34;,f&#34;[position {self.position}:{self.userid}]&#34;)
+    if printflag: print(cmd)
+    return cmd</code></pre>
+</details>
+</dd>
+<dt id="script.script.getallattributes"><code class="name flex">
+<span>def <span class="ident">getallattributes</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>advanced method to get all attributes including class ones</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getallattributes(self):
+    &#34;&#34;&#34; advanced method to get all attributes including class ones&#34;&#34;&#34;
+    return {k: getattr(self, k) for k in dir(self) \
+            if (not k.startswith(&#39;_&#39;)) and (not isinstance(getattr(self, k),types.MethodType))}</code></pre>
+</details>
+</dd>
+<dt id="script.script.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, file)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write(self, file):
+    HEADER = f&#34;# Automatic LAMMPS script (version {script.version})\n&#34; + \
+             f&#34;# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n&#34; + \
+             f&#39;# {datetime.datetime.now().strftime(&#34;%c&#34;)}&#39;
+    f = open(file, &#34;w&#34;)
+    print(HEADER,&#34;\n&#34;*3,file=f)
+    print(self.do(),file=f)
+    f.close()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="script.scriptdata"><code class="flex name class">
+<span>class <span class="ident">scriptdata</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>class of script parameters
+Typical constructor:
+DEFINITIONS = scriptdata(
+var1 = value1,
+var2 = value2
+)
+See script, struct, param to get review all methods attached to it</p>
+<p>constructor</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class scriptdata(param):
+    &#34;&#34;&#34; 
+        class of script parameters 
+            Typical constructor:
+                DEFINITIONS = scriptdata(
+                    var1 = value1,
+                    var2 = value2
+                    )
+        See script, struct, param to get review all methods attached to it
+    &#34;&#34;&#34;
+    _type = &#34;SD&#34;
+    _fulltype = &#34;script data&#34;
+    _ftype = &#34;definition&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>private.struct.param</li>
+<li>private.struct.struct</li>
+</ul>
+</dd>
+<dt id="script.scriptobject"><code class="flex name class">
+<span>class <span class="ident">scriptobject</span></span>
+<span>(</span><span>beadtype=1, name='undefined', fullname='', filename='', style='smd', forcefield=LAMMPS:SMD:none:walls, group=[], USER=empty script data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>class of script object
+OBJ = scriptobject(&hellip;)
+Implemented properties:
+beadtype=1,2,&hellip;
+name="short name"
+fullname = "comprehensive name"
+filename = "/path/to/your/inputfile"
+style = "smd"
+forcefield = any valid forcefield instance (default = rigidwall())</p>
+<p>note: use a forcefield instance with the keywork USER to pass user FF parameters
+examples:
+rigidwall(USER=scriptdata(&hellip;))
+solidfood(USER==scriptdata(&hellip;))
+water(USER==scriptdata(&hellip;))</p>
+<p>group objects with OBJ1+OBJ2&hellip; into scriptobjectgroups</p>
+<p>objects can be compared and sorted based on beadtype and name</p>
+<p>constructor</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class scriptobject(struct):
+    &#34;&#34;&#34; 
+        class of script object 
+            OBJ = scriptobject(...)
+            Implemented properties:
+                beadtype=1,2,...
+                name=&#34;short name&#34;
+                fullname = &#34;comprehensive name&#34;
+                filename = &#34;/path/to/your/inputfile&#34;
+                style = &#34;smd&#34;
+                forcefield = any valid forcefield instance (default = rigidwall())
+        
+        note: use a forcefield instance with the keywork USER to pass user FF parameters
+        examples:   rigidwall(USER=scriptdata(...))
+                    solidfood(USER==scriptdata(...))
+                    water(USER==scriptdata(...))
+        
+        group objects with OBJ1+OBJ2... into scriptobjectgroups
+        
+        objects can be compared and sorted based on beadtype and name
+        
+    &#34;&#34;&#34;
+    _type = &#34;SO&#34;
+    _fulltype = &#34;script object&#34;
+    _ftype = &#34;propertie&#34;
+    
+    def __init__(self, 
+                 beadtype = 1,
+                 name = &#34;undefined&#34;,
+                 fullname=&#34;&#34;,
+                 filename=&#34;&#34;,
+                 style=&#34;smd&#34;,
+                 forcefield=rigidwall(),
+                 group=[],
+                 USER = scriptdata()
+                 ):
+        if fullname==&#34;&#34;: fullname = name + &#34; object definition&#34;
+        if not isinstance(group,list): group = [group]
+        forcefield.beadtype = beadtype
+        forcefield.userid = name
+        forcefield.USER = USER
+        super(scriptobject,self).__init__(
+              beadtype = beadtype,
+                  name = name,
+              fullname = fullname,
+              filename = filename,
+                 style = style,
+            forcefield = forcefield,
+                 group = group,
+                  USER = USER
+                 )
+
+    def __str__(self):
+        &#34;&#34;&#34; string representation &#34;&#34;&#34;
+        return f&#34;{self._fulltype} | type={self.beadtype} | name={self.name}&#34;
+
+    def __add__(self, SO):
+        if isinstance(SO,scriptobject):
+            if SO.name != self.name:
+                if SO.beadtype == self.beadtype:
+                   SO.beadtype =  self.beadtype+1
+                return scriptobjectgroup(self,SO)
+            else:
+                raise ValueError(&#39;the object &#34;%s&#34; already exists&#39; % SO.name)
+        elif isinstance(SO,scriptobjectgroup):
+            return scriptobjectgroup(self)+SO
+        else:
+            return ValueError(&#34;The object should a script object or its container&#34;)
+        
+    def __eq__(self, SO):
+        return (self.beadtype == SO.beadtype) and (self.name == SO.name)
+
+    def __ne__(self, SO):
+        return (self.beadtype != SO.beadtype) or (self.name != SO.name)
+
+    def __lt__(self, SO):
+        return self.beadtype &lt; SO.beadtype
+
+    def __gt__(self, SO):
+        return self.beadtype &gt; SO.beadtype
+
+    def __le__(self, SO):
+        return self.beadtype &lt;= SO.beadtype
+
+    def __ge__(self, SO):
+        return self.beadtype &gt;= SO.beadtype</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>private.struct.struct</li>
+</ul>
+</dd>
+<dt id="script.scriptobjectgroup"><code class="flex name class">
+<span>class <span class="ident">scriptobjectgroup</span></span>
+<span>(</span><span>*SOgroup)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>class of script object group
+script object groups are built from script objects OBJ1, OBJ2,..
+GRP = scriptobjectgroup(OBJ1,OBJ2,&hellip;)
+GRP = OBJ1+OBJ2+&hellip;</p>
+<pre><code>note: each beadtype occurs once in the group (if not an error message is generated)
+
+List of methods
+    struct() converts data as structure
+    select([1,2,4]) selects objects with matching beadtypes
+
+List of properties (dynamically calculated)
+    converted data: list, str, zip, beadtype, name, groupname, group, filename
+    numeric: len, min, max, minmax
+    forcefield related: interactions, forcefield
+    script: generate the script (load,group,forcefield)
+
+Full syntax (toy example)
+</code></pre>
+<p>b1 = scriptobject(name="bead 1",group = ["A", "B", "C"],filename='myfile1',forcefield=rigidwall())
+b2 = scriptobject(name="bead 2", group = ["B", "C"],filename = 'myfile1',forcefield=rigidwall())
+b3 = scriptobject(name="bead 3", group = ["B", "D", "E"],forcefield=solidfood())
+b4 = scriptobject(name="bead 4", group = "D",beadtype = 1,filename="myfile2",forcefield=water())</p>
+<pre><code>note: beadtype are incremented during the collection (effect of order)
+
+    # generate a collection, select a typ 1 and a subgroup, generate the script for 1,2
+
+    collection = b1+b2+b3+b4
+    grp_typ1 = collection.select(1)
+    grpB = collection.group.B
+    script12 = collection.select([1,2]).script
+
+note: collection.group.B returns a strcture with 6 fields
+-----------:----------------------------------------
+    groupid: 2 &lt;-- automatic group numbering
+groupidname: B &lt;-- group name
+  groupname: ['A', 'B', 'C', 'D', 'E'] &lt;--- snonyms
+   beadtype: [1, 2, 3] &lt;-- beads belonging to B
+       name: ['bead 1', 'bead 2', 'bead 3'] &lt;-- their names
+        str: group B 1 2 3 &lt;-- LAMMPS syntax
+-----------:----------------------------------------
+</code></pre>
+<p>SOG constructor</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class scriptobjectgroup(struct):
+    &#34;&#34;&#34; 
+        class of script object group
+            script object groups are built from script objects OBJ1, OBJ2,..
+            GRP = scriptobjectgroup(OBJ1,OBJ2,...)
+            GRP = OBJ1+OBJ2+...
+            
+        note: each beadtype occurs once in the group (if not an error message is generated)
+            
+        List of methods
+            struct() converts data as structure
+            select([1,2,4]) selects objects with matching beadtypes
+            
+        List of properties (dynamically calculated)
+            converted data: list, str, zip, beadtype, name, groupname, group, filename
+            numeric: len, min, max, minmax
+            forcefield related: interactions, forcefield
+            script: generate the script (load,group,forcefield)
+        
+        Full syntax (toy example)
+        
+    b1 = scriptobject(name=&#34;bead 1&#34;,group = [&#34;A&#34;, &#34;B&#34;, &#34;C&#34;],filename=&#39;myfile1&#39;,forcefield=rigidwall())
+    b2 = scriptobject(name=&#34;bead 2&#34;, group = [&#34;B&#34;, &#34;C&#34;],filename = &#39;myfile1&#39;,forcefield=rigidwall())
+    b3 = scriptobject(name=&#34;bead 3&#34;, group = [&#34;B&#34;, &#34;D&#34;, &#34;E&#34;],forcefield=solidfood())
+    b4 = scriptobject(name=&#34;bead 4&#34;, group = &#34;D&#34;,beadtype = 1,filename=&#34;myfile2&#34;,forcefield=water())
+    
+        note: beadtype are incremented during the collection (effect of order)
+            
+            # generate a collection, select a typ 1 and a subgroup, generate the script for 1,2
+            
+            collection = b1+b2+b3+b4
+            grp_typ1 = collection.select(1)
+            grpB = collection.group.B
+            script12 = collection.select([1,2]).script
+        
+        note: collection.group.B returns a strcture with 6 fields
+        -----------:----------------------------------------
+            groupid: 2 &lt;-- automatic group numbering
+        groupidname: B &lt;-- group name
+          groupname: [&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;] &lt;--- snonyms
+           beadtype: [1, 2, 3] &lt;-- beads belonging to B
+               name: [&#39;bead 1&#39;, &#39;bead 2&#39;, &#39;bead 3&#39;] &lt;-- their names
+                str: group B 1 2 3 &lt;-- LAMMPS syntax
+        -----------:----------------------------------------
+        
+    &#34;&#34;&#34;
+    _type = &#34;SOG&#34;
+    _fulltype = &#34;script object group&#34;
+    _ftype = &#34;object&#34;
+    
+    def __init__(self,*SOgroup):
+        &#34;&#34;&#34; SOG constructor &#34;&#34;&#34;
+        super(scriptobjectgroup,self).__init__()
+        beadtypemax = 0
+        names = []
+        for k in range(len(SOgroup)):
+            if isinstance(SOgroup[k],scriptobject):
+                if SOgroup[k].beadtype&lt;beadtypemax or SOgroup[k].beadtype==None:
+                    beadtypemax +=1
+                    SOgroup[k].beadtype = beadtypemax
+                if SOgroup[k].name not in names:
+                    self.setattr(SOgroup[k].name,SOgroup[k])
+                    beadtypemax = SOgroup[k].beadtype
+                else:
+                    raise ValueError(&#39;the script object &#34;%s&#34; already exists&#39; % SOgroup[k].name)
+                names.append(SOgroup[k].name)
+            else:
+                raise ValueError(&#34;the argument #%d is not a script object&#34;)
+
+    def __str__(self):
+        &#34;&#34;&#34; string representation &#34;&#34;&#34;
+        return f&#34;{self._fulltype} with {len(self)} {self._ftype}s ({span(self.beadtype)})&#34;
+
+    def __add__(self, SOgroup):
+        &#34;&#34;&#34; overload + &#34;&#34;&#34;
+        beadlist = self.beadtype
+        dup = duplicate(self)
+        if isinstance(SOgroup,scriptobject):
+            if SOgroup.name not in self.keys():
+                if SOgroup.beadtype in beadlist and \
+                  (SOgroup.beadtype==None or SOgroup.beadtype==self.min):
+                      SOgroup.beadtype = self.max+1
+                if SOgroup.beadtype not in beadlist:
+                    dup.setattr(SOgroup.name, SOgroup)
+                    beadlist.append(SOgroup.beadtype)
+                    return dup
+                else:
+                    raise ValueError(&#39;%s (beadtype=%d) is already in use, same beadtype&#39; \
+                                     % (SOgroup.name,SOgroup.beadtype))
+            else:
+                raise ValueError(&#39;the object &#34;%s&#34; is already in the list&#39; % SOgroup.name)
+        elif isinstance(SOgroup,scriptobjectgroup):
+            for k in SOgroup.keys():
+                if k not in dup.keys():
+                    if SOgroup.getattr(k).beadtype not in beadlist:
+                        dup.setattr(k,SOgroup.getattr(k))
+                        beadlist.append(SOgroup.getattr(k).beadtype)
+                    else:
+                        raise ValueError(&#39;%s (beadtype=%d) is already in use, same beadtype&#39; \
+                                         % (k,SOgroup.getattr(k).beadtype))
+                else:
+                    raise ValueError(&#39;the object &#34;%s&#34; is already in the list&#39; % k)
+            return dup
+        else:
+            raise ValueError(&#34;the argument #%d is not a script object or a script object group&#34;)
+    
+    @property
+    def list(self):
+        &#34;&#34;&#34; convert into a list &#34;&#34;&#34;
+        return sorted(self)
+    
+    @property
+    def zip(self):
+        &#34;&#34;&#34; zip beadtypes and names &#34;&#34;&#34;
+        return sorted( \
+            [(self.getattr(k).beadtype,self.getattr(k).name,self.getattr(k).group,self.getattr(k).filename) \
+            for k in self.keys()])
+
+    @property
+    def n(self):
+        &#34;&#34;&#34; returns the number of bead types &#34;&#34;&#34;
+        return len(self)
+
+    @property
+    def beadtype(self):
+        &#34;&#34;&#34; returns the beads in the group &#34;&#34;&#34;
+        return [x for x,_,_,_ in self.zip]
+        
+    @property
+    def name(self):
+        &#34;&#34;&#34; &#34;return the list of names &#34;&#34;&#34;
+        return [x for _,x,_,_ in self.zip]
+    
+    @property
+    def groupname(self):
+        &#34;&#34;&#34; &#34;return the list of groupnames &#34;&#34;&#34;
+        grp = []
+        for _,_,glist,_ in self.zip:
+            for g in glist:
+                if g not in grp: grp.append(g)
+        return grp    
+
+    @property
+    def filename(self):
+        &#34;&#34;&#34; &#34;return the list of names as a dictionary &#34;&#34;&#34;
+        files = {}
+        for _,n,_,fn in self.zip:
+            if fn != &#34;&#34;: 
+                if fn not in files:
+                    files[fn] = [n]
+                else:
+                    files[fn].append(n)
+        return files
+    
+    @property
+    def str(self):
+        return span(self.beadtype)
+
+    def struct(self,groupid=1,groupidname=&#34;undef&#34;):
+        &#34;&#34;&#34; create a group with name &#34;&#34;&#34;
+        return struct(
+                groupid = groupid,
+            groupidname = groupidname,
+              groupname = self.groupname, # meaning is synonyms
+               beadtype = self.beadtype,
+                   name = self.name,
+                    str = &#34;group %s %s&#34; % (groupidname, span(self.beadtype))
+               )
+    
+    @property
+    def minmax(self):
+        &#34;&#34;&#34; returns the min,max of beadtype &#34;&#34;&#34;
+        return self.min,self.max
+    
+    @property
+    def min(self):
+        &#34;&#34;&#34; returns the min of beadtype &#34;&#34;&#34;
+        return min(self.beadtype)
+    
+    @property
+    def max(self):
+        &#34;&#34;&#34; returns the max of beadtype &#34;&#34;&#34;
+        return max(self.beadtype)
+    
+    def select(self,beadtype=None):
+        &#34;&#34;&#34; select bead from a keep beadlist &#34;&#34;&#34;
+        if beadtype==None: beadtype = list(range(self.min,self.max+1))
+        if not isinstance(beadtype,(list,tuple)): beadtype = [beadtype]
+        dup = scriptobjectgroup()
+        for b,n,_,_ in self.zip:
+            if b in beadtype:
+                dup = dup + self.getattr(n)
+        return dup
+    
+    @property
+    def group(self):
+        &#34;&#34;&#34; build groups from group (groupname contains synonyms) &#34;&#34;&#34;
+        groupdef = struct()
+        gid = 0
+        bng = self.zip
+        for g in self.groupname:
+            gid +=1
+            b =[x for x,_,gx,_ in bng if g in gx]
+            groupdef.setattr(g,self.select(b).struct(groupid = gid, groupidname = g))
+        return groupdef
+    
+    @property
+    def interactions(self):
+        # update and accumulate all forece fields
+        FF = []
+        for b in self.beadtype:
+            selection = duplicate(self.select(b)[0])
+            selection.forcefield.beadtype = selection.beadtype
+            selection.forcefield.userid = selection.name
+            FF.append(selection.forcefield)
+        # initialize interactions with pair_style
+        TEMPLATE = &#34;\n# ===== [ BEGIN FORCEFIELD SECTION ] &#34;+&#34;=&#34;*80 + \
+            FF[0].pair_style()
+        # pair diagonal terms
+        for i in range(len(FF)):
+            TEMPLATE += FF[i].pair_diagcoeff()
+        # pair off-diagonal terms
+        for j in range(1,len(FF)):
+            for i in range(0,j):
+                TEMPLATE += FF[i].pair_offdiagcoeff(FF[j])
+        # end
+        TEMPLATE += &#34;\n# ===== [ END FORCEFIELD SECTION ] &#34;+&#34;=&#34;*82+&#34;\n&#34;
+        return FF,TEMPLATE
+    
+    @property
+    def forcefield(self):
+        FF,_ = self.interactions
+        return FF
+    
+    @property
+    def script(self):
+        &#34;&#34;&#34; basic scripting from script objects &#34;&#34;&#34;
+        # load data when needed and comment which object
+        TEMPFILES = &#34;&#34;
+        isfirst = True
+        if self.filename !={}:
+            TEMPFILES = &#34;\n# ===== [ BEGIN INPUT FILES SECTION ] &#34;+&#34;=&#34;*79 + &#34;\n&#34;
+            for fn,cfn in self.filename.items():
+                TEMPFILES += span(cfn,sep=&#34;, &#34;,left=&#34;\n# load files for objects: &#34;,right=&#34;\n&#34;)
+                if isfirst:
+                    isfirst = False
+                    TEMPFILES += f&#34;read_data {fn}\n&#34;
+                else:
+                    TEMPFILES += f&#34;read_data {fn} add append\n&#34;
+            TEMPFILES += &#34;\n# ===== [ END INPUT FILES SECTION ] &#34;+&#34;=&#34;*81+&#34;\n\n&#34;
+        # define groups
+        TEMPGRP = &#34;\n# ===== [ BEGIN GROUP SECTION ] &#34;+&#34;=&#34;*85 + &#34;\n&#34;
+        for g in self.group:
+            TEMPGRP += f&#39;\n#\tDefinition of group {g.groupid}:{g.groupidname}\n&#39;
+            TEMPGRP += f&#39;#\t={span(g.name,sep=&#34;, &#34;)}\n&#39;
+            TEMPGRP += f&#39;#\tSimilar groups: {span(g.groupname,sep=&#34;, &#34;)}\n&#39;
+            TEMPGRP += f&#39;group \t {g.groupidname} \t {span(g.beadtype)}\n&#39;
+        TEMPGRP += &#34;\n# ===== [ END GROUP SECTION ] &#34;+&#34;=&#34;*87+&#34;\n\n&#34;
+        # define interactions
+        _,TEMPFF = self.interactions
+        # chain strings into a script
+        tscript = script()
+        tscript.name = &#34;scriptobject script&#34;                   # name
+        tscript.description = &#34;scriptobject script&#34;   # description
+        tscript.userid = &#34;scriptobject&#34;                    # user name
+        tscript.TEMPLATE = TEMPFILES+TEMPGRP+TEMPFF
+        return tscript</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>private.struct.struct</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="script.scriptobjectgroup.beadtype"><code class="name">var <span class="ident">beadtype</span></code></dt>
+<dd>
+<div class="desc"><p>returns the beads in the group</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def beadtype(self):
+    &#34;&#34;&#34; returns the beads in the group &#34;&#34;&#34;
+    return [x for x,_,_,_ in self.zip]</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.filename"><code class="name">var <span class="ident">filename</span></code></dt>
+<dd>
+<div class="desc"><p>"return the list of names as a dictionary</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def filename(self):
+    &#34;&#34;&#34; &#34;return the list of names as a dictionary &#34;&#34;&#34;
+    files = {}
+    for _,n,_,fn in self.zip:
+        if fn != &#34;&#34;: 
+            if fn not in files:
+                files[fn] = [n]
+            else:
+                files[fn].append(n)
+    return files</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.forcefield"><code class="name">var <span class="ident">forcefield</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def forcefield(self):
+    FF,_ = self.interactions
+    return FF</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.group"><code class="name">var <span class="ident">group</span></code></dt>
+<dd>
+<div class="desc"><p>build groups from group (groupname contains synonyms)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def group(self):
+    &#34;&#34;&#34; build groups from group (groupname contains synonyms) &#34;&#34;&#34;
+    groupdef = struct()
+    gid = 0
+    bng = self.zip
+    for g in self.groupname:
+        gid +=1
+        b =[x for x,_,gx,_ in bng if g in gx]
+        groupdef.setattr(g,self.select(b).struct(groupid = gid, groupidname = g))
+    return groupdef</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.groupname"><code class="name">var <span class="ident">groupname</span></code></dt>
+<dd>
+<div class="desc"><p>"return the list of groupnames</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def groupname(self):
+    &#34;&#34;&#34; &#34;return the list of groupnames &#34;&#34;&#34;
+    grp = []
+    for _,_,glist,_ in self.zip:
+        for g in glist:
+            if g not in grp: grp.append(g)
+    return grp    </code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.interactions"><code class="name">var <span class="ident">interactions</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def interactions(self):
+    # update and accumulate all forece fields
+    FF = []
+    for b in self.beadtype:
+        selection = duplicate(self.select(b)[0])
+        selection.forcefield.beadtype = selection.beadtype
+        selection.forcefield.userid = selection.name
+        FF.append(selection.forcefield)
+    # initialize interactions with pair_style
+    TEMPLATE = &#34;\n# ===== [ BEGIN FORCEFIELD SECTION ] &#34;+&#34;=&#34;*80 + \
+        FF[0].pair_style()
+    # pair diagonal terms
+    for i in range(len(FF)):
+        TEMPLATE += FF[i].pair_diagcoeff()
+    # pair off-diagonal terms
+    for j in range(1,len(FF)):
+        for i in range(0,j):
+            TEMPLATE += FF[i].pair_offdiagcoeff(FF[j])
+    # end
+    TEMPLATE += &#34;\n# ===== [ END FORCEFIELD SECTION ] &#34;+&#34;=&#34;*82+&#34;\n&#34;
+    return FF,TEMPLATE</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.list"><code class="name">var <span class="ident">list</span></code></dt>
+<dd>
+<div class="desc"><p>convert into a list</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def list(self):
+    &#34;&#34;&#34; convert into a list &#34;&#34;&#34;
+    return sorted(self)</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.max"><code class="name">var <span class="ident">max</span></code></dt>
+<dd>
+<div class="desc"><p>returns the max of beadtype</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def max(self):
+    &#34;&#34;&#34; returns the max of beadtype &#34;&#34;&#34;
+    return max(self.beadtype)</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.min"><code class="name">var <span class="ident">min</span></code></dt>
+<dd>
+<div class="desc"><p>returns the min of beadtype</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def min(self):
+    &#34;&#34;&#34; returns the min of beadtype &#34;&#34;&#34;
+    return min(self.beadtype)</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.minmax"><code class="name">var <span class="ident">minmax</span></code></dt>
+<dd>
+<div class="desc"><p>returns the min,max of beadtype</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def minmax(self):
+    &#34;&#34;&#34; returns the min,max of beadtype &#34;&#34;&#34;
+    return self.min,self.max</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.n"><code class="name">var <span class="ident">n</span></code></dt>
+<dd>
+<div class="desc"><p>returns the number of bead types</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def n(self):
+    &#34;&#34;&#34; returns the number of bead types &#34;&#34;&#34;
+    return len(self)</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"><p>"return the list of names</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def name(self):
+    &#34;&#34;&#34; &#34;return the list of names &#34;&#34;&#34;
+    return [x for _,x,_,_ in self.zip]</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.script"><code class="name">var <span class="ident">script</span></code></dt>
+<dd>
+<div class="desc"><p>basic scripting from script objects</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def script(self):
+    &#34;&#34;&#34; basic scripting from script objects &#34;&#34;&#34;
+    # load data when needed and comment which object
+    TEMPFILES = &#34;&#34;
+    isfirst = True
+    if self.filename !={}:
+        TEMPFILES = &#34;\n# ===== [ BEGIN INPUT FILES SECTION ] &#34;+&#34;=&#34;*79 + &#34;\n&#34;
+        for fn,cfn in self.filename.items():
+            TEMPFILES += span(cfn,sep=&#34;, &#34;,left=&#34;\n# load files for objects: &#34;,right=&#34;\n&#34;)
+            if isfirst:
+                isfirst = False
+                TEMPFILES += f&#34;read_data {fn}\n&#34;
+            else:
+                TEMPFILES += f&#34;read_data {fn} add append\n&#34;
+        TEMPFILES += &#34;\n# ===== [ END INPUT FILES SECTION ] &#34;+&#34;=&#34;*81+&#34;\n\n&#34;
+    # define groups
+    TEMPGRP = &#34;\n# ===== [ BEGIN GROUP SECTION ] &#34;+&#34;=&#34;*85 + &#34;\n&#34;
+    for g in self.group:
+        TEMPGRP += f&#39;\n#\tDefinition of group {g.groupid}:{g.groupidname}\n&#39;
+        TEMPGRP += f&#39;#\t={span(g.name,sep=&#34;, &#34;)}\n&#39;
+        TEMPGRP += f&#39;#\tSimilar groups: {span(g.groupname,sep=&#34;, &#34;)}\n&#39;
+        TEMPGRP += f&#39;group \t {g.groupidname} \t {span(g.beadtype)}\n&#39;
+    TEMPGRP += &#34;\n# ===== [ END GROUP SECTION ] &#34;+&#34;=&#34;*87+&#34;\n\n&#34;
+    # define interactions
+    _,TEMPFF = self.interactions
+    # chain strings into a script
+    tscript = script()
+    tscript.name = &#34;scriptobject script&#34;                   # name
+    tscript.description = &#34;scriptobject script&#34;   # description
+    tscript.userid = &#34;scriptobject&#34;                    # user name
+    tscript.TEMPLATE = TEMPFILES+TEMPGRP+TEMPFF
+    return tscript</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.str"><code class="name">var <span class="ident">str</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def str(self):
+    return span(self.beadtype)</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.zip"><code class="name">var <span class="ident">zip</span></code></dt>
+<dd>
+<div class="desc"><p>zip beadtypes and names</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def zip(self):
+    &#34;&#34;&#34; zip beadtypes and names &#34;&#34;&#34;
+    return sorted( \
+        [(self.getattr(k).beadtype,self.getattr(k).name,self.getattr(k).group,self.getattr(k).filename) \
+        for k in self.keys()])</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="script.scriptobjectgroup.select"><code class="name flex">
+<span>def <span class="ident">select</span></span>(<span>self, beadtype=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>select bead from a keep beadlist</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def select(self,beadtype=None):
+    &#34;&#34;&#34; select bead from a keep beadlist &#34;&#34;&#34;
+    if beadtype==None: beadtype = list(range(self.min,self.max+1))
+    if not isinstance(beadtype,(list,tuple)): beadtype = [beadtype]
+    dup = scriptobjectgroup()
+    for b,n,_,_ in self.zip:
+        if b in beadtype:
+            dup = dup + self.getattr(n)
+    return dup</code></pre>
+</details>
+</dd>
+<dt id="script.scriptobjectgroup.struct"><code class="name flex">
+<span>def <span class="ident">struct</span></span>(<span>self, groupid=1, groupidname='undef')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>create a group with name</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def struct(self,groupid=1,groupidname=&#34;undef&#34;):
+    &#34;&#34;&#34; create a group with name &#34;&#34;&#34;
+    return struct(
+            groupid = groupid,
+        groupidname = groupidname,
+          groupname = self.groupname, # meaning is synonyms
+           beadtype = self.beadtype,
+               name = self.name,
+                str = &#34;group %s %s&#34; % (groupidname, span(self.beadtype))
+           )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="script.statussection"><code class="flex name class">
+<span>class <span class="ident">statussection</span></span>
+<span>(</span><span>**userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>LAMMPS script: status session </p>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class statussection(script):
+    &#34;&#34;&#34; LAMMPS script: status session &#34;&#34;&#34;
+    name = &#34;status&#34;
+    description = name+&#34; section&#34;
+    position = 8
+    section = 9
+    userid = &#34;example&#34;
+    version = 0.1
+    
+    DEFINITIONS = scriptdata(
+        thermo = 100
+        )
+    
+    TEMPLATE = &#34;&#34;&#34;
+# :STATUS SECTION:
+#   Status configuration
+
+    ####################################################################################################
+    # STATUS OUTPUT
+    ####################################################################################################
+    compute         alleint all reduce sum c_eint
+    variable        etot equal pe+ke+c_alleint+f_gfix # total energy of the system
+    thermo          ${thermo}
+    thermo_style    custom step ke pe v_etot c_alleint f_dtfix dt
+    thermo_modify   lost ignore
+
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="script.script" href="#script.script">script</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="script.statussection.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.statussection.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.statussection.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.statussection.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.statussection.position"><code class="name">var <span class="ident">position</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.statussection.section"><code class="name">var <span class="ident">section</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.statussection.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="script.statussection.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="script.script" href="#script.script">script</a></b></code>:
+<ul class="hlist">
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="script.span" href="#script.span">span</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="script.boundarysection" href="#script.boundarysection">boundarysection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.boundarysection.DEFINITIONS" href="#script.boundarysection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.boundarysection.TEMPLATE" href="#script.boundarysection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.boundarysection.description" href="#script.boundarysection.description">description</a></code></li>
+<li><code><a title="script.boundarysection.name" href="#script.boundarysection.name">name</a></code></li>
+<li><code><a title="script.boundarysection.position" href="#script.boundarysection.position">position</a></code></li>
+<li><code><a title="script.boundarysection.section" href="#script.boundarysection.section">section</a></code></li>
+<li><code><a title="script.boundarysection.userid" href="#script.boundarysection.userid">userid</a></code></li>
+<li><code><a title="script.boundarysection.version" href="#script.boundarysection.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.discretizationsection" href="#script.discretizationsection">discretizationsection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.discretizationsection.DEFINITIONS" href="#script.discretizationsection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.discretizationsection.TEMPLATE" href="#script.discretizationsection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.discretizationsection.description" href="#script.discretizationsection.description">description</a></code></li>
+<li><code><a title="script.discretizationsection.name" href="#script.discretizationsection.name">name</a></code></li>
+<li><code><a title="script.discretizationsection.position" href="#script.discretizationsection.position">position</a></code></li>
+<li><code><a title="script.discretizationsection.section" href="#script.discretizationsection.section">section</a></code></li>
+<li><code><a title="script.discretizationsection.userid" href="#script.discretizationsection.userid">userid</a></code></li>
+<li><code><a title="script.discretizationsection.version" href="#script.discretizationsection.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.dumpsection" href="#script.dumpsection">dumpsection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.dumpsection.DEFINITIONS" href="#script.dumpsection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.dumpsection.TEMPLATE" href="#script.dumpsection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.dumpsection.description" href="#script.dumpsection.description">description</a></code></li>
+<li><code><a title="script.dumpsection.name" href="#script.dumpsection.name">name</a></code></li>
+<li><code><a title="script.dumpsection.position" href="#script.dumpsection.position">position</a></code></li>
+<li><code><a title="script.dumpsection.section" href="#script.dumpsection.section">section</a></code></li>
+<li><code><a title="script.dumpsection.userid" href="#script.dumpsection.userid">userid</a></code></li>
+<li><code><a title="script.dumpsection.version" href="#script.dumpsection.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.geometrysection" href="#script.geometrysection">geometrysection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.geometrysection.DEFINITIONS" href="#script.geometrysection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.geometrysection.TEMPLATE" href="#script.geometrysection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.geometrysection.description" href="#script.geometrysection.description">description</a></code></li>
+<li><code><a title="script.geometrysection.name" href="#script.geometrysection.name">name</a></code></li>
+<li><code><a title="script.geometrysection.position" href="#script.geometrysection.position">position</a></code></li>
+<li><code><a title="script.geometrysection.section" href="#script.geometrysection.section">section</a></code></li>
+<li><code><a title="script.geometrysection.userid" href="#script.geometrysection.userid">userid</a></code></li>
+<li><code><a title="script.geometrysection.version" href="#script.geometrysection.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.globalsection" href="#script.globalsection">globalsection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.globalsection.DEFINITIONS" href="#script.globalsection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.globalsection.MATERIALS" href="#script.globalsection.MATERIALS">MATERIALS</a></code></li>
+<li><code><a title="script.globalsection.TEMPLATE" href="#script.globalsection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.globalsection.description" href="#script.globalsection.description">description</a></code></li>
+<li><code><a title="script.globalsection.name" href="#script.globalsection.name">name</a></code></li>
+<li><code><a title="script.globalsection.position" href="#script.globalsection.position">position</a></code></li>
+<li><code><a title="script.globalsection.section" href="#script.globalsection.section">section</a></code></li>
+<li><code><a title="script.globalsection.userid" href="#script.globalsection.userid">userid</a></code></li>
+<li><code><a title="script.globalsection.version" href="#script.globalsection.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.initializesection" href="#script.initializesection">initializesection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.initializesection.DEFINITIONS" href="#script.initializesection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.initializesection.TEMPLATE" href="#script.initializesection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.initializesection.description" href="#script.initializesection.description">description</a></code></li>
+<li><code><a title="script.initializesection.name" href="#script.initializesection.name">name</a></code></li>
+<li><code><a title="script.initializesection.position" href="#script.initializesection.position">position</a></code></li>
+<li><code><a title="script.initializesection.section" href="#script.initializesection.section">section</a></code></li>
+<li><code><a title="script.initializesection.userid" href="#script.initializesection.userid">userid</a></code></li>
+<li><code><a title="script.initializesection.version" href="#script.initializesection.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.integrationsection" href="#script.integrationsection">integrationsection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.integrationsection.DEFINITIONS" href="#script.integrationsection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.integrationsection.TEMPLATE" href="#script.integrationsection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.integrationsection.description" href="#script.integrationsection.description">description</a></code></li>
+<li><code><a title="script.integrationsection.name" href="#script.integrationsection.name">name</a></code></li>
+<li><code><a title="script.integrationsection.position" href="#script.integrationsection.position">position</a></code></li>
+<li><code><a title="script.integrationsection.section" href="#script.integrationsection.section">section</a></code></li>
+<li><code><a title="script.integrationsection.userid" href="#script.integrationsection.userid">userid</a></code></li>
+<li><code><a title="script.integrationsection.version" href="#script.integrationsection.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.interactionsection" href="#script.interactionsection">interactionsection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.interactionsection.DEFINITIONS" href="#script.interactionsection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.interactionsection.TEMPLATE" href="#script.interactionsection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.interactionsection.description" href="#script.interactionsection.description">description</a></code></li>
+<li><code><a title="script.interactionsection.name" href="#script.interactionsection.name">name</a></code></li>
+<li><code><a title="script.interactionsection.position" href="#script.interactionsection.position">position</a></code></li>
+<li><code><a title="script.interactionsection.section" href="#script.interactionsection.section">section</a></code></li>
+<li><code><a title="script.interactionsection.userid" href="#script.interactionsection.userid">userid</a></code></li>
+<li><code><a title="script.interactionsection.version" href="#script.interactionsection.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.runsection" href="#script.runsection">runsection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.runsection.DEFINITIONS" href="#script.runsection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.runsection.TEMPLATE" href="#script.runsection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.runsection.description" href="#script.runsection.description">description</a></code></li>
+<li><code><a title="script.runsection.name" href="#script.runsection.name">name</a></code></li>
+<li><code><a title="script.runsection.position" href="#script.runsection.position">position</a></code></li>
+<li><code><a title="script.runsection.section" href="#script.runsection.section">section</a></code></li>
+<li><code><a title="script.runsection.userid" href="#script.runsection.userid">userid</a></code></li>
+<li><code><a title="script.runsection.version" href="#script.runsection.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.script" href="#script.script">script</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.script.DEFINITIONS" href="#script.script.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.script.SECTIONS" href="#script.script.SECTIONS">SECTIONS</a></code></li>
+<li><code><a title="script.script.TEMPLATE" href="#script.script.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.script.description" href="#script.script.description">description</a></code></li>
+<li><code><a title="script.script.do" href="#script.script.do">do</a></code></li>
+<li><code><a title="script.script.getallattributes" href="#script.script.getallattributes">getallattributes</a></code></li>
+<li><code><a title="script.script.name" href="#script.script.name">name</a></code></li>
+<li><code><a title="script.script.position" href="#script.script.position">position</a></code></li>
+<li><code><a title="script.script.printheader" href="#script.script.printheader">printheader</a></code></li>
+<li><code><a title="script.script.role" href="#script.script.role">role</a></code></li>
+<li><code><a title="script.script.section" href="#script.script.section">section</a></code></li>
+<li><code><a title="script.script.type" href="#script.script.type">type</a></code></li>
+<li><code><a title="script.script.userid" href="#script.script.userid">userid</a></code></li>
+<li><code><a title="script.script.verbose" href="#script.script.verbose">verbose</a></code></li>
+<li><code><a title="script.script.version" href="#script.script.version">version</a></code></li>
+<li><code><a title="script.script.write" href="#script.script.write">write</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.scriptdata" href="#script.scriptdata">scriptdata</a></code></h4>
+</li>
+<li>
+<h4><code><a title="script.scriptobject" href="#script.scriptobject">scriptobject</a></code></h4>
+</li>
+<li>
+<h4><code><a title="script.scriptobjectgroup" href="#script.scriptobjectgroup">scriptobjectgroup</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.scriptobjectgroup.beadtype" href="#script.scriptobjectgroup.beadtype">beadtype</a></code></li>
+<li><code><a title="script.scriptobjectgroup.filename" href="#script.scriptobjectgroup.filename">filename</a></code></li>
+<li><code><a title="script.scriptobjectgroup.forcefield" href="#script.scriptobjectgroup.forcefield">forcefield</a></code></li>
+<li><code><a title="script.scriptobjectgroup.group" href="#script.scriptobjectgroup.group">group</a></code></li>
+<li><code><a title="script.scriptobjectgroup.groupname" href="#script.scriptobjectgroup.groupname">groupname</a></code></li>
+<li><code><a title="script.scriptobjectgroup.interactions" href="#script.scriptobjectgroup.interactions">interactions</a></code></li>
+<li><code><a title="script.scriptobjectgroup.list" href="#script.scriptobjectgroup.list">list</a></code></li>
+<li><code><a title="script.scriptobjectgroup.max" href="#script.scriptobjectgroup.max">max</a></code></li>
+<li><code><a title="script.scriptobjectgroup.min" href="#script.scriptobjectgroup.min">min</a></code></li>
+<li><code><a title="script.scriptobjectgroup.minmax" href="#script.scriptobjectgroup.minmax">minmax</a></code></li>
+<li><code><a title="script.scriptobjectgroup.n" href="#script.scriptobjectgroup.n">n</a></code></li>
+<li><code><a title="script.scriptobjectgroup.name" href="#script.scriptobjectgroup.name">name</a></code></li>
+<li><code><a title="script.scriptobjectgroup.script" href="#script.scriptobjectgroup.script">script</a></code></li>
+<li><code><a title="script.scriptobjectgroup.select" href="#script.scriptobjectgroup.select">select</a></code></li>
+<li><code><a title="script.scriptobjectgroup.str" href="#script.scriptobjectgroup.str">str</a></code></li>
+<li><code><a title="script.scriptobjectgroup.struct" href="#script.scriptobjectgroup.struct">struct</a></code></li>
+<li><code><a title="script.scriptobjectgroup.zip" href="#script.scriptobjectgroup.zip">zip</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="script.statussection" href="#script.statussection">statussection</a></code></h4>
+<ul class="two-column">
+<li><code><a title="script.statussection.DEFINITIONS" href="#script.statussection.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="script.statussection.TEMPLATE" href="#script.statussection.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="script.statussection.description" href="#script.statussection.description">description</a></code></li>
+<li><code><a title="script.statussection.name" href="#script.statussection.name">name</a></code></li>
+<li><code><a title="script.statussection.position" href="#script.statussection.position">position</a></code></li>
+<li><code><a title="script.statussection.section" href="#script.statussection.section">section</a></code></li>
+<li><code><a title="script.statussection.userid" href="#script.statussection.userid">userid</a></code></li>
+<li><code><a title="script.statussection.version" href="#script.statussection.version">version</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

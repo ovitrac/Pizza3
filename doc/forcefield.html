@@ -54,8 +54,8 @@ and forcefields. Note that the following hierarchy is used:
           def __init__(self, beadtype=1, userid=None):
               super().__init__()
               if userid!=None: self.userid = userid
-              self.name["material"] = "short of the material"
-              self.description["material"] = "full description"
+              self.name.material"] = "short of the material"
+              self.description.material"] = "full description"
               self.beadtype = beadtype
               self.parameters = parameterforcefield(
                   param1 = value1,
@@ -160,8 +160,8 @@ run this code by pressing &lt;F5&gt;
               def __init__(self, beadtype=1, userid=None):
                   super().__init__()
                   if userid!=None: self.userid = userid
-                  self.name[&#34;material&#34;] = &#34;short of the material&#34;
-                  self.description[&#34;material&#34;] = &#34;full description&#34;
+                  self.name.material&#34;] = &#34;short of the material&#34;
+                  self.description.material&#34;] = &#34;full description&#34;
                   self.beadtype = beadtype
                   self.parameters = parameterforcefield(
                       param1 = value1,
@@ -237,11 +237,14 @@ run this code by pressing &lt;F5&gt;
 # History
 # 2022-02-12 early version
 # 2022-02-13 release candidate
+# 2022-02-20 made compatible with the update private.struct.py
+# 2022-02-28 fix class inheritance with mutable type, update is carried with + and struct()
+# 2022-03-02 fix off-diagonal order for i,j
 
 # %% Dependencies
-import types, math  # import math to authorize all math expressions in parameters
+import types
 # All forcefield parameters are stored à la Matlab in a structure
-from private.struct import struct
+from private.struct import struct,param
 
 
 # %% Parent class (not to be called directly)
@@ -250,36 +253,21 @@ from private.struct import struct
 #   recommendation 2: __dict__ list only properties in the instance,
 #                     use getallattributes() to see all attributes
 
-# wrapper of struct class (used to rename type and ftype)
-class parameterforcefield(struct):
-    &#34;&#34;&#34; class of forcefields parameters &#34;&#34;&#34;
-    # override
-    type = &#34;forcefield&#34;
-    ftype = &#34;parameter&#34;
-    
-    # magic constructor
-    def __init__(self,**kwargs):
-        &#34;&#34;&#34; constructor &#34;&#34;&#34;
-        super().__init__(**kwargs)
-    
-    # formateval (note that ^ is accepted in exponents to be compatible with LAMMPS)
-    def formateval(self,s):
-        &#34;&#34;&#34; evaluate strings, format method wrapper &#34;&#34;&#34;
-        tmp = struct()
-        for key,value in self.__dict__.items():
-            if isinstance(value,str):
-                tmp.setattr(key, eval(tmp.format(value.replace(&#34;^&#34;,&#34;**&#34;))))
-            else:
-                tmp.setattr(key, value)
-        return tmp.format(s)  
+# container of forcefield parameters
+class parameterforcefield(param):
+    &#34;&#34;&#34; class of forcefields parameters, derived from param &#34;&#34;&#34;
+    _type = &#34;FF&#34;
+    _fulltype = &#34;forcefield&#34;
+    _ftype = &#34;parameter&#34;
+     
     
 # core class
 class forcefield():
     &#34;&#34;&#34; core forcefield class (not to be called directly) &#34;&#34;&#34;
     
     # Main attributes (instance independent)
-    name = {&#34;forcefield&#34;:&#34;undefined&#34;, &#34;style&#34;:&#34;undefined&#34;, &#34;material&#34;:&#34;undefined&#34;}
-    description = {&#34;forcefield&#34;:&#34;missing&#34;, &#34;style&#34;:&#34;missing&#34;, &#34;material&#34;:&#34;missing&#34;}
+    name = struct(forcefield=&#34;undefined&#34;, style=&#34;undefined&#34;, material=&#34;undefined&#34;)
+    description = struct(forcefield=&#34;missing&#34;, style=&#34;missing&#34;, material=&#34;missing&#34;)
     beadtype = 1  # default bead type
     parameters = parameterforcefield() # empty parameters object
     userid = &#34;undefined&#34;
@@ -298,14 +286,14 @@ class forcefield():
     # The method provides full help for the end-user
     def __repr__(self):
         &#34;&#34;&#34; disp method &#34;&#34;&#34;
-        stamp = self.name[&#34;forcefield&#34;]+&#34;:&#34;+self.name[&#34;style&#34;]+&#34;:&#34;+self.name[&#34;material&#34;]
+        stamp = self.name.forcefield+&#34;:&#34;+self.name.style+&#34;:&#34;+self.name.material
         self.printheader(&#34;%s | version=%0.3g&#34; % (self.userid,self.version),filler=&#34;=&#34;)
         print(&#34;  Bead of type %d = [%s]&#34; % (self.beadtype,stamp))
         print(self.parameters)
         self.printheader(&#34;description&#34;,filler=&#34;.&#34;)
-        print(&#34;\t# \t%s&#34; % self.description[&#34;forcefield&#34;])
-        print(&#34;\t# \t%s&#34; % self.description[&#34;style&#34;])
-        print(&#34;\t# \t%s&#34; % self.description[&#34;material&#34;])
+        print(&#34;\t# \t%s&#34; % self.description.forcefield)
+        print(&#34;\t# \t%s&#34; % self.description.style)
+        print(&#34;\t# \t%s&#34; % self.description.material)
         self.printheader(&#34;methods&#34;)
         print(&#34;\t   &gt;&gt;&gt; replace FFi,FFj by your variable names &lt;&lt;&lt;&#34;)
         print(&#34;\tTo assign a type, use: FFi.beadtype = integer value&#34;)
@@ -360,7 +348,7 @@ class forcefield():
         if j==i:
             if i&gt;1: j=i-1
             else: j=i+1
-        cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (i,j)
+        cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (min(i,j),max(j,i))
         cmd = cmd.replace(&#34;[comment]&#34;,&#34;{comment}&#34;).format(comment=(&#34;[%d:%s x %d:%s]&#34; % (i,self.userid,j,oname)))
         if printflag: print(cmd)
         return cmd
@@ -383,12 +371,8 @@ class forcefield():
 # BEGIN PAIR-STYLE FORCEFIELD ===========================
 class smd(forcefield):
     &#34;&#34;&#34; SMD forcefield &#34;&#34;&#34;
-    
-    # forcefield documentation
-    def __init__(self):
-        super().__init__()
-        self.name[&#34;forcefield&#34;] = &#34;LAMMPS:SMD&#34;
-        self.description[&#34;forcefield&#34;] = &#34;LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)&#34;
+    name = forcefield.name + struct(forcefield=&#34;LAMMPS:SMD&#34;)
+    description = forcefield.description + struct(forcefield=&#34;LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)&#34;)
     
     # forcefield definition (LAMMPS code between triple &#34;&#34;&#34;)
     PAIR_STYLE = &#34;&#34;&#34;
@@ -402,12 +386,8 @@ class smd(forcefield):
 # BEGIN PAIR-COEFF FORCEFIELD ===========================
 class ulsph(smd):
     &#34;&#34;&#34; SMD:ULSPH forcefield (updated Lagrangian) &#34;&#34;&#34;
-    
-    # style documentation
-    def __init__(self):
-        super().__init__()
-        self.name[&#34;style&#34;] = &#34;ulsph&#34;
-        self.description[&#34;style&#34;] = &#34;SMD:ULSPH - updated Langrangian for fluids - SPH-like&#34;
+    name = smd.name + struct(style=&#34;ulsph&#34;)
+    description = smd.description + struct(style=&#34;SMD:ULSPH - updated Langrangian for fluids - SPH-like&#34;)
 
     # style definition (LAMMPS code between triple &#34;&#34;&#34;)
     PAIR_DIAGCOEFF = &#34;&#34;&#34;
@@ -425,13 +405,9 @@ class ulsph(smd):
 
 # BEGIN PAIR-COEFF FORCEFIELD ===========================
 class tlsph(smd):
-    &#34;&#34;&#34; SMD:TLSPH forcefield (updated Lagrangian) &#34;&#34;&#34;
-    
-    # style documentation
-    def __init__(self):
-        super().__init__()
-        self.name[&#34;style&#34;] = &#34;tlsph&#34;
-        self.description[&#34;style&#34;] = &#34;SMD:TLSPH - total Langrangian for solids&#34;
+    &#34;&#34;&#34; SMD:TLSPH forcefield (total Lagrangian) &#34;&#34;&#34;
+    name = smd.name + struct(syle=&#34;tlsph&#34;)
+    description = smd.description + struct(style=&#34;SMD:TLSPH - total Langrangian for solids&#34;)
 
     # style definition (LAMMPS code between triple &#34;&#34;&#34;)
     PAIR_DIAGCOEFF = &#34;&#34;&#34;
@@ -451,12 +427,8 @@ class tlsph(smd):
 # BEGIN PAIR-COEFF FORCEFIELD ===========================
 class none(smd):
     &#34;&#34;&#34; SMD:TLSPH forcefield (updated Lagrangian) &#34;&#34;&#34;
-    
-    # style documentation
-    def __init__(self):
-        super().__init__()
-        self.name[&#34;style&#34;] = &#34;none&#34;
-        self.description[&#34;style&#34;] = &#34;no interactions&#34;
+    name = smd.name + struct(style=&#34;none&#34;)
+    description = smd.description + struct(style=&#34;no interactions&#34;)
 
     # style definition (LAMMPS code between triple &#34;&#34;&#34;)
     PAIR_DIAGCOEFF = &#34;&#34;&#34;
@@ -465,7 +437,7 @@ class none(smd):
     &#34;&#34;&#34;
     PAIR_OFFDIAGCOEFF = &#34;&#34;&#34;
     # [comment] Off-diagonal pair coefficient (generic)
-    pair_coeff      %d %d none
+    pair_coeff      %d %d smd/hertz ${contact_stiffness}
     &#34;&#34;&#34;
 # END PAIR-COEFF FORCEFIELD ===========================
 
@@ -479,8 +451,8 @@ class none(smd):
 #       def __init__(self, beadtype=1, userid=None):
 #           super().__init__()
 #           if userid!=None: self.userid = userid
-#           self.name[&#34;material&#34;] = &#34;short of the material&#34;
-#           self.description[&#34;material&#34;] = &#34;full description&#34;
+#           self.name.material&#34;] = &#34;short of the material&#34;
+#           self.description.material&#34;] = &#34;full description&#34;
 #           self.beadtype = beadtype
 #           self.parameters = parameterforcefield(
 #               param1 = value1,
@@ -493,18 +465,16 @@ class none(smd):
 
 # BEGIN MATERIAL: WATER ========================================
 class water(ulsph):
-    &#34;&#34;&#34; water material (smd:ulsph): use water() or water(beadtype=index, userid=&#34;myfluid&#34;) &#34;&#34;&#34;
-    
+    &#34;&#34;&#34; water material (smd:ulsph): use water() or water(beadtype=index, userid=&#34;myfluid&#34;, USER=...) &#34;&#34;&#34;
+    name = ulsph.name + struct(material=&#34;water&#34;)
+    description = ulsph.description + struct(material=&#34;water beads - SPH-like&#34;)
     userid = &#39;water&#39;
     version = 0.1
     
     # constructor (do not forgert to include the constuctor)
-    def __init__(self, beadtype=1, userid=None):
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         &#34;&#34;&#34; water forcefield: water(beadtype=index, userid=&#34;myfluid&#34;) &#34;&#34;&#34;
-        super().__init__()
         if userid!=None: self.userid = userid
-        self.name[&#34;material&#34;] = &#34;water&#34;
-        self.description[&#34;material&#34;] = &#34;water beads - SPH-like&#34;
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
             # water-water interactions
@@ -516,28 +486,27 @@ class water(ulsph):
             # hertz contacts
             contact_scale = 1.5,
             contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;
-            )
+            ) + USER # update with user properties if any
         
 # END MATERIAL: WATER ==========================================
 
 
 # BEGIN MATERIAL: SOLID FOOD ========================================
 class solidfood(tlsph):
-    &#34;&#34;&#34; solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
-    
+    &#34;&#34;&#34; solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid=&#34;myfood&#34;, USER=...) &#34;&#34;&#34;
+    name = tlsph.name + struct(material=&#34;solidfood&#34;)
+    description = tlsph.description + struct(material=&#34;food beads - solid behavior&#34;)
     userid = &#39;solidfood&#39;
     version = 0.1
     
     # constructor (do not forgert to include the constuctor)
-    def __init__(self, beadtype=1, userid=None):
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         &#34;&#34;&#34; food forcefield: solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
-        super().__init__()
+        # super().__init__()
         if userid!=None: self.userid = userid
-        self.name[&#34;material&#34;] = &#34;solidfood&#34;
-        self.description[&#34;material&#34;] = &#34;food beads - solid behavior&#34;
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
-            # water-water interactions
+            # food-food interactions
             rho = 1000,
             c0 = 10.0,
             E = &#39;5*${c0}^2*${rho}&#39;,
@@ -551,33 +520,37 @@ class solidfood(tlsph):
             # hertz contacts
             contact_scale = 1.5,
             contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;
-            )
+            ) + USER # update with user properties if any
         
 # END MATERIAL: SOLID FOOD ==========================================
 
 
 
-# BEGIN MATERIAL: SOLID FOOD ========================================
+# BEGIN MATERIAL: RIGID WALLS ========================================
 class rigidwall(none):
-    &#34;&#34;&#34; rigid walls (smd:none): use rigidwalls() or solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
-    
+    &#34;&#34;&#34; rigid walls (smd:none): use rigidwall() or rigidwall(beadtype=index, userid=&#34;wall&#34;, USER=...) &#34;&#34;&#34;
+    name = none.name + struct(material=&#34;walls&#34;)
+    description = none.description + struct(material=&#34;rigid walls&#34;)
     userid = &#39;solidfood&#39;
     version = 0.1
     
     # constructor (do not forgert to include the constuctor)
-    def __init__(self, beadtype=1, userid=None):
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         &#34;&#34;&#34; food forcefield: solidfood(beadtype=index, userid=&#34;mywall&#34;) &#34;&#34;&#34;
-        super().__init__()
+        # super().__init__()
         if userid!=None: self.userid = userid
-        self.name[&#34;material&#34;] = &#34;walls&#34;
-        self.description[&#34;material&#34;] = &#34;rigid walls&#34;
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
+            rho = 3000,
+            c0 = 10.0,
+            contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;,
             contact_scale = 1.5
-            )
+            ) + USER # update with user properties if any
 
         
-# END MATERIAL: SOLID FOOD ==========================================
+# END MATERIAL: RIGID WALLS ==========================================
+
+
 # %% DEBUG  
 # ===================================================   
 # main()
@@ -617,8 +590,8 @@ if __name__ == &#39;__main__&#39;:
     &#34;&#34;&#34; core forcefield class (not to be called directly) &#34;&#34;&#34;
     
     # Main attributes (instance independent)
-    name = {&#34;forcefield&#34;:&#34;undefined&#34;, &#34;style&#34;:&#34;undefined&#34;, &#34;material&#34;:&#34;undefined&#34;}
-    description = {&#34;forcefield&#34;:&#34;missing&#34;, &#34;style&#34;:&#34;missing&#34;, &#34;material&#34;:&#34;missing&#34;}
+    name = struct(forcefield=&#34;undefined&#34;, style=&#34;undefined&#34;, material=&#34;undefined&#34;)
+    description = struct(forcefield=&#34;missing&#34;, style=&#34;missing&#34;, material=&#34;missing&#34;)
     beadtype = 1  # default bead type
     parameters = parameterforcefield() # empty parameters object
     userid = &#34;undefined&#34;
@@ -637,14 +610,14 @@ if __name__ == &#39;__main__&#39;:
     # The method provides full help for the end-user
     def __repr__(self):
         &#34;&#34;&#34; disp method &#34;&#34;&#34;
-        stamp = self.name[&#34;forcefield&#34;]+&#34;:&#34;+self.name[&#34;style&#34;]+&#34;:&#34;+self.name[&#34;material&#34;]
+        stamp = self.name.forcefield+&#34;:&#34;+self.name.style+&#34;:&#34;+self.name.material
         self.printheader(&#34;%s | version=%0.3g&#34; % (self.userid,self.version),filler=&#34;=&#34;)
         print(&#34;  Bead of type %d = [%s]&#34; % (self.beadtype,stamp))
         print(self.parameters)
         self.printheader(&#34;description&#34;,filler=&#34;.&#34;)
-        print(&#34;\t# \t%s&#34; % self.description[&#34;forcefield&#34;])
-        print(&#34;\t# \t%s&#34; % self.description[&#34;style&#34;])
-        print(&#34;\t# \t%s&#34; % self.description[&#34;material&#34;])
+        print(&#34;\t# \t%s&#34; % self.description.forcefield)
+        print(&#34;\t# \t%s&#34; % self.description.style)
+        print(&#34;\t# \t%s&#34; % self.description.material)
         self.printheader(&#34;methods&#34;)
         print(&#34;\t   &gt;&gt;&gt; replace FFi,FFj by your variable names &lt;&lt;&lt;&#34;)
         print(&#34;\tTo assign a type, use: FFi.beadtype = integer value&#34;)
@@ -699,7 +672,7 @@ if __name__ == &#39;__main__&#39;:
         if j==i:
             if i&gt;1: j=i-1
             else: j=i+1
-        cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (i,j)
+        cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (min(i,j),max(j,i))
         cmd = cmd.replace(&#34;[comment]&#34;,&#34;{comment}&#34;).format(comment=(&#34;[%d:%s x %d:%s]&#34; % (i,self.userid,j,oname)))
         if printflag: print(cmd)
         return cmd</code></pre>
@@ -818,7 +791,7 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
     if j==i:
         if i&gt;1: j=i-1
         else: j=i+1
-    cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (i,j)
+    cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (min(i,j),max(j,i))
     cmd = cmd.replace(&#34;[comment]&#34;,&#34;{comment}&#34;).format(comment=(&#34;[%d:%s x %d:%s]&#34; % (i,self.userid,j,oname)))
     if printflag: print(cmd)
     return cmd</code></pre>
@@ -854,12 +827,8 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </summary>
 <pre><code class="python">class none(smd):
     &#34;&#34;&#34; SMD:TLSPH forcefield (updated Lagrangian) &#34;&#34;&#34;
-    
-    # style documentation
-    def __init__(self):
-        super().__init__()
-        self.name[&#34;style&#34;] = &#34;none&#34;
-        self.description[&#34;style&#34;] = &#34;no interactions&#34;
+    name = smd.name + struct(style=&#34;none&#34;)
+    description = smd.description + struct(style=&#34;no interactions&#34;)
 
     # style definition (LAMMPS code between triple &#34;&#34;&#34;)
     PAIR_DIAGCOEFF = &#34;&#34;&#34;
@@ -868,7 +837,7 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
     &#34;&#34;&#34;
     PAIR_OFFDIAGCOEFF = &#34;&#34;&#34;
     # [comment] Off-diagonal pair coefficient (generic)
-    pair_coeff      %d %d none
+    pair_coeff      %d %d smd/hertz ${contact_stiffness}
     &#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -887,6 +856,14 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <div class="desc"></div>
 </dd>
 <dt id="forcefield.none.PAIR_OFFDIAGCOEFF"><code class="name">var <span class="ident">PAIR_OFFDIAGCOEFF</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.none.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.none.name"><code class="name">var <span class="ident">name</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -909,101 +886,54 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <span>(</span><span>**kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>class of forcefields parameters </p>
+<div class="desc"><p>class of forcefields parameters, derived from param </p>
 <p>constructor</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class parameterforcefield(struct):
-    &#34;&#34;&#34; class of forcefields parameters &#34;&#34;&#34;
-    # override
-    type = &#34;forcefield&#34;
-    ftype = &#34;parameter&#34;
-    
-    # magic constructor
-    def __init__(self,**kwargs):
-        &#34;&#34;&#34; constructor &#34;&#34;&#34;
-        super().__init__(**kwargs)
-    
-    # formateval (note that ^ is accepted in exponents to be compatible with LAMMPS)
-    def formateval(self,s):
-        &#34;&#34;&#34; evaluate strings, format method wrapper &#34;&#34;&#34;
-        tmp = struct()
-        for key,value in self.__dict__.items():
-            if isinstance(value,str):
-                tmp.setattr(key, eval(tmp.format(value.replace(&#34;^&#34;,&#34;**&#34;))))
-            else:
-                tmp.setattr(key, value)
-        return tmp.format(s)  </code></pre>
+<pre><code class="python">class parameterforcefield(param):
+    &#34;&#34;&#34; class of forcefields parameters, derived from param &#34;&#34;&#34;
+    _type = &#34;FF&#34;
+    _fulltype = &#34;forcefield&#34;
+    _ftype = &#34;parameter&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
+<li>private.struct.param</li>
 <li>private.struct.struct</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="forcefield.parameterforcefield.ftype"><code class="name">var <span class="ident">ftype</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="forcefield.parameterforcefield.type"><code class="name">var <span class="ident">type</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="forcefield.parameterforcefield.formateval"><code class="name flex">
-<span>def <span class="ident">formateval</span></span>(<span>self, s)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>evaluate strings, format method wrapper</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def formateval(self,s):
-    &#34;&#34;&#34; evaluate strings, format method wrapper &#34;&#34;&#34;
-    tmp = struct()
-    for key,value in self.__dict__.items():
-        if isinstance(value,str):
-            tmp.setattr(key, eval(tmp.format(value.replace(&#34;^&#34;,&#34;**&#34;))))
-        else:
-            tmp.setattr(key, value)
-    return tmp.format(s)  </code></pre>
-</details>
-</dd>
-</dl>
 </dd>
 <dt id="forcefield.rigidwall"><code class="flex name class">
 <span>class <span class="ident">rigidwall</span></span>
-<span>(</span><span>beadtype=1, userid=None)</span>
+<span>(</span><span>beadtype=1, userid=None, USER=empty forcefield)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>rigid walls (smd:none): use rigidwalls() or solidfood(beadtype=index, userid="myfood") </p>
+<div class="desc"><p>rigid walls (smd:none): use rigidwall() or rigidwall(beadtype=index, userid="wall", USER=&hellip;) </p>
 <p>food forcefield: solidfood(beadtype=index, userid="mywall")</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class rigidwall(none):
-    &#34;&#34;&#34; rigid walls (smd:none): use rigidwalls() or solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
-    
+    &#34;&#34;&#34; rigid walls (smd:none): use rigidwall() or rigidwall(beadtype=index, userid=&#34;wall&#34;, USER=...) &#34;&#34;&#34;
+    name = none.name + struct(material=&#34;walls&#34;)
+    description = none.description + struct(material=&#34;rigid walls&#34;)
     userid = &#39;solidfood&#39;
     version = 0.1
     
     # constructor (do not forgert to include the constuctor)
-    def __init__(self, beadtype=1, userid=None):
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         &#34;&#34;&#34; food forcefield: solidfood(beadtype=index, userid=&#34;mywall&#34;) &#34;&#34;&#34;
-        super().__init__()
+        # super().__init__()
         if userid!=None: self.userid = userid
-        self.name[&#34;material&#34;] = &#34;walls&#34;
-        self.description[&#34;material&#34;] = &#34;rigid walls&#34;
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
+            rho = 3000,
+            c0 = 10.0,
+            contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;,
             contact_scale = 1.5
-            )</code></pre>
+            ) + USER # update with user properties if any</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1013,6 +943,14 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </ul>
 <h3>Class variables</h3>
 <dl>
+<dt id="forcefield.rigidwall.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.rigidwall.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="forcefield.rigidwall.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
@@ -1046,12 +984,8 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </summary>
 <pre><code class="python">class smd(forcefield):
     &#34;&#34;&#34; SMD forcefield &#34;&#34;&#34;
-    
-    # forcefield documentation
-    def __init__(self):
-        super().__init__()
-        self.name[&#34;forcefield&#34;] = &#34;LAMMPS:SMD&#34;
-        self.description[&#34;forcefield&#34;] = &#34;LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)&#34;
+    name = forcefield.name + struct(forcefield=&#34;LAMMPS:SMD&#34;)
+    description = forcefield.description + struct(forcefield=&#34;LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)&#34;)
     
     # forcefield definition (LAMMPS code between triple &#34;&#34;&#34;)
     PAIR_STYLE = &#34;&#34;&#34;
@@ -1076,6 +1010,14 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="forcefield.smd.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.smd.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -1092,31 +1034,30 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </dd>
 <dt id="forcefield.solidfood"><code class="flex name class">
 <span>class <span class="ident">solidfood</span></span>
-<span>(</span><span>beadtype=1, userid=None)</span>
+<span>(</span><span>beadtype=1, userid=None, USER=empty forcefield)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid="myfood") </p>
+<div class="desc"><p>solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid="myfood", USER=&hellip;) </p>
 <p>food forcefield: solidfood(beadtype=index, userid="myfood")</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class solidfood(tlsph):
-    &#34;&#34;&#34; solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
-    
+    &#34;&#34;&#34; solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid=&#34;myfood&#34;, USER=...) &#34;&#34;&#34;
+    name = tlsph.name + struct(material=&#34;solidfood&#34;)
+    description = tlsph.description + struct(material=&#34;food beads - solid behavior&#34;)
     userid = &#39;solidfood&#39;
     version = 0.1
     
     # constructor (do not forgert to include the constuctor)
-    def __init__(self, beadtype=1, userid=None):
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         &#34;&#34;&#34; food forcefield: solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
-        super().__init__()
+        # super().__init__()
         if userid!=None: self.userid = userid
-        self.name[&#34;material&#34;] = &#34;solidfood&#34;
-        self.description[&#34;material&#34;] = &#34;food beads - solid behavior&#34;
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
-            # water-water interactions
+            # food-food interactions
             rho = 1000,
             c0 = 10.0,
             E = &#39;5*${c0}^2*${rho}&#39;,
@@ -1130,7 +1071,7 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
             # hertz contacts
             contact_scale = 1.5,
             contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;
-            )</code></pre>
+            ) + USER # update with user properties if any</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1140,6 +1081,14 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </ul>
 <h3>Class variables</h3>
 <dl>
+<dt id="forcefield.solidfood.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.solidfood.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="forcefield.solidfood.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
@@ -1166,19 +1115,15 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <span>class <span class="ident">tlsph</span></span>
 </code></dt>
 <dd>
-<div class="desc"><p>SMD:TLSPH forcefield (updated Lagrangian)</p></div>
+<div class="desc"><p>SMD:TLSPH forcefield (total Lagrangian)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class tlsph(smd):
-    &#34;&#34;&#34; SMD:TLSPH forcefield (updated Lagrangian) &#34;&#34;&#34;
-    
-    # style documentation
-    def __init__(self):
-        super().__init__()
-        self.name[&#34;style&#34;] = &#34;tlsph&#34;
-        self.description[&#34;style&#34;] = &#34;SMD:TLSPH - total Langrangian for solids&#34;
+    &#34;&#34;&#34; SMD:TLSPH forcefield (total Lagrangian) &#34;&#34;&#34;
+    name = smd.name + struct(syle=&#34;tlsph&#34;)
+    description = smd.description + struct(style=&#34;SMD:TLSPH - total Langrangian for solids&#34;)
 
     # style definition (LAMMPS code between triple &#34;&#34;&#34;)
     PAIR_DIAGCOEFF = &#34;&#34;&#34;
@@ -1212,6 +1157,14 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="forcefield.tlsph.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.tlsph.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -1237,12 +1190,8 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </summary>
 <pre><code class="python">class ulsph(smd):
     &#34;&#34;&#34; SMD:ULSPH forcefield (updated Lagrangian) &#34;&#34;&#34;
-    
-    # style documentation
-    def __init__(self):
-        super().__init__()
-        self.name[&#34;style&#34;] = &#34;ulsph&#34;
-        self.description[&#34;style&#34;] = &#34;SMD:ULSPH - updated Langrangian for fluids - SPH-like&#34;
+    name = smd.name + struct(style=&#34;ulsph&#34;)
+    description = smd.description + struct(style=&#34;SMD:ULSPH - updated Langrangian for fluids - SPH-like&#34;)
 
     # style definition (LAMMPS code between triple &#34;&#34;&#34;)
     PAIR_DIAGCOEFF = &#34;&#34;&#34;
@@ -1275,6 +1224,14 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="forcefield.ulsph.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.ulsph.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -1291,28 +1248,26 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </dd>
 <dt id="forcefield.water"><code class="flex name class">
 <span>class <span class="ident">water</span></span>
-<span>(</span><span>beadtype=1, userid=None)</span>
+<span>(</span><span>beadtype=1, userid=None, USER=empty forcefield)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>water material (smd:ulsph): use water() or water(beadtype=index, userid="myfluid") </p>
+<div class="desc"><p>water material (smd:ulsph): use water() or water(beadtype=index, userid="myfluid", USER=&hellip;) </p>
 <p>water forcefield: water(beadtype=index, userid="myfluid")</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class water(ulsph):
-    &#34;&#34;&#34; water material (smd:ulsph): use water() or water(beadtype=index, userid=&#34;myfluid&#34;) &#34;&#34;&#34;
-    
+    &#34;&#34;&#34; water material (smd:ulsph): use water() or water(beadtype=index, userid=&#34;myfluid&#34;, USER=...) &#34;&#34;&#34;
+    name = ulsph.name + struct(material=&#34;water&#34;)
+    description = ulsph.description + struct(material=&#34;water beads - SPH-like&#34;)
     userid = &#39;water&#39;
     version = 0.1
     
     # constructor (do not forgert to include the constuctor)
-    def __init__(self, beadtype=1, userid=None):
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         &#34;&#34;&#34; water forcefield: water(beadtype=index, userid=&#34;myfluid&#34;) &#34;&#34;&#34;
-        super().__init__()
         if userid!=None: self.userid = userid
-        self.name[&#34;material&#34;] = &#34;water&#34;
-        self.description[&#34;material&#34;] = &#34;water beads - SPH-like&#34;
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
             # water-water interactions
@@ -1324,7 +1279,7 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
             # hertz contacts
             contact_scale = 1.5,
             contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;
-            )</code></pre>
+            ) + USER # update with user properties if any</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1334,6 +1289,14 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </ul>
 <h3>Class variables</h3>
 <dl>
+<dt id="forcefield.water.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.water.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="forcefield.water.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
@@ -1388,19 +1351,18 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <ul class="">
 <li><code><a title="forcefield.none.PAIR_DIAGCOEFF" href="#forcefield.none.PAIR_DIAGCOEFF">PAIR_DIAGCOEFF</a></code></li>
 <li><code><a title="forcefield.none.PAIR_OFFDIAGCOEFF" href="#forcefield.none.PAIR_OFFDIAGCOEFF">PAIR_OFFDIAGCOEFF</a></code></li>
+<li><code><a title="forcefield.none.description" href="#forcefield.none.description">description</a></code></li>
+<li><code><a title="forcefield.none.name" href="#forcefield.none.name">name</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="forcefield.parameterforcefield" href="#forcefield.parameterforcefield">parameterforcefield</a></code></h4>
-<ul class="">
-<li><code><a title="forcefield.parameterforcefield.formateval" href="#forcefield.parameterforcefield.formateval">formateval</a></code></li>
-<li><code><a title="forcefield.parameterforcefield.ftype" href="#forcefield.parameterforcefield.ftype">ftype</a></code></li>
-<li><code><a title="forcefield.parameterforcefield.type" href="#forcefield.parameterforcefield.type">type</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="forcefield.rigidwall" href="#forcefield.rigidwall">rigidwall</a></code></h4>
 <ul class="">
+<li><code><a title="forcefield.rigidwall.description" href="#forcefield.rigidwall.description">description</a></code></li>
+<li><code><a title="forcefield.rigidwall.name" href="#forcefield.rigidwall.name">name</a></code></li>
 <li><code><a title="forcefield.rigidwall.userid" href="#forcefield.rigidwall.userid">userid</a></code></li>
 <li><code><a title="forcefield.rigidwall.version" href="#forcefield.rigidwall.version">version</a></code></li>
 </ul>
@@ -1409,11 +1371,15 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <h4><code><a title="forcefield.smd" href="#forcefield.smd">smd</a></code></h4>
 <ul class="">
 <li><code><a title="forcefield.smd.PAIR_STYLE" href="#forcefield.smd.PAIR_STYLE">PAIR_STYLE</a></code></li>
+<li><code><a title="forcefield.smd.description" href="#forcefield.smd.description">description</a></code></li>
+<li><code><a title="forcefield.smd.name" href="#forcefield.smd.name">name</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="forcefield.solidfood" href="#forcefield.solidfood">solidfood</a></code></h4>
 <ul class="">
+<li><code><a title="forcefield.solidfood.description" href="#forcefield.solidfood.description">description</a></code></li>
+<li><code><a title="forcefield.solidfood.name" href="#forcefield.solidfood.name">name</a></code></li>
 <li><code><a title="forcefield.solidfood.userid" href="#forcefield.solidfood.userid">userid</a></code></li>
 <li><code><a title="forcefield.solidfood.version" href="#forcefield.solidfood.version">version</a></code></li>
 </ul>
@@ -1423,6 +1389,8 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <ul class="">
 <li><code><a title="forcefield.tlsph.PAIR_DIAGCOEFF" href="#forcefield.tlsph.PAIR_DIAGCOEFF">PAIR_DIAGCOEFF</a></code></li>
 <li><code><a title="forcefield.tlsph.PAIR_OFFDIAGCOEFF" href="#forcefield.tlsph.PAIR_OFFDIAGCOEFF">PAIR_OFFDIAGCOEFF</a></code></li>
+<li><code><a title="forcefield.tlsph.description" href="#forcefield.tlsph.description">description</a></code></li>
+<li><code><a title="forcefield.tlsph.name" href="#forcefield.tlsph.name">name</a></code></li>
 </ul>
 </li>
 <li>
@@ -1430,11 +1398,15 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <ul class="">
 <li><code><a title="forcefield.ulsph.PAIR_DIAGCOEFF" href="#forcefield.ulsph.PAIR_DIAGCOEFF">PAIR_DIAGCOEFF</a></code></li>
 <li><code><a title="forcefield.ulsph.PAIR_OFFDIAGCOEFF" href="#forcefield.ulsph.PAIR_OFFDIAGCOEFF">PAIR_OFFDIAGCOEFF</a></code></li>
+<li><code><a title="forcefield.ulsph.description" href="#forcefield.ulsph.description">description</a></code></li>
+<li><code><a title="forcefield.ulsph.name" href="#forcefield.ulsph.name">name</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="forcefield.water" href="#forcefield.water">water</a></code></h4>
 <ul class="">
+<li><code><a title="forcefield.water.description" href="#forcefield.water.description">description</a></code></li>
+<li><code><a title="forcefield.water.name" href="#forcefield.water.name">name</a></code></li>
 <li><code><a title="forcefield.water.userid" href="#forcefield.water.userid">userid</a></code></li>
 <li><code><a title="forcefield.water.version" href="#forcefield.water.version">version</a></code></li>
 </ul>

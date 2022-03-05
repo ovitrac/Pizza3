@@ -128,7 +128,7 @@ X.write("/tmp/myfile")</p>
 # 2022-02-12 major release, fully compatible with pizza.data3.data
 # 2022-02-13 the example (&lt;F5&gt;) has been modified R.plot() should precedes R.list()
 # 2022-02-28 update write files for SMD, add scale and center to R.data()
-
+# 2022-03-02 fix data(): xlo and ylow (beads should not overlap the boundary), scale radii, volumes
 
 # %% Imports and private library
 from copy import copy as duplicate
@@ -245,23 +245,25 @@ class raster:
             raise ValueError(&#34;scale must be tuple (scalex,scaley)&#34;)
         if not isinstance(center,tuple) or len(scale)!=2:
             raise ValueError(&#34;center must be tuple (centerx,centery)&#34;)
+        scalez = np.sqrt(scale[0]*scale[1])
+        scalevol = scale[0]*scale[1]*scalez
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + &#34;(raster)&#34;
         X.headers = {&#39;atoms&#39;: n,
                       &#39;atom types&#39;: self.count()[-1][0],
-                      &#39;xlo xhi&#39;: ((0.5-center[0])*scale[0], (self.width-0.5-center[0])*scale[0]),
-                      &#39;ylo yhi&#39;: ((0.5-center[1])*scale[1], (self.height-0.5-center[1])*scale[1]),
-                      &#39;zlo zhi&#39;: (0, 0.5*np.sqrt(scale[0]*scale[1]))}
+                      &#39;xlo xhi&#39;: ((0.0-center[0])*scale[0], (self.width-0.0-center[0])*scale[0]),
+                      &#39;ylo yhi&#39;: ((0.0-center[1])*scale[1], (self.height-0.0-center[1])*scale[1]),
+                      &#39;zlo zhi&#39;: (0, scalez)}
         # [ATOMS] section
-        X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)      # id
-        X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)      # Type
-        X.append(&#39;Atoms&#39;,1,True,&#34;mol&#34;)                      # mol
-        X.append(&#39;Atoms&#39;,self.volume,False,&#34;c_vol&#34;)         # c_vol
-        X.append(&#39;Atoms&#39;,self.mass,False,&#34;mass&#34;)            # mass
-        X.append(&#39;Atoms&#39;,self.radius,False,&#34;radius&#34;)        # radius
-        X.append(&#39;Atoms&#39;,self.contactradius,False,&#34;c_contact_radius&#34;) # c_contact_radius
+        X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)       # id
+        X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)       # Type
+        X.append(&#39;Atoms&#39;,1,True,&#34;mol&#34;)                       # mol
+        X.append(&#39;Atoms&#39;,self.volume*scalevol,False,&#34;c_vol&#34;) # c_vol
+        X.append(&#39;Atoms&#39;,self.mass*scalevol,False,&#34;mass&#34;)    # mass
+        X.append(&#39;Atoms&#39;,self.radius*scalez,False,&#34;radius&#34;)         # radius
+        X.append(&#39;Atoms&#39;,self.contactradius*scalez,False,&#34;c_contact_radius&#34;) # c_contact_radius
         X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x&#34;)        # x
         X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y&#34;)        # y
         X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                                 # z
@@ -1158,23 +1160,25 @@ X.write("/tmp/myfile")</p>
             raise ValueError(&#34;scale must be tuple (scalex,scaley)&#34;)
         if not isinstance(center,tuple) or len(scale)!=2:
             raise ValueError(&#34;center must be tuple (centerx,centery)&#34;)
+        scalez = np.sqrt(scale[0]*scale[1])
+        scalevol = scale[0]*scale[1]*scalez
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + &#34;(raster)&#34;
         X.headers = {&#39;atoms&#39;: n,
                       &#39;atom types&#39;: self.count()[-1][0],
-                      &#39;xlo xhi&#39;: ((0.5-center[0])*scale[0], (self.width-0.5-center[0])*scale[0]),
-                      &#39;ylo yhi&#39;: ((0.5-center[1])*scale[1], (self.height-0.5-center[1])*scale[1]),
-                      &#39;zlo zhi&#39;: (0, 0.5*np.sqrt(scale[0]*scale[1]))}
+                      &#39;xlo xhi&#39;: ((0.0-center[0])*scale[0], (self.width-0.0-center[0])*scale[0]),
+                      &#39;ylo yhi&#39;: ((0.0-center[1])*scale[1], (self.height-0.0-center[1])*scale[1]),
+                      &#39;zlo zhi&#39;: (0, scalez)}
         # [ATOMS] section
-        X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)      # id
-        X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)      # Type
-        X.append(&#39;Atoms&#39;,1,True,&#34;mol&#34;)                      # mol
-        X.append(&#39;Atoms&#39;,self.volume,False,&#34;c_vol&#34;)         # c_vol
-        X.append(&#39;Atoms&#39;,self.mass,False,&#34;mass&#34;)            # mass
-        X.append(&#39;Atoms&#39;,self.radius,False,&#34;radius&#34;)        # radius
-        X.append(&#39;Atoms&#39;,self.contactradius,False,&#34;c_contact_radius&#34;) # c_contact_radius
+        X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)       # id
+        X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)       # Type
+        X.append(&#39;Atoms&#39;,1,True,&#34;mol&#34;)                       # mol
+        X.append(&#39;Atoms&#39;,self.volume*scalevol,False,&#34;c_vol&#34;) # c_vol
+        X.append(&#39;Atoms&#39;,self.mass*scalevol,False,&#34;mass&#34;)    # mass
+        X.append(&#39;Atoms&#39;,self.radius*scalez,False,&#34;radius&#34;)         # radius
+        X.append(&#39;Atoms&#39;,self.contactradius*scalez,False,&#34;c_contact_radius&#34;) # c_contact_radius
         X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x&#34;)        # x
         X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y&#34;)        # y
         X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                                 # z
@@ -1747,23 +1751,25 @@ return a pizza.data object</p></div>
         raise ValueError(&#34;scale must be tuple (scalex,scaley)&#34;)
     if not isinstance(center,tuple) or len(scale)!=2:
         raise ValueError(&#34;center must be tuple (centerx,centery)&#34;)
+    scalez = np.sqrt(scale[0]*scale[1])
+    scalevol = scale[0]*scale[1]*scalez
     n = self.length()
     i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
     X = data3()  # empty pizza.data3.data object
     X.title = self.name + &#34;(raster)&#34;
     X.headers = {&#39;atoms&#39;: n,
                   &#39;atom types&#39;: self.count()[-1][0],
-                  &#39;xlo xhi&#39;: ((0.5-center[0])*scale[0], (self.width-0.5-center[0])*scale[0]),
-                  &#39;ylo yhi&#39;: ((0.5-center[1])*scale[1], (self.height-0.5-center[1])*scale[1]),
-                  &#39;zlo zhi&#39;: (0, 0.5*np.sqrt(scale[0]*scale[1]))}
+                  &#39;xlo xhi&#39;: ((0.0-center[0])*scale[0], (self.width-0.0-center[0])*scale[0]),
+                  &#39;ylo yhi&#39;: ((0.0-center[1])*scale[1], (self.height-0.0-center[1])*scale[1]),
+                  &#39;zlo zhi&#39;: (0, scalez)}
     # [ATOMS] section
-    X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)      # id
-    X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)      # Type
-    X.append(&#39;Atoms&#39;,1,True,&#34;mol&#34;)                      # mol
-    X.append(&#39;Atoms&#39;,self.volume,False,&#34;c_vol&#34;)         # c_vol
-    X.append(&#39;Atoms&#39;,self.mass,False,&#34;mass&#34;)            # mass
-    X.append(&#39;Atoms&#39;,self.radius,False,&#34;radius&#34;)        # radius
-    X.append(&#39;Atoms&#39;,self.contactradius,False,&#34;c_contact_radius&#34;) # c_contact_radius
+    X.append(&#39;Atoms&#39;,list(range(1,n+1)),True,&#34;id&#34;)       # id
+    X.append(&#39;Atoms&#39;,self.imbead[i,j],True,&#34;type&#34;)       # Type
+    X.append(&#39;Atoms&#39;,1,True,&#34;mol&#34;)                       # mol
+    X.append(&#39;Atoms&#39;,self.volume*scalevol,False,&#34;c_vol&#34;) # c_vol
+    X.append(&#39;Atoms&#39;,self.mass*scalevol,False,&#34;mass&#34;)    # mass
+    X.append(&#39;Atoms&#39;,self.radius*scalez,False,&#34;radius&#34;)         # radius
+    X.append(&#39;Atoms&#39;,self.contactradius*scalez,False,&#34;c_contact_radius&#34;) # c_contact_radius
     X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x&#34;)        # x
     X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y&#34;)        # y
     X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                                 # z
