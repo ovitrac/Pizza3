@@ -58,13 +58,16 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-02-28 overload * (+ expansion) and ** (& expansion) operators
 # 2022-03-01 expand lists (with space as separator) and tupples (with ,)
 # 2022-03-02 first implementation of scriptobject(), object container pending
-# 2022-03-03 extensions  of scriptobject() and scriptobjectgroup()
-# 2022-03-04 finalization of scriptobject() and scriptobjectgroup()
+# 2022-03-03 extensions of scriptobject() and scriptobjectgroup()
+# 2022-03-04 consolidation of scriptobject() and scriptobjectgroup()
+# 2022-03-05 [major update] scriptobjectgroup() can generate scripts for loading, setting groups and forcefields
 
 
 # %% Dependencies
 import types
 from copy import copy as duplicate
+import datetime, os, socket, getpass
+
 # All forcefield parameters are stored à la Matlab in a structure
 from forcefield import *
 from private.struct import param,struct
@@ -99,8 +102,14 @@ class scriptobject(struct):
                 beadtype=1,2,...
                 name="short name"
                 fullname = "comprehensive name"
+                filename = "/path/to/your/inputfile"
                 style = "smd"
-                forcefield = any valid forcefield (default = rigidwall)
+                forcefield = any valid forcefield instance (default = rigidwall())
+        
+        note: use a forcefield instance with the keywork USER to pass user FF parameters
+        examples:   rigidwall(USER=scriptdata(...))
+                    solidfood(USER==scriptdata(...))
+                    water(USER==scriptdata(...))
         
         group objects with OBJ1+OBJ2... into scriptobjectgroups
         
@@ -112,26 +121,35 @@ class scriptobject(struct):
     _ftype = "propertie"
     
     def __init__(self, 
-                 beadtype=1,
-                 name="undefined",
+                 beadtype = 1,
+                 name = "undefined",
                  fullname="",
+                 filename="",
                  style="smd",
-                 forcefield=rigidwall,
-                 groups=[]):
-        if fullname=="":
-            fullname = name + " object definition"
+                 forcefield=rigidwall(),
+                 group=[],
+                 USER = scriptdata()
+                 ):
+        if fullname=="": fullname = name + " object definition"
+        if not isinstance(group,list): group = [group]
+        forcefield.beadtype = beadtype
+        forcefield.userid = name
+        forcefield.USER = USER
         super(scriptobject,self).__init__(
-            name=name,
-            fullname=fullname,
-            style=style,
-            forcefield=forcefield(beadtype=beadtype, userid=name),
-            beadtype=beadtype)
+              beadtype = beadtype,
+                  name = name,
+              fullname = fullname,
+              filename = filename,
+                 style = style,
+            forcefield = forcefield,
+                 group = group,
+                  USER = USER
+                 )
 
     def __str__(self):
         """ string representation """
         return f"{self._fulltype} | type={self.beadtype} | name={self.name}"
 
-        
     def __add__(self, SO):
         if isinstance(SO,scriptobject):
             if SO.name != self.name:
@@ -175,16 +193,40 @@ class scriptobjectgroup(struct):
         note: each beadtype occurs once in the group (if not an error message is generated)
             
         List of methods
-            group(group=1,groupname="mygroup") returns a dictionary
+            struct() converts data as structure
             select([1,2,4]) selects objects with matching beadtypes
             
-        List of properties
-            converted data: list, str, zip, beadtype, name
+        List of properties (dynamically calculated)
+            converted data: list, str, zip, beadtype, name, groupname, group, filename
             numeric: len, min, max, minmax
+            forcefield related: interactions, forcefield
+            script: generate the script (load,group,forcefield)
         
-        Full syntax
-            GRP.select([1,2]).group(groupname="test",group=1) returns
-        {'test': {'group': 1, 'beadtype': [1, 2], 'name': ['a', 'b']}}
+        Full syntax (toy example)
+        
+    b1 = scriptobject(name="bead 1",group = ["A", "B", "C"],filename='myfile1',forcefield=rigidwall())
+    b2 = scriptobject(name="bead 2", group = ["B", "C"],filename = 'myfile1',forcefield=rigidwall())
+    b3 = scriptobject(name="bead 3", group = ["B", "D", "E"],forcefield=solidfood())
+    b4 = scriptobject(name="bead 4", group = "D",beadtype = 1,filename="myfile2",forcefield=water())
+    
+        note: beadtype are incremented during the collection (effect of order)
+            
+            # generate a collection, select a typ 1 and a subgroup, generate the script for 1,2
+            
+            collection = b1+b2+b3+b4
+            grp_typ1 = collection.select(1)
+            grpB = collection.group.B
+            script12 = collection.select([1,2]).script
+        
+        note: collection.group.B returns a strcture with 6 fields
+        -----------:----------------------------------------
+            groupid: 2 <-- automatic group numbering
+        groupidname: B <-- group name
+          groupname: ['A', 'B', 'C', 'D', 'E'] <--- snonyms
+           beadtype: [1, 2, 3] <-- beads belonging to B
+               name: ['bead 1', 'bead 2', 'bead 3'] <-- their names
+                str: group B 1 2 3 <-- LAMMPS syntax
+        -----------:----------------------------------------
         
     """
     _type = "SOG"
@@ -220,12 +262,15 @@ class scriptobjectgroup(struct):
         dup = duplicate(self)
         if isinstance(SOgroup,scriptobject):
             if SOgroup.name not in self.keys():
+                if SOgroup.beadtype in beadlist and \
+                  (SOgroup.beadtype==None or SOgroup.beadtype==self.min):
+                      SOgroup.beadtype = self.max+1
                 if SOgroup.beadtype not in beadlist:
                     dup.setattr(SOgroup.name, SOgroup)
                     beadlist.append(SOgroup.beadtype)
                     return dup
                 else:
-                    raise ValueError('%s(beadtype=%d) is already in use, same beadtype' \
+                    raise ValueError('%s (beadtype=%d) is already in use, same beadtype' \
                                      % (SOgroup.name,SOgroup.beadtype))
             else:
                 raise ValueError('the object "%s" is already in the list' % SOgroup.name)
@@ -236,7 +281,7 @@ class scriptobjectgroup(struct):
                         dup.setattr(k,SOgroup.getattr(k))
                         beadlist.append(SOgroup.getattr(k).beadtype)
                     else:
-                        raise ValueError('%s(beadtype=%d) is already in use, same beadtype' \
+                        raise ValueError('%s (beadtype=%d) is already in use, same beadtype' \
                                          % (k,SOgroup.getattr(k).beadtype))
                 else:
                     raise ValueError('the object "%s" is already in the list' % k)
@@ -252,21 +297,60 @@ class scriptobjectgroup(struct):
     @property
     def zip(self):
         """ zip beadtypes and names """
-        return [(self.getattr(k).beadtype,self.getattr(k).name) for k in self.keys()]
-    
+        return sorted( \
+            [(self.getattr(k).beadtype,self.getattr(k).name,self.getattr(k).group,self.getattr(k).filename) \
+            for k in self.keys()])
+
     @property
-    def name(self):
-        """ "return the list of names """
-        return [x for _, x in sorted(self.zip)]
-    
+    def n(self):
+        """ returns the number of bead types """
+        return len(self)
+
     @property
     def beadtype(self):
         """ returns the beads in the group """
-        return sorted([self.getattr(k).beadtype for k in self.keys()])
+        return [x for x,_,_,_ in self.zip]
+        
+    @property
+    def name(self):
+        """ "return the list of names """
+        return [x for _,x,_,_ in self.zip]
+    
+    @property
+    def groupname(self):
+        """ "return the list of groupnames """
+        grp = []
+        for _,_,glist,_ in self.zip:
+            for g in glist:
+                if g not in grp: grp.append(g)
+        return grp    
+
+    @property
+    def filename(self):
+        """ "return the list of names as a dictionary """
+        files = {}
+        for _,n,_,fn in self.zip:
+            if fn != "": 
+                if fn not in files:
+                    files[fn] = [n]
+                else:
+                    files[fn].append(n)
+        return files
     
     @property
     def str(self):
         return span(self.beadtype)
+
+    def struct(self,groupid=1,groupidname="undef"):
+        """ create a group with name """
+        return struct(
+                groupid = groupid,
+            groupidname = groupidname,
+              groupname = self.groupname, # meaning is synonyms
+               beadtype = self.beadtype,
+                   name = self.name,
+                    str = "group %s %s" % (groupidname, span(self.beadtype))
+               )
     
     @property
     def minmax(self):
@@ -283,20 +367,89 @@ class scriptobjectgroup(struct):
         """ returns the max of beadtype """
         return max(self.beadtype)
     
-    def group(self,groupname="undefined group",group=1):
-        """ create a group with name """
-        return {groupname: {"group":1, "beadtype":self.beadtype, "name":self.name}}
-    
-    def select(self,keeplist=None):
+    def select(self,beadtype=None):
         """ select bead from a keep beadlist """
-        if keeplist==None: keeplist = list(range(self.min,self.max+1))
-        if not isinstance(keeplist,list): keeplist = [keeplist]
+        if beadtype==None: beadtype = list(range(self.min,self.max+1))
+        if not isinstance(beadtype,(list,tuple)): beadtype = [beadtype]
         dup = scriptobjectgroup()
-        for b,n in self.zip:
-            if b in keeplist:
+        for b,n,_,_ in self.zip:
+            if b in beadtype:
                 dup = dup + self.getattr(n)
         return dup
     
+    @property
+    def group(self):
+        """ build groups from group (groupname contains synonyms) """
+        groupdef = struct()
+        gid = 0
+        bng = self.zip
+        for g in self.groupname:
+            gid +=1
+            b =[x for x,_,gx,_ in bng if g in gx]
+            groupdef.setattr(g,self.select(b).struct(groupid = gid, groupidname = g))
+        return groupdef
+    
+    @property
+    def interactions(self):
+        # update and accumulate all forece fields
+        FF = []
+        for b in self.beadtype:
+            selection = duplicate(self.select(b)[0])
+            selection.forcefield.beadtype = selection.beadtype
+            selection.forcefield.userid = selection.name
+            FF.append(selection.forcefield)
+        # initialize interactions with pair_style
+        TEMPLATE = "\n# ===== [ BEGIN FORCEFIELD SECTION ] "+"="*80 + \
+            FF[0].pair_style()
+        # pair diagonal terms
+        for i in range(len(FF)):
+            TEMPLATE += FF[i].pair_diagcoeff()
+        # pair off-diagonal terms
+        for j in range(1,len(FF)):
+            for i in range(0,j):
+                TEMPLATE += FF[i].pair_offdiagcoeff(FF[j])
+        # end
+        TEMPLATE += "\n# ===== [ END FORCEFIELD SECTION ] "+"="*82+"\n"
+        return FF,TEMPLATE
+    
+    @property
+    def forcefield(self):
+        FF,_ = self.interactions
+        return FF
+    
+    @property
+    def script(self):
+        """ basic scripting from script objects """
+        # load data when needed and comment which object
+        TEMPFILES = ""
+        isfirst = True
+        if self.filename !={}:
+            TEMPFILES = "\n# ===== [ BEGIN INPUT FILES SECTION ] "+"="*79 + "\n"
+            for fn,cfn in self.filename.items():
+                TEMPFILES += span(cfn,sep=", ",left="\n# load files for objects: ",right="\n")
+                if isfirst:
+                    isfirst = False
+                    TEMPFILES += f"read_data {fn}\n"
+                else:
+                    TEMPFILES += f"read_data {fn} add append\n"
+            TEMPFILES += "\n# ===== [ END INPUT FILES SECTION ] "+"="*81+"\n\n"
+        # define groups
+        TEMPGRP = "\n# ===== [ BEGIN GROUP SECTION ] "+"="*85 + "\n"
+        for g in self.group:
+            TEMPGRP += f'\n#\tDefinition of group {g.groupid}:{g.groupidname}\n'
+            TEMPGRP += f'#\t={span(g.name,sep=", ")}\n'
+            TEMPGRP += f'#\tSimilar groups: {span(g.groupname,sep=", ")}\n'
+            TEMPGRP += f'group \t {g.groupidname} \t {span(g.beadtype)}\n'
+        TEMPGRP += "\n# ===== [ END GROUP SECTION ] "+"="*87+"\n\n"
+        # define interactions
+        _,TEMPFF = self.interactions
+        # chain strings into a script
+        tscript = script()
+        tscript.name = "scriptobject script"                   # name
+        tscript.description = "scriptobject script"   # description
+        tscript.userid = "scriptobject"                    # user name
+        tscript.TEMPLATE = TEMPFILES+TEMPGRP+TEMPFF
+        return tscript
 
 # %% core class (please derive this class when you use it, do not alter it)
 class script():
@@ -460,7 +613,7 @@ class script():
     position = 0                            # 0 = root
     section = 0                             # section (0=undef)
     userid = "undefined"                    # user name
-    version = 0.21                          # version
+    version = 0.35                          # version
     verbose = False                         # set it to True to force verbosity
     _contact = ("INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr",
                 "INRAE\SAYFOOD\william.jenkinson@agroparistech.fr")
@@ -588,7 +741,11 @@ class script():
         
     # write file
     def write(self, file):
+        HEADER = f"# Automatic LAMMPS script (version {script.version})\n" + \
+                 f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
+                 f'# {datetime.datetime.now().strftime("%c")}'
         f = open(file, "w")
+        print(HEADER,"\n"*3,file=f)
         print(self.do(),file=f)
         f.close()
         
@@ -1087,16 +1244,20 @@ class runsection(script):
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':
-    """
-        a=scriptobject(name="a"); b=scriptobject(name="b");
-        scriptobjectgroup(a)
-        c=a+b
-        d = scriptobject(name="d",beadtype=3)
-        e = a +b +d
-        e.select(1)
-        
-    """
+
+    # example of scriptobject()
+    b1 = scriptobject(name="bead 1",group = ["A", "B", "C"],filename='myfile1',forcefield=rigidwall())
+    b2 = scriptobject(name="bead 2", group = ["B", "C"],filename = 'myfile1',forcefield=rigidwall())
+    b3 = scriptobject(name="bead 3", group = ["B", "D", "E"],forcefield=solidfood())
+    b4 = scriptobject(name="bead 4", group = "D",beadtype = 1,filename="myfile2",forcefield=water())
+
+    collection = b1+b2+b3+b4
+    grp_typ1 = collection.select(1)
+    grpB = collection.group.B
     
+    collection.interactions
+    
+    # main example of script()
     G = globalsection()
     print(G)
     c = initializesection()

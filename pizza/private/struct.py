@@ -20,6 +20,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-03-01 implement value as list
 # 2022-03-02 display correctly class names (not instances)
 # 2022-03-04 add str()
+# 2022-03-05 add __copy__ and __deepcopy__ methods
 
 # Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -27,6 +28,7 @@ import types       # to check types
 import re          # regular expression
 import numpy as np
 from copy import copy as duplicate # to duplicate objects
+from copy import deepcopy as duplicatedeep # used by __deepcopy__()
 
 # core struct cal
 class struct():
@@ -318,7 +320,23 @@ class struct():
                 else:
                     print(fmt % k,"/* unsupported type */",end=end)
                     
-    
+    # copy and deep copy methpds for the class
+    def __copy__(self):
+        """ copy method """
+        cls = self.__class__
+        copie = cls.__new__(cls)
+        copie.__dict__.update(self.__dict__)
+        return copie
+
+    def __deepcopy__(self, memo):
+        """ deep copy method """
+        cls = self.__class__
+        copie = cls.__new__(cls)
+        memo[id(self)] = copie
+        for k, v in self.__dict__.items():
+            setattr(copie, k, duplicatedeep(v, memo))
+        return copie
+
 
 # meta struct class param for scripting with evaluation capability
 class param(struct):
