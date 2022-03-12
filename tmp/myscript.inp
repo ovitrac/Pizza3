@@ -1,6 +1,12 @@
-# Automatic LAMMPS script (version 0.21)
+# Automatic LAMMPS script (version 0.39)
 # olivi@LX-Olivier2021:/home/olivi/billy/python
-# mer. 02 mars 2022 08:42:28 
+# sam. 12 mars 2022 23:53:22 
+
+ 
+
+
+
+
 
 # INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr
 # INRAE\SAYFOOD\william.jenkinson@agroparistech.fr
@@ -15,7 +21,7 @@ comm_modify vel yes
 comm_style  tiled
 atom_modify map array
 newton off
-neighbor	1 bin
+neighbor	1.5 bin
 neigh_modify    every 5 delay 0 check yes
 
 atom_style	smd
@@ -26,10 +32,10 @@ read_data ../datafile/3_thin_shell_outer_mod.lmp add append
 read_data ../datafile/4_thin_shell_inner_mod.lmp add append
 group solid 1 2 3
 group tlsph 1 2 3
-group fluid 4
-group ulsph 4
-group moving1 1
-group moving2 2
+group fluid 1 2 3
+group ulsph 1 2 3
+group moving1 1 2 3
+group moving2 1 2 3
 fix gfix all gravity 0 vector 0 1 0
 
 # ===== [ BEGIN FORCEFIELD SECTION ] ================================================================================
@@ -55,7 +61,7 @@ fix gfix all gravity 0 vector 0 1 0
     pair_coeff      2 2 none
     
     # [2:bottom x 1:top] Off-diagonal pair coefficient (generic)
-    pair_coeff      2 1 smd/hertz 15000000.0
+    pair_coeff      1 2 smd/hertz 15000000.0
     
     # [2:bottom x 4:fluid] Off-diagonal pair coefficient (generic)
     pair_coeff      2 4 smd/hertz 15000000.0

@@ -5,14 +5,14 @@
     The class script() and derived facilitate the coding in LAMMPS
     Each section is remplaced by a template as a class inherited from script()
     
-    The class include two important attribues
+    The class include two important attribues:
         TEMPLATE is a string  efines between """ """ the LAMMPS code
         The variables used by TEMPLATE are stored in DEFINITIONS.
         DEFINITIONS is a scripdata() object accepting scalar, mathematical expressions, 
         text almost as in LAMMPS.
         
         Variables can be inherited between sections using + or += operator
-        
+                
     Toy example
         G = globalsection()
         print(G)
@@ -40,6 +40,9 @@
         print("\n"*4,'='*80,'\n\n this is the full script\n\n','='*80,'\n')
         print(myscript.do())
 
+    Additional classes: scriptobject(), scriptobjectgroup(), pipescript()
+    They generate dynamic scripts from objects, collection of objects or scripts
+
 
 Created on Sat Feb 19 11:00:43 2022
 
@@ -61,11 +64,12 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-03-03 extensions of scriptobject() and scriptobjectgroup()
 # 2022-03-04 consolidation of scriptobject() and scriptobjectgroup()
 # 2022-03-05 [major update] scriptobjectgroup() can generate scripts for loading, setting groups and forcefields
-
+# 2022-03-12 [major update] pipescript() enables to store scripts in dynamic pipelines
 
 # %% Dependencies
 import types
 from copy import copy as duplicate
+from copy import deepcopy as deepduplicate
 import datetime, os, socket, getpass
 
 # All forcefield parameters are stored à la Matlab in a structure
@@ -162,6 +166,13 @@ class scriptobject(struct):
             return scriptobjectgroup(self)+SO
         else:
             return ValueError("The object should a script object or its container")
+        
+    def __or__(self, pipe):
+        """ overload | or for pipe """
+        if isinstance(pipe,(pipescript,script,scriptobject,scriptobjectgroup)):
+            return pipescript(self) | pipe
+        else:
+            raise ValueError("the argument must a pipescript, a scriptobject or a scriptobjectgroup")
         
     def __eq__(self, SO):
         return (self.beadtype == SO.beadtype) and (self.name == SO.name)
@@ -289,6 +300,13 @@ class scriptobjectgroup(struct):
         else:
             raise ValueError("the argument #%d is not a script object or a script object group")
     
+    def __or__(self, pipe):
+        """ overload | or for pipe """
+        if isinstance(pipe,(pipescript,script,scriptobject,scriptobjectgroup)):
+            return pipescript(self) | pipe
+        else:
+            raise ValueError("the argument must a pipescript, a scriptobject or a scriptobjectgroup")
+
     @property
     def list(self):
         """ convert into a list """
@@ -429,25 +447,25 @@ class scriptobjectgroup(struct):
                 TEMPFILES += span(cfn,sep=", ",left="\n# load files for objects: ",right="\n")
                 if isfirst:
                     isfirst = False
-                    TEMPFILES += f"read_data {fn}\n"
+                    TEMPFILES += f"\tread_data {fn}\n"
                 else:
-                    TEMPFILES += f"read_data {fn} add append\n"
+                    TEMPFILES += f"\tread_data {fn} add append\n"
             TEMPFILES += "\n# ===== [ END INPUT FILES SECTION ] "+"="*81+"\n\n"
         # define groups
         TEMPGRP = "\n# ===== [ BEGIN GROUP SECTION ] "+"="*85 + "\n"
         for g in self.group:
-            TEMPGRP += f'\n#\tDefinition of group {g.groupid}:{g.groupidname}\n'
-            TEMPGRP += f'#\t={span(g.name,sep=", ")}\n'
-            TEMPGRP += f'#\tSimilar groups: {span(g.groupname,sep=", ")}\n'
-            TEMPGRP += f'group \t {g.groupidname} \t {span(g.beadtype)}\n'
+            TEMPGRP += f'\n\t#\tDefinition of group {g.groupid}:{g.groupidname}\n'
+            TEMPGRP += f'\t#\t={span(g.name,sep=", ")}\n'
+            TEMPGRP += f'\t#\tSimilar groups: {span(g.groupname,sep=", ")}\n'
+            TEMPGRP += f'\tgroup \t {g.groupidname} \t {span(g.beadtype)}\n'
         TEMPGRP += "\n# ===== [ END GROUP SECTION ] "+"="*87+"\n\n"
         # define interactions
         _,TEMPFF = self.interactions
         # chain strings into a script
         tscript = script()
-        tscript.name = "scriptobject script"                   # name
-        tscript.description = "scriptobject script"   # description
-        tscript.userid = "scriptobject"                    # user name
+        tscript.name = "scriptobject script"        # name
+        tscript.description = str(self)             # description
+        tscript.userid = "scriptobject"             # user name
         tscript.TEMPLATE = TEMPFILES+TEMPGRP+TEMPFF
         return tscript
 
@@ -534,13 +552,24 @@ class script():
         If x is also defined in the USER section, its value will be used        
         Setting instance3.USER.x = 30 will assign x=30 only in instance3
         
-        NOTE8: if a the script is used with different values for a smae parameter
+        NOTE8: if a the script is used with different values for a same parameter
         use the operator & to concatenate the results instead of the script
         example: load(file="myfile1") & load(file="myfile2) & load(file="myfile3")+...
                                              
         NOTE9: lists (e.g., [1,2,'a',3] are expanded ("1 2 a 3")
                tuples (e.g. (1,2)) are expanded ("1,2")
                It is easier to read ["lost","ignore"] than "$ lost ignore"
+        
+        NOTE 10: New operators >> and || extend properties
+            + merge all scripts but overwrite definitions
+            & execute statically script content
+            >> pass only DEFINITIONS but not TEMPLATE to the right
+            | pipe execution such as in Bash, the result is a pipeline
+            
+        NOTE 11: Scripts in pipelines are very flexible, they support
+        full indexing à la Matlab, including staged executions
+            method do(idx) generates the script corresponding to indices idx
+            method script(idx) generates the corresponding script object
         
         --------------------------[ FULL EXAMPLE ]-----------------------------
 
@@ -613,7 +642,7 @@ class script():
     position = 0                            # 0 = root
     section = 0                             # section (0=undef)
     userid = "undefined"                    # user name
-    version = 0.35                          # version
+    version = 0.39                          # version
     verbose = False                         # set it to True to force verbosity
     _contact = ("INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr",
                 "INRAE\SAYFOOD\william.jenkinson@agroparistech.fr")
@@ -642,17 +671,25 @@ class script():
         else:
             print(("\n{:"+filler+"{align}{width}}\n").format(' [ '+txt+' ] ', align=align, width=str(width)))
     
+    # String representation
+    def __str__(self):
+        """ string representation """
+        return f"{self.type}:{self.name}:{self.userid}"
+
     # Display/representation method
     def __repr__(self):    
         """ disp method """
-        stamp = f"{self.type}:{self.name}:{self.userid}"
+        stamp = str(self)
         self.printheader(f"{stamp} | version={self.version}",filler="/")
         self.printheader("POSITION & DESCRIPTION",filler="-",align=">")
         print(f"     position: {self.position}")
         print(f"         role: {self.role} (section={self.section})")
         print(f"  description: {self.description}")
         self.printheader("DEFINITIONS",filler="-",align=">")
-        print(self.DEFINITIONS)
+        if len(self.DEFINITIONS)<15:
+            self.DEFINITIONS
+        else:
+            print("too many definitions: ",self.DEFINITIONS)
         self.printheader("TEMPLATE",filler="-",align=">")
         if self.verbose:
             print(self.TEMPLATE)
@@ -711,6 +748,18 @@ class script():
         else:
             raise TypeError("the second operand must a script object")
             
+    # override >>
+    def __rshift__(self,s):
+        """ overload right  shift operator (keep only the last template) """
+        if isinstance(s,script):
+            dup = duplicate(self)
+            dup.DEFINITIONS = dup.DEFINITIONS + s.DEFINITIONS
+            dup.USER = dup.USER + s.USER
+            dup.TEMPLATE = s.TEMPLATE
+            return dup
+        else:
+            raise TypeError("the second operand must a script object")
+    
     # override &
     def __and__(self,s):
         """ overload and operator """
@@ -730,6 +779,7 @@ class script():
            return res
         raise ValueError("multiplicator should be a strictly positive integer")
 
+    # override **
     def __pow__(self,ntimes):
         """ overload ** operator """
         if isinstance(ntimes, int) and ntimes>0:
@@ -738,19 +788,339 @@ class script():
                for n in range(1,ntimes): res = res & self
            return res
         raise ValueError("multiplicator should be a strictly positive integer")
-        
+    
+    # pipe scripts
+    def __or__(self,pipe):
+        """ overload | or for pipe """
+        if isinstance(pipe,(pipescript,script,scriptobject,scriptobjectgroup)):
+            return pipescript(self) | pipe
+        else:
+            raise ValueError("the argument must a pipescript, a scriptobject or a scriptobjectgroup")
+    
+    # header
+    @staticmethod
+    def header():
+        return   f"# Automatic LAMMPS script (version {script.version})\n" + \
+                 f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
+                 f'# {datetime.datetime.now().strftime("%c")}\n\n'
+    
     # write file
     def write(self, file):
-        HEADER = f"# Automatic LAMMPS script (version {script.version})\n" + \
-                 f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
-                 f'# {datetime.datetime.now().strftime("%c")}'
         f = open(file, "w")
-        print(HEADER,"\n"*3,file=f)
+        print(script.header(),"\n"*3,file=f)
         print(self.do(),file=f)
         f.close()
+
+# %% pipe script
+class pipescript():
+    """
+        Pipescript class store scripts in pipelines
+            By assuming: s0, s1, s2... scripts, scriptobject or scriptobjectgroup
+            p = s0 | s1 | s2 generates a pipe script
+            
+            Example of pipeline:
+          ------------:----------------------------------------
+          [*]  step  0: script object group with 4 objects (1 2 3 4)
+          [*]  step  1: G
+          [*]  step  2: c
+          [*]  step  3: g
+          [*]  step  4: d
+          [*]  step  5: b
+          [*]  step  6: i
+          [*]  step  7: t
+          [-]  step  8: d
+          [-]  step  9: s
+          [-]  step 10: r
+          ------------:----------------------------------------
+        Out[35]: pipescript containing 11 scripts with 8 executed[*]
+            
+            pipelines are executed sequentially (i.e. parameters can be multivalued)
+                cmd = p.do()
+                fullscript = p.script()
+                
+            pipelines are indexed
+                cmd = p[[0,2]].do()
+                cmd = p[0:2].do()
+                cmd = p.do([0,2])
+                
+            pipelines can be reordered
+                q = p[[2,0,1]]
+                
+            steps can be deleted
+                p[[0,1]] = []
+                
+            clear all executions with
+                p.clear()
+                p.clear(idx=1,2)
+                
+            steps can be renamed with the method rename()
+                
+            syntaxes are à la Matlab:
+                p = pipescript()
+                p | i
+                p = collection | G
+                p[0]
+                q = p | p
+                q[0] = []
+                p[0:1] = q[0:1]
+                p = G | c | g | d | b | i | t | d | s | r
+                p.rename(["G","c","g","d","b","i","t","d","s","r"])
+                cmd = p.do([0,1,4,7])
+                sp = p.script([0,1,4,7])
+                r = collection | p                
+    """
+    
+    def __init__(self,s=None):
+        """ constructor """
+        self.globalscript = None
+        self.listscript = []
+        self.cmd = ""
+        if isinstance(s,script): 
+            self.listscript = [duplicate(s)]
+        elif isinstance(s,scriptobject):
+            self.listscript = [scriptobjectgroup(s).script]
+        elif isinstance(s,scriptobjectgroup):
+            self.listscript = [s.script]
+        else:
+            ValueError("the argument should be a scriptobject or scriptobjectgroup")
+        if s != None:
+            self.name = [str(s)]
+            self.executed = [False]
+        else:
+            self.name = []
+            self.executed = []
+            
+    
+    def __or__(self,s):
+        """ overload | pipe """
+        leftarg = deepduplicate(self)
+        if isinstance(s,pipescript):
+            leftarg.listscript = leftarg.listscript + s.listscript
+            leftarg.name = leftarg.name + s.name
+            for i in range(len(s)): s.executed[i] = False
+            leftarg.executed = leftarg.executed + s.executed
+            return leftarg
+        if isinstance(s,(script,scriptobject,scriptobjectgroup)):
+            rightarg = pipescript(s)
+            rightname = str(s)
+        else:
+            ValueError("the argument should be a script, a script object or scriptobjectgroup")
+        if rightarg.n>0:
+            leftarg.listscript.append(rightarg.listscript[0])
+            leftarg.name.append(rightname)
+            leftarg.executed.append(False)
+        return leftarg
         
-# %% Parent classes of script sessions (to be derived)
-# navigate with the outline window
+    def __str__(self):
+        """ string representation """
+        return f"pipescript containing {self.n} scripts with {self.nrun} executed[*]"
+
+    def __repr__(self):
+        """ display method """
+        line = "  "+"-"*12+":"+"-"*40
+        print(line)
+        for i in range(len(self)):
+            if self.executed[i]:
+                state = "*"
+            else:
+                state = "-"
+            print("%15s" % ("[%s]  step %2d:" % (state,i)),self.name[i])
+        print(line)
+        return str(self)        
+
+    def __len__(self):
+        """ len() method """
+        return len(self.listscript)
+        
+    @property
+    def n(self):
+        """ number of scripts """
+        return len(self)
+    
+    @property
+    def nrun(self):
+        """ number of scripts executed continuously from origin """
+        n, nmax  = 0, len(self)
+        while n<nmax and self.executed[n]: n+=1
+        return n
+    
+    def __getitem__(self,idx):
+        """ return the ith or slice element(s) of the pipe  """
+        dup = deepduplicate(self)
+        if isinstance(idx,slice):
+            dup.listscript = dup.listscript[idx]
+            dup.name = dup.name[idx]
+            dup.executed = dup.executed[idx]                    
+        elif isinstance(idx,int):
+            if idx<len(self):
+                dup.listscript = dup.listscript[idx:idx+1]
+                dup.name = dup.name[idx:idx+1]
+                dup.executed = dup.executed[idx:idx+1]
+            else:
+                raise IndexError(f"the index in the pipe should be comprised between 0 and {len(self)-1}")
+        else:
+            raise IndexError("the index needs to be a slice or an integer")
+        return dup
+    
+    def __setitem__(self,idx,s):
+        """ 
+            modify the ith element of the pipe
+                p[4] = [] removes the 4th element
+                p[4:7] = [] removes the elements from position 4 to 6
+                p[2:4] = p[0:2] copy the elements 0 and 1 in positions 2 and 3
+                p[[3,4]]=p[0]
+        """
+        if isinstance(s,(script,scriptobject,scriptobjectgroup)):
+            dup = pipescript(s)
+        elif isinstance(s,pipescript):
+            dup = s
+        elif s==[]:
+            dup = []
+        else:
+            raise ValueError("the value must be a pipescript, script, scriptobject, scriptobjectgroup")
+        if len(s)<1: # remove (delete)
+            if isinstance(idx,slice) or idx<len(self):
+                del self.listscript[idx]
+                del self.name[idx]
+                del self.executed[idx]
+            else:
+                raise IndexError("the index must be a slice or an integer")
+        elif len(s)==1: # scalar
+            if isinstance(idx,int):
+                if idx<len(self):
+                    self.listscript[idx] = dup.listscript[0]
+                    self.name[idx] = dup.name[0]
+                    self.executed[idx] = False
+                elif idx==len(self):
+                    self.listscript.append(dup.listscript[0])
+                    self.name.append(dup.name[0])
+                    self.executed.append(False)
+                else:
+                    raise IndexError(f"the index must be ranged between 0 and {self.n}")
+            elif isinstance(idx,list):
+                for i in range(len(idx)):
+                    self.__setitem__(idx[i], s) # call as a scalar
+            elif isinstance(idx,slice):
+                for i in range(*idx.indices(len(self)+1)):
+                    self.__setitem__(i, s)
+            else:
+                raise IndexError("unrocognized index value, the index should be an integer or a slice")
+        else: # many values
+            if isinstance(idx,list): # list call à la Matlab
+                if len(list)==len(s):
+                    for i in range(len(s)):
+                        self.__setitem__(idx[i], s[i]) # call as a scalar
+                else:
+                    raise IndexError(f"the number of indices {len(list)} does not match the number of values {len(s)}")                    
+            elif isinstance(idx,slice):
+                ilist = list(range(*idx.indices(len(self)+len(s))))
+                self.__setitem__(ilist, s) # call as a list
+            else:
+                raise IndexError("unrocognized index value, the index should be an integer or a slice")
+                
+    def rename(self,name="",idx=None):
+        """ 
+            rename scripts in the pipe
+                p.rename(["A","B","C"],[0,2,3])
+        """
+        if isinstance(name,list):
+            if len(name)==len(self) and idx==None:
+                self.name = name
+            elif len(name) == len(idx):
+                for i in range(len(idx)):
+                    self.rename(name[i],idx[i])
+            else:
+                IndexError(f"the number of indices {len(idx)} does not match the number of names {len(name)}")
+        elif idx !=None and idx<len(self) and name!="":
+            self.name[idx] = name
+        else:
+            raise ValueError("provide a non empty name and valid index")
+            
+    def clear(self,idx=None):
+        if len(self)>0:
+            if idx==None:
+                for i in range(len(self)):
+                    self.clear(i)
+            else:
+                if isinstance(idx,(range,list)):
+                    for i in idx:
+                        self.clear(idx=i)
+                elif isinstance(idx,int) and idx<len(self):
+                    self.executed[idx] = False
+                else:
+                    raise IndexError(f"the index should be ranged between 0 and {self.n-1}")
+            if not self.executed[0]:
+                self.globalscript = None
+                self.cmd = ""
+                
+
+    def do(self,idx=None):
+        """
+            execute the pipeline or part of the pipeline
+                cmd = p.do()
+                cmd = p.do([0,2])
+        """
+        if len(self)>0:
+            # ranges
+            ntot = len(self)
+            stop = ntot-1
+            if (self.globalscript == None) or (self.globalscript == []) or not self.executed[0]:
+                start = 0
+                self.cmd = ""
+            else:
+                start = self.nrun
+            if idx == None: idx = range(start,stop+1)
+            if isinstance(idx,range): idx = list(idx)
+            start,stop = min(idx),max(idx)
+            # do
+            for i in idx:
+                j = i % ntot
+                if j==0:
+                    self.globalscript = self.listscript[j]
+                else:
+                    self.globalscript = self.globalscript >> self.listscript[j]
+                name = "  "+self.name[i]+"  "
+                self.cmd += "\n\n#\t --- run step [%d/%d] --- [%s]  %20s\n" % \
+                        (j,ntot-1,name.center(50,"="),"pipeline [%d]-->[%d]" %(start,stop))
+                self.cmd += self.globalscript.do()
+                self.executed[i] = True
+            return self.cmd
+        else:
+            return "# empty pipe - nothing to do"    
+            
+
+    def script(self,idx=None):
+        """
+            execute the pipeline or parts of the pipeline
+                s = p.script()
+                s = p.script([0,2])
+        """
+        s = script()
+        s.name = "pipescript"
+        s.description = "pipeline with %d scripts" % len(self)
+        if len(self)>1:
+            s.userid = self.name[0]+"->"+self.name[-1]
+        elif len(self)==1:
+            s.userid = self.name[0]            
+        else:
+            s.userid = "empty pipeline"
+        s.TEMPLATE = script.header()+self.do(idx)
+        s.DEFINITIONS = duplicate(self.globalscript.DEFINITIONS)
+        s.USER = duplicate(self.globalscript.USER)
+        return s
+        
+        
+# %% Child classes of script sessions (to be derived)
+# navigate with the outline tab through the different classes
+#   globalsection()
+#   initializesection()
+#   geometrysection()
+#   discretizationsection()
+#   interactionsection()
+#   integrationsection()
+#   dumpsection()
+#   statussection()
+#   runsection()
 
 # %% Global section template
 class globalsection(script):
@@ -1279,7 +1649,22 @@ if __name__ == '__main__':
     r = runsection()
     print(r)
     
-    # all sections as a single script
+    # # all sections as a single script
     myscript = G+c+g+d+b+i+t+d+s+r
+    p = pipescript()
+    p | i
+    p = collection | G
+    p | i
+    p[0]
+    q = p | p
+    q[0] = []
+    p[0:1] = q[0:1]
     print("\n"*4,'='*80,'\n\n this is the full script\n\n','='*80,'\n')
     print(myscript.do())
+    
+    # pipe full demo
+    p = G | c | g | d | b | i | t | d | s | r
+    p.rename(["G","c","g","d","b","i","t","d","s","r"])
+    cmd = p.do([0,1,4,7])
+    sp = p.script([0,1,4,7])
+    r = collection | p
