@@ -423,7 +423,7 @@ class scriptobjectgroup(struct):
     
     @property
     def interactions(self):
-        # update and accumulate all forece fields
+        """ update and accumulate all forcefields """
         FF = []
         for b in self.beadtype:
             selection = duplicate(self.select(b)[0])
@@ -446,6 +446,7 @@ class scriptobjectgroup(struct):
     
     @property
     def forcefield(self):
+        """ interaction forcefields """
         FF,_ = self.interactions
         return FF
     

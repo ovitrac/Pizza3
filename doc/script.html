@@ -509,7 +509,7 @@ class scriptobjectgroup(struct):
     
     @property
     def interactions(self):
-        # update and accumulate all forece fields
+        &#34;&#34;&#34; update and accumulate all forcefields &#34;&#34;&#34;
         FF = []
         for b in self.beadtype:
             selection = duplicate(self.select(b)[0])
@@ -532,6 +532,7 @@ class scriptobjectgroup(struct):
     
     @property
     def forcefield(self):
+        &#34;&#34;&#34; interaction forcefields &#34;&#34;&#34;
         FF,_ = self.interactions
         return FF
     
@@ -4722,7 +4723,7 @@ groupidname: B &lt;-- group name
     
     @property
     def interactions(self):
-        # update and accumulate all forece fields
+        &#34;&#34;&#34; update and accumulate all forcefields &#34;&#34;&#34;
         FF = []
         for b in self.beadtype:
             selection = duplicate(self.select(b)[0])
@@ -4745,6 +4746,7 @@ groupidname: B &lt;-- group name
     
     @property
     def forcefield(self):
+        &#34;&#34;&#34; interaction forcefields &#34;&#34;&#34;
         FF,_ = self.interactions
         return FF
     
@@ -4823,13 +4825,14 @@ def filename(self):
 </dd>
 <dt id="script.scriptobjectgroup.forcefield"><code class="name">var <span class="ident">forcefield</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>interaction forcefields</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def forcefield(self):
+    &#34;&#34;&#34; interaction forcefields &#34;&#34;&#34;
     FF,_ = self.interactions
     return FF</code></pre>
 </details>
@@ -4873,14 +4876,14 @@ def groupname(self):
 </dd>
 <dt id="script.scriptobjectgroup.interactions"><code class="name">var <span class="ident">interactions</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>update and accumulate all forcefields</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def interactions(self):
-    # update and accumulate all forece fields
+    &#34;&#34;&#34; update and accumulate all forcefields &#34;&#34;&#34;
     FF = []
     for b in self.beadtype:
         selection = duplicate(self.select(b)[0])
