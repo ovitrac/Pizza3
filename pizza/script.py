@@ -60,7 +60,7 @@ Created on Sat Feb 19 11:00:43 2022
 @author: olivi
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-02-19
+# INRAE\Olivier Vitrac - rev. 2022-03-15
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -77,6 +77,7 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-03-05 [major update] scriptobjectgroup() can generate scripts for loading, setting groups and forcefields
 # 2022-03-12 [major update] pipescript() enables to store scripts in dynamic pipelines
 # 2022-03-15 implement a userspace within the pipeline
+# 2022-03-15 fix scriptobject | pipescript, smooth and document syntaxes with pipescripts
 
 # %% Dependencies
 import types
@@ -187,10 +188,11 @@ class scriptobject(struct):
             raise ValueError("the argument must a pipescript, a scriptobject or a scriptobjectgroup")
         
     def __eq__(self, SO):
-        return (self.beadtype == SO.beadtype) and (self.name == SO.name)
+        return isinstance(SO,scriptobject) and (self.beadtype == SO.beadtype) \
+            and (self.name == SO.name)
 
     def __ne__(self, SO):
-        return (self.beadtype != SO.beadtype) or (self.name != SO.name)
+        return not isinstance(SO,scriptobject) or (self.beadtype != SO.beadtype) or (self.name != SO.name)
 
     def __lt__(self, SO):
         return self.beadtype < SO.beadtype
@@ -654,7 +656,7 @@ class script():
     position = 0                            # 0 = root
     section = 0                             # section (0=undef)
     userid = "undefined"                    # user name
-    version = 0.39                          # version
+    version = 0.40                          # version
     verbose = False                         # set it to True to force verbosity
     _contact = ("INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr",
                 "INRAE\SAYFOOD\william.jenkinson@agroparistech.fr")
@@ -870,10 +872,20 @@ class pipescript():
                 p.clear()
                 p.clear(idx=1,2)
                 
-            pipelines include a USER space
+            local USER space can be accessed via
+            (affects only the considered step)
                 p.USER[0].a = 1
                 p.USER[0].b = [1 2]
                 p.USER[0].c = "$ hello world"
+                
+            global USER space can accessed via
+            (affects all steps onward)
+                p.scripts[0].USER.a = 10
+                p.scripts[0].USER.b = [10 20]
+                p.scripts[0].USER.c = "$ bye bye"
+
+            static definitions
+                p.scripts[0].DEFINITIONS
                 
             steps can be renamed with the method rename()
                 
@@ -889,7 +901,9 @@ class pipescript():
                 p.rename(["G","c","g","d","b","i","t","d","s","r"])
                 cmd = p.do([0,1,4,7])
                 sp = p.script([0,1,4,7])
-                r = collection | p                
+                r = collection | p
+
+            Pending: mechanism to store LAMMPS results (dump3) in the pipeline                
     """
     
     def __init__(self,s=None):
@@ -897,6 +911,7 @@ class pipescript():
         self.globalscript = None
         self.listscript = []
         self.listUSER = []
+        self.verbose = True # set it to False to reduce verbosity
         self.cmd = ""
         if isinstance(s,script): 
             self.listscript = [duplicate(s)]
@@ -943,6 +958,21 @@ class pipescript():
             p.USER[idx].var = val assigns the value val to the USER variable var
         """
         return self.listUSER  # override listuser
+    
+    @property
+    def scripts(self):
+        """
+            p.scripts[idx].USER.var returns the value of the USER variable var
+            p.scripts[idx].USER.var = val assigns the value val to the USER variable var
+        """
+        return self.listscript # override listuser
+
+    def __add__(self,s):
+        """ overload + pipe """
+        if isinstance(s,pipescript):
+            return self | s      # + or | are synonyms
+        else:
+            raise ValueError("the operand must be a pipescript")
             
     def __or__(self,s):
         """ overload | pipe """
@@ -958,7 +988,7 @@ class pipescript():
             rightarg = pipescript(s)
             rightname = str(s)
         else:
-            ValueError("the argument should be a script, a script object or scriptobjectgroup")
+            ValueError("the operand should be a script, a script object or scriptobjectgroup")
         if rightarg.n>0:
             leftarg.listscript.append(rightarg.listscript[0])
             leftarg.listUSER.append(rightarg.listUSER[0])
@@ -973,17 +1003,31 @@ class pipescript():
     def __repr__(self):
         """ display method """
         line = "  "+"-"*12+":"+"-"*40
-        print(line)
+        if self.verbose:
+            print("","Pipeline with %d scripts and" % self.n,
+                  "D(STATIC:GLOBAL:LOCAL) DEFINITIONS",line,sep="\n")
+        else:
+            print(line)
         for i in range(len(self)):
             if self.executed[i]:
                 state = "*"
             else:
                 state = "-"
             print("%10s" % ("[%s]  %02d:" % (state,i)),
-                  self.name[i],"with (%d>>%d>>%d) DEFINITIONS" % \
-                      (len(self.listUSER[i]),len(self.listscript[i].USER),
-                       len(self.listscript[i].DEFINITIONS)))
-        print(line)
+                  self.name[i],"with D(%2d:%2d:%2d)" % (
+                       len(self.listscript[i].DEFINITIONS),
+                       len(self.listscript[i].USER),
+                       len(self.listUSER[i])                 )
+                  )
+        if self.verbose:
+            print(line,"::: notes :::","p[i], p[i:j], p[[i,j]] copy pipeline segments",
+                  "LOCAL: p.USER[i],p.USER[i].variable modify the user space of only p[i]",
+                  "GLOBAL: p.scripts[i].USER.var to modify the user space from p[i] and onwards",
+                  "STATIC: p.scripts[i].DEFINITIONS",
+                  'p.rename(idx=range(2),name=["A","B"]), p.clear(idx=[0,3,4])',
+                  "p.script(), p.script(idx=range(5)), p[0:5].script()","",sep="\n")
+        else:
+             print(line)   
         return str(self)        
 
     def __len__(self):
@@ -1084,7 +1128,7 @@ class pipescript():
     def rename(self,name="",idx=None):
         """ 
             rename scripts in the pipe
-                p.rename(["A","B","C"],[0,2,3])
+                p.rename(idx=[0,2,3],name=["A","B","C"])
         """
         if isinstance(name,list):
             if len(name)==len(self) and idx==None:
@@ -1134,6 +1178,7 @@ class pipescript():
                 start = self.nrun
             if idx == None: idx = range(start,stop+1)
             if isinstance(idx,range): idx = list(idx)
+            if isinstance(idx,int): idx = [idx]
             start,stop = min(idx),max(idx)
             # do
             for i in idx:
