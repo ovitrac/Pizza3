@@ -42,7 +42,18 @@
 
     Additional classes: scriptobject(), scriptobjectgroup(), pipescript()
     They generate dynamic scripts from objects, collection of objects or scripts
-
+    
+    Variables (DEFINITIONS and USER) are stored in scriptdata() objects
+    
+    
+    How the variables are stored and used
+      Top level: set in the script class (with the attribute DEFINITIONS)
+   Middle level: set in the instance of the script during construction
+                 or within the USER scriptdata(). These values can be changed
+                 at runtime but the values are overwritten if the script are 
+                 combined with the operator +
+      Low level: set (bypass) in the pipeline with the keyword USER[step]
+    
 
 Created on Sat Feb 19 11:00:43 2022
 
@@ -65,6 +76,7 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-03-04 consolidation of scriptobject() and scriptobjectgroup()
 # 2022-03-05 [major update] scriptobjectgroup() can generate scripts for loading, setting groups and forcefields
 # 2022-03-12 [major update] pipescript() enables to store scripts in dynamic pipelines
+# 2022-03-15 implement a userspace within the pipeline
 
 # %% Dependencies
 import types
@@ -814,25 +826,30 @@ class script():
 # %% pipe script
 class pipescript():
     """
-        Pipescript class store scripts in pipelines
+        Pipescript class stores scripts in pipelines
             By assuming: s0, s1, s2... scripts, scriptobject or scriptobjectgroup
             p = s0 | s1 | s2 generates a pipe script
             
             Example of pipeline:
           ------------:----------------------------------------
-          [*]  step  0: script object group with 4 objects (1 2 3 4)
-          [*]  step  1: G
-          [*]  step  2: c
-          [*]  step  3: g
-          [*]  step  4: d
-          [*]  step  5: b
-          [*]  step  6: i
-          [*]  step  7: t
-          [-]  step  8: d
-          [-]  step  9: s
-          [-]  step 10: r
+          [-]  00: G with (0>>0>>19) DEFINITIONS
+          [-]  01: c with (0>>0>>10) DEFINITIONS
+          [-]  02: g with (0>>0>>26) DEFINITIONS
+          [-]  03: d with (0>>0>>19) DEFINITIONS
+          [-]  04: b with (0>>0>>28) DEFINITIONS
+          [-]  05: i with (0>>0>>49) DEFINITIONS
+          [-]  06: t with (0>>0>>2) DEFINITIONS
+          [-]  07: d with (0>>0>>19) DEFINITIONS
+          [-]  08: s with (0>>0>>1) DEFINITIONS
+          [-]  09: r with (0>>0>>20) DEFINITIONS
           ------------:----------------------------------------
         Out[35]: pipescript containing 11 scripts with 8 executed[*]
+        
+        note: XX>>YY>>ZZ represents the number of stored variables
+             and the direction of propagation (inheritance from left)
+             XX: number of definitions in the pipeline USER space
+             YY: number of definitions in the script instance (frozen in the pipeline)
+             ZZ: number of definitions in the script (frozen space)
             
             pipelines are executed sequentially (i.e. parameters can be multivalued)
                 cmd = p.do()
@@ -852,6 +869,11 @@ class pipescript():
             clear all executions with
                 p.clear()
                 p.clear(idx=1,2)
+                
+            pipelines include a USER space
+                p.USER[0].a = 1
+                p.USER[0].b = [1 2]
+                p.USER[0].c = "$ hello world"
                 
             steps can be renamed with the method rename()
                 
@@ -874,13 +896,17 @@ class pipescript():
         """ constructor """
         self.globalscript = None
         self.listscript = []
+        self.listUSER = []
         self.cmd = ""
         if isinstance(s,script): 
             self.listscript = [duplicate(s)]
+            self.listUSER = [scriptdata()]
         elif isinstance(s,scriptobject):
             self.listscript = [scriptobjectgroup(s).script]
+            self.listUSER = [scriptdata()]
         elif isinstance(s,scriptobjectgroup):
             self.listscript = [s.script]
+            self.listUSER = [scriptdata()]
         else:
             ValueError("the argument should be a scriptobject or scriptobjectgroup")
         if s != None:
@@ -889,13 +915,41 @@ class pipescript():
         else:
             self.name = []
             self.executed = []
+
+    def setUSER(self,idx,key,value):
+        """ 
+            setUSER sets USER variables
+            setUSER(idx,varname,varvalue)
+        """
+        if isinstance(idx,int) and (idx>=0) and (idx<self.n):
+            self.listUSER[idx].setattr(key,value)
+        else:
+            raise IndexError(f"the index in the pipe should be comprised between 0 and {len(self)-1}")
+        
+    def getUSER(self,idx,key):
+        """ 
+            getUSER get USER variable
+            getUSER(idx,varname)
+        """
+        if isinstance(idx,int) and (idx>=0) and (idx<self.n):
+            self.listUSER[idx].getattr(key)
+        else:
+            raise IndexError(f"the index in the pipe should be comprised between 0 and {len(self)-1}")
+
+    @property
+    def USER(self):
+        """
+            p.USER[idx].var returns the value of the USER variable var
+            p.USER[idx].var = val assigns the value val to the USER variable var
+        """
+        return self.listUSER  # override listuser
             
-    
     def __or__(self,s):
         """ overload | pipe """
         leftarg = deepduplicate(self)
         if isinstance(s,pipescript):
             leftarg.listscript = leftarg.listscript + s.listscript
+            leftarg.listUSER = leftarg.listUSER + s.listUSER
             leftarg.name = leftarg.name + s.name
             for i in range(len(s)): s.executed[i] = False
             leftarg.executed = leftarg.executed + s.executed
@@ -907,6 +961,7 @@ class pipescript():
             ValueError("the argument should be a script, a script object or scriptobjectgroup")
         if rightarg.n>0:
             leftarg.listscript.append(rightarg.listscript[0])
+            leftarg.listUSER.append(rightarg.listUSER[0])
             leftarg.name.append(rightname)
             leftarg.executed.append(False)
         return leftarg
@@ -924,7 +979,10 @@ class pipescript():
                 state = "*"
             else:
                 state = "-"
-            print("%15s" % ("[%s]  step %2d:" % (state,i)),self.name[i])
+            print("%10s" % ("[%s]  %02d:" % (state,i)),
+                  self.name[i],"with (%d>>%d>>%d) DEFINITIONS" % \
+                      (len(self.listUSER[i]),len(self.listscript[i].USER),
+                       len(self.listscript[i].DEFINITIONS)))
         print(line)
         return str(self)        
 
@@ -949,11 +1007,13 @@ class pipescript():
         dup = deepduplicate(self)
         if isinstance(idx,slice):
             dup.listscript = dup.listscript[idx]
+            dup.listUSER = dup.listUSER[idx]
             dup.name = dup.name[idx]
             dup.executed = dup.executed[idx]                    
         elif isinstance(idx,int):
             if idx<len(self):
                 dup.listscript = dup.listscript[idx:idx+1]
+                dup.listUSER = dup.listUSER[idx:idx+1]
                 dup.name = dup.name[idx:idx+1]
                 dup.executed = dup.executed[idx:idx+1]
             else:
@@ -981,6 +1041,7 @@ class pipescript():
         if len(s)<1: # remove (delete)
             if isinstance(idx,slice) or idx<len(self):
                 del self.listscript[idx]
+                del self.listUSER[idx]
                 del self.name[idx]
                 del self.executed[idx]
             else:
@@ -989,10 +1050,12 @@ class pipescript():
             if isinstance(idx,int):
                 if idx<len(self):
                     self.listscript[idx] = dup.listscript[0]
+                    self.listUSER[idx] = dup.listUSER[0]
                     self.name[idx] = dup.name[0]
                     self.executed[idx] = False
                 elif idx==len(self):
                     self.listscript.append(dup.listscript[0])
+                    self.listUSER.append(dup.listUSER[0])
                     self.name.append(dup.name[0])
                     self.executed.append(False)
                 else:
@@ -1082,6 +1145,7 @@ class pipescript():
                 name = "  "+self.name[i]+"  "
                 self.cmd += "\n\n#\t --- run step [%d/%d] --- [%s]  %20s\n" % \
                         (j,ntot-1,name.center(50,"="),"pipeline [%d]-->[%d]" %(start,stop))
+                self.globalscript.USER = self.globalscript.USER + self.listUSER[j]
                 self.cmd += self.globalscript.do()
                 self.executed[i] = True
             return self.cmd
