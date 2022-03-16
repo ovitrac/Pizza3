@@ -46,14 +46,48 @@
     Variables (DEFINITIONS and USER) are stored in scriptdata() objects
     
     
-    How the variables are stored and used
-      Top level: set in the script class (with the attribute DEFINITIONS)
-   Middle level: set in the instance of the script during construction
+    How the variables are stored and used.
+         STATIC: set in the script class (with the attribute DEFINITIONS)
+         GLOBAL: set in the instance of the script during construction
                  or within the USER scriptdata(). These values can be changed
                  at runtime but the values are overwritten if the script are 
                  combined with the operator +
-      Low level: set (bypass) in the pipeline with the keyword USER[step]
-    
+          LOCAL: set (bypass) in the pipeline with the keyword USER[step]
+          
+    Example with pipelines:
+        Build pipelines with:
+            p = G | c | g # using the symbol pipe "|"
+            p = p = pipescript(G)*4 # using the constructor pipescript()
+            
+                Pipeline with 4 scripts and
+                D(STATIC:GLOBAL:LOCAL) DEFINITIONS
+                  ------------:----------------------------------------
+                  [-]  00: script:global:example with D(19: 0: 0)
+                  [-]  01: script:global:example with D(19: 0: 0)
+                  [-]  02: script:global:example with D(19: 0: 0)
+                  [-]  03: script:global:example with D(19: 0: 0)
+                  ------------:----------------------------------------        
+
+    Change the GLOBAL variables for script with idx=0
+        p.scripts[0].USER.a=1  # set a=1 for all scripts onwards
+        p.scripts[0].USER.b=2  # set b=2
+    Change the LOCAL variables for script with idx=0
+        p.USER[0].a=10        # set a=10 for the script 00
+                
+                ------------:----------------------------------------
+                [-]  00: script:global:example with D(19: 2: 1)
+                [-]  01: script:global:example with D(19: 0: 0)
+                [-]  02: script:global:example with D(19: 0: 0)
+                [-]  03: script:global:example with D(19: 0: 0)
+                ------------:----------------------------------------
+
+    Summary of pipeline indexing and scripting
+        p[i], p[i:j], p[[i,j]] copy pipeline segments
+        LOCAL: p.USER[i],p.USER[i].variable modify the user space of only p[i]
+        GLOBAL: p.scripts[i].USER.var to modify the user space from p[i] and onwards
+        STATIC: p.scripts[i].DEFINITIONS
+        p.rename(idx=range(2),name=["A","B"]), p.clear(idx=[0,3,4])
+        p.script(), p.script(idx=range(5)), p[0:5].script()        
 
 Created on Sat Feb 19 11:00:43 2022
 
@@ -78,6 +112,7 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-03-12 [major update] pipescript() enables to store scripts in dynamic pipelines
 # 2022-03-15 implement a userspace within the pipeline
 # 2022-03-15 fix scriptobject | pipescript, smooth and document syntaxes with pipescripts
+# 2022-03-16 overload +=, *, several fixes and update help for pipescript
 
 # %% Dependencies
 import types
@@ -969,12 +1004,30 @@ class pipescript():
         return self.listscript # override listuser
 
     def __add__(self,s):
-        """ overload + pipe """
+        """ overload + as pipe with copy """
+        if isinstance(s,pipescript):
+            dup = deepduplicate(self)
+            return dup | s      # + or | are synonyms
+        else:
+            raise ValueError("the operand must be a pipescript")
+
+    def __iadd__(self,s):
+        """ overload += as pipe without copy """
         if isinstance(s,pipescript):
             return self | s      # + or | are synonyms
         else:
             raise ValueError("the operand must be a pipescript")
-            
+
+    def __mul__(self,ntimes):
+        """ overload * as multiple pipes with copy """
+        if isinstance(self,pipescript):
+            res = deepduplicate(self)
+            if ntimes>1:
+                for n in range(1,ntimes): res += self
+            return res
+        else:
+            raise ValueError("the operand must be a pipescript")
+                        
     def __or__(self,s):
         """ overload | pipe """
         leftarg = deepduplicate(self)
@@ -1115,7 +1168,7 @@ class pipescript():
                 raise IndexError("unrocognized index value, the index should be an integer or a slice")
         else: # many values
             if isinstance(idx,list): # list call à la Matlab
-                if len(list)==len(s):
+                if len(idx)==len(s):
                     for i in range(len(s)):
                         self.__setitem__(idx[i], s[i]) # call as a scalar
                 else:
@@ -1778,3 +1831,4 @@ if __name__ == '__main__':
     cmd = p.do([0,1,4,7])
     sp = p.script([0,1,4,7])
     r = collection | p
+    p[0:2]=p[0]*2
