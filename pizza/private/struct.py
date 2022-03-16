@@ -22,8 +22,9 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-03-04 add str()
 # 2022-03-05 add __copy__ and __deepcopy__ methods
 # 2022-03-05 AttributeError replaces KeyError in getattr() exceptions (required for for pdoc3)
+# 2022-03-16 Prevent replacement/evaluation if the string is escaped \${parameter}
 
-# Dependencies
+# %% Dependencies
 from math import * # import math to authorize all math expressions in parameters
 import types       # to check types
 import re          # regular expression
@@ -31,7 +32,7 @@ import numpy as np
 from copy import copy as duplicate # to duplicate objects
 from copy import deepcopy as duplicatedeep # used by __deepcopy__()
 
-# core struct cal
+# %% core struct class
 class struct():
     """ 
     mini class behaving as a Matlab Stucture 
@@ -274,10 +275,20 @@ class struct():
     def __str__(self):
         return f"{self._fulltype} ({self._type} object) with {len(self.__dict__)} {self._ftype}s"
         
-    def format(self,s):
-        """ format a string with field (use {field} as placeholders) """
+    def format(self,s,escape=False):
+        """ 
+            format a string with field (use {field} as placeholders)
+                s.replace(string), s.replace(string,escape=True)
+                where:
+                    s is a struct object
+                    string is a string with possibly ${variable1}
+                    escape is a flag to prevent ${} replaced by {}
+        """
         try:
-            return s.replace("${","{").format(**self.__dict__)
+            if escape:
+                return s.format(**self.__dict__)
+            else:
+                return s.replace("${","{").format(**self.__dict__)
         except KeyError:
             print(f'\n Missing {self._ftype} unable interpret the expression:\n\t"{s}"')
             raise
@@ -339,7 +350,7 @@ class struct():
         return copie
 
 
-# meta struct class param for scripting with evaluation capability
+# %% param class with scripting and evaluation capabilities
 class param(struct):
     """ 
     class parameters derived from struct() with dynamic evaluation
@@ -411,13 +422,57 @@ class param(struct):
     def __init__(self,**kwargs):
         """ constructor """
         super().__init__(**kwargs)
+
+    # escape definitions if needed
+    @staticmethod
+    def escape(s):
+        """ 
+            escape \${} as ${{}} --> keep variable names
+            convert ${} as {} --> prepare Python replacement
+            
+            Examples:
+                escape("\${a}")
+                returns ('${{a}}', True)
+
+                escape("  \${abc} ${a} \${bc}")
+                returns ('  ${{abc}} {a} ${{bc}}', True)
+
+                escape("${a}")
+                Out[94]: ('{a}', False)
+
+                escape("${tata}")
+                returns ('{tata}', False)
+            
+        """
+        se, start, found = "", 0, True
+        while found:
+            pos0 = s.find("\${",start)
+            found = pos0>=0
+            if found:
+                pos1 = s.find("}",pos0)
+                found = pos1>=0
+                if found:
+                    se += s[start:pos0].replace("${","{")+"${{"+s[pos0+3:pos1]+"}}"
+                    start=pos1+1
+        return se+s[start:].replace("${","{"),start>0
+
         
     # lines starting with # (hash) are interpreted as comments
     # ${variable} or {variable} are substituted by variable.value
     # any line starting with $ is assumed to be a string (no interpretation)
     # ^ is accepted in formula(replaced by **))
     def eval(self,s=""):
-        """ eval method for structure such as MS.alias """
+        """ 
+            Eval method for structure such as MS.alias
+            
+                s = p.eval() or s = s = p.eval(string)
+                
+                where :
+                    p is a param object
+                    s is a structure with evaluated fields
+                    string is only to used whether definitions have been forgotten
+                    
+        """
         # Evaluate all DEFINITIONS
         # the argument s is only used by formateval() for error management
         tmp = struct()
@@ -425,20 +480,24 @@ class param(struct):
             # strings are assumed to be expressions on one single line
             if isinstance(value,str):
                 # replace ${variable} (Bash, Lammps syntax) by {variable} (Python syntax)
-                valuesafe = value.strip().replace("${","{")
+                # use \${variable} to prevent replacement (espace with \)
+                valuesafe, escape = param.escape(value.strip())
                 # replace "^" (Matlab, Lammps exponent) by "**" (Python syntax)
                 valuesafe = valuesafe.replace("^","**")
                 # Remove all content after # (they are considered comments)
                 poscomment = valuesafe.find("#")
                 if poscomment>=0: valuesafe = valuesafe[0:poscomment].strip()
                 # Literal string starts with $
-                if valuesafe.startswith("$"):
+                if valuesafe.startswith("$") and not escape:
                     tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard $
                 else: # string empty or which can be evaluated
                     if valuesafe=="":
                         tmp.setattr(key,valuesafe) # empty content
                     else:
-                        tmp.setattr(key, eval(tmp.format(valuesafe)))
+                        if escape: # partial evaluation
+                            tmp.setattr(key, tmp.format(valuesafe,escape=True))
+                        else: # full evaluation
+                            tmp.setattr(key, eval(tmp.format(valuesafe)))
             elif isinstance(value,(int,float,list,tuple)): # already a number
                 tmp.setattr(key, value) # store the value with the key
             else: # unsupported types
@@ -451,13 +510,27 @@ class param(struct):
     # formateval obeys to following rules
     # lines starting with # (hash) are interpreted as comments
     def formateval(self,s):
-        """ format method with evaluation feature """
+        """ 
+            format method with evaluation feature
+                
+                txt = p.formateval("this my text with ${variable1}, ${variable2} ")
+                               
+                where:
+                    p is a paramm object
+                    
+                Example:
+                    definitions = param(a=1,b="${a}",c="\${a}")
+                    text = definitions.formateval("this my text ${a}, ${b}, ${c}")
+                    print(text)
+                    
+        """
         tmp = self.eval(s)
         # Do all replacements in s (keep comments)
         if len(tmp)==0:
             return s
         else:
-            slines = s.split("\n")
+            ssafe, escape = param.escape(s)
+            slines = ssafe.split("\n")
             for i in range(len(slines)):
                 poscomment = slines[i].find("#")               
                 if poscomment>=0:
@@ -467,5 +540,17 @@ class param(struct):
                     slines[i]  = slines[i][0:poscomment]
                 else:
                     comment = ""
-                slines[i] = tmp.format(slines[i])+comment
+                slines[i] = tmp.format(slines[i],escape=escape)+comment
             return "\n".join(slines)
+
+# %% DEBUG  
+# ===================================================   
+# main()
+# ===================================================   
+# for debugging purposes (code called as a script)
+# the code is called from here
+# ===================================================
+if __name__ == '__main__':
+    definitions = param(a=1,b="${a}*10+${a}",c="\${a}+10",d='\${myparam}')
+    text = definitions.formateval("this my text ${a}, ${b}, \${myvar}=${c}+${d}")
+    print(text)

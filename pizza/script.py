@@ -519,7 +519,8 @@ class scriptobjectgroup(struct):
         tscript.TEMPLATE = TEMPFILES+TEMPGRP+TEMPFF
         return tscript
 
-# %% core class (please derive this class when you use it, do not alter it)
+# %% script core class
+# note: please derive this class when you use it, do not alter it
 class script():
     """ 
         core script class (flexible design)
