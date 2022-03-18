@@ -8,6 +8,8 @@
 >
 > $ 2020-04-18 $
 
+*Click [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html) to read this file in HTML (including with videos)*
+
 [TOC]
 
 ##  Scope
