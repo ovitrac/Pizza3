@@ -1,0 +1,1003 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+
+<link href='https://fonts.googleapis.com/css?family=Open%20Sans' rel='stylesheet' type='text/css' /><style type='text/css'>html {overflow-x: initial !important;}:root { --mermaid-theme: default; --mermaid-sequence-numbers: off; --mermaid-flowchart-curve: linear; --mermaid--gantt-left-padding: 75; --sequence-theme: simple; }
+
+
+:root { --bg-color:#ffffff; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; --title-bar-height:20px; }
+.mac-os-11 { --title-bar-height:28px; }
+html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+body { margin: 0px; padding: 0px; height: auto; inset: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
+iframe { margin: auto; }
+a.url { word-break: break-all; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; overflow-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 36px; }
+#write.first-line-indent p { text-indent: 2em; }
+#write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
+#write.first-line-indent li { margin-left: 2em; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+.typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
+.typora-export .task-list-item input { pointer-events: none; }
+@media screen and (max-width: 500px) {
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  #write { padding-left: 20px; padding-right: 20px; }
+  .CodeMirror-sizer { margin-left: 0px !important; }
+  .CodeMirror-gutters { display: none !important; }
+}
+#write li > figure:last-child { margin-bottom: 0.5rem; }
+#write ol, #write ul { position: relative; }
+img { max-width: 100%; vertical-align: middle; image-orientation: from-image; }
+button, input, select, textarea { color: inherit; font: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+*, ::after, ::before { box-sizing: border-box; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p { position: relative; }
+p { line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 4; }
+p { orphans: 4; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+.md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p { margin-top: 1rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
+a { cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
+figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
+figure > table { margin: 0px; }
+tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 32px; }
+.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
+.CodeMirror-linenumber { user-select: none; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+#write pre { white-space: pre-wrap; }
+#write.fences-no-line-wrapping pre { white-space: pre; }
+#write pre.ty-contain-cm { white-space: normal; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-fences-adv-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+#write .md-fences.mock-cm { white-space: pre-wrap; }
+.md-fences.md-fences-with-lineno { padding-left: 0px; }
+#write.fences-no-line-wrapping .md-fences.mock-cm { white-space: pre; overflow-x: auto; }
+.md-fences.mock-cm.md-fences-with-lineno { padding-left: 8px; }
+.CodeMirror-line, twitterwidget { break-inside: avoid; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
+.footnotes + .footnotes { margin-top: 0px; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li .mathjax-block, li p { margin: 0.5rem 0px; }
+li blockquote { margin: 1rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child, li > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
+#write .footnote-line { white-space: pre-wrap; }
+@media print {
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; font-variant-ligatures: no-common-ligatures; }
+  #write { margin-top: 0px; padding-top: 0px; border-color: transparent !important; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  .typora-export #write { break-after: avoid; }
+  .typora-export #write::after { height: 0px; }
+  .is-mac table { break-inside: avoid; }
+  .typora-export-show-outline .typora-export-sidebar { display: none; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+#write.first-line-indent p > .md-image:only-child:not(.md-img-error) img { left: -2em; position: relative; }
+p > .md-image:only-child { display: inline-block; width: 100%; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.md-math-block { width: 100%; }
+.md-math-block:not(:empty)::after { display: none; }
+.MathJax_ref { fill: currentcolor; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus, [contenteditable="false"]:active, [contenteditable="false"]:focus { outline: 0px; box-shadow: none; }
+.md-task-list-item { position: relative; list-style-type: none; }
+.task-list-item.md-task-list-item { padding-left: 0px; }
+.md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc-content::after, .md-toc::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); }
+.md-toc-item a { text-decoration: none; }
+.md-toc-inner:hover { text-decoration: underline; }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: 700; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) {
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.md-attr { display: none; }
+.md-fn-count::after { content: "."; }
+code, pre, samp, tt { font-family: var(--monospace); }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.6; font-family: var(--monospace); }
+code { text-align: left; vertical-align: initial; }
+a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+.os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
+.md-diagram-panel > svg { max-width: 100%; }
+[lang="flow"] svg, [lang="mermaid"] svg { max-width: 100%; height: auto; }
+[lang="mermaid"] .node text { font-size: 1rem; }
+table tr th { border-bottom: 0px; }
+video { max-width: 100%; display: block; margin: 0px auto; }
+iframe { max-width: 100%; width: 100%; border: none; }
+.highlight td, .highlight tr { border: 0px; }
+mark { background: rgb(255, 255, 0); color: rgb(0, 0, 0); }
+.md-html-inline .md-plain, .md-html-inline strong, mark .md-inline-math, mark strong { color: inherit; }
+.md-expand mark .md-meta { opacity: 0.3 !important; }
+mark .md-meta { color: rgb(0, 0, 0); }
+@media print {
+  .typora-export h1, .typora-export h2, .typora-export h3, .typora-export h4, .typora-export h5, .typora-export h6 { break-inside: avoid; }
+}
+.md-diagram-panel .messageText { stroke: none !important; }
+.md-diagram-panel .start-state { fill: var(--node-fill); }
+.md-diagram-panel .edgeLabel rect { opacity: 1 !important; }
+.md-fences.md-fences-math { font-size: 1em; }
+.md-fences-advanced:not(.md-focus) { padding: 0px; white-space: nowrap; border: 0px; }
+.md-fences-advanced:not(.md-focus) { background: inherit; }
+.typora-export-show-outline .typora-export-content { max-width: 1440px; margin: auto; display: flex; flex-direction: row; }
+.typora-export-sidebar { width: 300px; font-size: 0.8rem; margin-top: 80px; margin-right: 18px; }
+.typora-export-show-outline #write { --webkit-flex:2; flex: 2 1 0%; }
+.typora-export-sidebar .outline-content { position: fixed; top: 0px; max-height: 100%; overflow: hidden auto; padding-bottom: 30px; padding-top: 60px; width: 300px; }
+@media screen and (max-width: 1024px) {
+  .typora-export-sidebar, .typora-export-sidebar .outline-content { width: 240px; }
+}
+@media screen and (max-width: 800px) {
+  .typora-export-sidebar { display: none; }
+}
+.outline-content li, .outline-content ul { margin-left: 0px; margin-right: 0px; padding-left: 0px; padding-right: 0px; list-style: none; }
+.outline-content ul { margin-top: 0px; margin-bottom: 0px; }
+.outline-content strong { font-weight: 400; }
+.outline-expander { width: 1rem; height: 1.42857rem; position: relative; display: table-cell; vertical-align: middle; cursor: pointer; padding-left: 4px; }
+.outline-expander::before { content: ""; position: relative; font-family: Ionicons; display: inline-block; font-size: 8px; vertical-align: middle; }
+.outline-item { padding-top: 3px; padding-bottom: 3px; cursor: pointer; }
+.outline-expander:hover::before { content: ""; }
+.outline-h1 > .outline-item { padding-left: 0px; }
+.outline-h2 > .outline-item { padding-left: 1em; }
+.outline-h3 > .outline-item { padding-left: 2em; }
+.outline-h4 > .outline-item { padding-left: 3em; }
+.outline-h5 > .outline-item { padding-left: 4em; }
+.outline-h6 > .outline-item { padding-left: 5em; }
+.outline-label { cursor: pointer; display: table-cell; vertical-align: middle; text-decoration: none; color: inherit; }
+.outline-label:hover { text-decoration: underline; }
+.outline-item:hover { border-color: rgb(245, 245, 245); background-color: var(--item-hover-bg-color); }
+.outline-item:hover { margin-left: -28px; margin-right: -28px; border-left: 28px solid transparent; border-right: 28px solid transparent; }
+.outline-item-single .outline-expander::before, .outline-item-single .outline-expander:hover::before { display: none; }
+.outline-item-open > .outline-item > .outline-expander::before { content: ""; }
+.outline-children { display: none; }
+.info-panel-tab-wrapper { display: none; }
+.outline-item-open > .outline-children { display: block; }
+.typora-export .outline-item { padding-top: 1px; padding-bottom: 1px; }
+.typora-export .outline-item:hover { margin-right: -8px; border-right: 8px solid transparent; }
+.typora-export .outline-expander::before { content: "+"; font-family: inherit; top: -1px; }
+.typora-export .outline-expander:hover::before, .typora-export .outline-item-open > .outline-item > .outline-expander::before { content: "−"; }
+.typora-export-collapse-outline .outline-children { display: none; }
+.typora-export-collapse-outline .outline-item-open > .outline-children, .typora-export-no-collapse-outline .outline-children { display: block; }
+.typora-export-no-collapse-outline .outline-expander::before { content: "" !important; }
+.typora-export-show-outline .outline-item-active > .outline-item .outline-label { font-weight: 700; }
+.md-inline-math-container mjx-container { zoom: 0.95; }
+
+
+.CodeMirror { height: auto; }
+.CodeMirror.cm-s-inner { background: inherit; }
+.CodeMirror-scroll { overflow: auto hidden; z-index: 3; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background-color: rgb(255, 255, 255); }
+.CodeMirror-gutters { border-right: 1px solid rgb(221, 221, 221); background: inherit; white-space: nowrap; }
+.CodeMirror-linenumber { padding: 0px 3px 0px 5px; text-align: right; color: rgb(153, 153, 153); }
+.cm-s-inner .cm-keyword { color: rgb(119, 0, 136); }
+.cm-s-inner .cm-atom, .cm-s-inner.cm-atom { color: rgb(34, 17, 153); }
+.cm-s-inner .cm-number { color: rgb(17, 102, 68); }
+.cm-s-inner .cm-def { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-variable { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-variable-2 { color: rgb(0, 85, 170); }
+.cm-s-inner .cm-variable-3 { color: rgb(0, 136, 85); }
+.cm-s-inner .cm-string { color: rgb(170, 17, 17); }
+.cm-s-inner .cm-property { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-operator { color: rgb(152, 26, 26); }
+.cm-s-inner .cm-comment, .cm-s-inner.cm-comment { color: rgb(170, 85, 0); }
+.cm-s-inner .cm-string-2 { color: rgb(255, 85, 0); }
+.cm-s-inner .cm-meta { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-qualifier { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-builtin { color: rgb(51, 0, 170); }
+.cm-s-inner .cm-bracket { color: rgb(153, 153, 119); }
+.cm-s-inner .cm-tag { color: rgb(17, 119, 0); }
+.cm-s-inner .cm-attribute { color: rgb(0, 0, 204); }
+.cm-s-inner .cm-header, .cm-s-inner.cm-header { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-quote, .cm-s-inner.cm-quote { color: rgb(0, 153, 0); }
+.cm-s-inner .cm-hr, .cm-s-inner.cm-hr { color: rgb(153, 153, 153); }
+.cm-s-inner .cm-link, .cm-s-inner.cm-link { color: rgb(0, 0, 204); }
+.cm-negative { color: rgb(221, 68, 68); }
+.cm-positive { color: rgb(34, 153, 34); }
+.cm-header, .cm-strong { font-weight: 700; }
+.cm-del { text-decoration: line-through; }
+.cm-em { font-style: italic; }
+.cm-link { text-decoration: underline; }
+.cm-error { color: red; }
+.cm-invalidchar { color: red; }
+.cm-constant { color: rgb(38, 139, 210); }
+.cm-defined { color: rgb(181, 137, 0); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: rgb(0, 255, 0); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: rgb(255, 34, 34); }
+.cm-s-inner .CodeMirror-activeline-background { background: inherit; }
+.CodeMirror { position: relative; overflow: hidden; }
+.CodeMirror-scroll { height: 100%; outline: 0px; position: relative; box-sizing: content-box; background: inherit; }
+.CodeMirror-sizer { position: relative; }
+.CodeMirror-gutter-filler, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-vscrollbar { position: absolute; z-index: 6; display: none; outline: 0px; }
+.CodeMirror-vscrollbar { right: 0px; top: 0px; overflow: hidden; }
+.CodeMirror-hscrollbar { bottom: 0px; left: 0px; overflow: auto hidden; }
+.CodeMirror-scrollbar-filler { right: 0px; bottom: 0px; }
+.CodeMirror-gutter-filler { left: 0px; bottom: 0px; }
+.CodeMirror-gutters { position: absolute; left: 0px; top: 0px; padding-bottom: 10px; z-index: 3; overflow-y: hidden; }
+.CodeMirror-gutter { white-space: normal; height: 100%; box-sizing: content-box; padding-bottom: 30px; margin-bottom: -32px; display: inline-block; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: 0px 0px !important; border: none !important; }
+.CodeMirror-gutter-background { position: absolute; top: 0px; bottom: 0px; z-index: 4; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-lines { cursor: text; }
+.CodeMirror pre { border-radius: 0px; border-width: 0px; background: 0px 0px; font-family: inherit; font-size: inherit; margin: 0px; white-space: pre; overflow-wrap: normal; color: inherit; z-index: 2; position: relative; overflow: visible; }
+.CodeMirror-wrap pre { overflow-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-code pre { border-right: 30px solid transparent; width: fit-content; }
+.CodeMirror-wrap .CodeMirror-code pre { border-right: none; width: auto; }
+.CodeMirror-linebackground { position: absolute; inset: 0px; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; overflow: auto; }
+.CodeMirror-wrap .CodeMirror-scroll { overflow-x: hidden; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0px; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+.CodeMirror div.CodeMirror-cursor { position: absolute; visibility: hidden; border-right: none; width: 0px; }
+.CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+.CodeMirror-focused div.CodeMirror-cursor { visibility: inherit; }
+.cm-searching { background: rgba(255, 255, 0, 0.4); }
+span.cm-underlined { text-decoration: underline; }
+span.cm-strikethrough { text-decoration: line-through; }
+.cm-tw-syntaxerror { color: rgb(255, 255, 255); background-color: rgb(153, 0, 0); }
+.cm-tw-deleted { text-decoration: line-through; }
+.cm-tw-header5 { font-weight: 700; }
+.cm-tw-listitem:first-child { padding-left: 10px; }
+.cm-tw-box { border-style: solid; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-color: inherit; border-top-width: 0px !important; }
+.cm-tw-underline { text-decoration: underline; }
+@media print {
+  .CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+}
+
+
+:root {
+  --mermaid-theme: night;
+}
+
+[lang='mermaid'] .label {
+  color: #333;
+}
+
+/* CSS Document */
+
+/** code highlight */
+
+.cm-s-inner .cm-variable,
+.cm-s-inner .cm-operator,
+.cm-s-inner .cm-property {
+    color: #b8bfc6;
+}
+
+.cm-s-inner .cm-keyword {
+    color: #C88FD0;
+}
+
+.cm-s-inner .cm-tag {
+    color: #7DF46A;
+}
+
+.cm-s-inner .cm-attribute {
+    color: #7575E4;
+}
+
+.CodeMirror div.CodeMirror-cursor {
+    border-left: 1px solid #b8bfc6;
+    z-index: 3;
+}
+
+.cm-s-inner .cm-string {
+    color: #D26B6B;
+}
+
+.cm-s-inner .cm-comment,
+.cm-s-inner.cm-comment {
+    color: #DA924A;
+}
+
+.cm-s-inner .cm-header,
+.cm-s-inner .cm-def,
+.cm-s-inner.cm-header,
+.cm-s-inner.cm-def {
+    color: #8d8df0;
+}
+
+.cm-s-inner .cm-quote,
+.cm-s-inner.cm-quote {
+    color: #57ac57;
+}
+
+.cm-s-inner .cm-hr {
+    color: #d8d5d5;
+}
+
+.cm-s-inner .cm-link {
+    color: #d3d3ef;
+}
+
+.cm-s-inner .cm-negative {
+    color: #d95050;
+}
+
+.cm-s-inner .cm-positive {
+    color: #50e650;
+}
+
+.cm-s-inner .cm-string-2 {
+    color: #f50;
+}
+
+.cm-s-inner .cm-meta,
+.cm-s-inner .cm-qualifier {
+    color: #b7b3b3;
+}
+
+.cm-s-inner .cm-builtin {
+    color: #f3b3f8;
+}
+
+.cm-s-inner .cm-bracket {
+    color: #997;
+}
+
+.cm-s-inner .cm-atom,
+.cm-s-inner.cm-atom {
+    color: #84B6CB;
+}
+
+.cm-s-inner .cm-number {
+    color: #64AB8F;
+}
+
+.cm-s-inner .cm-variable {
+    color: #b8bfc6;
+}
+
+.cm-s-inner .cm-variable-2 {
+    color: #9FBAD5;
+}
+
+.cm-s-inner .cm-variable-3 {
+    color: #1cc685;
+}
+
+.CodeMirror-selectedtext,
+.CodeMirror-selected {
+    background: #4a89dc;
+    color: #fff !important;
+    text-shadow: none;
+}
+
+.CodeMirror-gutters {
+    border-right: none;
+}
+
+/* CSS Document */
+
+/** markdown source **/
+.cm-s-typora-default .cm-header, 
+.cm-s-typora-default .cm-property
+{
+    color: #cebcca;
+}
+
+.CodeMirror.cm-s-typora-default div.CodeMirror-cursor{
+    border-left: 3px solid #b8bfc6;
+}
+
+.cm-s-typora-default .cm-comment {
+    color: #9FB1FF;
+}
+
+.cm-s-typora-default .cm-string {
+    color: #A7A7D9
+}
+
+.cm-s-typora-default .cm-atom, .cm-s-typora-default .cm-number {
+    color: #848695;
+    font-style: italic;
+}
+
+.cm-s-typora-default .cm-link {
+    color: #95B94B;
+}
+
+.cm-s-typora-default .CodeMirror-activeline-background {
+    background: rgba(51, 51, 51, 0.72);
+}
+
+.cm-s-typora-default .cm-comment, .cm-s-typora-default .cm-code {
+	color: #8aa1e1;
+}@import url(https://fonts.googleapis.com/css?family=Open%20Sans);
+@import "";
+@import "";
+@import "";
+
+:root {
+  --bg-color: #1e1e1e;
+  --text-color: #a1a1a1;
+  --window-border-color: #333;
+  --window-border: 1px solid #555;
+  --md-char-color: #C7C5C5;
+  --meta-content-color: #5b808d;
+
+  --blur-text-color: #C8C8C8;
+
+  --drag-placeholder-color: #c7c5c5;
+  --panel-border-color: #777777;
+  --active-toggle-btn-color: #ddd;
+  --table-border-color: #ccc;
+
+  --primary-color: #428bca;
+  --primary-btn-border-color: #285e8e;
+  --primary-btn-text-color: #fff;
+
+  --search-select-bg-color: #000;
+  --search-select-text-color: #fff;
+
+  --heading-char-color: #ddd;
+  --color-popover-bg-color: #fafafa;
+
+  --control-text-color: var(--text-color);
+  --control-text-hover-color: var(--text-color);
+
+  /* Side Bar */
+  --side-bar-bg-color: #1a1a1a;
+  --item-hover-bg-color: #111;
+  --item-hover-text-color: #7c929e;
+  --side-bar-fg-color: #DADCE0;
+
+  --side-bar-menu-active-tint: var(--side-bar-menu-active-tint);
+
+  --mac-title-bar-height: 20px;
+  --sidebar-width: 270px;
+
+  /* Side-bar file list */
+  --active-file-bg-color: rgb(13, 33, 62); 
+  --active-file-text-color: #7c929e;
+  --active-file-left-border-color: #7fa8f0;
+  --active-file-border-color: #777;
+  --focus-ring-color: #6eace2;
+  --file-item-file-name-color: #7c929e;
+  --file-item-summary: #616161;
+
+  /* Outline */
+  --outline-border-color: #363B40;
+  --outline-item-hover-bg-color: #363B40;
+  --outline-item-hover-fg-color: white;
+
+  /* Sidebar footer */
+  --sidebar-footer-bg-color: #131516;
+  --sidebar-footer-heading-color: #7c929e;
+  --sidebar-footer-fg-color: #818181;
+
+  /* TOC Drop down */
+  --toc-dropmenu-bg-color: #131516;
+  --toc-dropmenu-fg-color: #9aa0a6;
+
+  --monospace: monospace;
+}
+
+html, body {
+  /* background-color: #202124; */
+  background-color: var(--bg-color);
+  font-family: Roboto, Open Sans, sans-serif;
+}
+
+html {
+  font-size: 16px;
+}
+
+#write {
+  max-width: 90%;
+  font-size: 1rem;
+  color: var(--fg-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Helvetica, Open Sans;
+  color: #D93025;
+  margin: 0px;
+}
+h1 {
+  font-size: 32px;
+  font-weight: 500;
+  margin: 8px 0px;
+}
+
+h2 {
+  font-size: 28px;
+  font-weight: 400;
+  margin: 4px 0px;
+}
+
+h3 {
+  font-size: 24px;
+  font-weight: 400;
+}
+
+h4, h5, h6 {
+  font-size: 20px;
+  font-weight: 400;
+}
+
+#write h1:before,
+#write h2:before,
+#write h3:before,
+#write h4:before,
+#write h5:before,
+#write h6:before {
+  background-color: #222;
+  color: #a23432;
+}
+
+p,
+ul,
+dd,
+ol,
+hr,
+address,
+pre,
+table,
+iframe,
+.wp-caption,
+.wp-audio-shortcode,
+.wp-video-shortcode {
+  margin: 4px 0px;
+}
+
+code, kbd, pre, samp {
+  font-family: "Roboto Mono", Menlo, monospace;
+  padding: 2px 5px;
+}
+
+.md-fences {
+  margin: 10px 0px;
+  background-color: #1c1e1f;
+  padding: 1em;
+  border: 1px solid rgba(147, 152, 182, 0.3);
+  border-radius: 2px;
+  font-size: 1em;
+}
+
+.md-fences .CodeMirror.CodeMirror-wrap {
+  padding-left: 5px;
+}
+
+.CodeMirror-gutters {
+  border: none;
+}
+.CodeMirror-linenumber {
+  color: #444;
+}
+
+a,
+.md-def-url {
+  color: #5195ea;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+#toc-dropmenu {
+  background-color: var(--toc-dropmenu-bg-color);
+  color: var(--toc-dropmenu-fg-color);
+}
+
+#toc-dropmenu .divider {
+  background-color: rgba(229, 229, 229, 0.3);
+}
+
+.outline-item:hover {
+  border-color: var(--outline-border-color);
+  background-color: var(--outline-item-hover-bg-color);
+  color: var(--outline-item-hover-fg-color);
+}
+
+.md-inline-math g,
+.md-inline-math svg {
+  stroke: #b8bfc6 !important;
+  fill: #b8bfc6 !important;
+}
+
+[md-inline='inline_math'] {
+  color: #9CB2E9;
+}
+
+#math-inline-preview .md-arrow:after {
+  background: black;
+}
+.md-inline-math script {
+  color: #81b1db;
+}
+
+b,
+dt,
+strong {
+  color: #F538A0;
+  font-weight: 500;
+}
+
+mark {
+  background: #A142F4;
+}
+
+blockquote {
+  color: #24c1e0;
+  padding: 10px 20px;
+  background: rgba(36, 193, 224, 0.05);
+  border-left: 1px solid #24c1e0;
+}
+
+.md-image>.md-meta {
+  background-color: #1c1e1f;
+  font-family: Roboto, Open Sans;
+  font-size: 1em;
+}
+
+.md-expand.md-image>.md-meta {
+  color: #5F6368;
+}
+
+/** quick open **/
+.auto-suggest-container {
+  border: 0px;
+  background-color: #525C65;
+}
+
+#typora-quick-open {
+  background-color: #525C65;
+}
+
+#typora-quick-open input{
+  background-color: #525C65;
+  border: 0;
+  border-bottom: 1px solid grey;
+}
+
+.typora-quick-open-item {
+  background-color: inherit;
+  color: inherit;
+}
+
+.typora-quick-open-item.active {
+  background-color: #4D8BDB;
+  color: white;
+}
+
+.typora-search-spinner > div {
+  background-color: #fff;
+}
+
+.btn,
+.btn .btn-default {
+  background: transparent;
+  color: #b8bfc6;
+}
+
+.md-table-edit {
+  border-top: 1px solid gray;
+  background-color: #363B40;
+}
+
+.popover-title {
+  background: transparent;
+}
+
+/* Sidebar Stuff */
+
+#typora-sidebar {
+  color: var(--side-bar-fg-color);
+}
+
+.sidebar-footer-main-item {
+  background-color: var(--sidebar-footer-bg-color);
+  color: var(--sidebar-footer-heading-color);
+}
+
+.dropdown-menu {
+  color: var(--sidebar-footer-fg-color);
+}
+
+.file-list-item {
+  border-bottom: 1px solid var(--window-border-color);
+}
+
+#typora-sidebar-resizer {
+  border-left: 1px solid var(--window-border-color);
+}
+
+.file-list-item.active {
+  border-left: 2px solid var(--active-file-left-border-color) ;
+}
+
+.file-list-item-file-name {
+  color: var(--file-item-file-name-color);
+}
+
+.file-list-item-summary {
+  font-weight: 500;
+  font-family: "Helvetica Neue", "sans-serif";
+  color: var(--file-item-summary);
+}
+
+.sidebar-tabs {
+  border-bottom:0;
+}
+
+.md-table-resize-popover {
+  background-color: #4B535A;
+}
+
+.form-inline .input-group .input-group-addon {
+  color: white;
+}
+
+#md-searchpanel {
+  border-bottom: 1px dashed grey;
+}
+/* Table related */
+table {
+	border: solid 1px var(--window-border-color);
+	margin-bottom: 20px
+}
+
+th {
+  color: #439e30;
+  font-weight: 500;
+  background-color: #1c1e1f;
+}
+
+table th,
+table td {
+	padding: 8px;
+	line-height: 1.5rem;
+	border: 1px solid var(--window-border-color);
+}
+
+table tr:nth-child(even) {
+  background: var(--side-bar-bg-color);
+}
+
+
+
+mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+  min-height: 1px;
+  min-width: 1px;
+}
+
+mjx-container[jax="SVG"] > svg a {
+  fill: blue;
+  stroke: blue;
+}
+
+mjx-assistive-mml {
+  position: absolute !important;
+  top: 0px;
+  left: 0px;
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 1px 0px 0px 0px !important;
+  border: 0px !important;
+  display: block !important;
+  width: auto !important;
+  overflow: hidden !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+mjx-assistive-mml[display="block"] {
+  width: 100% !important;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][display="true"][width="full"] {
+  display: flex;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line], svg[data-table] > g > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame], svg[data-table] > g > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed, svg[data-table] > g > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted, svg[data-table] > g > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > g > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"] path[data-c], mjx-container[jax="SVG"] use[data-c] {
+  stroke-width: 3;
+}
+
+g[data-mml-node="xypic"] path {
+  stroke-width: inherit;
+}
+
+.MathJax g[data-mml-node="xypic"] path {
+  stroke-width: inherit;
+}
+mjx-container[jax="SVG"] path[data-c], mjx-container[jax="SVG"] use[data-c] {
+							stroke-width: 0;
+						} .typora-export li, .typora-export p, .typora-export,  .footnote-line {white-space: normal;} 
+</style><title>README</title>
+</head>
+<body class='typora-export'><div class='typora-export-content'>
+<div id='write'  class=''><h1 id='pizza3'><span>Pizza3</span></h1><blockquote><p><span>Contributors:</span></p><p><span>	</span><span>INRAE\Olivier Vitrac, E-mail: </span><a href='olivier.vitrac@agroparistech.fr'><span>olivier.vitrac@agroparistech.fr</span></a><span> (main contact)</span></p><p><span>	</span><span>INRAE\William Jenkinson, E-mail: </span><a href='olivier.vitrac@agroparistech.fr'><span>william.jenkinson@agroparistech.fr</span></a></p><p><mjx-container class="MathJax" jax="SVG" style="position: relative;"><svg xmlns="http://www.w3.org/2000/svg" width="14.581ex" height="1.717ex" role="img" focusable="false" viewBox="0 -677 6444.9 759" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" style="vertical-align: -0.186ex;"><defs><path id="MJX-1-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path id="MJX-1-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-1-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path id="MJX-1-TEX-N-34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z"></path><path id="MJX-1-TEX-N-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path id="MJX-1-TEX-N-38" d="M70 417T70 494T124 618T248 666Q319 666 374 624T429 515Q429 485 418 459T392 417T361 389T335 371T324 363L338 354Q352 344 366 334T382 323Q457 264 457 174Q457 95 399 37T249 -22Q159 -22 101 29T43 155Q43 263 172 335L154 348Q133 361 127 368Q70 417 70 494ZM286 386L292 390Q298 394 301 396T311 403T323 413T334 425T345 438T355 454T364 471T369 491T371 513Q371 556 342 586T275 624Q268 625 242 625Q201 625 165 599T128 534Q128 511 141 492T167 463T217 431Q224 426 228 424L286 386ZM250 21Q308 21 350 55T392 137Q392 154 387 169T375 194T353 216T330 234T301 253T274 270Q260 279 244 289T218 306L210 311Q204 311 181 294T133 239T107 157Q107 98 150 60T250 21Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-1-TEX-N-32"></use><use data-c="30" xlink:href="#MJX-1-TEX-N-30" transform="translate(500,0)"></use><use data-c="32" xlink:href="#MJX-1-TEX-N-32" transform="translate(1000,0)"></use><use data-c="30" xlink:href="#MJX-1-TEX-N-30" transform="translate(1500,0)"></use></g><g data-mml-node="mo" transform="translate(2222.2,0)"><use data-c="2212" xlink:href="#MJX-1-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(3222.4,0)"><use data-c="30" xlink:href="#MJX-1-TEX-N-30"></use><use data-c="34" xlink:href="#MJX-1-TEX-N-34" transform="translate(500,0)"></use></g><g data-mml-node="mo" transform="translate(4444.7,0)"><use data-c="2212" xlink:href="#MJX-1-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(5444.9,0)"><use data-c="31" xlink:href="#MJX-1-TEX-N-31"></use><use data-c="38" xlink:href="#MJX-1-TEX-N-38" transform="translate(500,0)"></use></g></g></g></svg><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mn>2020</mn><mo>−</mo><mn>04</mn><mo>−</mo><mn>18</mn></math></mjx-assistive-mml></mjx-container><script type="math/tex"> 2020-04-18 </script></p></blockquote><div class='md-toc' mdtype='toc'><p class="md-toc-content" role="list"><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n228"><a class="md-toc-inner" href="#pizza3">Pizza3</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n296"><a class="md-toc-inner" href="#scope">Scope</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n240"><a class="md-toc-inner" href="#overview">Overview</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n267"><a class="md-toc-inner" href="#key-steps">Key steps</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n270"><a class="md-toc-inner" href="#overview-of-workshop1-classes">Overview of workshop1 classes</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n278"><a class="md-toc-inner" href="#overview-of-top-classes">Overview of top classes</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n281"><a class="md-toc-inner" href="#output-of-workshop1">Output of workshop1</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n282"><a class="md-toc-inner" href="#lammps-script">LAMMPS script</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n285"><a class="md-toc-inner" href="#videos-of-workshop1">Videos of workshop1</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n286"><a class="md-toc-inner" href="#equilibration-step">Equilibration step</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n289"><a class="md-toc-inner" href="#run-step">Run step</a></span></p></div><h2 id='scope'><span>Scope</span></h2><p><span>Pizza3 is a fork and an extension of Pizza.py toolkit for LAMMPS witten in Python 3.x (the original one is in Python 2.x). It should be seen as loosely integrated collection of tools for LAMMPS.</span></p><p>&nbsp;</p><p><span> The most important achievements are discussed hereafter. Work in progress, come back regularly.</span></p><p>&nbsp;</p><h2 id='overview'><span>Overview</span></h2><p><span>Main scripts and classes are shown here.</span></p><figure><table><thead><tr><th style='text-align:center;' ><span>Workshops</span><br><span> (workable demonstrations)</span></th><th style='text-align:center;' ><strong><span>Main classes</span><br><span>and subclasses</span></strong></th><th style='text-align:center;' ><span>Low-level</span><br><span> classes</span></th></tr></thead><tbody><tr><td style='text-align:center;' ><span>class: workshop1</span></td><td style='text-align:center;' ><span>2D drawing class: pizza.raster</span></td><td style='text-align:center;' ><span>generic struct class à la Matlab: pizza.private.struct</span></td></tr><tr><td style='text-align:center;' ><span>script: geometry</span></td><td style='text-align:center;' ><span>class to read/write input files: pizza.data3.data</span></td><td style='text-align:center;' ><span>self-evaluable struct with scripting/alias features: pizza.private.param</span></td></tr><tr><td style='text-align:center;' ><span>script: assembly</span></td><td style='text-align:center;' ><span>class to manage dump files: pizza.dump3.dump</span></td><td style='text-align:center;' >&nbsp;</td></tr><tr><td style='text-align:center;' >&nbsp;</td><td style='text-align:center;' ><span>advanced scripting classes: pizza.script.script, pizza.script.datascript, pizza.script.scriptobject, pizza.script.scriptobjectgroup, pizza.script.pipescript</span></td><td style='text-align:center;' >&nbsp;</td></tr><tr><td style='text-align:center;' >&nbsp;</td><td style='text-align:center;' ><span>forcefield classes: pizza.forcefield.forcefield, pizza.forcefield.smd, pizza.forcefield.tlsph, pizza.forcefield.ulsph, pizza.forcefield.none, pizza.forcefield.water, pizza.forcefield.solidfood, pizza.forcefield.rigidwall</span></td><td style='text-align:center;' >&nbsp;</td></tr></tbody></table></figure><h2 id='key-steps'><span>Key steps</span></h2><p><span>The main steps to use  workshop1 are shown here:</span></p><div class="md-diagram-panel md-fences-adv-panel"><svg id="mermaidChart9" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="428.5" style="max-width: 257.5625px;" viewBox="0 0.0000019073486328125 257.5625 428.5"><style>#mermaidChart9{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}#mermaidChart9 .error-icon{fill:#e8e8e8;}#mermaidChart9 .error-text{fill:#f1908e;stroke:#f1908e;}#mermaidChart9 .edge-thickness-normal{stroke-width:2px;}#mermaidChart9 .edge-thickness-thick{stroke-width:3.5px;}#mermaidChart9 .edge-pattern-solid{stroke-dasharray:0;}#mermaidChart9 .edge-pattern-dashed{stroke-dasharray:3;}#mermaidChart9 .edge-pattern-dotted{stroke-dasharray:2;}#mermaidChart9 .marker{fill:#9370DB;}#mermaidChart9 .marker.cross{stroke:#9370DB;}#mermaidChart9 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaidChart9 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#mermaidChart9 .label text{fill:#333;}#mermaidChart9 .node rect,#mermaidChart9 .node circle,#mermaidChart9 .node ellipse,#mermaidChart9 .node polygon,#mermaidChart9 .node path{fill:#BDD5EA;stroke:hsl(208,11.724137931%,72.9411764706%);stroke-width:1px;}#mermaidChart9 .node .label{text-align:center;}#mermaidChart9 .node.clickable{cursor:pointer;}#mermaidChart9 .arrowheadPath{fill:#a1a1a1;}#mermaidChart9 .edgePath .path{stroke:#9370DB;stroke-width:1.5px;}#mermaidChart9 .flowchart-link{stroke:#9370DB;fill:none;}#mermaidChart9 .edgeLabel{background-color:#f4f4f4;text-align:center;}#mermaidChart9 .edgeLabel rect{opacity:0.5;background-color:#f4f4f4;fill:#f4f4f4;}#mermaidChart9 .cluster rect{fill:#e8e8e8;stroke:hsl(0,0%,80.9803921569%);stroke-width:1px;}#mermaidChart9 .cluster text{fill:#a1a1a1;}#mermaidChart9 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:#e8e8e8;border:1px solid undefined;border-radius:2px;pointer-events:none;z-index:100;}#mermaidChart9:root{--mermaid-font-family:sans-serif;}#mermaidChart9:root{--mermaid-alt-font-family:sans-serif;}#mermaidChart9 flowchart{fill:apa;}</style><g><g class="output"><g class="clusters"></g><g class="edgePaths"><g class="edgePath LS-G LE-R" id="L-G-R" style="opacity: 1;"><path class="path" d="M201.7174415588379,50.5L201.7174415588379,75.5L201.7174415588379,100.5" marker-end="url(#arrowhead353)" style="fill:none"></path><defs><marker id="arrowhead353" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-R LE-F" id="L-R-F" style="opacity: 1;"><path class="path" d="M201.7174415588379,143L201.7174415588379,168L201.7174415588379,193" marker-end="url(#arrowhead354)" style="fill:none"></path><defs><marker id="arrowhead354" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-W LE-A" id="L-W-A" style="opacity: 1;"><path class="path" d="M55.936195373535156,235.5L55.936195373535156,260.5L95.33653218037372,285.5" marker-end="url(#arrowhead355)" style="fill:none"></path><defs><marker id="arrowhead355" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-F LE-A" id="L-F-A" style="opacity: 1;"><path class="path" d="M201.7174415588379,235.5L201.7174415588379,260.5L162.31710475199932,285.5" marker-end="url(#arrowhead356)" style="fill:none"></path><defs><marker id="arrowhead356" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g><g class="edgePath LS-A LE-D" id="L-A-D" style="opacity: 1;"><path class="path" d="M128.82681846618652,328L128.82681846618652,353L128.82681846618652,378" marker-end="url(#arrowhead357)" style="fill:none"></path><defs><marker id="arrowhead357" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker></defs></g></g><g class="edgeLabels"><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g><g class="edgeLabel" transform="" style="opacity: 1;"><g transform="translate(0,0)" class="label"><rect rx="0" ry="0" width="0" height="0"></rect><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span></span></div></foreignObject></g></g></g><g class="nodes"><g class="node default" id="flowchart-G-70" transform="translate(201.7174415588379,29.25)" style="opacity: 1;"><rect rx="0" ry="0" x="-43.896484375" y="-21.250000953674316" width="87.79296875" height="42.50000190734863" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-33.896484375,-11.250000953674316)"><foreignObject width="67.79296875" height="22.5"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">geometry</div></foreignObject></g></g></g><g class="node default" id="flowchart-R-71" transform="translate(201.7174415588379,121.75)" style="opacity: 1;"><rect rx="0" ry="0" x="-31.191408157348633" y="-21.250000953674316" width="62.382816314697266" height="42.50000190734863" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-21.191408157348633,-11.250000953674316)"><foreignObject width="42.3828125" height="22.5"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">raster</div></foreignObject></g></g></g><g class="node default" id="flowchart-F-73" transform="translate(201.7174415588379,214.25)" style="opacity: 1;"><rect rx="0" ry="0" x="-47.84505081176758" y="-21.250000953674316" width="95.69010162353516" height="42.50000190734863" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-37.84505081176758,-11.250000953674316)"><foreignObject width="75.69010162353516" height="22.5"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">data.write</div></foreignObject></g></g></g><g class="node default" id="flowchart-W-74" transform="translate(55.936195373535156,214.25)" style="opacity: 1;"><rect rx="0" ry="0" x="-47.936195373535156" y="-21.250000953674316" width="95.87239074707031" height="42.50000190734863" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-37.936195373535156,-11.250000953674316)"><foreignObject width="75.87239074707031" height="22.5"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">workshop1</div></foreignObject></g></g></g><g class="node default" id="flowchart-A-75" transform="translate(128.82681846618652,306.75)" style="opacity: 1;"><rect rx="0" ry="0" x="-42.43977737426758" y="-21.250000953674316" width="84.87955474853516" height="42.50000190734863" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-32.43977737426758,-11.250000953674316)"><foreignObject width="64.87955474853516" height="22.5"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">assembly</div></foreignObject></g></g></g><g class="node default" id="flowchart-D-79" transform="translate(128.82681846618652,399.25)" style="opacity: 1;"><rect rx="0" ry="0" x="-29.921875" y="-21.250000953674316" width="59.84375" height="42.50000190734863" class="label-container"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-19.921875,-11.250000953674316)"><foreignObject width="39.84375" height="22.5"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">dump</div></foreignObject></g></g></g></g></g></g></svg></div><h2 id='overview-of-workshop1-classes'><span>Overview of workshop1 classes</span></h2><p><span>Workshop1 contains 7 main steps and codes as:</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="python" style="break-inside: unset;"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="python"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.25px; left: 8.99738px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># initizalization of the scheme </span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">bead_kernel_radius</span> = <span class="cm-number">0.0015</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">init</span> = <span class="cm-variable">initialization</span>(<span class="cm-variable">neighbor</span> =[<span class="cm-variable">bead_kernel_radius</span>,<span class="cm-string">"bin"</span>])</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># scriptobject handles bead interactions</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">FLUID</span> = <span class="cm-variable">scriptdata</span>(</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">rho</span> = <span class="cm-number">1000</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">c0</span> = <span class="cm-number">100.0</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">q1</span> = <span class="cm-number">1.0</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">contact_stiffness</span> = <span class="cm-number">10000000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  ) &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">SOLID</span> = <span class="cm-variable">scriptdata</span>(</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">rho</span> = <span class="cm-number">2000</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">c0</span> = <span class="cm-number">200.0</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">sigma_yield</span> = <span class="cm-string">'0.1*${E}'</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">contact_stiffness</span> = <span class="cm-number">10000000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  )</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">WALL</span> = <span class="cm-variable">scriptdata</span>(</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">rho</span> = <span class="cm-number">3000</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">c0</span> = <span class="cm-number">200.0</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">contact_stiffness</span> = <span class="cm-number">10000000</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">contact_scale</span> = <span class="cm-number">1.5</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  )</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">b1</span> = <span class="cm-variable">scriptobject</span>(<span class="cm-variable">name</span>=<span class="cm-string">"bead 1"</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">group</span> = [<span class="cm-string">"rigid"</span>, <span class="cm-string">"solid"</span>],</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">filename</span>=<span class="cm-string">'./raster_2_types.lmp'</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">forcefield</span>=<span class="cm-variable">rigidwall</span>(<span class="cm-variable">USER</span>=<span class="cm-variable">WALL</span>))</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">b2</span> = <span class="cm-variable">scriptobject</span>(<span class="cm-variable">name</span>=<span class="cm-string">"bead 2"</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">group</span> = [<span class="cm-string">"fluid"</span>, <span class="cm-string">"ulsph"</span>],</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">filename</span> = <span class="cm-string">'./raster_2_types.lmp'</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">forcefield</span>=<span class="cm-variable">water</span>(<span class="cm-variable">USER</span>=<span class="cm-variable">FLUID</span>))</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">b3</span> = <span class="cm-variable">scriptobject</span>(<span class="cm-variable">name</span>=<span class="cm-string">"bead 3"</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">group</span> = [<span class="cm-string">"oscillating"</span>, <span class="cm-string">"solid"</span>,<span class="cm-string">"tlsph"</span>],</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">filename</span> = <span class="cm-string">'./raster_4_types.lmp'</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">forcefield</span>=<span class="cm-variable">solidfood</span>(<span class="cm-variable">USER</span>=<span class="cm-variable">SOLID</span>))</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">b4</span> = <span class="cm-variable">scriptobject</span>(<span class="cm-variable">name</span>=<span class="cm-string">"bead 4"</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">group</span> = [<span class="cm-string">"solid"</span>, <span class="cm-string">"tlsph"</span>],</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">filename</span> = <span class="cm-string">'./raster_4_types.lmp'</span>,</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">forcefield</span>=<span class="cm-variable">solidfood</span>(<span class="cm-variable">USER</span>=<span class="cm-variable">SOLID</span>))</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># set gravity, timestep, adjusted kernel radius</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">inte</span> = <span class="cm-variable">integration</span>()</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># modify which data is returned to the terminal</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">thermo</span> = <span class="cm-variable">thermo_print</span>()</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># equilibration/relaxation protocol, iterations can be reduced or augmented</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">equilsteps</span> = &nbsp; <span class="cm-variable">equilibration</span>(<span class="cm-variable">it</span>=<span class="cm-number">15</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># modify the dump settings, outstep, properties dumped etc.</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">dmp</span> = <span class="cm-variable">smddump</span>(<span class="cm-variable">outstep</span>=<span class="cm-number">2000</span>,<span class="cm-variable">outputfile</span>=[<span class="cm-string">"dump.workshop1"</span>],)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># use equations to move specific objects or groups of atoms</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">moves</span> = <span class="cm-variable">translation</span>(<span class="cm-variable">vx</span> = [<span class="cm-string">"0.1*exp(-step/100)"</span>],</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">vy</span> = [<span class="cm-string">"0"</span>],<span class="cm-variable">vz</span> = [<span class="cm-string">"0"</span>]) <span class="cm-operator">&amp;</span> <span class="cm-error">\</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-variable">run</span>() <span class="cm-operator">&amp;</span> <span class="cm-error">\</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">translation</span>() <span class="cm-operator">&amp;</span> <span class="cm-error">\</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">force</span>() <span class="cm-operator">&amp;</span> <span class="cm-error">\</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">run</span>()</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># combine everything into a full script and write file &nbsp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">collection</span> = <span class="cm-variable">b1</span><span class="cm-operator">+</span><span class="cm-variable">b2</span><span class="cm-operator">+</span><span class="cm-variable">b3</span><span class="cm-operator">+</span><span class="cm-variable">b4</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">fullscript</span> = <span class="cm-variable">init</span> <span class="cm-operator">+</span> <span class="cm-variable">collection</span>.<span class="cm-property">script</span> <span class="cm-operator">+</span> <span class="cm-variable">inte</span> <span class="cm-error">\</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; <span class="cm-tab" role="presentation" cm-text="	">   </span><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-tab" role="presentation" cm-text="	">    </span> <span class="cm-operator">+</span> <span class="cm-variable">thermo</span> <span class="cm-operator">+</span> <span class="cm-variable">equilsteps</span> <span class="cm-operator">+</span> <span class="cm-variable">dmp</span> <span class="cm-operator">+</span> <span class="cm-variable">moves</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">fullscript</span>.<span class="cm-property">write</span>(<span class="cm-string">"./tmp/in.swimmingpool"</span>)</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 1463px;"></div><div class="CodeMirror-gutters" style="display: none; height: 1463px;"></div></div></div></pre><p><span>The equivalent flowchart reads:</span></p><div class="md-diagram-panel md-fences-adv-panel"><svg id="mermaidChart10" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="954.2656860351562" style="max-width: 722.171875px;" viewBox="-20 -20 722.171875 954.2656860351562"><style>#mermaidChart10{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}#mermaidChart10 .error-icon{fill:#e8e8e8;}#mermaidChart10 .error-text{fill:#f1908e;stroke:#f1908e;}#mermaidChart10 .edge-thickness-normal{stroke-width:2px;}#mermaidChart10 .edge-thickness-thick{stroke-width:3.5px;}#mermaidChart10 .edge-pattern-solid{stroke-dasharray:0;}#mermaidChart10 .edge-pattern-dashed{stroke-dasharray:3;}#mermaidChart10 .edge-pattern-dotted{stroke-dasharray:2;}#mermaidChart10 .marker{fill:#9370DB;}#mermaidChart10 .marker.cross{stroke:#9370DB;}#mermaidChart10 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaidChart10 g.classGroup text{fill:hsl(208,11.724137931%,72.9411764706%);fill:#333;stroke:none;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:10px;}#mermaidChart10 g.classGroup text .title{font-weight:bolder;}#mermaidChart10 .classTitle{font-weight:bolder;}#mermaidChart10 .node rect,#mermaidChart10 .node circle,#mermaidChart10 .node ellipse,#mermaidChart10 .node polygon,#mermaidChart10 .node path{fill:#BDD5EA;stroke:hsl(208,11.724137931%,72.9411764706%);stroke-width:1px;}#mermaidChart10 .divider{stroke:hsl(208,11.724137931%,72.9411764706%);stroke:1;}#mermaidChart10 g.clickable{cursor:pointer;}#mermaidChart10 g.classGroup rect{fill:#BDD5EA;stroke:hsl(208,11.724137931%,72.9411764706%);}#mermaidChart10 g.classGroup line{stroke:hsl(208,11.724137931%,72.9411764706%);stroke-width:1;}#mermaidChart10 .classLabel .box{stroke:none;stroke-width:0;fill:#BDD5EA;opacity:0.5;}#mermaidChart10 .classLabel .label{fill:hsl(208,11.724137931%,72.9411764706%);font-size:10px;}#mermaidChart10 .relation{stroke:#9370DB;stroke-width:1;fill:none;}#mermaidChart10 .dashed-line{stroke-dasharray:3;}#mermaidChart10 #compositionStart,#mermaidChart10 .composition{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart10 #compositionEnd,#mermaidChart10 .composition{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart10 #dependencyStart,#mermaidChart10 .dependency{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart10 #dependencyStart,#mermaidChart10 .dependency{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart10 #extensionStart,#mermaidChart10 .extension{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart10 #extensionEnd,#mermaidChart10 .extension{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart10 #aggregationStart,#mermaidChart10 .aggregation{fill:#BDD5EA !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart10 #aggregationEnd,#mermaidChart10 .aggregation{fill:#BDD5EA !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart10 .edgeTerminals{font-size:11px;}#mermaidChart10:root{--mermaid-font-family:sans-serif;}#mermaidChart10:root{--mermaid-alt-font-family:sans-serif;}#mermaidChart10 class{fill:apa;}</style><g></g><defs><marker id="extensionStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 1,7 L18,13 V 1 Z"></path></marker></defs><defs><marker id="extensionEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 1,1 V 13 L18,7 Z"></path></marker></defs><defs><marker id="compositionStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="compositionEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="aggregationStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="aggregationEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="dependencyStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 5,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="dependencyEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"></path></marker></defs><g id="classid-initialization-66" class="classGroup" transform="translate(497.0546875,0 )"><rect x="0" y="0" width="148.453125" height="162.515625" class=" "></rect><text y="15" x="0"><tspan x="39.375">«globalsection»</tspan><tspan class="title" dy="10" x="44.6171875">initialization</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="148.453125"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">units= "$ si"</tspan><tspan x="5" dy="10">dimension= 2</tspan><tspan x="5" dy="10">boundary= ["p","f","p"]</tspan><tspan x="5" dy="10">comm_modify= ["vel","yes"]</tspan><tspan x="5" dy="10">comm_style= "$ tiled"</tspan><tspan x="5" dy="10">atom_modify= ["map","array"]</tspan><tspan x="5" dy="10">newton= "$ off"</tspan><tspan x="5" dy="10">neighbor= [1,"bin"]</tspan><tspan x="5" dy="10">neigh_modify_every= 5</tspan><tspan x="5" dy="10">neigh_modify_delay= 0</tspan><tspan x="5" dy="10">neigh_modify_check= "$ yes"</tspan><tspan x="5" dy="10">atom_style= "$ smd"</tspan></text><line x1="0" y1="158.34375" y2="158.34375" x2="148.453125"></line><text x="5" y="173.34375" fill="white" class="classText"></text></g><g id="classid-integration-67" class="classGroup" transform="translate(494.5078125,293.359375 )"><rect x="0" y="0" width="153.546875" height="92.515625" class=" "></rect><text y="15" x="0"><tspan x="30.703125">«integrationsection»</tspan><tspan class="title" dy="10" x="51.0625">integration</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="153.546875"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">g = 9.81</tspan><tspan x="5" dy="10">g_vector = [0,1,0]</tspan><tspan x="5" dy="10">dt = 0.1</tspan><tspan x="5" dy="10">adjust_radius = [1.01,10,15]</tspan><tspan x="5" dy="10">load balancing</tspan></text><line x1="0" y1="88.34375" y2="88.34375" x2="153.546875"></line><text x="5" y="103.34375" fill="white" class="classText"></text></g><g id="classid-thermo_print-68" class="classGroup" transform="translate(488.7265625,435.875 )"><rect x="0" y="0" width="165.109375" height="92.515625" class=" "></rect><text y="15" x="0"><tspan x="36.484375">«integrationsection»</tspan><tspan class="title" dy="10" x="51.0625">thermo_print</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="165.109375"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">g = 9.81</tspan><tspan x="5" dy="10">g_vector = [0,1,0]</tspan><tspan x="5" dy="10">dt = 0.1</tspan><tspan x="5" dy="10">adjust_radius = [1.01,10,15]</tspan><tspan x="5" dy="10">load balancing</tspan></text><line x1="0" y1="88.34375" y2="88.34375" x2="165.109375"></line><text x="5" y="103.34375" fill="white" class="classText"></text></g><g id="classid-equilibration-69" class="classGroup" transform="translate(490.203125,578.390625 )"><rect x="0" y="0" width="162.15625" height="62.515625" class=" "></rect><text y="15" x="0"><tspan x="35.0078125">«integrationsection»</tspan><tspan class="title" dy="10" x="51.0546875">equilibration</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="162.15625"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">it = 50,</tspan><tspan x="5" dy="10">re = 0.9</tspan></text><line x1="0" y1="58.34375" y2="58.34375" x2="162.15625"></line><text x="5" y="73.34375" fill="white" class="classText"></text></g><g id="classid-smddump-70" class="classGroup" transform="translate(460.390625,690.90625 )"><rect x="0" y="0" width="221.78125" height="142.515625" class=" "></rect><text y="15" x="0"><tspan x="77.140625">«dumpsection»</tspan><tspan class="title" dy="10" x="88.4609375">smddump</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="221.78125"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">outstep = 1000,</tspan><tspan x="5" dy="10">outputfile = "$ dump.file",</tspan><tspan x="5" dy="10">particle_data = ["id","type","x","y","z","mol"...]</tspan><tspan x="5" dy="10">v_xyz = ["vx","vy","vz"]</tspan><tspan x="5" dy="10">f_xyz = ["fx","fy","fz"]</tspan><tspan x="5" dy="10">stress_tensor = ["c_S[1]","c_S[2]"]</tspan><tspan x="5" dy="10">strain_tensor = ["c_E[1]","c_E[2]"]</tspan><tspan x="5" dy="10">strain_rate_tensor = ["c_L[1]","c_L[2]"]</tspan><tspan x="5" dy="10">thermo_properties = ["c_epl"]</tspan><tspan x="5" dy="10">calc_data = ["c_nn","proc","c_HGe"]</tspan></text><line x1="0" y1="138.34375" y2="138.34375" x2="221.78125"></line><text x="5" y="153.34375" fill="white" class="classText"></text></g><g id="classid-translation-71" class="classGroup" transform="translate(0,715.90625 )"><rect x="0" y="0" width="121.734375" height="92.515625" class=" "></rect><text y="15" x="0"><tspan x="32.1640625">«runsection»</tspan><tspan class="title" dy="10" x="35.734375">translation</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="121.734375"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">eqvx = 0</tspan><tspan x="5" dy="10">eqvy = 0</tspan><tspan x="5" dy="10">eqvz = 0</tspan><tspan x="5" dy="10">fixIDv = ["setvelocities"]</tspan><tspan x="5" dy="10">group = ["all"]</tspan></text><line x1="0" y1="88.34375" y2="88.34375" x2="121.734375"></line><text x="5" y="103.34375" fill="white" class="classText"></text></g><g id="classid-force-72" class="classGroup" transform="translate(305.234375,715.90625 )"><rect x="0" y="0" width="105.15625" height="92.515625" class=" "></rect><text y="15" x="0"><tspan x="23.875">«runsection»</tspan><tspan class="title" dy="10" x="40.28125">force</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="105.15625"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">eqfx = 0</tspan><tspan x="5" dy="10">eqfy = 0</tspan><tspan x="5" dy="10">eqfz = 0</tspan><tspan x="5" dy="10">fixIDf = ["setforces"]</tspan><tspan x="5" dy="10">group = ["all"]</tspan></text><line x1="0" y1="88.34375" y2="88.34375" x2="105.15625"></line><text x="5" y="103.34375" fill="white" class="classText"></text></g><g id="classid-run-73" class="classGroup" transform="translate(171.734375,735.90625 )"><rect x="0" y="0" width="83.5" height="52.515625" class=" "></rect><text y="15" x="0"><tspan x="13.046875">«runsection»</tspan><tspan class="title" dy="10" x="33.6953125">run</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="83.5"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">runs = 50000</tspan></text><line x1="0" y1="48.34375" y2="48.34375" x2="83.5"></line><text x="5" y="63.34375" fill="white" class="classText"></text></g><g id="classid-collection-74" class="classGroup" transform="translate(543.25,212.515625 )"><rect x="0" y="0" width="56.0625" height="30.84375" class=" "></rect><text y="15" x="0"><tspan class="title" x="5">collection</tspan></text><line x1="0" y1="21.671875" y2="21.671875" x2="56.0625"></line><text x="5" y="31.671875" fill="white" class="classText"></text><line x1="0" y1="26.671875" y2="26.671875" x2="56.0625"></line><text x="5" y="41.671875" fill="white" class="classText"></text></g><g id="classid-moves-75" class="classGroup" transform="translate(265.8515625,883.421875 )"><rect x="0" y="0" width="39.59375" height="30.84375" class=" "></rect><text y="15" x="0"><tspan class="title" x="5">moves</tspan></text><line x1="0" y1="21.671875" y2="21.671875" x2="39.59375"></line><text x="5" y="31.671875" fill="white" class="classText"></text><line x1="0" y1="26.671875" y2="26.671875" x2="39.59375"></line><text x="5" y="41.671875" fill="white" class="classText"></text></g><path d="M571.28125,162.515625L571.28125,166.68229166666666C571.28125,170.84895833333334,571.28125,179.18229166666666,571.28125,187.515625C571.28125,195.84895833333334,571.28125,204.18229166666666,571.28125,208.34895833333334L571.28125,212.515625" id="edge69" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M571.28125,243.359375L571.28125,247.52604166666666C571.28125,251.69270833333334,571.28125,260.0260416666667,571.28125,268.359375C571.28125,276.6927083333333,571.28125,285.0260416666667,571.28125,289.1927083333333L571.28125,293.359375" id="edge70" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M571.28125,385.875L571.28125,390.0416666666667C571.28125,394.2083333333333,571.28125,402.5416666666667,571.28125,410.875C571.28125,419.2083333333333,571.28125,427.5416666666667,571.28125,431.7083333333333L571.28125,435.875" id="edge71" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M571.28125,528.390625L571.28125,532.5572916666666C571.28125,536.7239583333334,571.28125,545.0572916666666,571.28125,553.390625C571.28125,561.7239583333334,571.28125,570.0572916666666,571.28125,574.2239583333334L571.28125,578.390625" id="edge72" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M571.28125,640.90625L571.28125,645.0729166666666C571.28125,649.2395833333334,571.28125,657.5729166666666,571.28125,665.90625C571.28125,674.2395833333334,571.28125,682.5729166666666,571.28125,686.7395833333334L571.28125,690.90625" id="edge73" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M60.8671875,808.421875L60.8671875,816.7552083333334C60.8671875,825.0885416666666,60.8671875,841.7552083333334,95.03125,856.2321833799643C129.1953125,870.7091584265953,197.5234375,882.9964418531905,231.6875,889.1400835664882L265.8515625,895.2837252797859" id="edge74" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M213.484375,788.421875L213.484375,800.0885416666666C213.484375,811.7552083333334,213.484375,835.0885416666666,222.21223958333334,851.6440219475118C230.94010416666666,868.1995022283569,248.39583333333334,877.9771294567139,257.1236979166667,882.8659430708923L265.8515625,887.7547566850709" id="edge75" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M357.8125,808.421875L357.8125,816.7552083333334C357.8125,825.0885416666666,357.8125,841.7552083333334,349.0846354166667,854.9773552808451C340.3567708333333,868.1995022283569,322.9010416666667,877.9771294567139,314.1731770833333,882.8659430708923L305.4453125,887.7547566850709" id="edge76" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M571.28125,833.421875L571.28125,837.5885416666666C571.28125,841.7552083333334,571.28125,850.0885416666666,526.9752604166666,860.5252553808476C482.6692708333333,870.9619690950284,394.0572916666667,883.5020631900567,349.7513020833333,889.7721102375709L305.4453125,896.0421572850852" id="edge77" class="relation" marker-end="url(#aggregationEnd)"></path></svg></div><p>&nbsp;</p><h2 id='overview-of-top-classes'><span>Overview of top classes</span></h2><p><span>The figure highlights the  dependencies between all classes. Note that several operators have been overloaded to facilitate scripting and indexing.</span></p><div class="md-diagram-panel md-fences-adv-panel"><svg id="mermaidChart11" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="1295.9375" style="max-width: 382.2890625px;" viewBox="-20 -20 382.2890625 1295.9375"><style>#mermaidChart11{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}#mermaidChart11 .error-icon{fill:#e8e8e8;}#mermaidChart11 .error-text{fill:#f1908e;stroke:#f1908e;}#mermaidChart11 .edge-thickness-normal{stroke-width:2px;}#mermaidChart11 .edge-thickness-thick{stroke-width:3.5px;}#mermaidChart11 .edge-pattern-solid{stroke-dasharray:0;}#mermaidChart11 .edge-pattern-dashed{stroke-dasharray:3;}#mermaidChart11 .edge-pattern-dotted{stroke-dasharray:2;}#mermaidChart11 .marker{fill:#9370DB;}#mermaidChart11 .marker.cross{stroke:#9370DB;}#mermaidChart11 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaidChart11 g.classGroup text{fill:hsl(208,11.724137931%,72.9411764706%);fill:#333;stroke:none;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:10px;}#mermaidChart11 g.classGroup text .title{font-weight:bolder;}#mermaidChart11 .classTitle{font-weight:bolder;}#mermaidChart11 .node rect,#mermaidChart11 .node circle,#mermaidChart11 .node ellipse,#mermaidChart11 .node polygon,#mermaidChart11 .node path{fill:#BDD5EA;stroke:hsl(208,11.724137931%,72.9411764706%);stroke-width:1px;}#mermaidChart11 .divider{stroke:hsl(208,11.724137931%,72.9411764706%);stroke:1;}#mermaidChart11 g.clickable{cursor:pointer;}#mermaidChart11 g.classGroup rect{fill:#BDD5EA;stroke:hsl(208,11.724137931%,72.9411764706%);}#mermaidChart11 g.classGroup line{stroke:hsl(208,11.724137931%,72.9411764706%);stroke-width:1;}#mermaidChart11 .classLabel .box{stroke:none;stroke-width:0;fill:#BDD5EA;opacity:0.5;}#mermaidChart11 .classLabel .label{fill:hsl(208,11.724137931%,72.9411764706%);font-size:10px;}#mermaidChart11 .relation{stroke:#9370DB;stroke-width:1;fill:none;}#mermaidChart11 .dashed-line{stroke-dasharray:3;}#mermaidChart11 #compositionStart,#mermaidChart11 .composition{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart11 #compositionEnd,#mermaidChart11 .composition{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart11 #dependencyStart,#mermaidChart11 .dependency{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart11 #dependencyStart,#mermaidChart11 .dependency{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart11 #extensionStart,#mermaidChart11 .extension{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart11 #extensionEnd,#mermaidChart11 .extension{fill:#9370DB !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart11 #aggregationStart,#mermaidChart11 .aggregation{fill:#BDD5EA !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart11 #aggregationEnd,#mermaidChart11 .aggregation{fill:#BDD5EA !important;stroke:#9370DB !important;stroke-width:1;}#mermaidChart11 .edgeTerminals{font-size:11px;}#mermaidChart11:root{--mermaid-font-family:sans-serif;}#mermaidChart11:root{--mermaid-alt-font-family:sans-serif;}#mermaidChart11 class{fill:apa;}</style><g></g><defs><marker id="extensionStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 1,7 L18,13 V 1 Z"></path></marker></defs><defs><marker id="extensionEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 1,1 V 13 L18,7 Z"></path></marker></defs><defs><marker id="compositionStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="compositionEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="aggregationStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="aggregationEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="dependencyStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 5,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="dependencyEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"></path></marker></defs><g id="classid-raster-76" class="classGroup" transform="translate(0,220.015625 )"><rect x="0" y="0" width="68.046875" height="250.015625" class=" "></rect><text y="15" x="0"><tspan x="18.9453125">«core»</tspan><tspan class="title" dy="10" x="20.0703125">raster</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="68.046875"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">width=200</tspan><tspan x="5" dy="10">height=200</tspan><tspan x="5" dy="10">dpi=300</tspan></text><line x1="0" y1="68.34375" y2="68.34375" x2="68.046875"></line><text x="5" y="83.34375" fill="white" class="classText"><tspan x="5">rectangle()</tspan><tspan x="5" dy="10">circle()</tspan><tspan x="5" dy="10">triangle()</tspan><tspan x="5" dy="10">diamond()</tspan><tspan x="5" dy="10">pentagon()</tspan><tspan x="5" dy="10">hexagon()</tspan><tspan x="5" dy="10">list()</tspan><tspan x="5" dy="10">get()</tspan><tspan x="5" dy="10">plot()</tspan><tspan x="5" dy="10">show()</tspan><tspan x="5" dy="10">label()</tspan><tspan x="5" dy="10">unlabel()</tspan><tspan x="5" dy="10">numeric()</tspan><tspan x="5" dy="10">string()</tspan><tspan x="5" dy="10">print()</tspan><tspan x="5" dy="10">data()</tspan><tspan x="5" dy="10">write()</tspan></text></g><g id="classid-data-77" class="classGroup" transform="translate(1.9375,0 )"><rect x="0" y="0" width="64.171875" height="170.015625" class=" "></rect><text y="15" x="0"><tspan x="15.25">«pizza»</tspan><tspan class="title" dy="10" x="21.828125">data</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="64.171875"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">title</tspan><tspan x="5" dy="10">names</tspan><tspan x="5" dy="10">headers</tspan><tspan x="5" dy="10">sections</tspan><tspan x="5" dy="10">flist</tspan><tspan x="5" dy="10">restart</tspan></text><line x1="0" y1="98.34375" y2="98.34375" x2="64.171875"></line><text x="5" y="113.34375" fill="white" class="classText"><tspan x="5">append()</tspan><tspan x="5" dy="10">findtime()</tspan><tspan x="5" dy="10">map()</tspan><tspan x="5" dy="10">reorder()</tspan><tspan x="5" dy="10">replace()</tspan><tspan x="5" dy="10">write()</tspan></text></g><g id="classid-dump-78" class="classGroup" transform="translate(118.046875,250.015625 )"><rect x="0" y="0" width="69.796875" height="190.015625" class=" "></rect><text y="15" x="0"><tspan x="18.0625">«pizza»</tspan><tspan class="title" dy="10" x="21.828125">dump</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="69.796875"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">flist</tspan><tspan x="5" dy="10">names</tspan><tspan x="5" dy="10">snaps</tspan></text><line x1="0" y1="68.34375" y2="68.34375" x2="69.796875"></line><text x="5" y="83.34375" fill="white" class="classText"><tspan x="5">kind()</tspan><tspan x="5" dy="10">type()</tspan><tspan x="5" dy="10">maxbox()</tspan><tspan x="5" dy="10">maxtype()</tspan><tspan x="5" dy="10">tselect()</tspan><tspan x="5" dy="10">aselect()</tspan><tspan x="5" dy="10">frame()</tspan><tspan x="5" dy="10">findtime()</tspan><tspan x="5" dy="10">time()</tspan><tspan x="5" dy="10">read_all()</tspan><tspan x="5" dy="10">write()</tspan></text></g><g id="classid-struct-79" class="classGroup" transform="translate(218.59375,45 )"><rect x="0" y="0" width="79.90625" height="80.015625" class=" "></rect><text y="15" x="0"><tspan x="18.765625">«private»</tspan><tspan class="title" dy="10" x="26.1796875">struct</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="79.90625"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">var=value</tspan></text><line x1="0" y1="48.34375" y2="48.34375" x2="79.90625"></line><text x="5" y="63.34375" fill="white" class="classText"><tspan x="5">generator()</tspan><tspan x="5" dy="10">scan()</tspan></text></g><g id="classid-param-80" class="classGroup" transform="translate(237.84375,305.015625 )"><rect x="0" y="0" width="81.40625" height="80.015625" class=" "></rect><text y="15" x="0"><tspan x="19.515625">«private»</tspan><tspan class="title" dy="10" x="26.1796875">param</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="81.40625"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">var=value</tspan></text><line x1="0" y1="48.34375" y2="48.34375" x2="81.40625"></line><text x="5" y="63.34375" fill="white" class="classText"><tspan x="5">eval()</tspan><tspan x="5" dy="10">formateval()</tspan></text></g><g id="classid-scriptdata-81" class="classGroup" transform="translate(254.9765625,788.390625 )"><rect x="0" y="0" width="87.140625" height="72.515625" class=" "></rect><text y="15" x="0"><tspan x="28.4921875">«core»</tspan><tspan class="title" dy="10" x="20.0703125">scriptdata</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="87.140625"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">var1=value1</tspan><tspan x="5" dy="10">var2=value2</tspan><tspan x="5" dy="10">var3=value3</tspan></text><line x1="0" y1="68.34375" y2="68.34375" x2="87.140625"></line><text x="5" y="83.34375" fill="white" class="classText"></text></g><g id="classid-forcefield-82" class="classGroup" transform="translate(6.019533157348633,600.875 )"><rect x="0" y="0" width="155.203125" height="112.515625" class=" "></rect><text y="15" x="0"><tspan x="62.5234375">«core»</tspan><tspan class="title" dy="10" x="54.7578125">forcefield</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="155.203125"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">name=forcefield:style:material</tspan><tspan x="5" dy="10">description</tspan><tspan x="5" dy="10">beadtype</tspan><tspan x="5" dy="10">parameters</tspan><tspan x="5" dy="10">userid</tspan><tspan x="5" dy="10">version</tspan><tspan x="5" dy="10">USER</tspan></text><line x1="0" y1="108.34375" y2="108.34375" x2="155.203125"></line><text x="5" y="123.34375" fill="white" class="classText"></text></g><g id="classid-script-83" class="classGroup" transform="translate(254.8046875,955.90625 )"><rect x="0" y="0" width="87.484375" height="110.015625" class=" "></rect><text y="15" x="0"><tspan x="28.6640625">«core»</tspan><tspan class="title" dy="10" x="30.5">script</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="87.484375"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">DEFINITIONS</tspan><tspan x="5" dy="10">TEMPLATE</tspan><tspan x="5" dy="10">USER</tspan><tspan x="5" dy="10">+, &amp;, *, **, |, +=</tspan></text><line x1="0" y1="78.34375" y2="78.34375" x2="87.484375"></line><text x="5" y="93.34375" fill="white" class="classText"><tspan x="5">do()</tspan><tspan x="5" dy="10">write()</tspan></text></g><g id="classid-scriptobject-84" class="classGroup" transform="translate(108.3828125,763.390625 )"><rect x="0" y="0" width="96.59375" height="122.515625" class=" "></rect><text y="15" x="0"><tspan x="33.21875">«core»</tspan><tspan class="title" dy="10" x="20.0703125">scriptobject</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="96.59375"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">beadtype</tspan><tspan x="5" dy="10">name</tspan><tspan x="5" dy="10">fullname</tspan><tspan x="5" dy="10">filename</tspan><tspan x="5" dy="10">style</tspan><tspan x="5" dy="10">forcefield</tspan><tspan x="5" dy="10">group</tspan><tspan x="5" dy="10">USER</tspan></text><line x1="0" y1="118.34375" y2="118.34375" x2="96.59375"></line><text x="5" y="133.34375" fill="white" class="classText"></text></g><g id="classid-scriptobjectgroup-85" class="classGroup" transform="translate(29.96094512939453,935.90625 )"><rect x="0" y="0" width="123.28125" height="150.015625" class=" "></rect><text y="15" x="0"><tspan x="46.562496185302734">«core»</tspan><tspan class="title" dy="10" x="20.070308685302734">scriptobjectgroup</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="123.28124237060547"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">groupid</tspan><tspan x="5" dy="10">groupidname</tspan><tspan x="5" dy="10">groupname</tspan><tspan x="5" dy="10">beadtype</tspan><tspan x="5" dy="10">name</tspan><tspan x="5" dy="10">str</tspan><tspan x="5" dy="10">forcefield</tspan><tspan x="5" dy="10">script</tspan><tspan x="5" dy="10">interactions</tspan></text><line x1="0" y1="128.34375" y2="128.34375" x2="123.28124237060547"></line><text x="5" y="143.34375" fill="white" class="classText"><tspan x="5">select()</tspan></text></g><g id="classid-pipescript-86" class="classGroup" transform="translate(184.11328125,1135.921875 )"><rect x="0" y="0" width="87" height="120.015625" class=" "></rect><text y="15" x="0"><tspan x="28.421875">«core»</tspan><tspan class="title" dy="10" x="20.0703125">pipescript</tspan></text><line x1="0" y1="31.671875" y2="31.671875" x2="87"></line><text x="5" y="41.671875" fill="white" class="classText"><tspan x="5">[]</tspan><tspan x="5" dy="10">|, +, +=, *</tspan><tspan x="5" dy="10">scripts</tspan><tspan x="5" dy="10">script</tspan></text><line x1="0" y1="78.34375" y2="78.34375" x2="87"></line><text x="5" y="93.34375" fill="white" class="classText"><tspan x="5">clear()</tspan><tspan x="5" dy="10">rename()</tspan><tspan x="5" dy="10">do()</tspan></text></g><g id="classid-paramforcefield-87" class="classGroup" transform="translate(41.26172065734863,520.03125 )"><rect x="0" y="0" width="84.71875" height="30.84375" class=" "></rect><text y="15" x="0"><tspan class="title" x="5">paramforcefield</tspan></text><line x1="0" y1="21.671875" y2="21.671875" x2="84.71875"></line><text x="5" y="31.671875" fill="white" class="classText"></text><line x1="0" y1="26.671875" y2="26.671875" x2="84.71875"></line><text x="5" y="41.671875" fill="white" class="classText"></text></g><path d="M34.0234375,170.015625L34.0234375,174.18229166666666C34.0234375,178.34895833333334,34.0234375,186.68229166666666,34.0234375,195.015625C34.0234375,203.34895833333334,34.0234375,211.68229166666666,34.0234375,215.84895833333334L34.0234375,220.015625" id="edge78" class="relation" marker-end="url(#compositionEnd)"></path><path d="M265.8205061341524,125.015625L267.9415676117937,136.68229166666666C270.06262908943495,148.34895833333334,274.3047520447175,171.68229166666666,276.42581352235874,201.68229166666666C278.546875,231.68229166666666,278.546875,268.3489583333333,278.546875,286.6822916666667L278.546875,305.015625" id="edge79" class="relation" marker-end="url(#extensionEnd)"></path><g class="classLabel"><rect class="box" x="255.0625" y="202.765625" width="46.96875" height="16.6875"></rect><text class="label" x="278.546875" y="214.4418971080935" fill="red" text-anchor="middle">extended</text></g><path d="M242.98102024669768,125.015625L238.4418658305814,136.68229166666666C233.9027114144651,148.34895833333334,224.82440258223255,171.68229166666666,215.63485754111628,194.45701958737638C206.4453125,217.23174750808607,197.14453125,239.44787001617217,192.494140625,250.5559312702152L187.84375,261.6639925242583" id="edge80" class="relation" marker-end="url(#compositionEnd)"></path><path d="M237.84375,376.34708675642275L212.13997427622476,396.12778063035233C186.43619855244955,415.90847450428186,135.02864710489908,455.46986225214096,109.32487138112386,479.41722279273716C83.62109565734863,503.3645833333333,83.62109565734863,511.6979166666667,83.62109565734863,515.8645833333334L83.62109565734863,520.03125" id="edge81" class="relation" marker-end="url(#compositionEnd)"></path><path d="M283.8809721824384,385.03125L286.3252893186987,403.3645833333333C288.76960645495893,421.6979166666667,293.6582407274795,458.3645833333333,296.1025578637397,483.4348958333333C298.546875,508.5052083333333,298.546875,521.9791666666666,298.546875,535.453125C298.546875,548.9270833333334,298.546875,562.4010416666666,298.546875,582.6809895833334C298.546875,602.9609375,298.546875,630.046875,298.546875,657.1328125C298.546875,684.21875,298.546875,711.3046875,298.546875,733.1809895833334C298.546875,755.0572916666666,298.546875,771.7239583333334,298.546875,780.0572916666666L298.546875,788.390625" id="edge82" class="relation" marker-end="url(#extensionEnd)"></path><path d="M262.2955894631139,385.03125L254.84853809426158,403.3645833333333C247.40148672540928,421.6979166666667,232.50738398770463,458.3645833333333,225.0603326188523,483.4348958333333C217.61328125,508.5052083333333,217.61328125,521.9791666666666,217.61328125,535.453125C217.61328125,548.9270833333334,217.61328125,562.4010416666666,217.61328125,582.6809895833334C217.61328125,602.9609375,217.61328125,630.046875,217.61328125,657.1328125C217.61328125,684.21875,217.61328125,711.3046875,214.6698959890031,729.0143229166666C211.72651072800622,746.7239583333334,205.8397402060124,755.0572916666666,202.89635494501556,759.2239583333334L199.95296968401865,763.390625" id="edge83" class="relation" marker-end="url(#compositionEnd)"></path><path d="M83.62109565734863,550.875L83.62109565734863,555.0416666666666C83.62109565734863,559.2083333333334,83.62109565734863,567.5416666666666,83.62109565734863,575.875C83.62109565734863,584.2083333333334,83.62109565734863,592.5416666666666,83.62109565734863,596.7083333333334L83.62109565734863,600.875" id="edge84" class="relation" marker-end="url(#compositionEnd)"></path><path d="M83.62109565734863,713.390625L83.62109565734863,717.5572916666666C83.62109565734863,721.7239583333334,83.62109565734863,730.0572916666666,87.7480484644572,739.0965121624382C91.87500127156575,748.1357326582097,100.12890688578288,757.8808403164194,104.25585969289143,762.7533941455243L108.3828125,767.6259479746291" id="edge85" class="relation" marker-end="url(#compositionEnd)"></path><path d="M110.46308137610191,885.90625L107.31949553253446,890.0729166666666C104.17590968896702,894.2395833333334,97.88873800183215,902.5729166666666,94.7451521582647,910.90625C91.60156631469727,919.2395833333334,91.60156631469727,927.5729166666666,91.60156631469727,931.7395833333334L91.60156631469727,935.90625" id="edge86" class="relation" marker-end="url(#extensionEnd)"></path><path d="M298.546875,860.90625L298.546875,869.2395833333334C298.546875,877.5729166666666,298.546875,894.2395833333334,298.546875,910.0729166666666C298.546875,925.90625,298.546875,940.90625,298.546875,948.40625L298.546875,955.90625" id="edge87" class="relation" marker-end="url(#compositionEnd)"></path><path d="M298.546875,1065.921875L298.546875,1073.421875C298.546875,1080.921875,298.546875,1095.921875,293.974609375,1108.9013421805303C289.40234375,1121.8808093610605,280.2578125,1132.8397437221213,275.685546875,1138.3192109026515L271.11328125,1143.7986780831818" id="edge88" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M179.09446537338104,885.90625L180.61908572781752,890.0729166666666C182.143706082254,894.2395833333334,185.192946791127,902.5729166666666,186.7175671455635,923.4075520833334C188.2421875,944.2421875,188.2421875,977.578125,188.2421875,1010.9140625C188.2421875,1044.25,188.2421875,1077.5859375,190.1719657066599,1098.4205729166667C192.10174391331986,1119.2552083333333,195.96130032663973,1127.5885416666667,197.89107853329963,1131.7552083333333L199.82085673995957,1135.921875" id="edge89" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M91.60156631469727,1085.921875L91.60156631469727,1090.0885416666667C91.60156631469727,1094.2552083333333,91.60156631469727,1102.5885416666667,107.02018547058105,1116.391900928789C122.43880462646484,1130.1952601909115,153.27604293823242,1149.4686453818233,168.6946620941162,1159.105337977279L184.11328125,1168.7420305727348" id="edge90" class="relation" marker-end="url(#aggregationEnd)"></path><path d="M66.109375,129.42842855913872L74.00520833333333,140.35962796594893C81.90104166666667,151.29082737275914,97.69270833333333,173.15322618637958,107.99991781027029,193.25109225985648C118.30712728720727,213.34895833333334,123.12987957441453,231.68229166666666,125.54125571801815,240.84895833333334L127.9526318616218,250.015625" id="edge91" class="relation" marker-end="url(#aggregationEnd)"></path></svg></div><h2 id='output-of-workshop1'><span>Output of workshop1</span></h2><h3 id='lammps-script'><span>LAMMPS script</span></h3><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="perl" style="break-inside: unset;"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="perl"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.25px; left: 8.99738px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># Automatic LAMMPS script (version 0.4)</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># olivi@LX-Olivier2021:/home/olivi/billy/python</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ven. 18 mars 2022 19:33:50 </span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> </span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># INRAE\SAYFOOD\william.jenkinson@agroparistech.fr</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; Scheme initialization</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">units</span> &nbsp; &nbsp; &nbsp; <span class="cm-meta">si</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">dimension</span><span class="cm-tab" role="presentation" cm-text="	">   </span><span class="cm-number">2</span> </span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">boundary</span> &nbsp; &nbsp;<span class="cm-meta">p</span> <span class="cm-meta">f</span> <span class="cm-meta">p</span> &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-comment"># f = fixed, p = periodic</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">comm_modify</span> <span class="cm-meta">vel</span> <span class="cm-meta">yes</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">comm_style</span> &nbsp;<span class="cm-meta">tiled</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">atom_modify</span> <span class="cm-keyword">map</span> <span class="cm-meta">array</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">newton</span> <span class="cm-meta">off</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">neighbor</span><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-number">0.0015</span> <span class="cm-meta">bin</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-comment"># search radius for neighbor list (=kernel radius)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">neigh_modify</span> &nbsp; &nbsp;<span class="cm-meta">every</span> <span class="cm-number">5</span> <span class="cm-meta">delay</span> <span class="cm-number">0</span> <span class="cm-meta">check</span> <span class="cm-meta">yes</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">atom_style</span><span class="cm-tab" role="presentation" cm-text="	">  </span><span class="cm-meta">smd</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> </span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ===== [ BEGIN INPUT FILES SECTION ] ===============================================================================</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># load files for objects: bead 1, bead 2</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-meta">read_data</span> .<span class="cm-operator">/</span><span class="cm-meta">raster_2_types</span><span class="cm-operator">.</span><span class="cm-meta">lmp</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># load files for objects: bead 3, bead 4</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-meta">read_data</span> .<span class="cm-operator">/</span><span class="cm-meta">raster_4_types</span><span class="cm-operator">.</span><span class="cm-meta">lmp</span> <span class="cm-meta">add</span> <span class="cm-meta">append</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ===== [ END INPUT FILES SECTION ] =================================================================================</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ===== [ BEGIN GROUP SECTION ] =====================================================================================</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Definition of group 1:rigid</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>=bead 1</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Similar groups: rigid, solid</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-meta">group</span> <span class="cm-tab" role="presentation" cm-text="	">  </span> <span class="cm-meta">rigid</span> <span class="cm-tab" role="presentation" cm-text="	"> </span><span class="cm-meta">type</span> <span class="cm-tab" role="presentation" cm-text="	">   </span> <span class="cm-number">1</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Definition of group 2:solid</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>=bead 1, bead 3, bead 4</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Similar groups: rigid, solid, oscillating, tlsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-meta">group</span> <span class="cm-tab" role="presentation" cm-text="	">  </span> <span class="cm-meta">solid</span> <span class="cm-tab" role="presentation" cm-text="	"> </span><span class="cm-meta">type</span> <span class="cm-tab" role="presentation" cm-text="	">   </span> <span class="cm-number">1</span> <span class="cm-number">3</span> <span class="cm-number">4</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Definition of group 3:fluid</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>=bead 2</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Similar groups: fluid, ulsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-meta">group</span> <span class="cm-tab" role="presentation" cm-text="	">  </span> <span class="cm-meta">fluid</span> <span class="cm-tab" role="presentation" cm-text="	"> </span><span class="cm-meta">type</span> <span class="cm-tab" role="presentation" cm-text="	">   </span> <span class="cm-number">2</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Definition of group 4:ulsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>=bead 2</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Similar groups: fluid, ulsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-meta">group</span> <span class="cm-tab" role="presentation" cm-text="	">  </span> <span class="cm-meta">ulsph</span> <span class="cm-tab" role="presentation" cm-text="	"> </span><span class="cm-meta">type</span> <span class="cm-tab" role="presentation" cm-text="	">   </span> <span class="cm-number">2</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Definition of group 5:oscillating</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>=bead 3</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Similar groups: oscillating, solid, tlsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-meta">group</span> <span class="cm-tab" role="presentation" cm-text="	">  </span> <span class="cm-meta">oscillating</span> <span class="cm-tab" role="presentation" cm-text="	">   </span><span class="cm-meta">type</span> <span class="cm-tab" role="presentation" cm-text="	">   </span> <span class="cm-number">3</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Definition of group 6:tlsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>=bead 3, bead 4</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" class="cm-tab-wrap-hack" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-comment">#<span class="cm-tab" role="presentation" cm-text="	">   </span>Similar groups: oscillating, solid, tlsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-meta">group</span> <span class="cm-tab" role="presentation" cm-text="	">  </span> <span class="cm-meta">tlsph</span> <span class="cm-tab" role="presentation" cm-text="	"> </span><span class="cm-meta">type</span> <span class="cm-tab" role="presentation" cm-text="	">   </span> <span class="cm-number">3</span> <span class="cm-number">4</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ===== [ END GROUP SECTION ] =======================================================================================</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ===== [ BEGIN FORCEFIELD SECTION ] ================================================================================</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [1:bead 1] PAIR STYLE SMD</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_style</span> &nbsp; &nbsp; &nbsp;<span class="cm-meta">hybrid</span><span class="cm-operator">/</span><span class="cm-meta">overlay</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">ulsph</span> <span class="cm-operator">*</span><span class="cm-meta">DENSITY_CONTINUITY</span> <span class="cm-operator">*</span><span class="cm-meta">VELOCITY_GRADIENT</span> <span class="cm-operator">*</span><span class="cm-meta">NO_GRADIENT_CORRECTION</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">tlsph</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">hertz</span> <span class="cm-number">1.5</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [1:bead 1 x 1:bead 1] Diagonal pair coefficient tlsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">1</span> <span class="cm-number">1</span> <span class="cm-meta">none</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [2:bead 2 x 2:bead 2] Pair diagonal coefficient ulsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">2</span> <span class="cm-number">2</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">ulsph</span> <span class="cm-operator">*</span><span class="cm-meta">COMMON</span> <span class="cm-number">1000</span> <span class="cm-number">100.0</span> <span class="cm-number">1.0</span> <span class="cm-number">1.0</span> <span class="cm-number">0</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-operator">*</span><span class="cm-meta">EOS_TAIT</span> <span class="cm-number">7</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-operator">*</span><span class="cm-variable-2">END</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [3:bead 3 x 3:bead 3] Diagonal pair coefficient tlsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">3</span> <span class="cm-number">3</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">tlsph</span> <span class="cm-operator">*</span><span class="cm-meta">COMMON</span> <span class="cm-number">2000</span> <span class="cm-number">400000000.0</span> <span class="cm-number">0.3</span> <span class="cm-number">1.0</span> <span class="cm-number">0.0</span> <span class="cm-number">10</span> <span class="cm-number">1.0</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-operator">*</span><span class="cm-meta">STRENGTH_LINEAR_PLASTIC</span> <span class="cm-number">40000000.0</span> <span class="cm-number">0</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-operator">*</span><span class="cm-meta">EOS_LINEAR</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-operator">*</span><span class="cm-variable-2">END</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [4:bead 4 x 4:bead 4] Diagonal pair coefficient tlsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">4</span> <span class="cm-number">4</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">tlsph</span> <span class="cm-operator">*</span><span class="cm-meta">COMMON</span> <span class="cm-number">2000</span> <span class="cm-number">400000000.0</span> <span class="cm-number">0.3</span> <span class="cm-number">1.0</span> <span class="cm-number">0.0</span> <span class="cm-number">10</span> <span class="cm-number">1.0</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-operator">*</span><span class="cm-meta">STRENGTH_LINEAR_PLASTIC</span> <span class="cm-number">40000000.0</span> <span class="cm-number">0</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-operator">*</span><span class="cm-meta">EOS_LINEAR</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-operator">*</span><span class="cm-variable-2">END</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [1:bead 1 x 2:bead 2] Off-diagonal pair coefficient (generic)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">1</span> <span class="cm-number">2</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">hertz</span> <span class="cm-number">10000000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [1:bead 1 x 3:bead 3] Off-diagonal pair coefficient (generic)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">1</span> <span class="cm-number">3</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">hertz</span> <span class="cm-number">10000000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [2:bead 2 x 3:bead 3] Off-diagonal pair coefficient (generic)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">2</span> <span class="cm-number">3</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">hertz</span> <span class="cm-number">10000000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [1:bead 1 x 4:bead 4] Off-diagonal pair coefficient (generic)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">1</span> <span class="cm-number">4</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">hertz</span> <span class="cm-number">10000000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [2:bead 2 x 4:bead 4] Off-diagonal pair coefficient (generic)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">2</span> <span class="cm-number">4</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">hertz</span> <span class="cm-number">10000000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment"># [3:bead 3 x 4:bead 4] Off-diagonal pair coefficient (generic)</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">pair_coeff</span> &nbsp; &nbsp; &nbsp;<span class="cm-number">3</span> <span class="cm-number">4</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">hertz</span> <span class="cm-number">10000000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># ===== [ END FORCEFIELD SECTION ] ==================================================================================</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; Gravity</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">fix</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">gfix</span> <span class="cm-meta">all</span> <span class="cm-meta">gravity</span> <span class="cm-number">9.81</span> <span class="cm-meta">vector</span> <span class="cm-number">0</span> <span class="cm-number">1</span> <span class="cm-number">0</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; Time integration conditions</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">fix</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">dtfix</span> <span class="cm-meta">fluid</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">adjust_dt</span> <span class="cm-number">0.1</span> <span class="cm-comment"># dynamically adjust time increment every step</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">fix</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">integration_fix_ulsph</span> <span class="cm-meta">ulsph</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">integrate_ulsph</span> <span class="cm-meta">adjust_radius</span> <span class="cm-number">1.01</span> <span class="cm-number">10</span> <span class="cm-number">15</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">fix</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">integration_fix_tlsph</span> <span class="cm-meta">tlsph</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">integrate_tlsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; balancing</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">fix</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">balance_fix</span> <span class="cm-meta">all</span> <span class="cm-meta">balance</span> <span class="cm-number">500</span> <span class="cm-number">0.9</span> <span class="cm-meta">rcb</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; thermodynamic information</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">thermo</span><span class="cm-tab" role="presentation" cm-text="	">  </span><span class="cm-tab" role="presentation" cm-text="	">    </span> &nbsp; <span class="cm-number">100</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">thermo_modify</span> &nbsp;<span class="cm-meta">lost</span> <span class="cm-meta">ignore</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">thermo_style</span> &nbsp; <span class="cm-meta">custom</span> <span class="cm-meta">step</span> <span class="cm-meta">dt</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; Equilibration</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">dump</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">dump_equilibrate</span> <span class="cm-meta">all</span> <span class="cm-meta">custom</span> <span class="cm-number">100</span> <span class="cm-keyword">dump</span><span class="cm-operator">.</span><span class="cm-meta">equilibrate</span> <span class="cm-meta">id</span> <span class="cm-meta">type</span> <span class="cm-operator">x</span> <span class="cm-meta">y</span> <span class="cm-meta">z</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">fx</span> <span class="cm-meta">fy</span> <span class="cm-meta">fz</span> <span class="cm-meta">vx</span> <span class="cm-meta">vy</span> <span class="cm-meta">vz</span> <span class="cm-meta">radius</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">dump_modify</span> &nbsp; &nbsp; <span class="cm-meta">dump_equilibrate</span> <span class="cm-meta">first</span> <span class="cm-meta">yes</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">variable</span> <span class="cm-meta">vmag</span> <span class="cm-meta">atom</span> <span class="cm-keyword">sqrt</span>(<span class="cm-meta">vx</span><span class="cm-operator">^</span><span class="cm-number">2</span><span class="cm-operator">+</span><span class="cm-meta">vy</span><span class="cm-operator">^</span><span class="cm-number">2</span><span class="cm-operator">+</span><span class="cm-meta">vz</span><span class="cm-operator">^</span><span class="cm-number">2</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">compute</span> &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">maxvel</span> <span class="cm-meta">all</span> <span class="cm-meta">reduce</span> <span class="cm-meta">max</span> <span class="cm-meta">v_vmag</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">variable</span> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">maxvelre</span> <span class="cm-meta">equal</span> <span class="cm-number">0.6</span><span class="cm-operator">*</span><span class="cm-meta">c_maxvel</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">run</span> &nbsp; &nbsp; <span class="cm-number">10000</span> <span class="cm-meta">every</span> <span class="cm-number">1000</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-string">"print ${maxvelre}"</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-string">"fix &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ulsph_equilibration ulsph smd/integrate_ulsph limit_velocity ${maxvelre}"</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-string">"fix &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; tlsph_equilibration tlsph smd/integrate_tlsph limit_velocity ${maxvelre}"</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">dump_modify</span> &nbsp; &nbsp; <span class="cm-meta">dump_equilibrate</span> <span class="cm-meta">every</span> <span class="cm-number">1000000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">fix</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">ulsph_equilibration</span> <span class="cm-meta">ulsph</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">integrate_ulsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">fix</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">tlsph_equilibration</span> <span class="cm-meta">tlsph</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">integrate_tlsph</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; Additional computed values</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; Compute supp particle data</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">compute</span> &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">contact_radius</span> <span class="cm-meta">all</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">contact</span><span class="cm-operator">/</span><span class="cm-meta">radius</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">compute</span> &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">vol</span> <span class="cm-meta">all</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">vol</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">compute</span> &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">rho</span> <span class="cm-meta">all</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">rho</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; dump command</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">dump</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">dump_id</span> <span class="cm-meta">all</span> <span class="cm-meta">custom</span> <span class="cm-number">100</span> <span class="cm-keyword">dump</span><span class="cm-operator">.</span><span class="cm-meta">workshop1</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">id</span> <span class="cm-meta">type</span> <span class="cm-operator">x</span> <span class="cm-meta">y</span> <span class="cm-meta">z</span> <span class="cm-meta">mol</span> <span class="cm-meta">mass</span> <span class="cm-meta">c_rho</span> <span class="cm-meta">c_vol</span> <span class="cm-meta">radius</span> <span class="cm-meta">c_contact_radius</span> <span class="cm-operator">&amp;</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">vx</span> <span class="cm-meta">vy</span> <span class="cm-meta">vz</span> <span class="cm-meta">fx</span> <span class="cm-meta">fy</span> <span class="cm-meta">fz</span> </span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">dump_modify</span> &nbsp; &nbsp; <span class="cm-meta">dump_id</span> <span class="cm-meta">first</span> <span class="cm-meta">yes</span> <span class="cm-comment">#every/time 0.001</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; Translation</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">variable</span> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">vx</span> <span class="cm-meta">equal</span> <span class="cm-number">0</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">variable</span> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">vy</span> <span class="cm-meta">equal</span> <span class="cm-number">1</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">variable</span> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">vz</span> <span class="cm-meta">equal</span> <span class="cm-number">0</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">fix</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">setvelocities</span> <span class="cm-meta">oscillating</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">setvel</span> <span class="cm-meta">v_vx</span> <span class="cm-meta">v_vy</span> <span class="cm-meta">v_vz</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; run section</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">run</span> <span class="cm-number">50000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; Force</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">variable</span> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">fx</span> <span class="cm-meta">equal</span> <span class="cm-number">0</span><span class="cm-operator">/</span><span class="cm-meta">count</span>(<span class="cm-meta">all</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">variable</span> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">fy</span> <span class="cm-meta">equal</span> <span class="cm-number">0</span><span class="cm-operator">/</span><span class="cm-meta">count</span>(<span class="cm-meta">all</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">variable</span> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">fz</span> <span class="cm-meta">equal</span> <span class="cm-number">0</span><span class="cm-operator">/</span><span class="cm-meta">count</span>(<span class="cm-meta">all</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">fix</span> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">setforces</span> <span class="cm-meta">all</span> <span class="cm-meta">smd</span><span class="cm-operator">/</span><span class="cm-meta">setvel</span> <span class="cm-meta">v_fx</span> <span class="cm-meta">v_fy</span> <span class="cm-meta">v_fz</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment"># &nbsp; run section</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-meta">run</span> <span class="cm-number">50000</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="" cm-zwsp="">
+</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 4410px;"></div><div class="CodeMirror-gutters" style="display: none; height: 4410px;"></div></div></div></pre><p>&nbsp;</p><h3 id='videos-of-workshop1'><span>Videos of workshop1</span></h3><p><span>The videos are generated with Ovito directly from dump files.</span></p><p>&nbsp;</p><h4 id='equilibration-step'><span>Equilibration step</span></h4><video width="50%" controls="controls" preload="auto">
+    <source type="video/mp4" src="https://github.com/ovitrac/Pizza3/raw/main/examples/workshop1_equilibration.mp4">
+</video><p>&nbsp;</p><h4 id='run-step'><span>Run step</span></h4><video width="50%" controls="controls" preload="auto">
+    <source type="video/mp4" src="https://github.com/ovitrac/Pizza3/raw/main/examples/workshop1_run.mp4">
+</video></div></div>
+</body>
+</html>
