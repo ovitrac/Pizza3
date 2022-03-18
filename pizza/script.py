@@ -113,6 +113,7 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-03-15 implement a userspace within the pipeline
 # 2022-03-15 fix scriptobject | pipescript, smooth and document syntaxes with pipescripts
 # 2022-03-16 overload +=, *, several fixes and update help for pipescript
+# 2022-03-18 modification to script method, \ttype specified for groups
 
 # %% Dependencies
 import types
@@ -507,7 +508,7 @@ class scriptobjectgroup(struct):
             TEMPGRP += f'\n\t#\tDefinition of group {g.groupid}:{g.groupidname}\n'
             TEMPGRP += f'\t#\t={span(g.name,sep=", ")}\n'
             TEMPGRP += f'\t#\tSimilar groups: {span(g.groupname,sep=", ")}\n'
-            TEMPGRP += f'\tgroup \t {g.groupidname} \t {span(g.beadtype)}\n'
+            TEMPGRP += f'\tgroup \t {g.groupidname} \ttype \t {span(g.beadtype)}\n'
         TEMPGRP += "\n# ===== [ END GROUP SECTION ] "+"="*87+"\n\n"
         # define interactions
         _,TEMPFF = self.interactions
