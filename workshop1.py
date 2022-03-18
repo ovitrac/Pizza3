@@ -487,18 +487,18 @@ class translation(runsection):
     version = 1.0
     
     DEFINITIONS = scriptdata(
-        eq_vx = ["0"],
-        eq_vy = ["0"],
-        eq_vz = ["0"],
-        fix_ID = ["setvelocities"],
+        eqvx = ["0"],
+        eqvy = ["0"],
+        eqvz = ["0"],
+        fixIDv = ["setvelocities"],
         group = ["all"]
         )
     TEMPLATE = """
 #   Translation
-variable        vx equal ${eq_vx}
-variable        vy equal ${eq_vx}
-variable        vz equal ${eq_vx}
-fix             ${fix_ID} ${group} smd/setvel v_vx v_vy v_vz
+variable        vx equal ${eqvx}
+variable        vy equal ${eqvy}
+variable        vz equal ${eqvz}
+fix             ${fixIDv} ${group} smd/setvel v_vx v_vy v_vz
 """
 
 class force(runsection):
@@ -526,18 +526,18 @@ class force(runsection):
     version = 1.0
     
     DEFINITIONS = scriptdata(
-        eq_fx = ["0"],
-        eq_fy = ["0"],
-        eq_fz = ["0"],
-        fix_ID = ["setforces"],
+        eqfx = ["0"],
+        eqfy = ["0"],
+        eqfz = ["0"],
+        fixIDf = ["setforces"],
         group = ["all"]
         )
     TEMPLATE = """
 #   Force
-variable        fx equal ${eq_fx}/count(${group})
-variable        fy equal ${eq_fx}/count(${group})
-variable        fz equal ${eq_fx}/count(${group})
-fix             ${fix_ID} ${group} smd/setvel v_fx v_fy v_fz
+variable        fx equal ${eqfx}/count(${group})
+variable        fy equal ${eqfy}/count(${group})
+variable        fz equal ${eqfz}/count(${group})
+fix             ${fixIDf} ${group} smd/setvel v_fx v_fy v_fz
 """
 # %% RUN
 
