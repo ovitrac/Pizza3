@@ -148,7 +148,7 @@ class struct():
             s = struct()
             s.set(**dico)
             return s
-        raise ValueError("the argument must be a dictionary")
+        raise TypeError("the argument must be a dictionary")
         
     def struct2dict(self):
         """ create a dictionary from the current structure """
