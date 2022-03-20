@@ -114,6 +114,7 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-03-15 fix scriptobject | pipescript, smooth and document syntaxes with pipescripts
 # 2022-03-16 overload +=, *, several fixes and update help for pipescript
 # 2022-03-18 modification to script method, \ttype specified for groups
+# 2022-03-19 standardized pizza path
 
 # %% Dependencies
 import types
@@ -122,8 +123,8 @@ from copy import deepcopy as deepduplicate
 import datetime, os, socket, getpass
 
 # All forcefield parameters are stored à la Matlab in a structure
-from forcefield import *
-from private.struct import param,struct
+from pizza.forcefield import *
+from pizza.private.struct import param,struct
 
 # span vector into a single string
 def span(vector,sep=" ",left="",right=""): return left+sep.join(map(str,vector))+right

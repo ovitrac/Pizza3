@@ -240,11 +240,12 @@ run this code by pressing &lt;F5&gt;
 # 2022-02-20 made compatible with the update private.struct.py
 # 2022-02-28 fix class inheritance with mutable type, update is carried with + and struct()
 # 2022-03-02 fix off-diagonal order for i,j
+# 2022-03-19 standardized pizza path
 
 # %% Dependencies
 import types
 # All forcefield parameters are stored à la Matlab in a structure
-from private.struct import struct,param
+from pizza.private.struct import struct,param
 
 
 # %% Parent class (not to be called directly)
@@ -900,8 +901,8 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li>private.struct.param</li>
-<li>private.struct.struct</li>
+<li>pizza.private.struct.param</li>
+<li>pizza.private.struct.struct</li>
 </ul>
 </dd>
 <dt id="forcefield.rigidwall"><code class="flex name class">

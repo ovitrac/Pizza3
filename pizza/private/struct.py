@@ -23,6 +23,8 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-03-05 add __copy__ and __deepcopy__ methods
 # 2022-03-05 AttributeError replaces KeyError in getattr() exceptions (required for for pdoc3)
 # 2022-03-16 Prevent replacement/evaluation if the string is escaped \${parameter}
+# 2022-03-19 add struct2dict(), dict2struct()
+# 2022-03-20 add zip(), items()
 
 # %% Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -134,6 +136,23 @@ class struct():
     def __init__(self,**kwargs):
         """ constructor """
         self.set(**kwargs)
+    
+    def zip(self):
+        """ zip keys and values """
+        return zip(self.keys(),self.values())
+    
+    @staticmethod
+    def dict2struct(dico):
+        """ create a structure from a dictionary """
+        if isinstance(dico,dict):
+            s = struct()
+            s.set(**dico)
+            return s
+        raise ValueError("the argument must be a dictionary")
+        
+    def struct2dict(self):
+        """ create a dictionary from the current structure """
+        return dict(self.zip())
         
     def set(self,**kwargs):
         """ initialization """
@@ -180,6 +199,15 @@ class struct():
         """ return the fields """
         # keys() is used by struct() and its iterator
         return [key for key in self.__dict__.keys() if key not in self._excludedattr]
+
+    def values(self):
+        """ return the values """
+        # values() is used by struct() and its iterator
+        return [value for key,value in self.__dict__.items() if key not in self._excludedattr]
+    
+    def items(self):
+        """ return all elements as iterable key, value """
+        return self.zip()
     
     def __getitem__(self,idx):
         """ return the ith element of the object  """
@@ -554,3 +582,9 @@ if __name__ == '__main__':
     definitions = param(a=1,b="${a}*10+${a}",c="\${a}+10",d='\${myparam}')
     text = definitions.formateval("this my text ${a}, ${b}, \${myvar}=${c}+${d}")
     print(text)
+    
+    s = {"a":1, "b":2}
+    t=struct.dict2struct(s)
+    t.__repr__()
+    sback = t.struct2dict()
+    sback.__repr__()

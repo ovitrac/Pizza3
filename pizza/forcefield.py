@@ -112,11 +112,12 @@
 # 2022-02-20 made compatible with the update private.struct.py
 # 2022-02-28 fix class inheritance with mutable type, update is carried with + and struct()
 # 2022-03-02 fix off-diagonal order for i,j
+# 2022-03-19 standardized pizza path
 
 # %% Dependencies
 import types
 # All forcefield parameters are stored à la Matlab in a structure
-from private.struct import struct,param
+from pizza.private.struct import struct,param
 
 
 # %% Parent class (not to be called directly)
