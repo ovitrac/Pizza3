@@ -76,6 +76,7 @@
 # 2022-02-28 update write files for SMD, add scale and center to R.data()
 # 2022-03-02 fix data(): xlo and ylow (beads should not overlap the boundary), scale radii, volumes
 # 2022-03-20 major update, add collection, duplication, translation, scatter, emulsion
+# 2022-03-22 update raster to insert customized beadtypes
 
 # %% Imports and private library
 from copy import copy as duplicate
@@ -861,7 +862,7 @@ class raster:
     def scatter(self,
                  E,
                  name="emulsion",
-                 beadtype=1,
+                 beadtype=None,
                  ismask = False
                  ):
         """
@@ -891,9 +892,10 @@ class raster:
         if isinstance(E,scatter):
             collect = {}
             for i in range(E.n):
+                b = E.beadtype[i] if beadtype==None else beadtype
                 nameobj = "glob%02d" % i
                 collect[nameobj] = self.circle(E.x[i],E.y[i],E.r[i],
-                            name=nameobj,beadtype=beadtype,ismask=ismask,fake=True)
+                            name=nameobj,beadtype=b,ismask=ismask,fake=True)
             self.collection(**collect,name=name)
         else:
             raise TypeError("the first argument must be an emulsion object")
@@ -1191,7 +1193,7 @@ class scatter():
         """
         The scatter class provides an easy constructor
         to distribute in space objects according to their
-        positions x,y and size r (radius).
+        positions x,y, size r (radius) and beadtype.
         
         The class is used to derive emulsions.
 
@@ -1200,7 +1202,10 @@ class scatter():
         None.
 
         """
-        self.x, self.y, self.r = np.array([],dtype=int), np.array([],dtype=int), np.array([],dtype=int)
+        self.x = np.array([],dtype=int) 
+        self.y = np.array([],dtype=int)
+        self.r = np.array([],dtype=int)
+        self.beadtype = []
         
     @property
     def n(self):
@@ -1217,7 +1222,7 @@ class emulsion(scatter):
     """ emulsion generator """
     
     def __init__(self, xmin=10, ymin=10, xmax=90, ymax=90, 
-                 maxtrials=1000, forcedinsertion=True):
+                 maxtrials=1000, beadtype=1, forcedinsertion=True):
         """
         
 
@@ -1232,6 +1237,7 @@ class emulsion(scatter):
             x right corner. The default is 90.
         ymax : int64 or real, optional
             y top corner. The default is 90.
+        beadtype : default beadtype to apply if not precised at insertion
         maxtrials : integer, optional
             Maximum of attempts for an object. The default is 1000.
         forcedinsertion : logical, optional
@@ -1246,6 +1252,7 @@ class emulsion(scatter):
         self.xmin, self.xmax, self.ymin, self.ymax = xmin, xmax, ymin, ymax
         self.width = xmax-xmin
         self.height = ymax-ymin
+        self.defautbeadtype = beadtype
         self.maxtrials = maxtrials
         self.forcedinsertion = forcedinsertion
 
@@ -1273,8 +1280,15 @@ class emulsion(scatter):
         """ random position x,y  """
         return  np.round(np.random.uniform(low=self.xmin,high=self.xmax)), \
                 np.round(np.random.uniform(low=self.ymin,high=self.ymax))
+                
+    def setbeadtype(self,beadtype):
+        """ set the default or the supplied beadtype  """
+        if beadtype == None:
+            self.beadtype.append(self.defautbeadtype)
+        else:
+            self.beadtype.append(beadtype)
      
-    def insertone(self,r):
+    def insertone(self,r,beadtype=None):
         """ insert one object of radius r """
         attempt, success = 0, False
         while not success and attempt<self.maxtrials:
@@ -1284,9 +1298,10 @@ class emulsion(scatter):
             self.x = np.append(self.x,x)
             self.y = np.append(self.y,y)
             self.r = np.append(self.r,r)
+            self.setbeadtype(beadtype)
         return success
 
-    def insertion(self,rlist):
+    def insertion(self,rlist,beadtype=None):
         """ insert a list of objects """
         rlist.sort(reverse=True)
         ntodo = len(rlist)
@@ -1294,7 +1309,7 @@ class emulsion(scatter):
         stop = False
         while not stop:
             n += 1
-            success = self.insertone(rlist[n-1])
+            success = self.insertone(rlist[n-1],beadtype=beadtype)
             if success: nsuccess += 1
             stop = (n==ntodo) or (not success and not self.forcedinsertion)
         if nsuccess==ntodo:
@@ -1391,9 +1406,11 @@ if __name__ == '__main__':
     
     
 # %% emulsion example
-    e = emulsion()
-    e.insertion([10,20,2,4,5,5,10,12,2,8,6,6,5,5,1,2,4,4,4,4,4])
-    C = raster()
-    C.scatter(e,name="emulsion",beadtype=2)
+    C = raster(width=400,height=400)
+    e = emulsion(xmin=10, ymin=10, xmax=390, ymax=390)
+    e.insertion([60,50,40,30,20,15,15,10,8,20,12,8,6,4,11,13],beadtype=1)
+    e.insertion([30,10,20,2,4,5,5,10,12,20,25,12,14,16,17],beadtype=2)
+    e.insertion([40,2,8,6,6,5,5,2,3,4,4,4,4,4,10,16,12,14,13],beadtype=3)
+    C.scatter(e,name="emulsion")
     C.plot()
     C.show()

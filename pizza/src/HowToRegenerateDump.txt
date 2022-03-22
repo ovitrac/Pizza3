@@ -1,1 +1,0 @@
-wget https://raw.githubusercontent.com/CFDEMproject/LAMMPS/master/python/examples/pizza/dump.py
