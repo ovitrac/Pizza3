@@ -107,6 +107,7 @@ __version__ = "0.35"
 # 2022-03-20 major update, add collection, duplication, translation, scatter(), emulsion()
 # 2022-03-22 update raster to insert customized beadtypes
 # 2022-03-23 add coreshell()
+# 2022-03-23 fix nattempt, add arc
 
 # %% Imports and private library
 from copy import copy as duplicate
@@ -138,9 +139,31 @@ def imagesc(im,x=None,y=None):
                aspect="auto", origin="lower", interpolation="none")
 
 # helper for parametric functions
-def linear(xmin=10,ymin=10,xmax=80,ymax=80,n=5):
-    """ XY = linear(xmin,ymin,xmax,ymax,n) """
+def linear(xmin=10,ymin=10,xmax=80,ymax=80,n=5,USER=struct()):
+    """  Equispaced points along a trajectory
+            X,Y = linear(xmin=value,ymin=value,xmax=value,ymax=value,n=int)
+    """
     return np.linspace(xmin,xmax,n), np.linspace(ymin,ymax,n)
+
+def arc(xmin=10,ymin=50,xmax=80,ymax=50,n=5,USER=struct(radius=20,direction=1)):
+    """  Point distributed along an arc
+            X,Y = arc(xmin=value,ymin=value,xmax=value,ymax=value,n=int,
+                      USER=struct(radius=value,direction=1))
+            Use direction to choose the upward +1 or downward -1 circle
+        see: https://rosettacode.org/wiki/Circles_of_given_radius_through_two_points
+    """
+    R = 0 if "radius" not in USER else USER.radius
+    direction = +1 if "direction" not in USER else USER.direction    
+    dx,dy = xmax-xmin, ymax-ymin
+    q = np.sqrt(dx**2+dy**2) # distance
+    R = max(R,q/2) # radius constraint
+    d = np.sqrt(R**2-(q/2)**2) # distance along the mirror line
+    xc = (xmin+xmax)/2 - direction * d*dy/q
+    yc = (ymin+ymax)/2 + direction * d*dx/q
+    thmin,thmax = np.arctan((ymin-yc)/(xmin-xc)), np.arctan((ymax-yc)/(xmax-xc))
+    if d==0: thmax = thmin + np.pi
+    th = np.linspace(thmin,thmax,n)
+    return xc+np.cos(th)*R,yc+np.sin(th)*R
 
 # %% raster class
 class raster:
@@ -842,7 +865,8 @@ class raster:
                       ymin=10,
                       xmax=70,
                       ymax=90,
-                         n=7):
+                         n=7,
+                      USER=struct()):
         """
         
         The method enable to copy an existing object (from the current raster,
@@ -869,13 +893,16 @@ class raster:
             top y corner position. The default is 90.
         n : integet, optional
             number of copies. The default is 7.
+     USER : structure to pass specific parameters
 
         Returns
         -------
         None.
 
         """
-        x,y = path(xmin=xmin,ymin=ymin,xmax=xmax,ymax=ymax,n=n)
+        if not isinstance(USER,struct):
+            raise TypeError("USER should be a structure")
+        x,y = path(xmin=xmin,ymin=ymin,xmax=xmax,ymax=ymax,n=n,USER=USER)
         btyp = obj.beadtype if beadtype == None else beadtype
         collect = {}
         for i in range(n):
@@ -1336,6 +1363,7 @@ class emulsion(scatter):
         if r==None:
             r = 0.02*np.sqrt(self.width**2+self.height**2)
         while not success and attempt<self.maxtrials:
+            attempt += 1
             if random: x,y = self.rand()
             if overlap:
                 success = True
@@ -1502,12 +1530,12 @@ if __name__ == '__main__':
     B = raster()
     #B.collection(X=draft.X,beadtype=1,translate=[50,50])
     B.copyalongpath(draft.X,name="PX",beadtype=2,
-                    path=linear,
+                    path=arc,
                      xmin=10,
                      ymin=10,
-                     xmax=70,
-                     ymax=90,
-                        n=20)
+                     xmax=90,
+                     ymax=50,
+                        n=12)
     B.plot()
     B.show(extra="label")
     
