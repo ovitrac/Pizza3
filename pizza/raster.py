@@ -1,4 +1,14 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+__project__ = "Pizza3"
+__author__ = "Olivier Vitrac"
+__copyright__ = "Copyright 2022"
+__credits__ = ["Olivier Vitrac"]
+__license__ = "GPLv3"
+__maintainer__ = "Olivier Vitrac"
+__email__ = "olivier.vitrac@agroparistech.fr"
+__version__ = "0.35"
 
 """
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -54,15 +64,34 @@
         X=R.data(scale=(1,1),center=(0,0))
         X.write("/tmp/myfile")
         
+        
+    Build an emulsion/suspension
+        C = raster(width=400,height=400)
+        e = emulsion(xmin=10, ymin=10, xmax=390, ymax=390)
+        e.insertion([60,50,40,30,20,15,15,10,8,20,12,8,6,4,11,13],beadtype=1)
+        C.scatter(e,name="emulsion")
+        C.plot()
+        C.show()
+
+        
+    Build a core-shell dispersion
+        D = raster(width=400,height=400)
+        cs = coreshell(xmin=10, ymin=10, xmax=390, ymax=390)
+        cs.insertion([60,50,40,30,20,15,15,10,8,20,12,8,11,13],beadtype=(1,2),thickness = 4)
+        D.scatter(cs,name="core-shell")
+        D.plot()
+        D.show()
+        
+        
     More advanced features enable object copy, duplication along a path
     Contruction of scattered particles
-    See: copyalongpath(), scatter(), emulsion()
+    See: copyalongpath(), scatter(), emulsion(), coreshell()
     
     Examples follow in the __main__ section
         
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-02-13
+# INRAE\Olivier Vitrac - rev. 2022-03-23
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -75,8 +104,9 @@
 # 2022-02-13 the example (<F5>) has been modified R.plot() should precedes R.list()
 # 2022-02-28 update write files for SMD, add scale and center to R.data()
 # 2022-03-02 fix data(): xlo and ylow (beads should not overlap the boundary), scale radii, volumes
-# 2022-03-20 major update, add collection, duplication, translation, scatter, emulsion
+# 2022-03-20 major update, add collection, duplication, translation, scatter(), emulsion()
 # 2022-03-22 update raster to insert customized beadtypes
+# 2022-03-23 add coreshell()
 
 # %% Imports and private library
 from copy import copy as duplicate
@@ -1218,6 +1248,7 @@ class scatter():
         else:
             return np.floor(np.sqrt((x-self.x)**2+(y-self.y)**2)-self.r)
 
+
 class emulsion(scatter):
     """ emulsion generator """
     
@@ -1250,6 +1281,7 @@ class emulsion(scatter):
         """
         super().__init__()
         self.xmin, self.xmax, self.ymin, self.ymax = xmin, xmax, ymin, ymax
+        self.lastinsertion = (None,None,None,None) # x,y,r, beadtype
         self.width = xmax-xmin
         self.height = ymax-ymin
         self.defautbeadtype = beadtype
@@ -1285,31 +1317,52 @@ class emulsion(scatter):
         """ set the default or the supplied beadtype  """
         if beadtype == None:
             self.beadtype.append(self.defautbeadtype)
+            return self.defautbeadtype
         else:
             self.beadtype.append(beadtype)
+            return beadtype
      
-    def insertone(self,r,beadtype=None):
-        """ insert one object of radius r """
+    def insertone(self,x=None,y=None,r=None,beadtype=None,overlap=False):
+        """
+            insert one object of radius r
+            properties:
+                x,y coordinates (if missing, picked randomly from uniform distribution)
+                r radius (default = 2% of diagonal)
+                beadtype (default = defautbeadtype)
+                overlap = False (accept only if no overlap)
+        """
         attempt, success = 0, False
+        random = (x==None) or (y==None)
+        if r==None:
+            r = 0.02*np.sqrt(self.width**2+self.height**2)
         while not success and attempt<self.maxtrials:
-            x,y = self.rand()
-            success = self.accepted(x,y,r)
+            if random: x,y = self.rand()
+            if overlap:
+                success = True
+            else:
+                success = self.accepted(x,y,r)
         if success:
             self.x = np.append(self.x,x)
             self.y = np.append(self.y,y)
             self.r = np.append(self.r,r)
-            self.setbeadtype(beadtype)
+            b=self.setbeadtype(beadtype)
+            self.lastinsertion = (x,y,r,b)
         return success
 
     def insertion(self,rlist,beadtype=None):
-        """ insert a list of objects """
+        """
+            insert a list of objects
+                nsuccess=insertion(rlist,beadtype=None)
+                beadtype=b forces the value b
+                if None, defaultbeadtype is used instead
+        """
         rlist.sort(reverse=True)
         ntodo = len(rlist)
         n = nsuccess = 0
         stop = False
         while not stop:
             n += 1
-            success = self.insertone(rlist[n-1],beadtype=beadtype)
+            success = self.insertone(r=rlist[n-1],beadtype=beadtype)
             if success: nsuccess += 1
             stop = (n==ntodo) or (not success and not self.forcedinsertion)
         if nsuccess==ntodo:
@@ -1317,7 +1370,61 @@ class emulsion(scatter):
         else:
             print(f"partial success: {nsuccess} of {ntodo} objects inserted")
         return nsuccess
+
     
+class coreshell(emulsion):
+    """
+        coreshell generator
+            inherited from emulsion
+            the method insertion has been modified to integrate
+                thickess = shell thickness value
+                beadtype = (shell beadtype, core beadtype)
+    """       
+
+    def insertion(self,rlist,thickness=None, beadtype=(1,2)):
+        """
+            insert a list of objects
+                nsuccess=insertion(...)
+                
+                List of properties
+                    rlist = [r1, r2,...]
+                    thickness = shell thcikness value
+                    beadtype = (shell beadtype, core beadtype)
+        """
+        # check arguments
+        if thickness==None:
+            raise AttributeError("set a value for the shell thickness")
+        if not isinstance(beadtype,tuple):
+            raise TypeError("beadtype must be a turple")
+        # prepare the work
+        rlist.sort(reverse=True)
+        ntodo = len(rlist)
+        n = nsuccess = 0
+        stop = False
+        while not stop:
+            # next insertion and check rcore
+            n += 1
+            rshell = rlist[n-1]
+            rcore = rshell - thickness
+            if rcore<=0:
+                raise ValueError( 
+ f"The external radius={rshell} cannot be smaller than the shell thickness={thickness}")
+            # do the insertion of the shell (largest radius)
+            success = self.insertone(r=rshell,beadtype=beadtype[0],overlap=False)
+            if success: 
+                success = self.insertone(
+                    x = self.lastinsertion[0],
+                    y = self.lastinsertion[1],
+                    r=rcore,
+                    beadtype=beadtype[1],
+                    overlap=True)
+                nsuccess += 1
+            stop = (n==ntodo) or (not success and not self.forcedinsertion)
+        if nsuccess==ntodo:
+            print(f"{nsuccess} objects inserted successfully")
+        else:
+            print(f"partial success: {nsuccess} of {ntodo} objects inserted")
+        return nsuccess
 
 # %% debug section - generic code to test methods (press F5)
 # ===================================================   
@@ -1414,3 +1521,12 @@ if __name__ == '__main__':
     C.scatter(e,name="emulsion")
     C.plot()
     C.show()
+
+    
+# %% core-shell example
+    D = raster(width=400,height=400)
+    cs = coreshell(xmin=10, ymin=10, xmax=390, ymax=390)
+    cs.insertion([60,50,40,30,20,15,15,10,8,20,12,8,11,13],beadtype=(1,2),thickness = 4)
+    D.scatter(cs,name="core-shell")
+    D.plot()
+    D.show()

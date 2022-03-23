@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
 <title>forcefield API documentation</title>
-<meta name="description" content="--- forcefield methods for LAMMPS --- …" />
+<meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,112 +22,22 @@
 <h1 class="title">Module <code>forcefield</code></h1>
 </header>
 <section id="section-intro">
-<p>&mdash; forcefield methods for LAMMPS &mdash;</p>
-<pre><code>The superclass provides a collection of classes to define materials
-and forcefields. Note that the following hierarchy is used:
-    &gt; forcefield() is the top class (to be called directly)
-    &gt; customff(forcefield) defines a new forcefield so called customff
-    &gt; customstyle(customff) defines a pair-style applicable to customff
-    &gt; custommaterial(customstyle) defines a new material
-
-
---- Material library (first implementations) ---
-
-    w = water(beadtype=1, userid="fluid")
-    w.parameters.Cp = 20
-    print("
-</code></pre>
-<p>"*2,w)</p>
-<pre><code>    f = solidfood(beadtype=2, userid="elastic")
-    print("
-</code></pre>
-<p>"*2,f)</p>
-<pre><code>    r = rigidwall(beadtype=3, userid="wall")
-    print("
-</code></pre>
-<p>"*2,r)</p>
-<pre><code>--- Template to define a material ---
-
-      class mymateral(myforcefield):
-          userid = "short name"
-          version = value
-          def __init__(self, beadtype=1, userid=None):
-              super().__init__()
-              if userid!=None: self.userid = userid
-              self.name.material"] = "short of the material"
-              self.description.material"] = "full description"
-              self.beadtype = beadtype
-              self.parameters = parameterforcefield(
-                  param1 = value1,
-                  param2 = value2,
-                  param3 = "math expression with ${param1, ${param2}"
-              )
-
-
---- Example of outputs | LAMMPS:SMD:tlsph:solidfood ---
-
-    ========================== [ elastic | version=0.1 ] ===========================
-
-      Bead of type 2 = [LAMMPS:SMD:tlsph:solidfood]
-      -----------------:----------------------------------------
-                    rho: 1000
-                     c0: 10.0
-                      E: 5*${c0}^2*${rho}
-                     nu: 0.3
-                     q1: 1.0
-                     q2: 0.0
-                     Hg: 10
-                     Cp: 1.0
-            sigma_yield: 0.1*${E}
-              hardening: 0
-          contact_scale: 1.5
-      contact_stiffness: 2.5*${c0}^2*${rho}
-      -----------------:----------------------------------------
-    forcefield object with 12 parameters
-
-    ............................... [ description ] ................................
-
-            #       LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)
-            #       SMD:TLSPH - total Langrangian for solids
-            #       food beads - solid behavior
-
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [ methods ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    replace FFi,FFj by your variable names &lt;&lt;&lt;
-            To assign a type, use: FFi.beadtype = integer value
-            Use the methods FFi.pair_style() and FFi.pair_coeff(FFj)
-            Note for pairs: the caller object is i (FFi), the argument is j (FFj or j)
-
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [ template ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-        # [2:elastic] PAIR STYLE SMD
-        pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &amp;
-                                       smd/tlsph smd/hertz 1.5
-
-
-        # [2:elastic x 2:elastic] Diagonal pair coefficient tlsph
-        pair_coeff      2 2 smd/tlsph *COMMON 1000 500000.0 0.3 1.0 0.0 10 1.0 &amp;
-                        *STRENGTH_LINEAR_PLASTIC 50000.0 0 &amp;
-                        *EOS_LINEAR &amp;
-                        *END
-
-
-        # [2:elastic x 1:none] Off-diagonal pair coefficient (generic)
-        pair_coeff      2 1 smd/hertz 250000.0
-
-
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-run this code by pressing &lt;F5&gt;
-</code></pre>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+__project__ = &#34;Pizza3&#34;
+__author__ = &#34;Olivier Vitrac&#34;
+__copyright__ = &#34;Copyright 2022&#34;
+__credits__ = [&#34;Olivier Vitrac&#34;]
+__license__ = &#34;GPLv3&#34;
+__maintainer__ = &#34;Olivier Vitrac&#34;
+__email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
+__version__ = &#34;0.35&#34;
+
 &#34;&#34;&#34;
     --- forcefield methods for LAMMPS ---
     

@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
 <title>script API documentation</title>
-<meta name="description" content="The class script() and derived facilitate the coding in LAMMPS
-Each section is remplaced by a template as a class inherited from script() …" />
+<meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,104 +22,22 @@ Each section is remplaced by a template as a class inherited from script() …" 
 <h1 class="title">Module <code>script</code></h1>
 </header>
 <section id="section-intro">
-<p>The class script() and derived facilitate the coding in LAMMPS
-Each section is remplaced by a template as a class inherited from script()</p>
-<pre><code>The class include two important attribues:
-    TEMPLATE is a string  efines between  the LAMMPS code
-    The variables used by TEMPLATE are stored in DEFINITIONS.
-    DEFINITIONS is a scripdata() object accepting scalar, mathematical expressions, 
-    text almost as in LAMMPS.
-
-    Variables can be inherited between sections using + or += operator
-
-Toy example
-    G = globalsection()
-    print(G)
-    c = initializesection()
-    print(c)
-    g = geometrysection()
-    print(g)
-    d = discretizationsection()
-    print(d)
-    b = boundarysection()
-    print(b)
-    i = interactionsection()
-    print(i)
-    t = integrationsection()
-    print(t)
-    d = dumpsection()
-    print(d)
-    s = statussection()
-    print(s)
-    r = runsection()
-    print(r)
-
-    # all sections as a single script
-    myscript = G+c+g+d+b+i+t+d+s+r
-    print("
-</code></pre>
-<p>"<em>4,'='</em>80,'</p>
-<p>this is the full script</p>
-<p>','='*80,'
-')
-print(myscript.do())</p>
-<pre><code>Additional classes: scriptobject(), scriptobjectgroup(), pipescript()
-They generate dynamic scripts from objects, collection of objects or scripts
-
-Variables (DEFINITIONS and USER) are stored in scriptdata() objects
-
-
-How the variables are stored and used.
-     STATIC: set in the script class (with the attribute DEFINITIONS)
-     GLOBAL: set in the instance of the script during construction
-             or within the USER scriptdata(). These values can be changed
-             at runtime but the values are overwritten if the script are 
-             combined with the operator +
-      LOCAL: set (bypass) in the pipeline with the keyword USER[step]
-
-Example with pipelines:
-    Build pipelines with:
-        p = G | c | g # using the symbol pipe "|"
-        p = p = pipescript(G)*4 # using the constructor pipescript()
-
-            Pipeline with 4 scripts and
-            D(STATIC:GLOBAL:LOCAL) DEFINITIONS
-              ------------:----------------------------------------
-              [-]  00: script:global:example with D(19: 0: 0)
-              [-]  01: script:global:example with D(19: 0: 0)
-              [-]  02: script:global:example with D(19: 0: 0)
-              [-]  03: script:global:example with D(19: 0: 0)
-              ------------:----------------------------------------
-
-Change the GLOBAL variables for script with idx=0
-    p.scripts[0].USER.a=1  # set a=1 for all scripts onwards
-    p.scripts[0].USER.b=2  # set b=2
-Change the LOCAL variables for script with idx=0
-    p.USER[0].a=10        # set a=10 for the script 00
-
-            ------------:----------------------------------------
-            [-]  00: script:global:example with D(19: 2: 1)
-            [-]  01: script:global:example with D(19: 0: 0)
-            [-]  02: script:global:example with D(19: 0: 0)
-            [-]  03: script:global:example with D(19: 0: 0)
-            ------------:----------------------------------------
-
-Summary of pipeline indexing and scripting
-    p[i], p[i:j], p[[i,j]] copy pipeline segments
-    LOCAL: p.USER[i],p.USER[i].variable modify the user space of only p[i]
-    GLOBAL: p.scripts[i].USER.var to modify the user space from p[i] and onwards
-    STATIC: p.scripts[i].DEFINITIONS
-    p.rename(idx=range(2),name=["A","B"]), p.clear(idx=[0,3,4])
-    p.script(), p.script(idx=range(5)), p[0:5].script()
-</code></pre>
-<p>Created on Sat Feb 19 11:00:43 2022</p>
-<p>@author: olivi</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+__project__ = &#34;Pizza3&#34;
+__author__ = &#34;Olivier Vitrac&#34;
+__copyright__ = &#34;Copyright 2022&#34;
+__credits__ = [&#34;Olivier Vitrac&#34;]
+__license__ = &#34;GPLv3&#34;
+__maintainer__ = &#34;Olivier Vitrac&#34;
+__email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
+__version__ = &#34;0.35&#34;
+
 &#34;&#34;&#34;
 
     The class script() and derived facilitate the coding in LAMMPS
