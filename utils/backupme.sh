@@ -5,7 +5,11 @@
 
 #-o  -iname 'dump*frames'  \
 
-find . -type f      \
+mainfolder="./.."
+backfolder=$mainfolder/history
+mkdir -p $backfolder
+
+find $mainfolder -type f      \
     -iname '*.m'    \
 -o  -iname '*.asv'  \
 -o  -iname '*.m~'   \
@@ -13,4 +17,4 @@ find . -type f      \
 -o  -iname '*.py'   \
 -o  -iname '*.sh'   \
 -o  -iname '*.txt'  \
-| zip -rTgp -9 "${PWD##*/}_backup_`whoami`@`hostname`_`date +"%Y_%m_%d__%H-%M"`.zip" -@
+| zip -rTgp -9 "$backfolder/${PWD##*/}_backup_`whoami`@`hostname`_`date +"%Y_%m_%d__%H-%M"`.zip" -@
