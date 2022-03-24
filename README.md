@@ -807,7 +807,7 @@ from pizza.script import *
 | classes               | description                     | overloaded operators and attributes                          |
 | --------------------- | ------------------------------- | ------------------------------------------------------------ |
 | `scriptdata()`        | variable space: $s.variable$    | $s_{12}=s_1+s_2$<br />$s_1+=s_2$<br />$s_1=s_{12}-s_2$<br />$s.variable=value$<br />$s.variable=[]$<br />$s[0]$<br />$s[-1]$ |
-| `scriptobject()`      | "bead" object: $b_i$            | `name="bead name"<br />group=["group1","group2"]<br />filename="input_filename.lmp"<br />forcefield=forcefield_class`<br />$C=b_1+b_2+...$<br />$b_2>b_1$ |
+| `scriptobject()`      | "bead" object: $b_i$            | `name="bead name"`<br />`group=["group1","group2"]`<br />`filename="input_filename.lmp"`<br />`forcefield=forcefield_class`<br />$C=b_1+b_2+...$<br />$b_2>b_1$ |
 | `scriptobjectgroup()` | collection of beads: $C_k$      | `select(),group(), interactions(), forcefield(), script`<br />$C=C_1+C_2$<br />$P=C_1|C_2$ |
 | `script()`            | script object: $S_k$            | $S(...,USER=s)$<br />`do(),write()`<br />Immediate execution: $S_{12}=S(context1)\& S(context2)$<br />Differed execution: $S_{12}=S_1+ S_2$<br />$S_{123}=S_1+ S_2*2+S_3*3$ /> |
 | `pipescript()`        | pipescript object: $P_k$, $Q_k$ | `do(),script,clear,rename()`<br />$P=P_0|C_0|S_1|S_2|S_3$<br />$P_{12}=P_1+P_2*2$<br />$P[0:1]=Q[0:1]$<br />$Q = p[[2,0,1,1,2]]$<br />$Q.do([0,1,4,3])$<br />$P.USER[0].a=1$<br />$P.scripts[0].USER.a=10$ |
