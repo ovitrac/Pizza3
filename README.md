@@ -602,7 +602,7 @@ The videos are generated with Ovito directly from dump files.
     <source type="video/mp4" src="https://github.com/ovitrac/Pizza3/raw/main/examples/workshop1_run.mp4">
 </video>
 
-## Raster
+## pizza.raster()
 
 Raster is a 2D space-filling model for very coarse-grained systems. The code has been written in such a way as to allow an easy generalization in 3D: only the concept of convex hull must be added.
 
@@ -723,5 +723,120 @@ D = raster(width=400,height=400)
 D.scatter(cs,name="core-shell")
 D.plot()
 D.show()
+```
+
+
+
+## pizza.forcefield()
+
+Forcefields are essential, but complex to setup. The class `pizza.forcefield()` facilitate their design and use via libraries.
+
+```python
+from pizza.forcefield import *
+```
+
+
+
+```python
+# basic examples from user library
+w = water(beadtype=1, userid="fluid")
+w.parameters.Cp = 20
+print("\n"*2,w)
+f = solidfood(beadtype=2, userid="elastic")
+print("\n"*2,f)
+r = rigidwall(beadtype=3, userid="wall")
+print("\n"*2,r)
+```
+
+
+
+`Example of output for r`
+
+
+
+```perl
+============================ [ wall | version=0.1 ] ============================
+
+  Bead of type 3 = [LAMMPS:SMD:none:walls]
+forcefield (FF object) with 4 parameters
+
+............................... [ description ] ................................
+
+	# 	LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)
+	# 	no interactions
+	# 	rigid walls
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [ methods ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+replace FFi,FFj by your variable names <<<
+	To assign a type, use: FFi.beadtype = integer value
+	Use the methods FFi.pair_style() and FFi.pair_coeff(FFj)
+	Note for pairs: the caller object is i (FFi), the argument is j (FFj or j)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [ template ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    # [3:wall] PAIR STYLE SMD
+    pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
+                                   smd/tlsph smd/hertz 1.5
+    
+
+    # [3:wall x 3:wall] Diagonal pair coefficient tlsph
+    pair_coeff      3 3 none
+    
+
+    # [3:wall x 2:none] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 3 smd/hertz 750000.0
+    
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+
+
+## pizza.script.script(), pizza.script.pipescript()
+
+`pizza.script()` is the Swiss knife of <kbd>Pizza3</kbd>.
+
+```python
+from pizza.script import *
+```
+
+
+
+| classes               | description                     | overloaded operators and attributes                          |
+| --------------------- | ------------------------------- | ------------------------------------------------------------ |
+| `scriptdata()`        | variable space: $s.variable$    | $s_{12}=s_1+s_2$<br />$s_1+=s_2$<br />$s_1=s_{12}-s_2$<br />$s.variable=value$<br />$s.variable=[]$<br />$s[0]$<br />$s[-1]$ |
+| `scriptobject()`      | "bead" object: $b_i$            | name="bead name"<br />group=["group1","group2"]<br />filename="input_filename.lmp"<br />forcefield=forcefield_class<br />$C=b_1+b_2+...$<br />$b_2>b_1$ |
+| `scriptobjectgroup()` | collection pf beads: $C_k$      | select(),group(), interactions(), forcefield(), script<br />$C=C_1+C_2$<br />$P=C_1|C_2$ |
+| `script()`            | script object: $S_k$            | $S(...,USER=s)$<br />do(),write()<br />Immediate execution: $S_{12}=S(context1)\& S(context2)$<br />Differed execution: $S_{12}=S_1+ S_2$<br />$S_{123}=S_1+ S_2*2+S_3*3$ /> |
+| `pipescript()`        | pipescript object: $P_k$, $Q_k$ | do(),script,clear,rename()<br />$P=P_0|C_0|S_1|S_2|S_3$<br />$P_{12}=P_1+P_2*2$<br />$P[0:1]=Q[0:1]$<br />$Q = p[[2,0,1,1,2]]$<br />$Q.do([0,1,4,3])$<br />$P.USER[0].a=1$<br />$P.scripts[0].USER.a=10$ |
+
+
+
+## pizza.data3.data(), pizza.dump3.dump()
+
+The objects `data()` and `dump()` are partly compatible and can be used alone or together.
+
+
+
+```python
+# input data objects and methods
+from pizza.data3 import data
+# dump objects and methods
+from pizza.dump3 import dump
+```
+
+
+
+```python
+# basic example, see documentation for details
+datafile = "../data/play_data/data.play.lmp"
+X = data(datafile)
+Y = dump("../data/play_data/dump.play.restartme")
+t = Y.time()
+step = 2000
+R = data(Y,step)
+R.write("../tmp/data.myfirstrestart.lmp")
 ```
 
