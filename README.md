@@ -6,7 +6,7 @@
 >
 > ​	INRAE\William Jenkinson, E-mail: [william.jenkinson@agroparistech.fr](olivier.vitrac@agroparistech.fr)
 >
-> $ 2020-04-18 $
+> $ 2020-03-24 $
 
 *Click [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html) to read this file in HTML (including with videos)*
 
@@ -14,21 +14,33 @@
 
 ##  Scope
 
-Pizza3 is a fork and an extension of Pizza.py toolkit for LAMMPS witten in Python 3.x (the original one is in Python 2.x). It should be seen as loosely integrated collection of tools for LAMMPS.
+<kbd>Pizza3</kbd> is a fork and an extension of Pizza.py toolkit for [LAMMPS](https://www.lammps.org/) witten in Python 3.x, whereas the original `Pizza.py` has been written in Python 2.x. <kbd>Pizza3</kbd> should be seen as loosely integrated collection of tools for  [LAMMPS](https://www.lammps.org/)  regardless the considered style. Our main goal is to achieve a set of tools facilitating multiscale modeling in LAMMPS: the connection of results obtained at different scales with different levels of coarse graining or details.
 
-
-
- The most important achievements are discussed hereafter. Work in progress, come back regularly.
+>  The most important achievements are discussed hereafter. *The work is in progress, come back regularly.*
 
 
 
 ## Overview
 
-Main scripts and classes are shown here.
+Main scripts and classes are shown here. The demonstrations of implemented features are available as "==workshops==" (currently 0 = draft and 1=first workable). <kbd>Pizza3</kbd> is fully object-oriented and use a universal container a structure à la Matlab with self-evaluating capabilities (`param()`) or not (`pizza.private.struct()`). The design capabilities will remain limited in <kbd>Pizza3</kbd> but a set of methods are proposed in `pizza.raster()` to allow the testing of 2D algorithms with a much lower computational cost than in 3D without a loss of generality. 
+
+
+
+>The class `pizza.script()` is the main class to code in [LAMMPS](https://www.lammps.org/) from *codelets* written in Python.  *Codelets* are essential for our purpose of multiscale modeling. They parse and interpret [LAMMPS](https://www.lammps.org/) codes, so-called `TEMPLATES`, without importing them in LAMMPS either in real or deferred time. *Codelet* instances offer static, global and local variables, so-called `DEFINITIONS`, which facilitate the chaining of instructions (*e.g.*, programmed displacements, forcefield definitions) and the conversion from one style to the other.
+
+Input and output [LAMMPS](https://www.lammps.org/) data are managed as `pizza.data()` and `pizza.dump()` original objects. New methods extend original capabilities to facilitate the manipulation of frames, the conversion of outputs to inputs.
+
+
+
+> Forcefields are specific to each style and are manipulated through the concept of inheritance. A user library of forcefields can be set by overriding exisiting definitions.
+
+
+
+**Table 1**. Overview of classes
 
 | Workshops<br> (workable demonstrations) |             **Main classes<br/>and subclasses**              |                    Low-level<br/> classes                    |
 | :-------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-|            class: workshop1             |                2D drawing class: pizza.raster                |    generic struct class à la Matlab: pizza.private.struct    |
+|          class: ==workshop1==           |                2D drawing class: pizza.raster                |    generic struct class à la Matlab: pizza.private.struct    |
 |            script: geometry             |      class to read/write input files: pizza.data3.data       | self-evaluable struct with scripting/alias features: pizza.private.param |
 |            script: assembly             |         class to manage dump files: pizza.dump3.dump         |                                                              |
 |                                         | advanced scripting classes: pizza.script.script, pizza.script.datascript, pizza.script.scriptobject, pizza.script.scriptobjectgroup, pizza.script.pipescript |                                                              |
@@ -36,7 +48,7 @@ Main scripts and classes are shown here.
 
 ## Key steps
 
-The main steps to use  workshop1 are shown here:
+Workshop1 illustrates the main steps to design, run and analyze a LAMMPS project from Python 3.x.
 
 ```mermaid
 graph TD;
@@ -571,7 +583,7 @@ run 50000
 
 
 
-###  Videos of workshop1
+###  Videos from workshop1
 
 The videos are generated with Ovito directly from dump files.
 
@@ -589,3 +601,127 @@ The videos are generated with Ovito directly from dump files.
 <video width="50%" controls="controls" preload="auto">
     <source type="video/mp4" src="https://github.com/ovitrac/Pizza3/raw/main/examples/workshop1_run.mp4">
 </video>
+
+## Raster
+
+Raster is a 2D space-filling model for very coarse-grained systems. The code has been written in such a way as to allow an easy generalization in 3D: only the concept of convex hull must be added.
+
+```python
+from pizza.raster import raster, emulsion, coreshell
+```
+
+
+
+### Principle to generate input data
+
+The example creates simple objects with different shapes and bead types.
+
+<img src="https://github.com/ovitrac/Pizza3/raw/main/examples/raster01.png" style="zoom:33%;" />
+
+```python
+# drawing area
+R = raster()
+# rectangle shapes
+R.rectangle(1,24,2,20,name='rect1')
+R.rectangle(60,80,50,81,
+            name='rect2',beadtype=2,angle=40)
+R.rectangle(50,50,10,10,
+                mode="center",angle=45,beadtype=1)
+# circules and ellipses
+R.circle(45,20,5,name='C1',beadtype=3)
+R.circle(35,10,5,name='C2',beadtype=3) R.circle(15,30,10,
+ name='p1',beadtype=4,shaperatio=0.2,angle=-30)
+R.circle(12,40,8,
+ name='p2',beadtype=4,shaperatio=0.2,angle=20)   R.circle(12,80,22,name='p3',beadtype=4,shaperatio=1.3,angle=20)
+# other polygons
+R.triangle(85,20,10,name='T1',beadtype=5,angle=20)
+R.diamond(85,35,5,name='D1',beadtype=5,angle=20)
+R.pentagon(50,35,5,name='P1',beadtype=5,angle=90)
+R.hexagon(47,85,12,name='H1',beadtype=5,angle=90)
+# labels and first plot
+R.label("rect003")
+R.plot()
+R.list()
+R.show()
+# refresh with all labels except one
+R.clear()
+R.plot()
+R.show(extra="label")
+R.label("rect003")
+R.unlabel('rect1')
+# generate and write the corresponding pizza.data() object
+X=R.data()
+X.write("tmp/example.lmp") # scaling is available
+```
+
+
+
+### Duplicate and replicate objects along a path
+
+Geometry objects can be copied between `pizza.raster()` objects and copied along arbitrary paths or coordinates.
+
+<img src="https://github.com/ovitrac/Pizza3/raw/main/examples/raster02.png" style="zoom:33%;" />
+
+```python
+# source
+draft = raster()
+draft.rectangle(1,24,2,20,name='rect1'),
+draft.circle(10,10,2,name="X",beadtype=4)
+# copy an entire raster to the collection "C1"
+A = raster()
+A.collection(draft,name="C1",beadtype=1,translate=[10,30])
+# copy along a path "PX"
+B = raster()
+B.copyalongpath(draft.X,name="PX",beadtype=2,
+                    path=arc,
+                     xmin=10,
+                     ymin=10,
+                     xmax=90,
+                     ymax=50,
+                        n=12)
+B.plot()
+B.show(extra="label")
+```
+
+
+
+### Customized classes
+
+Customized classes facilitate the construction of the collection of objects and can be inserted in `pizza.raster() ` instances.
+
+
+
+#### Create a suspension/emulsion with different species
+
+<img src="https://github.com/ovitrac/Pizza3/raw/main/examples/raster03.png" style="zoom:33%;" />
+
+```python
+# generate the suspension/emulsion object with multiple random insertions by indicating the radius of the object
+e = emulsion(xmin=10, ymin=10, xmax=390, ymax=390)
+e.insertion([60,50,40,30,20,15,15,10,8,20,12,8,6,4,11,13],beadtype=1)
+e.insertion([30,10,20,2,4,5,5,10,12,20,25,12,14,16,17],beadtype=2)
+e.insertion([40,2,8,6,6,5,5,2,3,4,4,4,4,4,10,16,12,14,13],beadtype=3)
+# generate the corresponing raster
+C = raster(width=400,height=400)
+C.scatter(e,name="emulsion")
+C.plot()
+C.show()
+```
+
+
+
+#### Create a suspension of core-shell particles
+
+<img src="https://github.com/ovitrac/Pizza3/raw/main/examples/raster04.png" style="zoom:33%;" />
+
+```python
+# generate the core-shell model
+cs = coreshell(xmin=10, ymin=10, xmax=390, ymax=390)
+cs.insertion([60,50,40,30,20,15,15,10,8,20,12,8,11,13],beadtype=(1,2),thickness = 4)
+# generate the corresponding raster
+D = raster(width=400,height=400)
+D.scatter(cs,name="core-shell")
+D.plot()
+D.show()
+```
+
