@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.35"
+__version__ = "0.351"
 
 """
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -91,7 +91,7 @@ __version__ = "0.35"
         
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-03-23
+# INRAE\Olivier Vitrac - rev. 2022-04-01
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -108,6 +108,7 @@ __version__ = "0.35"
 # 2022-03-22 update raster to insert customized beadtypes
 # 2022-03-23 add coreshell()
 # 2022-03-23 fix nattempt, add arc
+# 2022-04-01 add maxtype to  raster.data(), e.g. raster.data(maxtype=4)
 
 # %% Imports and private library
 from copy import copy as duplicate
@@ -300,9 +301,10 @@ class raster:
         
 
     # DATA ---------------------------- 
-    def data(self,scale=(1,1),center=(0,0)):
+    def data(self,scale=(1,1),center=(0,0),maxtype=None):
         """
-        data(scale=(scalex,scaley),center=(centerx,centery))
+        data()
+        data(scale=(scalex,scaley),center=(centerx,centery),maxtype=number)
         return a pizza.data object  """
         if not isinstance(scale,tuple) or len(scale)!=2:
             raise ValueError("scale must be tuple (scalex,scaley)")
@@ -310,12 +312,13 @@ class raster:
             raise ValueError("center must be tuple (centerx,centery)")
         scalez = np.sqrt(scale[0]*scale[1])
         scalevol = scale[0]*scale[1]*scalez
+        maxtypeheader = self.count()[-1][0] if maxtype is None else maxtype
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + "(raster)"
         X.headers = {'atoms': n,
-                      'atom types': self.count()[-1][0],
+                      'atom types': maxtypeheader,
                       'xlo xhi': ((0.0-center[0])*scale[0], (self.width-0.0-center[0])*scale[0]),
                       'ylo yhi': ((0.0-center[1])*scale[1], (self.height-0.0-center[1])*scale[1]),
                       'zlo zhi': (0, scalez)}

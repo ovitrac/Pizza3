@@ -6,6 +6,9 @@ Created on Wed Mar  9 13:48:46 2022
 @author: billy
 """
 
+# Revision hisotry
+# 2022-04-01 add maxtype=4 for raster data outputs
+
 from pizza.raster import raster
 
 # %% input geometry
@@ -32,8 +35,8 @@ O.show(extra="label",contour=False)
 # create object data
 num_type0 = max(S.count())[0]
 num_type1 = max(O.count())[0]
-X = S.data(scale=(0.001,0.001))
-Y = O.data(scale=(0.001,0.001))
+X = S.data(scale=(0.001,0.001),maxtype=4)
+Y = O.data(scale=(0.001,0.001),maxtype=4)
 
 destination0 = "%s/raster_%d_types.lmp" % (wdir,num_type0)
 destination1 = "%s/raster_%d_types.lmp" % (wdir,num_type1)
