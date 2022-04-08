@@ -91,7 +91,7 @@ __version__ = "0.351"
         
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-04-01
+# INRAE\Olivier Vitrac - rev. 2022-04-08
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -109,6 +109,7 @@ __version__ = "0.351"
 # 2022-03-23 add coreshell()
 # 2022-03-23 fix nattempt, add arc
 # 2022-04-01 add maxtype to  raster.data(), e.g. raster.data(maxtype=4)
+# 2022-04-08 add beadtype2(alternative beadtype, ratio) to salt objects
 
 # %% Imports and private library
 from copy import copy as duplicate
@@ -503,11 +504,14 @@ class raster:
     # RECTANGLE ----------------------------     
     def rectangle(self,a,b,c,d,
                   mode="lowerleft",name=None,angle=0,
-                  beadtype=None,ismask=False,fake=False):
+                  beadtype=None,ismask=False,fake=False,beadtype2=None):
         """ 
         rectangle object
             rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode="lower", angle=0, ismask=False])
             rectangle(xcenter,ycenter,width,height [, beadtype=1,mode="center", angle=0, ismask=False])
+            
+            use rectangle(...,beadtype2=(type,ratio)) to salt an object with beads
+            from another type and with a given ratio
         """
         # object creation
         self.counter["all"] += 1
@@ -520,7 +524,11 @@ class raster:
             R.name = name
         else:
             name = R.name
-        if beadtype != None: R.beadtype = int(np.floor(beadtype))
+        if beadtype is not None: R.beadtype = int(np.floor(beadtype))
+        if beadtype2 is not None:
+            if not isinstance(beadtype2,tuple) or len(beadtype2)!=2:
+                raise AttributeError("beadtype2 must be a tuple (beadtype,ratio)")
+        R.beadtype2 = beadtype2
         if ismask: R.beadtype = 0
         R.ismask = R.beadtype==0
         # build vertices
@@ -572,10 +580,11 @@ class raster:
     # CIRCLE ----------------------------     
     def circle(self,xc,yc,radius,
                   name=None,shaperatio=1,angle=0,beadtype=None,ismask=False,
-                  resolution=20,shiftangle=0,fake=False):
+                  resolution=20,shiftangle=0,fake=False,beadtype2=None):
         """ 
         circle object (or any regular polygon)
             circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
+            use circle(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
         """
         # object creation
         self.counter["all"] += 1
@@ -606,7 +615,11 @@ class raster:
             G.name = name
         else:
             name = G.name
-        if beadtype != None: G.beadtype = int(np.floor(beadtype))
+        if beadtype is not None: G.beadtype = int(np.floor(beadtype))
+        if beadtype2 is not None:
+            if not isinstance(beadtype2,tuple) or len(beadtype2)!=2:
+                raise AttributeError("beadtype2 must be a tuple (beadtype,ratio)")
+        G.beadtype2 = beadtype2
         if ismask: G.beadtype = 0
         G.ismask = G.beadtype==0
         # build vertices
@@ -691,40 +704,44 @@ class raster:
     # =========== pseudo methods connected to circle() ===========
     # TRIANGLE, DIAMOND, PENTAGON, HEXAGON, -----------------------     
     def triangle(self,xc,yc,radius,name=None,
-                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False):
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False,beadtype2=None):
         """
         triangle object 
             triangle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False]
+            use triangle(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
         """
         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=3,
-           angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake)
+           angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake,beadtype2=beadtype2)
         
     def diamond(self,xc,yc,radius,name=None,
-                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False):
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False,beadtype2=None):
         """
         diamond object 
             diamond(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False]
+            use diamond(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
         """
         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=4,
-            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake)
+            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake,beadtype2=beadtype2)
         
     def pentagon(self,xc,yc,radius,name=None,
-                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False):
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False,beadtype2=None):
         """
         pentagon object 
             pentagon(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False]
+            use pentagon(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
         """
         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=5,
-            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake)
+            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake,beadtype2=beadtype2)
         
     def hexagon(self,xc,yc,radius,name=None,
-                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False):
+                 shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False,beadtype2=None):
         """
         hexagon object 
             hexagon(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False]
+            use hexagon(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
         """
         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=6,
-            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake)
+            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake,beadtype2=beadtype2)
         
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -799,7 +816,7 @@ class raster:
                     self.nbeads += self.objects[o].nbeads
 
 
-    # PLOTobj method (static) -----------------------
+    # PLOTobj method  -----------------------
     def plotobj(self,obj):
         """ plotobj(obj) """
         if obj.alike == "circle":
@@ -808,15 +825,29 @@ class raster:
             points = np.vstack((j.flatten(),i.flatten())).T
             npoints = points.shape[0]
             inside = obj.polygon.contains_points(points)
-            for k in range(npoints):
-                if inside[k] and \
-                    points[k,0]>=0 and \
-                    points[k,0]<self.width and \
-                    points[k,1]>=0 and \
-                    points[k,1]<self.height :
-                        self.imbead[points[k,1],points[k,0]] = obj.beadtype
-                        self.imobj[points[k,1],points[k,0]] = obj.index
-                        obj.nbeads += 1
+            if obj.beadtype2 is None:          # -- no salting --
+                for k in range(npoints):
+                    if inside[k] and \
+                        points[k,0]>=0 and \
+                        points[k,0]<self.width and \
+                        points[k,1]>=0 and \
+                        points[k,1]<self.height:
+                            self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                            self.imobj[points[k,1],points[k,0]] = obj.index
+                            obj.nbeads += 1
+            else:
+                for k in range(npoints):       # -- salting --
+                    if inside[k] and \
+                        points[k,0]>=0 and \
+                        points[k,0]<self.width and \
+                        points[k,1]>=0 and \
+                        points[k,1]<self.height:
+                            if np.random.rand()<obj.beadtype2[1]:
+                                self.imbead[points[k,1],points[k,0]] = obj.beadtype2[0]
+                            else:
+                                self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                            self.imobj[points[k,1],points[k,0]] = obj.index
+                            obj.nbeads += 1                
         else:
             raise ValueError("This object type is notimplemented")        
 
@@ -1062,6 +1093,7 @@ class Rectangle(genericpolygon):
         self.kind = "rectangle"     # kind of object
         self.alike = "circle"       # similar object for plotting
         self.beadtype = 1           # bead type
+        self.beadtype2 = None       # bead type 2 (alternative beadtype, ratio)
         self.nbeads = 0             # number of beads
         self.ismask = False         # True if beadtype == 0
         self.isplotted = False      # True if plotted
@@ -1091,6 +1123,7 @@ class Circle(genericpolygon):
         self.alike = "circle"        # similar object for plotting
         self.resolution = resolution # default resolution
         self.beadtype = 1            # bead type
+        self.beadtype2 = None        # bead type 2 (alternative beadtype, ratio)        
         self.nbeads = 0              # number of beads
         self.ismask = False          # True if beadtype == 0
         self.isplotted = False       # True if plotted
@@ -1470,17 +1503,17 @@ if __name__ == '__main__':
     plt.close("all")
     R = raster()
     R.rectangle(1,24,2,20,name='rect1')
-    R.rectangle(60,80,50,81,name='rect2',beadtype=2,angle=40)
+    R.rectangle(60,80,50,81,name='rect2',beadtype=2,angle=40,beadtype2=(9,0.2))
     R.rectangle(50,50,10,10,mode="center",angle=45,beadtype=1)
-    R.circle(45,20,5,name='C1',beadtype=3)
+    R.circle(45,20,5,name='C1',beadtype=3,beadtype2=(8,0.25))
     R.circle(35,10,5,name='C2',beadtype=3)
     
     R.circle(15,30,10,name='p1',beadtype=4,shaperatio=0.2,angle=-30)
     R.circle(12,40,8,name='p2',beadtype=4,shaperatio=0.2,angle=20)
-    R.circle(12,80,22,name='p3',beadtype=4,shaperatio=1.3,angle=20)
+    R.circle(12,80,22,name='p3',beadtype=4,shaperatio=1.3,angle=20,beadtype2=(9,0.1))
     
     R.triangle(85,20,10,name='T1',beadtype=5,angle=20)
-    R.diamond(85,35,5,name='D1',beadtype=5,angle=20)
+    R.diamond(85,35,5,name='D1',beadtype=5,angle=20,beadtype2=(9,0.5))
     R.pentagon(50,35,5,name='P1',beadtype=5,angle=90)
     R.hexagon(47,85,12,name='H1',beadtype=5,angle=90)
     
