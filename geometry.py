@@ -8,13 +8,14 @@ Created on Wed Mar  9 13:48:46 2022
 
 # Revision hisotry
 # 2022-04-01 add maxtype=4 for raster data outputs
+# 2022-04-13 change density of S (continuous phase) to 1000 from 1
 
 from pizza.raster import raster
 
 # %% input geometry
 wdir = "./tmp"
-S = raster(width=100,height=100) #domain
-O = raster(width=100,height=100) #domain
+S = raster(width=100,height=100,mass=1000) #domain
+O = raster(width=100,height=100,mass=2000) #domain
 #geometries
 rigid, fluid, oscillating, solid, solid2= 1, 2, 3, 4, 5
 S.rectangle(0,100,0,100,name="edge",beadtype=rigid)
@@ -24,7 +25,7 @@ S.hexagon(50, 75, 10,name="mask1",ismask=True)
 O.circle(50, 25, 10, name="floater",beadtype=oscillating)
 O.triangle(50,25,7,name="mask2",ismask=True)
 O.hexagon(50, 75, 10,name="dingy",beadtype=solid)
-O.mass = 2000
+
 #S.hexagon(50, 150, 20,name="dingy2",beadtype=solid2)
 
 S.plot()

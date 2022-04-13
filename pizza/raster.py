@@ -110,6 +110,7 @@ __version__ = "0.351"
 # 2022-03-23 fix nattempt, add arc
 # 2022-04-01 add maxtype to  raster.data(), e.g. raster.data(maxtype=4)
 # 2022-04-08 add beadtype2(alternative beadtype, ratio) to salt objects
+# 2022-04-13 descale volume in data() for stability reason
 
 # %% Imports and private library
 from copy import copy as duplicate
@@ -312,7 +313,7 @@ class raster:
         if not isinstance(center,tuple) or len(scale)!=2:
             raise ValueError("center must be tuple (centerx,centery)")
         scalez = np.sqrt(scale[0]*scale[1])
-        scalevol = scale[0]*scale[1]*scalez
+        scalevol = scale[0]*scale[1] #*scalez
         maxtypeheader = self.count()[-1][0] if maxtype is None else maxtype
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
