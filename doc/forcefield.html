@@ -36,7 +36,7 @@ __credits__ = [&#34;Olivier Vitrac&#34;]
 __license__ = &#34;GPLv3&#34;
 __maintainer__ = &#34;Olivier Vitrac&#34;
 __email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
-__version__ = &#34;0.35&#34;
+__version__ = &#34;0.352&#34;
 
 &#34;&#34;&#34;
     --- forcefield methods for LAMMPS ---
@@ -151,6 +151,7 @@ __version__ = &#34;0.35&#34;
 # 2022-02-28 fix class inheritance with mutable type, update is carried with + and struct()
 # 2022-03-02 fix off-diagonal order for i,j
 # 2022-03-19 standardized pizza path
+# 2022-04-16 add saltTLSPH() forcefield in the material library, and document it better
 
 # %% Dependencies
 import types
@@ -376,7 +377,18 @@ class none(smd):
 
 # BEGIN MATERIAL: WATER ========================================
 class water(ulsph):
-    &#34;&#34;&#34; water material (smd:ulsph): use water() or water(beadtype=index, userid=&#34;myfluid&#34;, USER=...) &#34;&#34;&#34;
+    &#34;&#34;&#34; water material (smd:ulsph): generic water model
+            water()
+            water(beadtype=index, userid=&#34;myfluid&#34;, USER=...)
+
+            override any propery with USER.parameter (set only the parameters you want to override)
+                USER.rho: density in kg/m3 (default=1000)
+                USER.c0: speed of the sound in m/s (default=10.0)
+                USER.q1: standard artificial viscosity linear coefficient (default=1.0)
+                USER.Cp: heat capacity of material -- not used here (default=1.0)
+                USER.contact_scale: scaling coefficient for contact (default=1.5)
+                USER.contact_stiffness: contact stifness in Pa (default=&#34;2.5*${c0}^2*${rho}&#34;)
+    &#34;&#34;&#34;
     name = ulsph.name + struct(material=&#34;water&#34;)
     description = ulsph.description + struct(material=&#34;water beads - SPH-like&#34;)
     userid = &#39;water&#39;
@@ -384,7 +396,8 @@ class water(ulsph):
     
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
-        &#34;&#34;&#34; water forcefield: water(beadtype=index, userid=&#34;myfluid&#34;) &#34;&#34;&#34;
+        &#34;&#34;&#34; water forcefield:
+            water(beadtype=index, userid=&#34;myfluid&#34;) &#34;&#34;&#34;
         if userid!=None: self.userid = userid
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
@@ -404,7 +417,24 @@ class water(ulsph):
 
 # BEGIN MATERIAL: SOLID FOOD ========================================
 class solidfood(tlsph):
-    &#34;&#34;&#34; solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid=&#34;myfood&#34;, USER=...) &#34;&#34;&#34;
+    &#34;&#34;&#34; solidfood material (smd:tlsph): model solid food object
+            solidfood()
+            solidfood(beadtype=index, userid=&#34;myfood&#34;, USER=...)
+            
+            override any propery with USER.property=value (set only the parameters you want to override)
+                USER.rho: density in kg/m3 (default=1000)
+                USER.c0: speed of the sound in m/s (default=10.0)
+                USER.E: Young&#39;s modulus in Pa (default=&#34;5*${c0}^2*${rho}&#34;)
+                USER.nu: Poisson ratio (default=0.3)
+                USER.q1: standard artificial viscosity linear coefficient (default=1.0)
+                USER.q2: standard artificial viscosity quadratic coefficient (default=0)
+                USER.Hg: hourglass control coefficient (default=10.0)
+                USER.Cp: heat capacity of material -- not used here (default=1.0)
+                USER.sigma_yield: plastic yield stress in Pa (default=&#34;0.1*${E}&#34;)
+                USER.hardening: hardening parameter (default=0)
+                USER.contact_scale: scaling coefficient for contact (default=1.5)
+                USER.contact_stiffness: contact stifness in Pa (default=&#34;2.5*${c0}^2*${rho}&#34;)
+    &#34;&#34;&#34;
     name = tlsph.name + struct(material=&#34;solidfood&#34;)
     description = tlsph.description + struct(material=&#34;food beads - solid behavior&#34;)
     userid = &#39;solidfood&#39;
@@ -412,7 +442,48 @@ class solidfood(tlsph):
     
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
-        &#34;&#34;&#34; food forcefield: solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
+        &#34;&#34;&#34; food forcefield:
+            solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
+        # super().__init__()
+        if userid!=None: self.userid = userid
+        self.beadtype = beadtype
+        self.parameters = parameterforcefield(
+            # food-food interactions
+            rho = 1000,
+            c0 = 10.0,
+            E = &#34;5*${c0}^2*${rho}&#34;,
+            nu = 0.3,
+            q1 = 1.0,
+            q2 = 0.0,
+            Hg = 10.0,
+            Cp = 1.0,
+            sigma_yield = &#34;0.1*${E}&#34;,
+            hardening = 0,
+            # hertz contacts
+            contact_scale = 1.5,
+            contact_stiffness = &#34;2.5*${c0}^2*${rho}&#34;
+            ) + USER # update with user properties if any
+        
+# END MATERIAL: SOLID FOOD ==========================================
+
+
+# BEGIN MATERIAL: SALT TLSPH ========================================
+class saltTLSPH(tlsph):
+    &#34;&#34;&#34; SALTLSPH (smd:tlsph): ongoing &#34;salting&#34; beadtype for rheology control
+            saltTLSPH()
+            saltTLSPH(beadtype=index, userid=&#34;myfood&#34;, USER=...)
+            
+            override any property with USER.property = value
+    &#34;&#34;&#34;
+    name = tlsph.name + struct(material=&#34;solidfood&#34;)
+    description = tlsph.description + struct(material=&#34;food beads - solid behavior&#34;)
+    userid = &#39;&#34;salt&#34;&#39;
+    version = 0.1
+    
+    # constructor (do not forgert to include the constuctor)
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
+        &#34;&#34;&#34; saltTLSPH forcefield: 
+            saltTLSPH(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
         # super().__init__()
         if userid!=None: self.userid = userid
         self.beadtype = beadtype
@@ -439,7 +510,16 @@ class solidfood(tlsph):
 
 # BEGIN MATERIAL: RIGID WALLS ========================================
 class rigidwall(none):
-    &#34;&#34;&#34; rigid walls (smd:none): use rigidwall() or rigidwall(beadtype=index, userid=&#34;wall&#34;, USER=...) &#34;&#34;&#34;
+    &#34;&#34;&#34; rigid walls (smd:none):
+            rigidwall()
+            rigidwall(beadtype=index, userid=&#34;wall&#34;, USER=...)
+
+            override any propery with USER.parameter (set only the parameters you want to override)
+                USER.rho: density in kg/m3 (default=3000)
+                USER.c0: speed of the sound in m/s (default=10.0)
+                USER.contact_scale: scaling coefficient for contact (default=1.5)
+                USER.contact_stiffness: contact stifness in Pa (default=&#34;2.5*${c0}^2*${rho}&#34;)
+    &#34;&#34;&#34;
     name = none.name + struct(material=&#34;walls&#34;)
     description = none.description + struct(material=&#34;rigid walls&#34;)
     userid = &#39;solidfood&#39;
@@ -447,7 +527,8 @@ class rigidwall(none):
     
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
-        &#34;&#34;&#34; food forcefield: solidfood(beadtype=index, userid=&#34;mywall&#34;) &#34;&#34;&#34;
+        &#34;&#34;&#34; rigidwall forcefield:
+            rigidwall(beadtype=index, userid=&#34;mywall&#34;) &#34;&#34;&#34;
         # super().__init__()
         if userid!=None: self.userid = userid
         self.beadtype = beadtype
@@ -820,14 +901,31 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <span>(</span><span>beadtype=1, userid=None, USER=empty forcefield)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>rigid walls (smd:none): use rigidwall() or rigidwall(beadtype=index, userid="wall", USER=&hellip;) </p>
-<p>food forcefield: solidfood(beadtype=index, userid="mywall")</p></div>
+<div class="desc"><p>rigid walls (smd:none):
+rigidwall()
+rigidwall(beadtype=index, userid="wall", USER=&hellip;)</p>
+<p>override any propery with USER.parameter (set only the parameters you want to override)
+USER.rho: density in kg/m3 (default=3000)
+USER.c0: speed of the sound in m/s (default=10.0)
+USER.contact_scale: scaling coefficient for contact (default=1.5)
+USER.contact_stiffness: contact stifness in Pa (default="2.5<em>${c0}^2</em>${rho}")</p>
+<p>rigidwall forcefield:
+rigidwall(beadtype=index, userid="mywall")</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class rigidwall(none):
-    &#34;&#34;&#34; rigid walls (smd:none): use rigidwall() or rigidwall(beadtype=index, userid=&#34;wall&#34;, USER=...) &#34;&#34;&#34;
+    &#34;&#34;&#34; rigid walls (smd:none):
+            rigidwall()
+            rigidwall(beadtype=index, userid=&#34;wall&#34;, USER=...)
+
+            override any propery with USER.parameter (set only the parameters you want to override)
+                USER.rho: density in kg/m3 (default=3000)
+                USER.c0: speed of the sound in m/s (default=10.0)
+                USER.contact_scale: scaling coefficient for contact (default=1.5)
+                USER.contact_stiffness: contact stifness in Pa (default=&#34;2.5*${c0}^2*${rho}&#34;)
+    &#34;&#34;&#34;
     name = none.name + struct(material=&#34;walls&#34;)
     description = none.description + struct(material=&#34;rigid walls&#34;)
     userid = &#39;solidfood&#39;
@@ -835,7 +933,8 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
     
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
-        &#34;&#34;&#34; food forcefield: solidfood(beadtype=index, userid=&#34;mywall&#34;) &#34;&#34;&#34;
+        &#34;&#34;&#34; rigidwall forcefield:
+            rigidwall(beadtype=index, userid=&#34;mywall&#34;) &#34;&#34;&#34;
         # super().__init__()
         if userid!=None: self.userid = userid
         self.beadtype = beadtype
@@ -880,6 +979,95 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <li><code><a title="forcefield.none.pair_offdiagcoeff" href="#forcefield.forcefield.pair_offdiagcoeff">pair_offdiagcoeff</a></code></li>
 <li><code><a title="forcefield.none.pair_style" href="#forcefield.forcefield.pair_style">pair_style</a></code></li>
 <li><code><a title="forcefield.none.printheader" href="#forcefield.forcefield.printheader">printheader</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="forcefield.saltTLSPH"><code class="flex name class">
+<span>class <span class="ident">saltTLSPH</span></span>
+<span>(</span><span>beadtype=1, userid=None, USER=empty forcefield)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>SALTLSPH (smd:tlsph): ongoing "salting" beadtype for rheology control
+saltTLSPH()
+saltTLSPH(beadtype=index, userid="myfood", USER=&hellip;)</p>
+<p>override any property with USER.property = value</p>
+<p>saltTLSPH forcefield:
+saltTLSPH(beadtype=index, userid="myfood")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class saltTLSPH(tlsph):
+    &#34;&#34;&#34; SALTLSPH (smd:tlsph): ongoing &#34;salting&#34; beadtype for rheology control
+            saltTLSPH()
+            saltTLSPH(beadtype=index, userid=&#34;myfood&#34;, USER=...)
+            
+            override any property with USER.property = value
+    &#34;&#34;&#34;
+    name = tlsph.name + struct(material=&#34;solidfood&#34;)
+    description = tlsph.description + struct(material=&#34;food beads - solid behavior&#34;)
+    userid = &#39;&#34;salt&#34;&#39;
+    version = 0.1
+    
+    # constructor (do not forgert to include the constuctor)
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
+        &#34;&#34;&#34; saltTLSPH forcefield: 
+            saltTLSPH(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
+        # super().__init__()
+        if userid!=None: self.userid = userid
+        self.beadtype = beadtype
+        self.parameters = parameterforcefield(
+            # food-food interactions
+            rho = 1000,
+            c0 = 10.0,
+            E = &#39;5*${c0}^2*${rho}&#39;,
+            nu = 0.3,
+            q1 = 1.0,
+            q2 = 0.0,
+            Hg = 10,
+            Cp = 1.0,
+            sigma_yield = &#39;0.1*${E}&#39;,
+            hardening = 0,
+            # hertz contacts
+            contact_scale = 1.5,
+            contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;
+            ) + USER # update with user properties if any</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="forcefield.tlsph" href="#forcefield.tlsph">tlsph</a></li>
+<li><a title="forcefield.smd" href="#forcefield.smd">smd</a></li>
+<li><a title="forcefield.forcefield" href="#forcefield.forcefield">forcefield</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="forcefield.saltTLSPH.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.saltTLSPH.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.saltTLSPH.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.saltTLSPH.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="forcefield.tlsph" href="#forcefield.tlsph">tlsph</a></b></code>:
+<ul class="hlist">
+<li><code><a title="forcefield.tlsph.getallattributes" href="#forcefield.forcefield.getallattributes">getallattributes</a></code></li>
+<li><code><a title="forcefield.tlsph.pair_diagcoeff" href="#forcefield.forcefield.pair_diagcoeff">pair_diagcoeff</a></code></li>
+<li><code><a title="forcefield.tlsph.pair_offdiagcoeff" href="#forcefield.forcefield.pair_offdiagcoeff">pair_offdiagcoeff</a></code></li>
+<li><code><a title="forcefield.tlsph.pair_style" href="#forcefield.forcefield.pair_style">pair_style</a></code></li>
+<li><code><a title="forcefield.tlsph.printheader" href="#forcefield.forcefield.printheader">printheader</a></code></li>
 </ul>
 </li>
 </ul>
@@ -948,14 +1136,47 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <span>(</span><span>beadtype=1, userid=None, USER=empty forcefield)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid="myfood", USER=&hellip;) </p>
-<p>food forcefield: solidfood(beadtype=index, userid="myfood")</p></div>
+<div class="desc"><p>solidfood material (smd:tlsph): model solid food object
+solidfood()
+solidfood(beadtype=index, userid="myfood", USER=&hellip;)</p>
+<p>override any propery with USER.property=value (set only the parameters you want to override)
+USER.rho: density in kg/m3 (default=1000)
+USER.c0: speed of the sound in m/s (default=10.0)
+USER.E: Young's modulus in Pa (default="5<em>${c0}^2</em>${rho}")
+USER.nu: Poisson ratio (default=0.3)
+USER.q1: standard artificial viscosity linear coefficient (default=1.0)
+USER.q2: standard artificial viscosity quadratic coefficient (default=0)
+USER.Hg: hourglass control coefficient (default=10.0)
+USER.Cp: heat capacity of material &ndash; not used here (default=1.0)
+USER.sigma_yield: plastic yield stress in Pa (default="0.1<em>${E}")
+USER.hardening: hardening parameter (default=0)
+USER.contact_scale: scaling coefficient for contact (default=1.5)
+USER.contact_stiffness: contact stifness in Pa (default="2.5</em>${c0}^2*${rho}")</p>
+<p>food forcefield:
+solidfood(beadtype=index, userid="myfood")</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class solidfood(tlsph):
-    &#34;&#34;&#34; solidfood material (smd:tlsph): use food() or solidfood(beadtype=index, userid=&#34;myfood&#34;, USER=...) &#34;&#34;&#34;
+    &#34;&#34;&#34; solidfood material (smd:tlsph): model solid food object
+            solidfood()
+            solidfood(beadtype=index, userid=&#34;myfood&#34;, USER=...)
+            
+            override any propery with USER.property=value (set only the parameters you want to override)
+                USER.rho: density in kg/m3 (default=1000)
+                USER.c0: speed of the sound in m/s (default=10.0)
+                USER.E: Young&#39;s modulus in Pa (default=&#34;5*${c0}^2*${rho}&#34;)
+                USER.nu: Poisson ratio (default=0.3)
+                USER.q1: standard artificial viscosity linear coefficient (default=1.0)
+                USER.q2: standard artificial viscosity quadratic coefficient (default=0)
+                USER.Hg: hourglass control coefficient (default=10.0)
+                USER.Cp: heat capacity of material -- not used here (default=1.0)
+                USER.sigma_yield: plastic yield stress in Pa (default=&#34;0.1*${E}&#34;)
+                USER.hardening: hardening parameter (default=0)
+                USER.contact_scale: scaling coefficient for contact (default=1.5)
+                USER.contact_stiffness: contact stifness in Pa (default=&#34;2.5*${c0}^2*${rho}&#34;)
+    &#34;&#34;&#34;
     name = tlsph.name + struct(material=&#34;solidfood&#34;)
     description = tlsph.description + struct(material=&#34;food beads - solid behavior&#34;)
     userid = &#39;solidfood&#39;
@@ -963,7 +1184,8 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
     
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
-        &#34;&#34;&#34; food forcefield: solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
+        &#34;&#34;&#34; food forcefield:
+            solidfood(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
         # super().__init__()
         if userid!=None: self.userid = userid
         self.beadtype = beadtype
@@ -971,17 +1193,17 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
             # food-food interactions
             rho = 1000,
             c0 = 10.0,
-            E = &#39;5*${c0}^2*${rho}&#39;,
+            E = &#34;5*${c0}^2*${rho}&#34;,
             nu = 0.3,
             q1 = 1.0,
             q2 = 0.0,
-            Hg = 10,
+            Hg = 10.0,
             Cp = 1.0,
-            sigma_yield = &#39;0.1*${E}&#39;,
+            sigma_yield = &#34;0.1*${E}&#34;,
             hardening = 0,
             # hertz contacts
             contact_scale = 1.5,
-            contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;
+            contact_stiffness = &#34;2.5*${c0}^2*${rho}&#34;
             ) + USER # update with user properties if any</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -1056,6 +1278,7 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
+<li><a title="forcefield.saltTLSPH" href="#forcefield.saltTLSPH">saltTLSPH</a></li>
 <li><a title="forcefield.solidfood" href="#forcefield.solidfood">solidfood</a></li>
 </ul>
 <h3>Class variables</h3>
@@ -1162,14 +1385,35 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <span>(</span><span>beadtype=1, userid=None, USER=empty forcefield)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>water material (smd:ulsph): use water() or water(beadtype=index, userid="myfluid", USER=&hellip;) </p>
-<p>water forcefield: water(beadtype=index, userid="myfluid")</p></div>
+<div class="desc"><p>water material (smd:ulsph): generic water model
+water()
+water(beadtype=index, userid="myfluid", USER=&hellip;)</p>
+<p>override any propery with USER.parameter (set only the parameters you want to override)
+USER.rho: density in kg/m3 (default=1000)
+USER.c0: speed of the sound in m/s (default=10.0)
+USER.q1: standard artificial viscosity linear coefficient (default=1.0)
+USER.Cp: heat capacity of material &ndash; not used here (default=1.0)
+USER.contact_scale: scaling coefficient for contact (default=1.5)
+USER.contact_stiffness: contact stifness in Pa (default="2.5<em>${c0}^2</em>${rho}")</p>
+<p>water forcefield:
+water(beadtype=index, userid="myfluid")</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class water(ulsph):
-    &#34;&#34;&#34; water material (smd:ulsph): use water() or water(beadtype=index, userid=&#34;myfluid&#34;, USER=...) &#34;&#34;&#34;
+    &#34;&#34;&#34; water material (smd:ulsph): generic water model
+            water()
+            water(beadtype=index, userid=&#34;myfluid&#34;, USER=...)
+
+            override any propery with USER.parameter (set only the parameters you want to override)
+                USER.rho: density in kg/m3 (default=1000)
+                USER.c0: speed of the sound in m/s (default=10.0)
+                USER.q1: standard artificial viscosity linear coefficient (default=1.0)
+                USER.Cp: heat capacity of material -- not used here (default=1.0)
+                USER.contact_scale: scaling coefficient for contact (default=1.5)
+                USER.contact_stiffness: contact stifness in Pa (default=&#34;2.5*${c0}^2*${rho}&#34;)
+    &#34;&#34;&#34;
     name = ulsph.name + struct(material=&#34;water&#34;)
     description = ulsph.description + struct(material=&#34;water beads - SPH-like&#34;)
     userid = &#39;water&#39;
@@ -1177,7 +1421,8 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
     
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
-        &#34;&#34;&#34; water forcefield: water(beadtype=index, userid=&#34;myfluid&#34;) &#34;&#34;&#34;
+        &#34;&#34;&#34; water forcefield:
+            water(beadtype=index, userid=&#34;myfluid&#34;) &#34;&#34;&#34;
         if userid!=None: self.userid = userid
         self.beadtype = beadtype
         self.parameters = parameterforcefield(
@@ -1276,6 +1521,15 @@ def printheader(txt,align=&#34;^&#34;,width=80,filler=&#34;~&#34;):
 <li><code><a title="forcefield.rigidwall.name" href="#forcefield.rigidwall.name">name</a></code></li>
 <li><code><a title="forcefield.rigidwall.userid" href="#forcefield.rigidwall.userid">userid</a></code></li>
 <li><code><a title="forcefield.rigidwall.version" href="#forcefield.rigidwall.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="forcefield.saltTLSPH" href="#forcefield.saltTLSPH">saltTLSPH</a></code></h4>
+<ul class="">
+<li><code><a title="forcefield.saltTLSPH.description" href="#forcefield.saltTLSPH.description">description</a></code></li>
+<li><code><a title="forcefield.saltTLSPH.name" href="#forcefield.saltTLSPH.name">name</a></code></li>
+<li><code><a title="forcefield.saltTLSPH.userid" href="#forcefield.saltTLSPH.userid">userid</a></code></li>
+<li><code><a title="forcefield.saltTLSPH.version" href="#forcefield.saltTLSPH.version">version</a></code></li>
 </ul>
 </li>
 <li>
