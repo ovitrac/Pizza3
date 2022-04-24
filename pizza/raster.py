@@ -674,7 +674,8 @@ class raster:
                 beadtype = None,
                 beadtype2 = None,
                 ismask = False,
-                fake = False
+                fake = False,
+                flipud = True
                 ):
         """
             overlay object: made from an image converted to nc colors
@@ -683,6 +684,8 @@ class raster:
             
             O = overlay(x0,y0,filename="/this/is/my/image.png",ncolors=nc,color=ic,colormax=jc,beadtype=b)
             O = overlay(....ismask=False,fake=False)
+            
+            note use overlay(...flipud=False) to prevent image fliping (standard)
             
             Outputs:
                 O.original original image (PIL)
@@ -695,7 +698,8 @@ class raster:
                     filename = filename,
                     xmin = x0,
                     ymin = y0,
-                    ncolors = ncolors
+                    ncolors = ncolors,
+                    flipud = flipud
                     )
         O.select(color=color, colormax=colormax)
         if (name is not None) and (name !=""):
@@ -1173,7 +1177,8 @@ class overlay(coregeometry):
                  filename="./sandbox/image.jpg",
                  xmin = 0,
                  ymin = 0,
-                 ncolors = 4
+                 ncolors = 4,
+                 flipud = True
                  ):
         """ generate an overlay from file
                 overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)
@@ -1192,6 +1197,8 @@ class overlay(coregeometry):
         self.index = counter[0]
         self.subindex = counter[1]
         self.translate = [0.0,0.0]  # modification used when an object is duplicated
+        self.angle = 0
+        self.flipud = flipud        
         if not os.path.isfile(filename):
             raise IOError(f'the file "{filename}" does not exist')
         self.filename = filename
@@ -1205,8 +1212,6 @@ class overlay(coregeometry):
         self.ymax0 = ymin + self.im.shape[0]
         self.xcenter0 = (self.xmin+self.xmax)/2
         self.ycenter0 = (self.ymin+self.ymax)/2
-        self.angle = 0
-        
         
     def select(self,color=None,colormax=None):
         """ select the color index:
@@ -1224,7 +1229,7 @@ class overlay(coregeometry):
         if isinstance(color,int) and color<len(self.map):
             S = np.logical_and(self.im>=color,self.im<=colormax)
             self.nbeads = np.count_nonzero(S)
-            return S
+            return np.flipud(S) if self.flipud else S
         raise ValueError("color must be an integer lower than %d" % len(self.map))
         
     def load(self):
