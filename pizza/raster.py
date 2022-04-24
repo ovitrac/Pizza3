@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.351"
+__version__ = "0.4"
 
 """
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -91,7 +91,7 @@ __version__ = "0.351"
         
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-04-08
+# INRAE\Olivier Vitrac - rev. 2022-04-24
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -111,8 +111,11 @@ __version__ = "0.351"
 # 2022-04-01 add maxtype to  raster.data(), e.g. raster.data(maxtype=4)
 # 2022-04-08 add beadtype2(alternative beadtype, ratio) to salt objects
 # 2022-04-13 descale volume in data() for stability reason
+# 2022-04-23 very first overlay implementation (alpha version)
+# 2022-04-24 full implementation of overlay (not fully tested yet, intended to behave has a regular object)
 
 # %% Imports and private library
+import os
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate
 import numpy as np
@@ -121,6 +124,7 @@ import matplotlib.path as path
 import matplotlib.patches as patches
 from pizza.data3 import data as data3
 from pizza.private.struct import struct
+from pizza.private.PIL import Image
 
 def _rotate(x0,y0,xc,yc,angle):
     angle = np.pi * angle / 180.0
@@ -209,6 +213,8 @@ class raster:
         R.pentagon(...)
         R.hexagon(...)
         
+        R.overlay(xleft,xright,filename=="valid/image.ext",color=2,beadtype=1) 
+        
         note: use fake=True to generate an object without inserting it
         
         R.collection(...) generates collection of existing or fake objects
@@ -280,6 +286,7 @@ class raster:
                          "pentagon":0,
                           "hexagon":0,
                            "circle":0,
+                          "overlay":0,
                        "collection":0,
                               "all":0
                     }
@@ -498,8 +505,12 @@ class raster:
     # frameobj method
     def frameobj(self,obj):
         """ frame coordinates by taking into account translation """
-        xmin, ymin = self.valid(obj.xmin-1, obj.ymin-1)
-        xmax, ymax = self.valid(obj.xmax+1, obj.ymax+1)
+        if obj.hasclosefit:
+            envelope = 0
+        else:
+            envelope = 1
+        xmin, ymin = self.valid(obj.xmin-envelope, obj.ymin-envelope)
+        xmax, ymax = self.valid(obj.xmax+envelope, obj.ymax+envelope)
         return xmin, ymin, xmax, ymax
 
     # RECTANGLE ----------------------------     
@@ -518,7 +529,7 @@ class raster:
         self.counter["all"] += 1
         self.counter["rectangle"] += 1
         R = Rectangle((self.counter["all"],self.counter["rectangle"]))
-        if name != None:
+        if (name != None) and (name != ""):
             if self.exist(name):
                 print('RASTER:: the object "%s" is overwritten',name)
                 self.delete(name)
@@ -609,7 +620,7 @@ class raster:
             typ = "circle"
             self.counter["circle"] += 1
             G = Circle((self.counter["all"],self.counter["circle"]),resolution=resolution)
-        if name != None:
+        if (name != None) and (name != ""):
             if self.exist(name):
                 print('RASTER:: the object "%s" is overwritten',name)
                 self.delete(name)
@@ -653,6 +664,65 @@ class raster:
             self.nobjects += 1
             return None
  
+    # OVERLAY -------------------------------
+    def overlay(self,x0,y0,
+                name = None,
+                filename = None,
+                color = 1,
+                colormax = None,
+                ncolors = 4,
+                beadtype = None,
+                beadtype2 = None,
+                ismask = False,
+                fake = False
+                ):
+        """
+            overlay object: made from an image converted to nc colors
+            the object is made from the level ranged between ic and jc (bounds included)
+            note: if palette found, no conversion is applied
+            
+            O = overlay(x0,y0,filename="/this/is/my/image.png",ncolors=nc,color=ic,colormax=jc,beadtype=b)
+            O = overlay(....ismask=False,fake=False)
+            
+            Outputs:
+                O.original original image (PIL)
+                O.raw image converted to ncolors if needed
+            
+        """
+        if filename is None or filename=="":
+            raise ValueError("filename is required (valid image)")
+        O = overlay(counter=(self.counter["all"]+1,self.counter["overlay"]+1),
+                    filename = filename,
+                    xmin = x0,
+                    ymin = y0,
+                    ncolors = ncolors
+                    )
+        O.select(color=color, colormax=colormax)
+        if (name is not None) and (name !=""):
+            if self.exist(name):
+                print('RASTER:: the object "%s" is overwritten',name)
+                self.delete(name)
+            O.name = name
+        else:
+            name = O.name
+        if beadtype is not None: O.beadtype = int(np.floor(beadtype))
+        if beadtype2 is not None:
+            if not isinstance(beadtype2,tuple) or len(beadtype2)!=2:
+                raise AttributeError("beadtype2 must be a tuple (beadtype,ratio)")
+        O.beadtype2 = beadtype2
+        if ismask: O.beadtype = 0
+        O.ismask = O.beadtype==0
+        self.counter["all"] += 1
+        self.counter["overlay"] += 1
+        if fake:
+            self.counter["all"] -= 1
+            self.counter["overlay"] -= 1
+            return O
+        else:
+            self.objects[name] = O
+            self.nobjects += 1
+            return None      
+    
     
     # COLLECTION ----------------------------
     def collection(self,*obj,
@@ -771,6 +841,8 @@ class raster:
             labelobj:
                 labelobj(obj [, contour=True,edgecolor="orange",facecolor="none",linewidth=2, ax=plt.gca()])
         """
+        if contour: contour = obj.hascontour # e.g. overlays do not have contour
+        
         if contour:
             patch = patches.PathPatch(obj.polygon2plot,
                                       facecolor=facecolor,
@@ -848,7 +920,38 @@ class raster:
                             else:
                                 self.imbead[points[k,1],points[k,0]] = obj.beadtype
                             self.imobj[points[k,1],points[k,0]] = obj.index
-                            obj.nbeads += 1                
+                            obj.nbeads += 1
+                            
+        elif obj.alike == "overlay":
+            xmin, ymin, xmax, ymax = self.frameobj(obj)
+            j,i = np.meshgrid(range(xmin,xmax), range(ymin,ymax))
+            points = np.vstack((j.flatten(),i.flatten())).T
+            npoints = points.shape[0]
+            inside = obj.select()
+            if obj.beadtype2 is None:          # -- no salting --
+                for k in range(npoints):
+                    if inside[ points[k,1]-ymin, points[k,0]-xmin ] and \
+                        points[k,0]>=0 and \
+                        points[k,0]<self.width and \
+                        points[k,1]>=0 and \
+                        points[k,1]<self.height:
+                            self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                            self.imobj[points[k,1],points[k,0]] = obj.index
+                            obj.nbeads += 1
+            else:
+                for k in range(npoints):       # -- salting --
+                    if inside[ points[k,0]-ymin, points[k,0]-xmin ] and \
+                        points[k,0]>=0 and \
+                        points[k,0]<self.width and \
+                        points[k,1]>=0 and \
+                        points[k,1]<self.height:
+                            if np.random.rand()<obj.beadtype2[1]:
+                                self.imbead[points[k,1],points[k,0]] = obj.beadtype2[0]
+                            else:
+                                self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                            self.imobj[points[k,1],points[k,0]] = obj.index
+                            obj.nbeads += 1
+
         else:
             raise ValueError("This object type is notimplemented")        
 
@@ -1007,9 +1110,9 @@ class raster:
 #       Collection --> graphical object for collections (many properties are dynamic)
 #       struct --> collection is the low-level class container of Collection
 
-class genericpolygon:
-    """ generic polygon methods """
-    
+class coregeometry:
+    """ core geometry object"""
+        
     @property
     def xcenter(self):
         """ xcenter with translate """
@@ -1043,6 +1146,128 @@ class genericpolygon:
         """ oibject height range """
         return self.ymax - self.ymin
 
+    def copy(self,translate=None,beadtype=None,name=""):
+        """ returns a copy of the graphical object """
+        if self.alike != "mixed":
+            dup = deepduplicate(self)
+            if translate != None: # applies translation
+                dup.translate[0] += translate[0] 
+                dup.translate[1] += translate[1]
+            if beadtype != None: # update beadtype
+                dup.beadtype = beadtype
+            if name != "": # update name
+                dup.name = name
+            return dup
+        else:
+            raise ValueError("collections cannot be copied, regenerate the collection instead")
+            
+
+class overlay(coregeometry):
+    """ generic overlay class """
+    
+    hascontour = False
+    hasclosefit = True
+    
+    def __init__(self,
+                 counter = (0,0),
+                 filename="./sandbox/image.jpg",
+                 xmin = 0,
+                 ymin = 0,
+                 ncolors = 4
+                 ):
+        """ generate an overlay from file
+                overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)
+        """
+        self.name = "over%03d" % counter[1]
+        self.kind = "overlay"       # kind of object
+        self.alike = "overlay"      # similar object for plotting
+        self.beadtype = 1           # bead type
+        self.beadtype2 = None       # bead type 2 (alternative beadtype, ratio)
+        self.nbeads = 0             # number of beads
+        self.ismask = False         # True if beadtype == 0
+        self.isplotted = False      # True if plotted
+        self.islabelled = False     # True if labelled
+        self.resolution = None      # resolution is undefined
+        self.hlabel = {'contour':[], 'text':[]}
+        self.index = counter[0]
+        self.subindex = counter[1]
+        self.translate = [0.0,0.0]  # modification used when an object is duplicated
+        if not os.path.isfile(filename):
+            raise IOError(f'the file "{filename}" does not exist')
+        self.filename = filename
+        self.ncolors = ncolors
+        self.color = None
+        self.colormax = None
+        self.original,self.raw,self.im,self.map = self.load()
+        self.xmin0 = xmin
+        self.ymin0 = ymin
+        self.xmax0 = xmin + self.im.shape[1]
+        self.ymax0 = ymin + self.im.shape[0]
+        self.xcenter0 = (self.xmin+self.xmax)/2
+        self.ycenter0 = (self.ymin+self.ymax)/2
+        self.angle = 0
+        
+        
+    def select(self,color=None,colormax=None):
+        """ select the color index:
+                select(color = c) peeks pixels = c
+                select(color = c, colormax = cmax) peeks pixels>=c and pixels<=cmax
+        """
+        if color is None:
+            color = self.color
+        else:
+            self.color = color
+        if (colormax is None) and (self.colormax is not None) and (self.colormax > self.color):
+                colormax = self.colormax
+        else:
+            colormax = self.colormax = color
+        if isinstance(color,int) and color<len(self.map):
+            S = np.logical_and(self.im>=color,self.im<=colormax)
+            self.nbeads = np.count_nonzero(S)
+            return S
+        raise ValueError("color must be an integer lower than %d" % len(self.map))
+        
+    def load(self):
+        """ load image and process it 
+                returns the image, the indexed image and its color map (à la Matlab, such as imread)
+                
+                note: if the image contains a palette it is used, if not the
+                image is converted to an indexed image without dihtering
+        """
+        I = Image.open(self.filename)
+        palette = I.getpalette()
+        if palette is None:
+            J=I.convert(mode="P",colors=self.ncolors,palette=Image.Palette.ADAPTIVE)
+            palette = J.getpalette()
+        else:
+            J = I
+        p = np.array(palette,dtype="uint8").reshape((int(len(palette)/3),3))
+        ncolors = len(p.sum(axis=1).nonzero()[0]);
+        if ncolors<self.ncolors:
+            print(f"only {ncolors} are available")
+        return I,J, np.array(J,dtype="uint8"), p[:ncolors,:]
+    
+    def __repr__(self):
+        """ display for rectangle class """
+        print("%s - %s object" % (self.name, self.kind))
+        print(f'\tfilename: "{self.filename}"')
+        print(f"\tncolors = {self.ncolors} (selected={self.color})")
+        print("\trange x = [%0.4g %0.4g]" % (self.xmin,self.xmax))
+        print("\trange y = [%0.4g %0.4g]" % (self.ymin,self.ymax))
+        print("\tcenter = [%0.4g %0.4g]" % (self.xcenter,self.ycenter))
+        print("\tangle = %0.4g" % self.angle)
+        print("\ttranslate = [%0.4g %0.4g]" % (self.translate[0],self.translate[1]))
+        print("note: use the attribute origina,raw to see the raw image")
+        return "%s object: %s (beadtype=%d)" % (self.kind,self.name,self.beadtype)
+
+        
+
+class genericpolygon(coregeometry):
+    """ generic polygon methods """
+    
+    hascontour = True
+    hasclosefit = False
+
     @property
     def polygon(self):
         """ 
@@ -1070,21 +1295,6 @@ class genericpolygon:
                min([self.vertices[k][1] for k in range(self.nvertices)])+self.translate[1], \
                max([self.vertices[k][0] for k in range(self.nvertices)])+self.translate[0], \
                max([self.vertices[k][1] for k in range(self.nvertices)])+self.translate[1]
-               
-    def copy(self,translate=None,beadtype=None,name=""):
-        """ returns a copy of the graphical object """
-        if self.alike != "mixed":
-            dup = deepduplicate(self)
-            if translate != None: # applies translation
-                dup.translate[0] += translate[0] 
-                dup.translate[1] += translate[1]
-            if beadtype != None: # update beadtype
-                dup.beadtype = beadtype
-            if name != "": # update name
-                dup.name = name
-            return dup
-        else:
-            raise ValueError("collections cannot be copied, regenerate the collection instead")
 
 
 class Rectangle(genericpolygon):
@@ -1499,6 +1709,7 @@ class coreshell(emulsion):
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':   
+
 # %% basic example
 
     plt.close("all")
@@ -1595,3 +1806,13 @@ if __name__ == '__main__':
     D.scatter(cs,name="core-shell")
     D.plot()
     D.show()
+    
+# %% overlay example
+    I = raster(width=600,height=600)
+    I.overlay(100,100,name="pix0",filename="../sandbox/image.jpg",ncolors=4,color=0,beadtype=1)
+    I.overlay(100,100,name="pix2",filename="../sandbox/image.jpg",ncolors=4,color=2,beadtype=2)
+    I.label("pix0")
+    I.plot()
+    I.show(extra="label")
+    I.pix0.original
+    I.pix0.raw

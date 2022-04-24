@@ -36,7 +36,7 @@ __credits__ = [&#34;Olivier Vitrac&#34;]
 __license__ = &#34;GPLv3&#34;
 __maintainer__ = &#34;Olivier Vitrac&#34;
 __email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
-__version__ = &#34;0.351&#34;
+__version__ = &#34;0.4&#34;
 
 &#34;&#34;&#34;
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -119,7 +119,7 @@ __version__ = &#34;0.351&#34;
         
 &#34;&#34;&#34;
 
-# INRAE\Olivier Vitrac - rev. 2022-04-08
+# INRAE\Olivier Vitrac - rev. 2022-04-24
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -139,8 +139,11 @@ __version__ = &#34;0.351&#34;
 # 2022-04-01 add maxtype to  raster.data(), e.g. raster.data(maxtype=4)
 # 2022-04-08 add beadtype2(alternative beadtype, ratio) to salt objects
 # 2022-04-13 descale volume in data() for stability reason
+# 2022-04-23 very first overlay implementation (alpha version)
+# 2022-04-24 full implementation of overlay (not fully tested yet, intended to behave has a regular object)
 
 # %% Imports and private library
+import os
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate
 import numpy as np
@@ -149,6 +152,7 @@ import matplotlib.path as path
 import matplotlib.patches as patches
 from pizza.data3 import data as data3
 from pizza.private.struct import struct
+from pizza.private.PIL import Image
 
 def _rotate(x0,y0,xc,yc,angle):
     angle = np.pi * angle / 180.0
@@ -237,6 +241,8 @@ class raster:
         R.pentagon(...)
         R.hexagon(...)
         
+        R.overlay(xleft,xright,filename==&#34;valid/image.ext&#34;,color=2,beadtype=1) 
+        
         note: use fake=True to generate an object without inserting it
         
         R.collection(...) generates collection of existing or fake objects
@@ -308,6 +314,7 @@ class raster:
                          &#34;pentagon&#34;:0,
                           &#34;hexagon&#34;:0,
                            &#34;circle&#34;:0,
+                          &#34;overlay&#34;:0,
                        &#34;collection&#34;:0,
                               &#34;all&#34;:0
                     }
@@ -526,8 +533,12 @@ class raster:
     # frameobj method
     def frameobj(self,obj):
         &#34;&#34;&#34; frame coordinates by taking into account translation &#34;&#34;&#34;
-        xmin, ymin = self.valid(obj.xmin-1, obj.ymin-1)
-        xmax, ymax = self.valid(obj.xmax+1, obj.ymax+1)
+        if obj.hasclosefit:
+            envelope = 0
+        else:
+            envelope = 1
+        xmin, ymin = self.valid(obj.xmin-envelope, obj.ymin-envelope)
+        xmax, ymax = self.valid(obj.xmax+envelope, obj.ymax+envelope)
         return xmin, ymin, xmax, ymax
 
     # RECTANGLE ----------------------------     
@@ -546,7 +557,7 @@ class raster:
         self.counter[&#34;all&#34;] += 1
         self.counter[&#34;rectangle&#34;] += 1
         R = Rectangle((self.counter[&#34;all&#34;],self.counter[&#34;rectangle&#34;]))
-        if name != None:
+        if (name != None) and (name != &#34;&#34;):
             if self.exist(name):
                 print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
                 self.delete(name)
@@ -637,7 +648,7 @@ class raster:
             typ = &#34;circle&#34;
             self.counter[&#34;circle&#34;] += 1
             G = Circle((self.counter[&#34;all&#34;],self.counter[&#34;circle&#34;]),resolution=resolution)
-        if name != None:
+        if (name != None) and (name != &#34;&#34;):
             if self.exist(name):
                 print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
                 self.delete(name)
@@ -681,6 +692,65 @@ class raster:
             self.nobjects += 1
             return None
  
+    # OVERLAY -------------------------------
+    def overlay(self,x0,y0,
+                name = None,
+                filename = None,
+                color = 1,
+                colormax = None,
+                ncolors = 4,
+                beadtype = None,
+                beadtype2 = None,
+                ismask = False,
+                fake = False
+                ):
+        &#34;&#34;&#34;
+            overlay object: made from an image converted to nc colors
+            the object is made from the level ranged between ic and jc (bounds included)
+            note: if palette found, no conversion is applied
+            
+            O = overlay(x0,y0,filename=&#34;/this/is/my/image.png&#34;,ncolors=nc,color=ic,colormax=jc,beadtype=b)
+            O = overlay(....ismask=False,fake=False)
+            
+            Outputs:
+                O.original original image (PIL)
+                O.raw image converted to ncolors if needed
+            
+        &#34;&#34;&#34;
+        if filename is None or filename==&#34;&#34;:
+            raise ValueError(&#34;filename is required (valid image)&#34;)
+        O = overlay(counter=(self.counter[&#34;all&#34;]+1,self.counter[&#34;overlay&#34;]+1),
+                    filename = filename,
+                    xmin = x0,
+                    ymin = y0,
+                    ncolors = ncolors
+                    )
+        O.select(color=color, colormax=colormax)
+        if (name is not None) and (name !=&#34;&#34;):
+            if self.exist(name):
+                print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
+                self.delete(name)
+            O.name = name
+        else:
+            name = O.name
+        if beadtype is not None: O.beadtype = int(np.floor(beadtype))
+        if beadtype2 is not None:
+            if not isinstance(beadtype2,tuple) or len(beadtype2)!=2:
+                raise AttributeError(&#34;beadtype2 must be a tuple (beadtype,ratio)&#34;)
+        O.beadtype2 = beadtype2
+        if ismask: O.beadtype = 0
+        O.ismask = O.beadtype==0
+        self.counter[&#34;all&#34;] += 1
+        self.counter[&#34;overlay&#34;] += 1
+        if fake:
+            self.counter[&#34;all&#34;] -= 1
+            self.counter[&#34;overlay&#34;] -= 1
+            return O
+        else:
+            self.objects[name] = O
+            self.nobjects += 1
+            return None      
+    
     
     # COLLECTION ----------------------------
     def collection(self,*obj,
@@ -799,6 +869,8 @@ class raster:
             labelobj:
                 labelobj(obj [, contour=True,edgecolor=&#34;orange&#34;,facecolor=&#34;none&#34;,linewidth=2, ax=plt.gca()])
         &#34;&#34;&#34;
+        if contour: contour = obj.hascontour # e.g. overlays do not have contour
+        
         if contour:
             patch = patches.PathPatch(obj.polygon2plot,
                                       facecolor=facecolor,
@@ -876,7 +948,38 @@ class raster:
                             else:
                                 self.imbead[points[k,1],points[k,0]] = obj.beadtype
                             self.imobj[points[k,1],points[k,0]] = obj.index
-                            obj.nbeads += 1                
+                            obj.nbeads += 1
+                            
+        elif obj.alike == &#34;overlay&#34;:
+            xmin, ymin, xmax, ymax = self.frameobj(obj)
+            j,i = np.meshgrid(range(xmin,xmax), range(ymin,ymax))
+            points = np.vstack((j.flatten(),i.flatten())).T
+            npoints = points.shape[0]
+            inside = obj.select()
+            if obj.beadtype2 is None:          # -- no salting --
+                for k in range(npoints):
+                    if inside[ points[k,1]-ymin, points[k,0]-xmin ] and \
+                        points[k,0]&gt;=0 and \
+                        points[k,0]&lt;self.width and \
+                        points[k,1]&gt;=0 and \
+                        points[k,1]&lt;self.height:
+                            self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                            self.imobj[points[k,1],points[k,0]] = obj.index
+                            obj.nbeads += 1
+            else:
+                for k in range(npoints):       # -- salting --
+                    if inside[ points[k,0]-ymin, points[k,0]-xmin ] and \
+                        points[k,0]&gt;=0 and \
+                        points[k,0]&lt;self.width and \
+                        points[k,1]&gt;=0 and \
+                        points[k,1]&lt;self.height:
+                            if np.random.rand()&lt;obj.beadtype2[1]:
+                                self.imbead[points[k,1],points[k,0]] = obj.beadtype2[0]
+                            else:
+                                self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                            self.imobj[points[k,1],points[k,0]] = obj.index
+                            obj.nbeads += 1
+
         else:
             raise ValueError(&#34;This object type is notimplemented&#34;)        
 
@@ -1035,9 +1138,9 @@ class raster:
 #       Collection --&gt; graphical object for collections (many properties are dynamic)
 #       struct --&gt; collection is the low-level class container of Collection
 
-class genericpolygon:
-    &#34;&#34;&#34; generic polygon methods &#34;&#34;&#34;
-    
+class coregeometry:
+    &#34;&#34;&#34; core geometry object&#34;&#34;&#34;
+        
     @property
     def xcenter(self):
         &#34;&#34;&#34; xcenter with translate &#34;&#34;&#34;
@@ -1071,6 +1174,128 @@ class genericpolygon:
         &#34;&#34;&#34; oibject height range &#34;&#34;&#34;
         return self.ymax - self.ymin
 
+    def copy(self,translate=None,beadtype=None,name=&#34;&#34;):
+        &#34;&#34;&#34; returns a copy of the graphical object &#34;&#34;&#34;
+        if self.alike != &#34;mixed&#34;:
+            dup = deepduplicate(self)
+            if translate != None: # applies translation
+                dup.translate[0] += translate[0] 
+                dup.translate[1] += translate[1]
+            if beadtype != None: # update beadtype
+                dup.beadtype = beadtype
+            if name != &#34;&#34;: # update name
+                dup.name = name
+            return dup
+        else:
+            raise ValueError(&#34;collections cannot be copied, regenerate the collection instead&#34;)
+            
+
+class overlay(coregeometry):
+    &#34;&#34;&#34; generic overlay class &#34;&#34;&#34;
+    
+    hascontour = False
+    hasclosefit = True
+    
+    def __init__(self,
+                 counter = (0,0),
+                 filename=&#34;./sandbox/image.jpg&#34;,
+                 xmin = 0,
+                 ymin = 0,
+                 ncolors = 4
+                 ):
+        &#34;&#34;&#34; generate an overlay from file
+                overlay(counter=(c1,c2),filename=&#34;this/is/myimage.jpg&#34;,xmin=x0,ymin=y0,colors=4)
+        &#34;&#34;&#34;
+        self.name = &#34;over%03d&#34; % counter[1]
+        self.kind = &#34;overlay&#34;       # kind of object
+        self.alike = &#34;overlay&#34;      # similar object for plotting
+        self.beadtype = 1           # bead type
+        self.beadtype2 = None       # bead type 2 (alternative beadtype, ratio)
+        self.nbeads = 0             # number of beads
+        self.ismask = False         # True if beadtype == 0
+        self.isplotted = False      # True if plotted
+        self.islabelled = False     # True if labelled
+        self.resolution = None      # resolution is undefined
+        self.hlabel = {&#39;contour&#39;:[], &#39;text&#39;:[]}
+        self.index = counter[0]
+        self.subindex = counter[1]
+        self.translate = [0.0,0.0]  # modification used when an object is duplicated
+        if not os.path.isfile(filename):
+            raise IOError(f&#39;the file &#34;{filename}&#34; does not exist&#39;)
+        self.filename = filename
+        self.ncolors = ncolors
+        self.color = None
+        self.colormax = None
+        self.original,self.raw,self.im,self.map = self.load()
+        self.xmin0 = xmin
+        self.ymin0 = ymin
+        self.xmax0 = xmin + self.im.shape[1]
+        self.ymax0 = ymin + self.im.shape[0]
+        self.xcenter0 = (self.xmin+self.xmax)/2
+        self.ycenter0 = (self.ymin+self.ymax)/2
+        self.angle = 0
+        
+        
+    def select(self,color=None,colormax=None):
+        &#34;&#34;&#34; select the color index:
+                select(color = c) peeks pixels = c
+                select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax
+        &#34;&#34;&#34;
+        if color is None:
+            color = self.color
+        else:
+            self.color = color
+        if (colormax is None) and (self.colormax is not None) and (self.colormax &gt; self.color):
+                colormax = self.colormax
+        else:
+            colormax = self.colormax = color
+        if isinstance(color,int) and color&lt;len(self.map):
+            S = np.logical_and(self.im&gt;=color,self.im&lt;=colormax)
+            self.nbeads = np.count_nonzero(S)
+            return S
+        raise ValueError(&#34;color must be an integer lower than %d&#34; % len(self.map))
+        
+    def load(self):
+        &#34;&#34;&#34; load image and process it 
+                returns the image, the indexed image and its color map (à la Matlab, such as imread)
+                
+                note: if the image contains a palette it is used, if not the
+                image is converted to an indexed image without dihtering
+        &#34;&#34;&#34;
+        I = Image.open(self.filename)
+        palette = I.getpalette()
+        if palette is None:
+            J=I.convert(mode=&#34;P&#34;,colors=self.ncolors,palette=Image.Palette.ADAPTIVE)
+            palette = J.getpalette()
+        else:
+            J = I
+        p = np.array(palette,dtype=&#34;uint8&#34;).reshape((int(len(palette)/3),3))
+        ncolors = len(p.sum(axis=1).nonzero()[0]);
+        if ncolors&lt;self.ncolors:
+            print(f&#34;only {ncolors} are available&#34;)
+        return I,J, np.array(J,dtype=&#34;uint8&#34;), p[:ncolors,:]
+    
+    def __repr__(self):
+        &#34;&#34;&#34; display for rectangle class &#34;&#34;&#34;
+        print(&#34;%s - %s object&#34; % (self.name, self.kind))
+        print(f&#39;\tfilename: &#34;{self.filename}&#34;&#39;)
+        print(f&#34;\tncolors = {self.ncolors} (selected={self.color})&#34;)
+        print(&#34;\trange x = [%0.4g %0.4g]&#34; % (self.xmin,self.xmax))
+        print(&#34;\trange y = [%0.4g %0.4g]&#34; % (self.ymin,self.ymax))
+        print(&#34;\tcenter = [%0.4g %0.4g]&#34; % (self.xcenter,self.ycenter))
+        print(&#34;\tangle = %0.4g&#34; % self.angle)
+        print(&#34;\ttranslate = [%0.4g %0.4g]&#34; % (self.translate[0],self.translate[1]))
+        print(&#34;note: use the attribute origina,raw to see the raw image&#34;)
+        return &#34;%s object: %s (beadtype=%d)&#34; % (self.kind,self.name,self.beadtype)
+
+        
+
+class genericpolygon(coregeometry):
+    &#34;&#34;&#34; generic polygon methods &#34;&#34;&#34;
+    
+    hascontour = True
+    hasclosefit = False
+
     @property
     def polygon(self):
         &#34;&#34;&#34; 
@@ -1098,21 +1323,6 @@ class genericpolygon:
                min([self.vertices[k][1] for k in range(self.nvertices)])+self.translate[1], \
                max([self.vertices[k][0] for k in range(self.nvertices)])+self.translate[0], \
                max([self.vertices[k][1] for k in range(self.nvertices)])+self.translate[1]
-               
-    def copy(self,translate=None,beadtype=None,name=&#34;&#34;):
-        &#34;&#34;&#34; returns a copy of the graphical object &#34;&#34;&#34;
-        if self.alike != &#34;mixed&#34;:
-            dup = deepduplicate(self)
-            if translate != None: # applies translation
-                dup.translate[0] += translate[0] 
-                dup.translate[1] += translate[1]
-            if beadtype != None: # update beadtype
-                dup.beadtype = beadtype
-            if name != &#34;&#34;: # update name
-                dup.name = name
-            return dup
-        else:
-            raise ValueError(&#34;collections cannot be copied, regenerate the collection instead&#34;)
 
 
 class Rectangle(genericpolygon):
@@ -1527,6 +1737,7 @@ class coreshell(emulsion):
 # the code is called from here
 # ===================================================
 if __name__ == &#39;__main__&#39;:   
+
 # %% basic example
 
     plt.close(&#34;all&#34;)
@@ -1622,7 +1833,17 @@ if __name__ == &#39;__main__&#39;:
     cs.insertion([60,50,40,30,20,15,15,10,8,20,12,8,11,13],beadtype=(1,2),thickness = 4)
     D.scatter(cs,name=&#34;core-shell&#34;)
     D.plot()
-    D.show()</code></pre>
+    D.show()
+    
+# %% overlay example
+    I = raster(width=600,height=600)
+    I.overlay(100,100,name=&#34;pix0&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=0,beadtype=1)
+    I.overlay(100,100,name=&#34;pix2&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=2,beadtype=2)
+    I.label(&#34;pix0&#34;)
+    I.plot()
+    I.show(extra=&#34;label&#34;)
+    I.pix0.original
+    I.pix0.raw</code></pre>
 </details>
 </section>
 <section>
@@ -1748,6 +1969,7 @@ X,Y = linear(xmin=value,ymin=value,xmax=value,ymax=value,n=int)</p></div>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></li>
+<li><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></li>
 </ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -1760,18 +1982,18 @@ X,Y = linear(xmin=value,ymin=value,xmax=value,ymax=value,n=int)</p></div>
 <ul class="hlist">
 <li><code><b><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></b></code>:
 <ul class="hlist">
-<li><code><a title="raster.genericpolygon.copy" href="#raster.genericpolygon.copy">copy</a></code></li>
+<li><code><a title="raster.genericpolygon.copy" href="#raster.coregeometry.copy">copy</a></code></li>
 <li><code><a title="raster.genericpolygon.corners" href="#raster.genericpolygon.corners">corners</a></code></li>
-<li><code><a title="raster.genericpolygon.height" href="#raster.genericpolygon.height">height</a></code></li>
+<li><code><a title="raster.genericpolygon.height" href="#raster.coregeometry.height">height</a></code></li>
 <li><code><a title="raster.genericpolygon.polygon" href="#raster.genericpolygon.polygon">polygon</a></code></li>
 <li><code><a title="raster.genericpolygon.polygon2plot" href="#raster.genericpolygon.polygon2plot">polygon2plot</a></code></li>
-<li><code><a title="raster.genericpolygon.width" href="#raster.genericpolygon.width">width</a></code></li>
-<li><code><a title="raster.genericpolygon.xcenter" href="#raster.genericpolygon.xcenter">xcenter</a></code></li>
-<li><code><a title="raster.genericpolygon.xmax" href="#raster.genericpolygon.xmax">xmax</a></code></li>
-<li><code><a title="raster.genericpolygon.xmin" href="#raster.genericpolygon.xmin">xmin</a></code></li>
-<li><code><a title="raster.genericpolygon.ycenter" href="#raster.genericpolygon.ycenter">ycenter</a></code></li>
-<li><code><a title="raster.genericpolygon.ymax" href="#raster.genericpolygon.ymax">ymax</a></code></li>
-<li><code><a title="raster.genericpolygon.ymin" href="#raster.genericpolygon.ymin">ymin</a></code></li>
+<li><code><a title="raster.genericpolygon.width" href="#raster.coregeometry.width">width</a></code></li>
+<li><code><a title="raster.genericpolygon.xcenter" href="#raster.coregeometry.xcenter">xcenter</a></code></li>
+<li><code><a title="raster.genericpolygon.xmax" href="#raster.coregeometry.xmax">xmax</a></code></li>
+<li><code><a title="raster.genericpolygon.xmin" href="#raster.coregeometry.xmin">xmin</a></code></li>
+<li><code><a title="raster.genericpolygon.ycenter" href="#raster.coregeometry.ycenter">ycenter</a></code></li>
+<li><code><a title="raster.genericpolygon.ymax" href="#raster.coregeometry.ymax">ymax</a></code></li>
+<li><code><a title="raster.genericpolygon.ymin" href="#raster.coregeometry.ymin">ymin</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1978,23 +2200,24 @@ def ycenter(self):
 <ul class="hlist">
 <li><a title="raster.Circle" href="#raster.Circle">Circle</a></li>
 <li><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></li>
+<li><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="raster.Circle" href="#raster.Circle">Circle</a></b></code>:
 <ul class="hlist">
-<li><code><a title="raster.Circle.copy" href="#raster.genericpolygon.copy">copy</a></code></li>
+<li><code><a title="raster.Circle.copy" href="#raster.coregeometry.copy">copy</a></code></li>
 <li><code><a title="raster.Circle.corners" href="#raster.genericpolygon.corners">corners</a></code></li>
-<li><code><a title="raster.Circle.height" href="#raster.genericpolygon.height">height</a></code></li>
+<li><code><a title="raster.Circle.height" href="#raster.coregeometry.height">height</a></code></li>
 <li><code><a title="raster.Circle.polygon" href="#raster.genericpolygon.polygon">polygon</a></code></li>
 <li><code><a title="raster.Circle.polygon2plot" href="#raster.genericpolygon.polygon2plot">polygon2plot</a></code></li>
-<li><code><a title="raster.Circle.width" href="#raster.genericpolygon.width">width</a></code></li>
-<li><code><a title="raster.Circle.xcenter" href="#raster.genericpolygon.xcenter">xcenter</a></code></li>
-<li><code><a title="raster.Circle.xmax" href="#raster.genericpolygon.xmax">xmax</a></code></li>
-<li><code><a title="raster.Circle.xmin" href="#raster.genericpolygon.xmin">xmin</a></code></li>
-<li><code><a title="raster.Circle.ycenter" href="#raster.genericpolygon.ycenter">ycenter</a></code></li>
-<li><code><a title="raster.Circle.ymax" href="#raster.genericpolygon.ymax">ymax</a></code></li>
-<li><code><a title="raster.Circle.ymin" href="#raster.genericpolygon.ymin">ymin</a></code></li>
+<li><code><a title="raster.Circle.width" href="#raster.coregeometry.width">width</a></code></li>
+<li><code><a title="raster.Circle.xcenter" href="#raster.coregeometry.xcenter">xcenter</a></code></li>
+<li><code><a title="raster.Circle.xmax" href="#raster.coregeometry.xmax">xmax</a></code></li>
+<li><code><a title="raster.Circle.xmin" href="#raster.coregeometry.xmin">xmin</a></code></li>
+<li><code><a title="raster.Circle.ycenter" href="#raster.coregeometry.ycenter">ycenter</a></code></li>
+<li><code><a title="raster.Circle.ymax" href="#raster.coregeometry.ymax">ymax</a></code></li>
+<li><code><a title="raster.Circle.ymin" href="#raster.coregeometry.ymin">ymin</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2020,23 +2243,24 @@ def ycenter(self):
 <ul class="hlist">
 <li><a title="raster.Circle" href="#raster.Circle">Circle</a></li>
 <li><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></li>
+<li><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="raster.Circle" href="#raster.Circle">Circle</a></b></code>:
 <ul class="hlist">
-<li><code><a title="raster.Circle.copy" href="#raster.genericpolygon.copy">copy</a></code></li>
+<li><code><a title="raster.Circle.copy" href="#raster.coregeometry.copy">copy</a></code></li>
 <li><code><a title="raster.Circle.corners" href="#raster.genericpolygon.corners">corners</a></code></li>
-<li><code><a title="raster.Circle.height" href="#raster.genericpolygon.height">height</a></code></li>
+<li><code><a title="raster.Circle.height" href="#raster.coregeometry.height">height</a></code></li>
 <li><code><a title="raster.Circle.polygon" href="#raster.genericpolygon.polygon">polygon</a></code></li>
 <li><code><a title="raster.Circle.polygon2plot" href="#raster.genericpolygon.polygon2plot">polygon2plot</a></code></li>
-<li><code><a title="raster.Circle.width" href="#raster.genericpolygon.width">width</a></code></li>
-<li><code><a title="raster.Circle.xcenter" href="#raster.genericpolygon.xcenter">xcenter</a></code></li>
-<li><code><a title="raster.Circle.xmax" href="#raster.genericpolygon.xmax">xmax</a></code></li>
-<li><code><a title="raster.Circle.xmin" href="#raster.genericpolygon.xmin">xmin</a></code></li>
-<li><code><a title="raster.Circle.ycenter" href="#raster.genericpolygon.ycenter">ycenter</a></code></li>
-<li><code><a title="raster.Circle.ymax" href="#raster.genericpolygon.ymax">ymax</a></code></li>
-<li><code><a title="raster.Circle.ymin" href="#raster.genericpolygon.ymin">ymin</a></code></li>
+<li><code><a title="raster.Circle.width" href="#raster.coregeometry.width">width</a></code></li>
+<li><code><a title="raster.Circle.xcenter" href="#raster.coregeometry.xcenter">xcenter</a></code></li>
+<li><code><a title="raster.Circle.xmax" href="#raster.coregeometry.xmax">xmax</a></code></li>
+<li><code><a title="raster.Circle.xmin" href="#raster.coregeometry.xmin">xmin</a></code></li>
+<li><code><a title="raster.Circle.ycenter" href="#raster.coregeometry.ycenter">ycenter</a></code></li>
+<li><code><a title="raster.Circle.ymax" href="#raster.coregeometry.ymax">ymax</a></code></li>
+<li><code><a title="raster.Circle.ymin" href="#raster.coregeometry.ymin">ymin</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2062,23 +2286,24 @@ def ycenter(self):
 <ul class="hlist">
 <li><a title="raster.Circle" href="#raster.Circle">Circle</a></li>
 <li><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></li>
+<li><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="raster.Circle" href="#raster.Circle">Circle</a></b></code>:
 <ul class="hlist">
-<li><code><a title="raster.Circle.copy" href="#raster.genericpolygon.copy">copy</a></code></li>
+<li><code><a title="raster.Circle.copy" href="#raster.coregeometry.copy">copy</a></code></li>
 <li><code><a title="raster.Circle.corners" href="#raster.genericpolygon.corners">corners</a></code></li>
-<li><code><a title="raster.Circle.height" href="#raster.genericpolygon.height">height</a></code></li>
+<li><code><a title="raster.Circle.height" href="#raster.coregeometry.height">height</a></code></li>
 <li><code><a title="raster.Circle.polygon" href="#raster.genericpolygon.polygon">polygon</a></code></li>
 <li><code><a title="raster.Circle.polygon2plot" href="#raster.genericpolygon.polygon2plot">polygon2plot</a></code></li>
-<li><code><a title="raster.Circle.width" href="#raster.genericpolygon.width">width</a></code></li>
-<li><code><a title="raster.Circle.xcenter" href="#raster.genericpolygon.xcenter">xcenter</a></code></li>
-<li><code><a title="raster.Circle.xmax" href="#raster.genericpolygon.xmax">xmax</a></code></li>
-<li><code><a title="raster.Circle.xmin" href="#raster.genericpolygon.xmin">xmin</a></code></li>
-<li><code><a title="raster.Circle.ycenter" href="#raster.genericpolygon.ycenter">ycenter</a></code></li>
-<li><code><a title="raster.Circle.ymax" href="#raster.genericpolygon.ymax">ymax</a></code></li>
-<li><code><a title="raster.Circle.ymin" href="#raster.genericpolygon.ymin">ymin</a></code></li>
+<li><code><a title="raster.Circle.width" href="#raster.coregeometry.width">width</a></code></li>
+<li><code><a title="raster.Circle.xcenter" href="#raster.coregeometry.xcenter">xcenter</a></code></li>
+<li><code><a title="raster.Circle.xmax" href="#raster.coregeometry.xmax">xmax</a></code></li>
+<li><code><a title="raster.Circle.xmin" href="#raster.coregeometry.xmin">xmin</a></code></li>
+<li><code><a title="raster.Circle.ycenter" href="#raster.coregeometry.ycenter">ycenter</a></code></li>
+<li><code><a title="raster.Circle.ymax" href="#raster.coregeometry.ymax">ymax</a></code></li>
+<li><code><a title="raster.Circle.ymin" href="#raster.coregeometry.ymin">ymin</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2124,23 +2349,24 @@ def ycenter(self):
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></li>
+<li><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></b></code>:
 <ul class="hlist">
-<li><code><a title="raster.genericpolygon.copy" href="#raster.genericpolygon.copy">copy</a></code></li>
+<li><code><a title="raster.genericpolygon.copy" href="#raster.coregeometry.copy">copy</a></code></li>
 <li><code><a title="raster.genericpolygon.corners" href="#raster.genericpolygon.corners">corners</a></code></li>
-<li><code><a title="raster.genericpolygon.height" href="#raster.genericpolygon.height">height</a></code></li>
+<li><code><a title="raster.genericpolygon.height" href="#raster.coregeometry.height">height</a></code></li>
 <li><code><a title="raster.genericpolygon.polygon" href="#raster.genericpolygon.polygon">polygon</a></code></li>
 <li><code><a title="raster.genericpolygon.polygon2plot" href="#raster.genericpolygon.polygon2plot">polygon2plot</a></code></li>
-<li><code><a title="raster.genericpolygon.width" href="#raster.genericpolygon.width">width</a></code></li>
-<li><code><a title="raster.genericpolygon.xcenter" href="#raster.genericpolygon.xcenter">xcenter</a></code></li>
-<li><code><a title="raster.genericpolygon.xmax" href="#raster.genericpolygon.xmax">xmax</a></code></li>
-<li><code><a title="raster.genericpolygon.xmin" href="#raster.genericpolygon.xmin">xmin</a></code></li>
-<li><code><a title="raster.genericpolygon.ycenter" href="#raster.genericpolygon.ycenter">ycenter</a></code></li>
-<li><code><a title="raster.genericpolygon.ymax" href="#raster.genericpolygon.ymax">ymax</a></code></li>
-<li><code><a title="raster.genericpolygon.ymin" href="#raster.genericpolygon.ymin">ymin</a></code></li>
+<li><code><a title="raster.genericpolygon.width" href="#raster.coregeometry.width">width</a></code></li>
+<li><code><a title="raster.genericpolygon.xcenter" href="#raster.coregeometry.xcenter">xcenter</a></code></li>
+<li><code><a title="raster.genericpolygon.xmax" href="#raster.coregeometry.xmax">xmax</a></code></li>
+<li><code><a title="raster.genericpolygon.xmin" href="#raster.coregeometry.xmin">xmin</a></code></li>
+<li><code><a title="raster.genericpolygon.ycenter" href="#raster.coregeometry.ycenter">ycenter</a></code></li>
+<li><code><a title="raster.genericpolygon.ymax" href="#raster.coregeometry.ymax">ymax</a></code></li>
+<li><code><a title="raster.genericpolygon.ymin" href="#raster.coregeometry.ymin">ymin</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2166,23 +2392,24 @@ def ycenter(self):
 <ul class="hlist">
 <li><a title="raster.Circle" href="#raster.Circle">Circle</a></li>
 <li><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></li>
+<li><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="raster.Circle" href="#raster.Circle">Circle</a></b></code>:
 <ul class="hlist">
-<li><code><a title="raster.Circle.copy" href="#raster.genericpolygon.copy">copy</a></code></li>
+<li><code><a title="raster.Circle.copy" href="#raster.coregeometry.copy">copy</a></code></li>
 <li><code><a title="raster.Circle.corners" href="#raster.genericpolygon.corners">corners</a></code></li>
-<li><code><a title="raster.Circle.height" href="#raster.genericpolygon.height">height</a></code></li>
+<li><code><a title="raster.Circle.height" href="#raster.coregeometry.height">height</a></code></li>
 <li><code><a title="raster.Circle.polygon" href="#raster.genericpolygon.polygon">polygon</a></code></li>
 <li><code><a title="raster.Circle.polygon2plot" href="#raster.genericpolygon.polygon2plot">polygon2plot</a></code></li>
-<li><code><a title="raster.Circle.width" href="#raster.genericpolygon.width">width</a></code></li>
-<li><code><a title="raster.Circle.xcenter" href="#raster.genericpolygon.xcenter">xcenter</a></code></li>
-<li><code><a title="raster.Circle.xmax" href="#raster.genericpolygon.xmax">xmax</a></code></li>
-<li><code><a title="raster.Circle.xmin" href="#raster.genericpolygon.xmin">xmin</a></code></li>
-<li><code><a title="raster.Circle.ycenter" href="#raster.genericpolygon.ycenter">ycenter</a></code></li>
-<li><code><a title="raster.Circle.ymax" href="#raster.genericpolygon.ymax">ymax</a></code></li>
-<li><code><a title="raster.Circle.ymin" href="#raster.genericpolygon.ymin">ymin</a></code></li>
+<li><code><a title="raster.Circle.width" href="#raster.coregeometry.width">width</a></code></li>
+<li><code><a title="raster.Circle.xcenter" href="#raster.coregeometry.xcenter">xcenter</a></code></li>
+<li><code><a title="raster.Circle.xmax" href="#raster.coregeometry.xmax">xmax</a></code></li>
+<li><code><a title="raster.Circle.xmin" href="#raster.coregeometry.xmin">xmin</a></code></li>
+<li><code><a title="raster.Circle.ycenter" href="#raster.coregeometry.ycenter">ycenter</a></code></li>
+<li><code><a title="raster.Circle.ymax" href="#raster.coregeometry.ymax">ymax</a></code></li>
+<li><code><a title="raster.Circle.ymin" href="#raster.coregeometry.ymin">ymin</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2219,6 +2446,207 @@ def ycenter(self):
 <ul class="hlist">
 <li>pizza.private.struct.struct</li>
 </ul>
+</dd>
+<dt id="raster.coregeometry"><code class="flex name class">
+<span>class <span class="ident">coregeometry</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>core geometry object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class coregeometry:
+    &#34;&#34;&#34; core geometry object&#34;&#34;&#34;
+        
+    @property
+    def xcenter(self):
+        &#34;&#34;&#34; xcenter with translate &#34;&#34;&#34;
+        return self.xcenter0 + self.translate[0]
+    @property
+    def ycenter(self):
+        &#34;&#34;&#34; xcenter with translate &#34;&#34;&#34;
+        return self.ycenter0 + self.translate[1]
+    @property
+    def xmin(self):
+        &#34;&#34;&#34; xleft position &#34;&#34;&#34;
+        return self.xmin0 + self.translate[0]
+    @property
+    def xmax(self):
+        &#34;&#34;&#34; xright position &#34;&#34;&#34;
+        return self.xmax0 + self.translate[0]
+    @property
+    def ymin(self):
+        &#34;&#34;&#34; yleft position &#34;&#34;&#34;
+        return self.ymin0 + self.translate[1]
+    @property
+    def ymax(self):
+        &#34;&#34;&#34; yright position &#34;&#34;&#34;
+        return self.ymax0 + self.translate[1]
+    @property
+    def width(self):
+        &#34;&#34;&#34; oibject width range &#34;&#34;&#34;
+        return self.xmax - self.xmin
+    @property
+    def height(self):
+        &#34;&#34;&#34; oibject height range &#34;&#34;&#34;
+        return self.ymax - self.ymin
+
+    def copy(self,translate=None,beadtype=None,name=&#34;&#34;):
+        &#34;&#34;&#34; returns a copy of the graphical object &#34;&#34;&#34;
+        if self.alike != &#34;mixed&#34;:
+            dup = deepduplicate(self)
+            if translate != None: # applies translation
+                dup.translate[0] += translate[0] 
+                dup.translate[1] += translate[1]
+            if beadtype != None: # update beadtype
+                dup.beadtype = beadtype
+            if name != &#34;&#34;: # update name
+                dup.name = name
+            return dup
+        else:
+            raise ValueError(&#34;collections cannot be copied, regenerate the collection instead&#34;)</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></li>
+<li><a title="raster.overlay" href="#raster.overlay">overlay</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="raster.coregeometry.height"><code class="name">var <span class="ident">height</span></code></dt>
+<dd>
+<div class="desc"><p>oibject height range</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def height(self):
+    &#34;&#34;&#34; oibject height range &#34;&#34;&#34;
+    return self.ymax - self.ymin</code></pre>
+</details>
+</dd>
+<dt id="raster.coregeometry.width"><code class="name">var <span class="ident">width</span></code></dt>
+<dd>
+<div class="desc"><p>oibject width range</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def width(self):
+    &#34;&#34;&#34; oibject width range &#34;&#34;&#34;
+    return self.xmax - self.xmin</code></pre>
+</details>
+</dd>
+<dt id="raster.coregeometry.xcenter"><code class="name">var <span class="ident">xcenter</span></code></dt>
+<dd>
+<div class="desc"><p>xcenter with translate</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def xcenter(self):
+    &#34;&#34;&#34; xcenter with translate &#34;&#34;&#34;
+    return self.xcenter0 + self.translate[0]</code></pre>
+</details>
+</dd>
+<dt id="raster.coregeometry.xmax"><code class="name">var <span class="ident">xmax</span></code></dt>
+<dd>
+<div class="desc"><p>xright position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def xmax(self):
+    &#34;&#34;&#34; xright position &#34;&#34;&#34;
+    return self.xmax0 + self.translate[0]</code></pre>
+</details>
+</dd>
+<dt id="raster.coregeometry.xmin"><code class="name">var <span class="ident">xmin</span></code></dt>
+<dd>
+<div class="desc"><p>xleft position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def xmin(self):
+    &#34;&#34;&#34; xleft position &#34;&#34;&#34;
+    return self.xmin0 + self.translate[0]</code></pre>
+</details>
+</dd>
+<dt id="raster.coregeometry.ycenter"><code class="name">var <span class="ident">ycenter</span></code></dt>
+<dd>
+<div class="desc"><p>xcenter with translate</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ycenter(self):
+    &#34;&#34;&#34; xcenter with translate &#34;&#34;&#34;
+    return self.ycenter0 + self.translate[1]</code></pre>
+</details>
+</dd>
+<dt id="raster.coregeometry.ymax"><code class="name">var <span class="ident">ymax</span></code></dt>
+<dd>
+<div class="desc"><p>yright position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ymax(self):
+    &#34;&#34;&#34; yright position &#34;&#34;&#34;
+    return self.ymax0 + self.translate[1]</code></pre>
+</details>
+</dd>
+<dt id="raster.coregeometry.ymin"><code class="name">var <span class="ident">ymin</span></code></dt>
+<dd>
+<div class="desc"><p>yleft position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ymin(self):
+    &#34;&#34;&#34; yleft position &#34;&#34;&#34;
+    return self.ymin0 + self.translate[1]</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="raster.coregeometry.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self, translate=None, beadtype=None, name='')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>returns a copy of the graphical object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy(self,translate=None,beadtype=None,name=&#34;&#34;):
+    &#34;&#34;&#34; returns a copy of the graphical object &#34;&#34;&#34;
+    if self.alike != &#34;mixed&#34;:
+        dup = deepduplicate(self)
+        if translate != None: # applies translation
+            dup.translate[0] += translate[0] 
+            dup.translate[1] += translate[1]
+        if beadtype != None: # update beadtype
+            dup.beadtype = beadtype
+        if name != &#34;&#34;: # update name
+            dup.name = name
+        return dup
+    else:
+        raise ValueError(&#34;collections cannot be copied, regenerate the collection instead&#34;)</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="raster.coreshell"><code class="flex name class">
 <span>class <span class="ident">coreshell</span></span>
@@ -2728,41 +3156,11 @@ overlap = False (accept only if no overlap)</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class genericpolygon:
+<pre><code class="python">class genericpolygon(coregeometry):
     &#34;&#34;&#34; generic polygon methods &#34;&#34;&#34;
     
-    @property
-    def xcenter(self):
-        &#34;&#34;&#34; xcenter with translate &#34;&#34;&#34;
-        return self.xcenter0 + self.translate[0]
-    @property
-    def ycenter(self):
-        &#34;&#34;&#34; xcenter with translate &#34;&#34;&#34;
-        return self.ycenter0 + self.translate[1]
-    @property
-    def xmin(self):
-        &#34;&#34;&#34; xleft position &#34;&#34;&#34;
-        return self.xmin0 + self.translate[0]
-    @property
-    def xmax(self):
-        &#34;&#34;&#34; xright position &#34;&#34;&#34;
-        return self.xmax0 + self.translate[0]
-    @property
-    def ymin(self):
-        &#34;&#34;&#34; yleft position &#34;&#34;&#34;
-        return self.ymin0 + self.translate[1]
-    @property
-    def ymax(self):
-        &#34;&#34;&#34; yright position &#34;&#34;&#34;
-        return self.ymax0 + self.translate[1]
-    @property
-    def width(self):
-        &#34;&#34;&#34; oibject width range &#34;&#34;&#34;
-        return self.xmax - self.xmin
-    @property
-    def height(self):
-        &#34;&#34;&#34; oibject height range &#34;&#34;&#34;
-        return self.ymax - self.ymin
+    hascontour = True
+    hasclosefit = False
 
     @property
     def polygon(self):
@@ -2790,43 +3188,30 @@ overlap = False (accept only if no overlap)</p></div>
         return min([self.vertices[k][0] for k in range(self.nvertices)])+self.translate[0], \
                min([self.vertices[k][1] for k in range(self.nvertices)])+self.translate[1], \
                max([self.vertices[k][0] for k in range(self.nvertices)])+self.translate[0], \
-               max([self.vertices[k][1] for k in range(self.nvertices)])+self.translate[1]
-               
-    def copy(self,translate=None,beadtype=None,name=&#34;&#34;):
-        &#34;&#34;&#34; returns a copy of the graphical object &#34;&#34;&#34;
-        if self.alike != &#34;mixed&#34;:
-            dup = deepduplicate(self)
-            if translate != None: # applies translation
-                dup.translate[0] += translate[0] 
-                dup.translate[1] += translate[1]
-            if beadtype != None: # update beadtype
-                dup.beadtype = beadtype
-            if name != &#34;&#34;: # update name
-                dup.name = name
-            return dup
-        else:
-            raise ValueError(&#34;collections cannot be copied, regenerate the collection instead&#34;)</code></pre>
+               max([self.vertices[k][1] for k in range(self.nvertices)])+self.translate[1]</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></li>
+</ul>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="raster.Circle" href="#raster.Circle">Circle</a></li>
 <li><a title="raster.Rectangle" href="#raster.Rectangle">Rectangle</a></li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="raster.genericpolygon.hasclosefit"><code class="name">var <span class="ident">hasclosefit</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="raster.genericpolygon.hascontour"><code class="name">var <span class="ident">hascontour</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Instance variables</h3>
 <dl>
-<dt id="raster.genericpolygon.height"><code class="name">var <span class="ident">height</span></code></dt>
-<dd>
-<div class="desc"><p>oibject height range</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def height(self):
-    &#34;&#34;&#34; oibject height range &#34;&#34;&#34;
-    return self.ymax - self.ymin</code></pre>
-</details>
-</dd>
 <dt id="raster.genericpolygon.polygon"><code class="name">var <span class="ident">polygon</span></code></dt>
 <dd>
 <div class="desc"><p>R.polygon = path.Path(R.vertices,R.codes,closed=True)</p></div>
@@ -2864,125 +3249,9 @@ def polygon2plot(self):
     return path.Path(self.polygon.vertices+ np.array([1,1]),self.codes,closed=True)</code></pre>
 </details>
 </dd>
-<dt id="raster.genericpolygon.width"><code class="name">var <span class="ident">width</span></code></dt>
-<dd>
-<div class="desc"><p>oibject width range</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def width(self):
-    &#34;&#34;&#34; oibject width range &#34;&#34;&#34;
-    return self.xmax - self.xmin</code></pre>
-</details>
-</dd>
-<dt id="raster.genericpolygon.xcenter"><code class="name">var <span class="ident">xcenter</span></code></dt>
-<dd>
-<div class="desc"><p>xcenter with translate</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def xcenter(self):
-    &#34;&#34;&#34; xcenter with translate &#34;&#34;&#34;
-    return self.xcenter0 + self.translate[0]</code></pre>
-</details>
-</dd>
-<dt id="raster.genericpolygon.xmax"><code class="name">var <span class="ident">xmax</span></code></dt>
-<dd>
-<div class="desc"><p>xright position</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def xmax(self):
-    &#34;&#34;&#34; xright position &#34;&#34;&#34;
-    return self.xmax0 + self.translate[0]</code></pre>
-</details>
-</dd>
-<dt id="raster.genericpolygon.xmin"><code class="name">var <span class="ident">xmin</span></code></dt>
-<dd>
-<div class="desc"><p>xleft position</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def xmin(self):
-    &#34;&#34;&#34; xleft position &#34;&#34;&#34;
-    return self.xmin0 + self.translate[0]</code></pre>
-</details>
-</dd>
-<dt id="raster.genericpolygon.ycenter"><code class="name">var <span class="ident">ycenter</span></code></dt>
-<dd>
-<div class="desc"><p>xcenter with translate</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def ycenter(self):
-    &#34;&#34;&#34; xcenter with translate &#34;&#34;&#34;
-    return self.ycenter0 + self.translate[1]</code></pre>
-</details>
-</dd>
-<dt id="raster.genericpolygon.ymax"><code class="name">var <span class="ident">ymax</span></code></dt>
-<dd>
-<div class="desc"><p>yright position</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def ymax(self):
-    &#34;&#34;&#34; yright position &#34;&#34;&#34;
-    return self.ymax0 + self.translate[1]</code></pre>
-</details>
-</dd>
-<dt id="raster.genericpolygon.ymin"><code class="name">var <span class="ident">ymin</span></code></dt>
-<dd>
-<div class="desc"><p>yleft position</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def ymin(self):
-    &#34;&#34;&#34; yleft position &#34;&#34;&#34;
-    return self.ymin0 + self.translate[1]</code></pre>
-</details>
-</dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="raster.genericpolygon.copy"><code class="name flex">
-<span>def <span class="ident">copy</span></span>(<span>self, translate=None, beadtype=None, name='')</span>
-</code></dt>
-<dd>
-<div class="desc"><p>returns a copy of the graphical object</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def copy(self,translate=None,beadtype=None,name=&#34;&#34;):
-    &#34;&#34;&#34; returns a copy of the graphical object &#34;&#34;&#34;
-    if self.alike != &#34;mixed&#34;:
-        dup = deepduplicate(self)
-        if translate != None: # applies translation
-            dup.translate[0] += translate[0] 
-            dup.translate[1] += translate[1]
-        if beadtype != None: # update beadtype
-            dup.beadtype = beadtype
-        if name != &#34;&#34;: # update name
-            dup.name = name
-        return dup
-    else:
-        raise ValueError(&#34;collections cannot be copied, regenerate the collection instead&#34;)</code></pre>
-</details>
-</dd>
 <dt id="raster.genericpolygon.corners"><code class="name flex">
 <span>def <span class="ident">corners</span></span>(<span>self)</span>
 </code></dt>
@@ -3001,6 +3270,231 @@ def ymin(self):
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></b></code>:
+<ul class="hlist">
+<li><code><a title="raster.coregeometry.copy" href="#raster.coregeometry.copy">copy</a></code></li>
+<li><code><a title="raster.coregeometry.height" href="#raster.coregeometry.height">height</a></code></li>
+<li><code><a title="raster.coregeometry.width" href="#raster.coregeometry.width">width</a></code></li>
+<li><code><a title="raster.coregeometry.xcenter" href="#raster.coregeometry.xcenter">xcenter</a></code></li>
+<li><code><a title="raster.coregeometry.xmax" href="#raster.coregeometry.xmax">xmax</a></code></li>
+<li><code><a title="raster.coregeometry.xmin" href="#raster.coregeometry.xmin">xmin</a></code></li>
+<li><code><a title="raster.coregeometry.ycenter" href="#raster.coregeometry.ycenter">ycenter</a></code></li>
+<li><code><a title="raster.coregeometry.ymax" href="#raster.coregeometry.ymax">ymax</a></code></li>
+<li><code><a title="raster.coregeometry.ymin" href="#raster.coregeometry.ymin">ymin</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="raster.overlay"><code class="flex name class">
+<span>class <span class="ident">overlay</span></span>
+<span>(</span><span>counter=(0, 0), filename='./sandbox/image.jpg', xmin=0, ymin=0, ncolors=4)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>generic overlay class </p>
+<p>generate an overlay from file
+overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class overlay(coregeometry):
+    &#34;&#34;&#34; generic overlay class &#34;&#34;&#34;
+    
+    hascontour = False
+    hasclosefit = True
+    
+    def __init__(self,
+                 counter = (0,0),
+                 filename=&#34;./sandbox/image.jpg&#34;,
+                 xmin = 0,
+                 ymin = 0,
+                 ncolors = 4
+                 ):
+        &#34;&#34;&#34; generate an overlay from file
+                overlay(counter=(c1,c2),filename=&#34;this/is/myimage.jpg&#34;,xmin=x0,ymin=y0,colors=4)
+        &#34;&#34;&#34;
+        self.name = &#34;over%03d&#34; % counter[1]
+        self.kind = &#34;overlay&#34;       # kind of object
+        self.alike = &#34;overlay&#34;      # similar object for plotting
+        self.beadtype = 1           # bead type
+        self.beadtype2 = None       # bead type 2 (alternative beadtype, ratio)
+        self.nbeads = 0             # number of beads
+        self.ismask = False         # True if beadtype == 0
+        self.isplotted = False      # True if plotted
+        self.islabelled = False     # True if labelled
+        self.resolution = None      # resolution is undefined
+        self.hlabel = {&#39;contour&#39;:[], &#39;text&#39;:[]}
+        self.index = counter[0]
+        self.subindex = counter[1]
+        self.translate = [0.0,0.0]  # modification used when an object is duplicated
+        if not os.path.isfile(filename):
+            raise IOError(f&#39;the file &#34;{filename}&#34; does not exist&#39;)
+        self.filename = filename
+        self.ncolors = ncolors
+        self.color = None
+        self.colormax = None
+        self.original,self.raw,self.im,self.map = self.load()
+        self.xmin0 = xmin
+        self.ymin0 = ymin
+        self.xmax0 = xmin + self.im.shape[1]
+        self.ymax0 = ymin + self.im.shape[0]
+        self.xcenter0 = (self.xmin+self.xmax)/2
+        self.ycenter0 = (self.ymin+self.ymax)/2
+        self.angle = 0
+        
+        
+    def select(self,color=None,colormax=None):
+        &#34;&#34;&#34; select the color index:
+                select(color = c) peeks pixels = c
+                select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax
+        &#34;&#34;&#34;
+        if color is None:
+            color = self.color
+        else:
+            self.color = color
+        if (colormax is None) and (self.colormax is not None) and (self.colormax &gt; self.color):
+                colormax = self.colormax
+        else:
+            colormax = self.colormax = color
+        if isinstance(color,int) and color&lt;len(self.map):
+            S = np.logical_and(self.im&gt;=color,self.im&lt;=colormax)
+            self.nbeads = np.count_nonzero(S)
+            return S
+        raise ValueError(&#34;color must be an integer lower than %d&#34; % len(self.map))
+        
+    def load(self):
+        &#34;&#34;&#34; load image and process it 
+                returns the image, the indexed image and its color map (à la Matlab, such as imread)
+                
+                note: if the image contains a palette it is used, if not the
+                image is converted to an indexed image without dihtering
+        &#34;&#34;&#34;
+        I = Image.open(self.filename)
+        palette = I.getpalette()
+        if palette is None:
+            J=I.convert(mode=&#34;P&#34;,colors=self.ncolors,palette=Image.Palette.ADAPTIVE)
+            palette = J.getpalette()
+        else:
+            J = I
+        p = np.array(palette,dtype=&#34;uint8&#34;).reshape((int(len(palette)/3),3))
+        ncolors = len(p.sum(axis=1).nonzero()[0]);
+        if ncolors&lt;self.ncolors:
+            print(f&#34;only {ncolors} are available&#34;)
+        return I,J, np.array(J,dtype=&#34;uint8&#34;), p[:ncolors,:]
+    
+    def __repr__(self):
+        &#34;&#34;&#34; display for rectangle class &#34;&#34;&#34;
+        print(&#34;%s - %s object&#34; % (self.name, self.kind))
+        print(f&#39;\tfilename: &#34;{self.filename}&#34;&#39;)
+        print(f&#34;\tncolors = {self.ncolors} (selected={self.color})&#34;)
+        print(&#34;\trange x = [%0.4g %0.4g]&#34; % (self.xmin,self.xmax))
+        print(&#34;\trange y = [%0.4g %0.4g]&#34; % (self.ymin,self.ymax))
+        print(&#34;\tcenter = [%0.4g %0.4g]&#34; % (self.xcenter,self.ycenter))
+        print(&#34;\tangle = %0.4g&#34; % self.angle)
+        print(&#34;\ttranslate = [%0.4g %0.4g]&#34; % (self.translate[0],self.translate[1]))
+        print(&#34;note: use the attribute origina,raw to see the raw image&#34;)
+        return &#34;%s object: %s (beadtype=%d)&#34; % (self.kind,self.name,self.beadtype)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="raster.overlay.hasclosefit"><code class="name">var <span class="ident">hasclosefit</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="raster.overlay.hascontour"><code class="name">var <span class="ident">hascontour</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="raster.overlay.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>load image and process it
+returns the image, the indexed image and its color map (à la Matlab, such as imread)</p>
+<p>note: if the image contains a palette it is used, if not the
+image is converted to an indexed image without dihtering</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load(self):
+    &#34;&#34;&#34; load image and process it 
+            returns the image, the indexed image and its color map (à la Matlab, such as imread)
+            
+            note: if the image contains a palette it is used, if not the
+            image is converted to an indexed image without dihtering
+    &#34;&#34;&#34;
+    I = Image.open(self.filename)
+    palette = I.getpalette()
+    if palette is None:
+        J=I.convert(mode=&#34;P&#34;,colors=self.ncolors,palette=Image.Palette.ADAPTIVE)
+        palette = J.getpalette()
+    else:
+        J = I
+    p = np.array(palette,dtype=&#34;uint8&#34;).reshape((int(len(palette)/3),3))
+    ncolors = len(p.sum(axis=1).nonzero()[0]);
+    if ncolors&lt;self.ncolors:
+        print(f&#34;only {ncolors} are available&#34;)
+    return I,J, np.array(J,dtype=&#34;uint8&#34;), p[:ncolors,:]</code></pre>
+</details>
+</dd>
+<dt id="raster.overlay.select"><code class="name flex">
+<span>def <span class="ident">select</span></span>(<span>self, color=None, colormax=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>select the color index:
+select(color = c) peeks pixels = c
+select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def select(self,color=None,colormax=None):
+    &#34;&#34;&#34; select the color index:
+            select(color = c) peeks pixels = c
+            select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax
+    &#34;&#34;&#34;
+    if color is None:
+        color = self.color
+    else:
+        self.color = color
+    if (colormax is None) and (self.colormax is not None) and (self.colormax &gt; self.color):
+            colormax = self.colormax
+    else:
+        colormax = self.colormax = color
+    if isinstance(color,int) and color&lt;len(self.map):
+        S = np.logical_and(self.im&gt;=color,self.im&lt;=colormax)
+        self.nbeads = np.count_nonzero(S)
+        return S
+    raise ValueError(&#34;color must be an integer lower than %d&#34; % len(self.map))</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></b></code>:
+<ul class="hlist">
+<li><code><a title="raster.coregeometry.copy" href="#raster.coregeometry.copy">copy</a></code></li>
+<li><code><a title="raster.coregeometry.height" href="#raster.coregeometry.height">height</a></code></li>
+<li><code><a title="raster.coregeometry.width" href="#raster.coregeometry.width">width</a></code></li>
+<li><code><a title="raster.coregeometry.xcenter" href="#raster.coregeometry.xcenter">xcenter</a></code></li>
+<li><code><a title="raster.coregeometry.xmax" href="#raster.coregeometry.xmax">xmax</a></code></li>
+<li><code><a title="raster.coregeometry.xmin" href="#raster.coregeometry.xmin">xmin</a></code></li>
+<li><code><a title="raster.coregeometry.ycenter" href="#raster.coregeometry.ycenter">ycenter</a></code></li>
+<li><code><a title="raster.coregeometry.ymax" href="#raster.coregeometry.ymax">ymax</a></code></li>
+<li><code><a title="raster.coregeometry.ymin" href="#raster.coregeometry.ymin">ymin</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="raster.raster"><code class="flex name class">
 <span>class <span class="ident">raster</span></span>
@@ -3042,6 +3536,8 @@ R.triangle(...)
 R.diamond(...)
 R.pentagon(...)
 R.hexagon(...)
+
+R.overlay(xleft,xright,filename=="valid/image.ext",color=2,beadtype=1)
 
 note: use fake=True to generate an object without inserting it
 
@@ -3119,6 +3615,8 @@ X.write("/tmp/myfile")</p>
         R.pentagon(...)
         R.hexagon(...)
         
+        R.overlay(xleft,xright,filename==&#34;valid/image.ext&#34;,color=2,beadtype=1) 
+        
         note: use fake=True to generate an object without inserting it
         
         R.collection(...) generates collection of existing or fake objects
@@ -3190,6 +3688,7 @@ X.write("/tmp/myfile")</p>
                          &#34;pentagon&#34;:0,
                           &#34;hexagon&#34;:0,
                            &#34;circle&#34;:0,
+                          &#34;overlay&#34;:0,
                        &#34;collection&#34;:0,
                               &#34;all&#34;:0
                     }
@@ -3408,8 +3907,12 @@ X.write("/tmp/myfile")</p>
     # frameobj method
     def frameobj(self,obj):
         &#34;&#34;&#34; frame coordinates by taking into account translation &#34;&#34;&#34;
-        xmin, ymin = self.valid(obj.xmin-1, obj.ymin-1)
-        xmax, ymax = self.valid(obj.xmax+1, obj.ymax+1)
+        if obj.hasclosefit:
+            envelope = 0
+        else:
+            envelope = 1
+        xmin, ymin = self.valid(obj.xmin-envelope, obj.ymin-envelope)
+        xmax, ymax = self.valid(obj.xmax+envelope, obj.ymax+envelope)
         return xmin, ymin, xmax, ymax
 
     # RECTANGLE ----------------------------     
@@ -3428,7 +3931,7 @@ X.write("/tmp/myfile")</p>
         self.counter[&#34;all&#34;] += 1
         self.counter[&#34;rectangle&#34;] += 1
         R = Rectangle((self.counter[&#34;all&#34;],self.counter[&#34;rectangle&#34;]))
-        if name != None:
+        if (name != None) and (name != &#34;&#34;):
             if self.exist(name):
                 print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
                 self.delete(name)
@@ -3519,7 +4022,7 @@ X.write("/tmp/myfile")</p>
             typ = &#34;circle&#34;
             self.counter[&#34;circle&#34;] += 1
             G = Circle((self.counter[&#34;all&#34;],self.counter[&#34;circle&#34;]),resolution=resolution)
-        if name != None:
+        if (name != None) and (name != &#34;&#34;):
             if self.exist(name):
                 print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
                 self.delete(name)
@@ -3563,6 +4066,65 @@ X.write("/tmp/myfile")</p>
             self.nobjects += 1
             return None
  
+    # OVERLAY -------------------------------
+    def overlay(self,x0,y0,
+                name = None,
+                filename = None,
+                color = 1,
+                colormax = None,
+                ncolors = 4,
+                beadtype = None,
+                beadtype2 = None,
+                ismask = False,
+                fake = False
+                ):
+        &#34;&#34;&#34;
+            overlay object: made from an image converted to nc colors
+            the object is made from the level ranged between ic and jc (bounds included)
+            note: if palette found, no conversion is applied
+            
+            O = overlay(x0,y0,filename=&#34;/this/is/my/image.png&#34;,ncolors=nc,color=ic,colormax=jc,beadtype=b)
+            O = overlay(....ismask=False,fake=False)
+            
+            Outputs:
+                O.original original image (PIL)
+                O.raw image converted to ncolors if needed
+            
+        &#34;&#34;&#34;
+        if filename is None or filename==&#34;&#34;:
+            raise ValueError(&#34;filename is required (valid image)&#34;)
+        O = overlay(counter=(self.counter[&#34;all&#34;]+1,self.counter[&#34;overlay&#34;]+1),
+                    filename = filename,
+                    xmin = x0,
+                    ymin = y0,
+                    ncolors = ncolors
+                    )
+        O.select(color=color, colormax=colormax)
+        if (name is not None) and (name !=&#34;&#34;):
+            if self.exist(name):
+                print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
+                self.delete(name)
+            O.name = name
+        else:
+            name = O.name
+        if beadtype is not None: O.beadtype = int(np.floor(beadtype))
+        if beadtype2 is not None:
+            if not isinstance(beadtype2,tuple) or len(beadtype2)!=2:
+                raise AttributeError(&#34;beadtype2 must be a tuple (beadtype,ratio)&#34;)
+        O.beadtype2 = beadtype2
+        if ismask: O.beadtype = 0
+        O.ismask = O.beadtype==0
+        self.counter[&#34;all&#34;] += 1
+        self.counter[&#34;overlay&#34;] += 1
+        if fake:
+            self.counter[&#34;all&#34;] -= 1
+            self.counter[&#34;overlay&#34;] -= 1
+            return O
+        else:
+            self.objects[name] = O
+            self.nobjects += 1
+            return None      
+    
     
     # COLLECTION ----------------------------
     def collection(self,*obj,
@@ -3681,6 +4243,8 @@ X.write("/tmp/myfile")</p>
             labelobj:
                 labelobj(obj [, contour=True,edgecolor=&#34;orange&#34;,facecolor=&#34;none&#34;,linewidth=2, ax=plt.gca()])
         &#34;&#34;&#34;
+        if contour: contour = obj.hascontour # e.g. overlays do not have contour
+        
         if contour:
             patch = patches.PathPatch(obj.polygon2plot,
                                       facecolor=facecolor,
@@ -3758,7 +4322,38 @@ X.write("/tmp/myfile")</p>
                             else:
                                 self.imbead[points[k,1],points[k,0]] = obj.beadtype
                             self.imobj[points[k,1],points[k,0]] = obj.index
-                            obj.nbeads += 1                
+                            obj.nbeads += 1
+                            
+        elif obj.alike == &#34;overlay&#34;:
+            xmin, ymin, xmax, ymax = self.frameobj(obj)
+            j,i = np.meshgrid(range(xmin,xmax), range(ymin,ymax))
+            points = np.vstack((j.flatten(),i.flatten())).T
+            npoints = points.shape[0]
+            inside = obj.select()
+            if obj.beadtype2 is None:          # -- no salting --
+                for k in range(npoints):
+                    if inside[ points[k,1]-ymin, points[k,0]-xmin ] and \
+                        points[k,0]&gt;=0 and \
+                        points[k,0]&lt;self.width and \
+                        points[k,1]&gt;=0 and \
+                        points[k,1]&lt;self.height:
+                            self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                            self.imobj[points[k,1],points[k,0]] = obj.index
+                            obj.nbeads += 1
+            else:
+                for k in range(npoints):       # -- salting --
+                    if inside[ points[k,0]-ymin, points[k,0]-xmin ] and \
+                        points[k,0]&gt;=0 and \
+                        points[k,0]&lt;self.width and \
+                        points[k,1]&gt;=0 and \
+                        points[k,1]&lt;self.height:
+                            if np.random.rand()&lt;obj.beadtype2[1]:
+                                self.imbead[points[k,1],points[k,0]] = obj.beadtype2[0]
+                            else:
+                                self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                            self.imobj[points[k,1],points[k,0]] = obj.index
+                            obj.nbeads += 1
+
         else:
             raise ValueError(&#34;This object type is notimplemented&#34;)        
 
@@ -3945,7 +4540,7 @@ use circle(&hellip;,beadtype2=(type,ratio)) to salt an object with beads from an
         typ = &#34;circle&#34;
         self.counter[&#34;circle&#34;] += 1
         G = Circle((self.counter[&#34;all&#34;],self.counter[&#34;circle&#34;]),resolution=resolution)
-    if name != None:
+    if (name != None) and (name != &#34;&#34;):
         if self.exist(name):
             print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
             self.delete(name)
@@ -4334,8 +4929,12 @@ use diamond(&hellip;,beadtype2=(type,ratio)) to salt an object with beads from a
 </summary>
 <pre><code class="python">def frameobj(self,obj):
     &#34;&#34;&#34; frame coordinates by taking into account translation &#34;&#34;&#34;
-    xmin, ymin = self.valid(obj.xmin-1, obj.ymin-1)
-    xmax, ymax = self.valid(obj.xmax+1, obj.ymax+1)
+    if obj.hasclosefit:
+        envelope = 0
+    else:
+        envelope = 1
+    xmin, ymin = self.valid(obj.xmin-envelope, obj.ymin-envelope)
+    xmax, ymax = self.valid(obj.xmax+envelope, obj.ymax+envelope)
     return xmin, ymin, xmax, ymax</code></pre>
 </details>
 </dd>
@@ -4422,6 +5021,8 @@ labelobj(obj [, contour=True,edgecolor="orange",facecolor="none",linewidth=2, ax
         labelobj:
             labelobj(obj [, contour=True,edgecolor=&#34;orange&#34;,facecolor=&#34;none&#34;,linewidth=2, ax=plt.gca()])
     &#34;&#34;&#34;
+    if contour: contour = obj.hascontour # e.g. overlays do not have contour
+    
     if contour:
         patch = patches.PathPatch(obj.polygon2plot,
                                   facecolor=facecolor,
@@ -4531,6 +5132,81 @@ labelobj(obj [, contour=True,edgecolor="orange",facecolor="none",linewidth=2, ax
     return self.imbead, self.imobj</code></pre>
 </details>
 </dd>
+<dt id="raster.raster.overlay"><code class="name flex">
+<span>def <span class="ident">overlay</span></span>(<span>self, x0, y0, name=None, filename=None, color=1, colormax=None, ncolors=4, beadtype=None, beadtype2=None, ismask=False, fake=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>overlay object: made from an image converted to nc colors
+the object is made from the level ranged between ic and jc (bounds included)
+note: if palette found, no conversion is applied</p>
+<p>O = overlay(x0,y0,filename="/this/is/my/image.png",ncolors=nc,color=ic,colormax=jc,beadtype=b)
+O = overlay(....ismask=False,fake=False)</p>
+<h2 id="outputs">Outputs</h2>
+<p>O.original original image (PIL)
+O.raw image converted to ncolors if needed</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def overlay(self,x0,y0,
+            name = None,
+            filename = None,
+            color = 1,
+            colormax = None,
+            ncolors = 4,
+            beadtype = None,
+            beadtype2 = None,
+            ismask = False,
+            fake = False
+            ):
+    &#34;&#34;&#34;
+        overlay object: made from an image converted to nc colors
+        the object is made from the level ranged between ic and jc (bounds included)
+        note: if palette found, no conversion is applied
+        
+        O = overlay(x0,y0,filename=&#34;/this/is/my/image.png&#34;,ncolors=nc,color=ic,colormax=jc,beadtype=b)
+        O = overlay(....ismask=False,fake=False)
+        
+        Outputs:
+            O.original original image (PIL)
+            O.raw image converted to ncolors if needed
+        
+    &#34;&#34;&#34;
+    if filename is None or filename==&#34;&#34;:
+        raise ValueError(&#34;filename is required (valid image)&#34;)
+    O = overlay(counter=(self.counter[&#34;all&#34;]+1,self.counter[&#34;overlay&#34;]+1),
+                filename = filename,
+                xmin = x0,
+                ymin = y0,
+                ncolors = ncolors
+                )
+    O.select(color=color, colormax=colormax)
+    if (name is not None) and (name !=&#34;&#34;):
+        if self.exist(name):
+            print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
+            self.delete(name)
+        O.name = name
+    else:
+        name = O.name
+    if beadtype is not None: O.beadtype = int(np.floor(beadtype))
+    if beadtype2 is not None:
+        if not isinstance(beadtype2,tuple) or len(beadtype2)!=2:
+            raise AttributeError(&#34;beadtype2 must be a tuple (beadtype,ratio)&#34;)
+    O.beadtype2 = beadtype2
+    if ismask: O.beadtype = 0
+    O.ismask = O.beadtype==0
+    self.counter[&#34;all&#34;] += 1
+    self.counter[&#34;overlay&#34;] += 1
+    if fake:
+        self.counter[&#34;all&#34;] -= 1
+        self.counter[&#34;overlay&#34;] -= 1
+        return O
+    else:
+        self.objects[name] = O
+        self.nobjects += 1
+        return None      </code></pre>
+</details>
+</dd>
 <dt id="raster.raster.pentagon"><code class="name flex">
 <span>def <span class="ident">pentagon</span></span>(<span>self, xc, yc, radius, name=None, shaperatio=1, angle=0, beadtype=None, ismask=False, shiftangle=0, fake=False, beadtype2=None)</span>
 </code></dt>
@@ -4616,7 +5292,38 @@ use pentagon(&hellip;,beadtype2=(type,ratio)) to salt an object with beads from 
                         else:
                             self.imbead[points[k,1],points[k,0]] = obj.beadtype
                         self.imobj[points[k,1],points[k,0]] = obj.index
-                        obj.nbeads += 1                
+                        obj.nbeads += 1
+                        
+    elif obj.alike == &#34;overlay&#34;:
+        xmin, ymin, xmax, ymax = self.frameobj(obj)
+        j,i = np.meshgrid(range(xmin,xmax), range(ymin,ymax))
+        points = np.vstack((j.flatten(),i.flatten())).T
+        npoints = points.shape[0]
+        inside = obj.select()
+        if obj.beadtype2 is None:          # -- no salting --
+            for k in range(npoints):
+                if inside[ points[k,1]-ymin, points[k,0]-xmin ] and \
+                    points[k,0]&gt;=0 and \
+                    points[k,0]&lt;self.width and \
+                    points[k,1]&gt;=0 and \
+                    points[k,1]&lt;self.height:
+                        self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                        self.imobj[points[k,1],points[k,0]] = obj.index
+                        obj.nbeads += 1
+        else:
+            for k in range(npoints):       # -- salting --
+                if inside[ points[k,0]-ymin, points[k,0]-xmin ] and \
+                    points[k,0]&gt;=0 and \
+                    points[k,0]&lt;self.width and \
+                    points[k,1]&gt;=0 and \
+                    points[k,1]&lt;self.height:
+                        if np.random.rand()&lt;obj.beadtype2[1]:
+                            self.imbead[points[k,1],points[k,0]] = obj.beadtype2[0]
+                        else:
+                            self.imbead[points[k,1],points[k,0]] = obj.beadtype
+                        self.imobj[points[k,1],points[k,0]] = obj.index
+                        obj.nbeads += 1
+
     else:
         raise ValueError(&#34;This object type is notimplemented&#34;)        </code></pre>
 </details>
@@ -4666,7 +5373,7 @@ from another type and with a given ratio
     self.counter[&#34;all&#34;] += 1
     self.counter[&#34;rectangle&#34;] += 1
     R = Rectangle((self.counter[&#34;all&#34;],self.counter[&#34;rectangle&#34;]))
-    if name != None:
+    if (name != None) and (name != &#34;&#34;):
         if self.exist(name):
             print(&#39;RASTER:: the object &#34;%s&#34; is overwritten&#39;,name)
             self.delete(name)
@@ -5040,6 +5747,20 @@ def n(self):
 <h4><code><a title="raster.collection" href="#raster.collection">collection</a></code></h4>
 </li>
 <li>
+<h4><code><a title="raster.coregeometry" href="#raster.coregeometry">coregeometry</a></code></h4>
+<ul class="two-column">
+<li><code><a title="raster.coregeometry.copy" href="#raster.coregeometry.copy">copy</a></code></li>
+<li><code><a title="raster.coregeometry.height" href="#raster.coregeometry.height">height</a></code></li>
+<li><code><a title="raster.coregeometry.width" href="#raster.coregeometry.width">width</a></code></li>
+<li><code><a title="raster.coregeometry.xcenter" href="#raster.coregeometry.xcenter">xcenter</a></code></li>
+<li><code><a title="raster.coregeometry.xmax" href="#raster.coregeometry.xmax">xmax</a></code></li>
+<li><code><a title="raster.coregeometry.xmin" href="#raster.coregeometry.xmin">xmin</a></code></li>
+<li><code><a title="raster.coregeometry.ycenter" href="#raster.coregeometry.ycenter">ycenter</a></code></li>
+<li><code><a title="raster.coregeometry.ymax" href="#raster.coregeometry.ymax">ymax</a></code></li>
+<li><code><a title="raster.coregeometry.ymin" href="#raster.coregeometry.ymin">ymin</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="raster.coreshell" href="#raster.coreshell">coreshell</a></code></h4>
 <ul class="">
 <li><code><a title="raster.coreshell.insertion" href="#raster.coreshell.insertion">insertion</a></code></li>
@@ -5059,19 +5780,21 @@ def n(self):
 </li>
 <li>
 <h4><code><a title="raster.genericpolygon" href="#raster.genericpolygon">genericpolygon</a></code></h4>
-<ul class="two-column">
-<li><code><a title="raster.genericpolygon.copy" href="#raster.genericpolygon.copy">copy</a></code></li>
+<ul class="">
 <li><code><a title="raster.genericpolygon.corners" href="#raster.genericpolygon.corners">corners</a></code></li>
-<li><code><a title="raster.genericpolygon.height" href="#raster.genericpolygon.height">height</a></code></li>
+<li><code><a title="raster.genericpolygon.hasclosefit" href="#raster.genericpolygon.hasclosefit">hasclosefit</a></code></li>
+<li><code><a title="raster.genericpolygon.hascontour" href="#raster.genericpolygon.hascontour">hascontour</a></code></li>
 <li><code><a title="raster.genericpolygon.polygon" href="#raster.genericpolygon.polygon">polygon</a></code></li>
 <li><code><a title="raster.genericpolygon.polygon2plot" href="#raster.genericpolygon.polygon2plot">polygon2plot</a></code></li>
-<li><code><a title="raster.genericpolygon.width" href="#raster.genericpolygon.width">width</a></code></li>
-<li><code><a title="raster.genericpolygon.xcenter" href="#raster.genericpolygon.xcenter">xcenter</a></code></li>
-<li><code><a title="raster.genericpolygon.xmax" href="#raster.genericpolygon.xmax">xmax</a></code></li>
-<li><code><a title="raster.genericpolygon.xmin" href="#raster.genericpolygon.xmin">xmin</a></code></li>
-<li><code><a title="raster.genericpolygon.ycenter" href="#raster.genericpolygon.ycenter">ycenter</a></code></li>
-<li><code><a title="raster.genericpolygon.ymax" href="#raster.genericpolygon.ymax">ymax</a></code></li>
-<li><code><a title="raster.genericpolygon.ymin" href="#raster.genericpolygon.ymin">ymin</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="raster.overlay" href="#raster.overlay">overlay</a></code></h4>
+<ul class="">
+<li><code><a title="raster.overlay.hasclosefit" href="#raster.overlay.hasclosefit">hasclosefit</a></code></li>
+<li><code><a title="raster.overlay.hascontour" href="#raster.overlay.hascontour">hascontour</a></code></li>
+<li><code><a title="raster.overlay.load" href="#raster.overlay.load">load</a></code></li>
+<li><code><a title="raster.overlay.select" href="#raster.overlay.select">select</a></code></li>
 </ul>
 </li>
 <li>
@@ -5097,6 +5820,7 @@ def n(self):
 <li><code><a title="raster.raster.names" href="#raster.raster.names">names</a></code></li>
 <li><code><a title="raster.raster.newfigure" href="#raster.raster.newfigure">newfigure</a></code></li>
 <li><code><a title="raster.raster.numeric" href="#raster.raster.numeric">numeric</a></code></li>
+<li><code><a title="raster.raster.overlay" href="#raster.raster.overlay">overlay</a></code></li>
 <li><code><a title="raster.raster.pentagon" href="#raster.raster.pentagon">pentagon</a></code></li>
 <li><code><a title="raster.raster.plot" href="#raster.raster.plot">plot</a></code></li>
 <li><code><a title="raster.raster.plotobj" href="#raster.raster.plotobj">plotobj</a></code></li>

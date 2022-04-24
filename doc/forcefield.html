@@ -471,7 +471,7 @@ class solidfood(tlsph):
 class saltTLSPH(tlsph):
     &#34;&#34;&#34; SALTLSPH (smd:tlsph): ongoing &#34;salting&#34; beadtype for rheology control
             saltTLSPH()
-            saltTLSPH(beadtype=index, userid=&#34;myfood&#34;, USER=...)
+            saltTLSPH(beadtype=index, userid=&#34;salt&#34;, USER=...)
             
             override any property with USER.property = value
     &#34;&#34;&#34;
@@ -483,7 +483,7 @@ class saltTLSPH(tlsph):
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         &#34;&#34;&#34; saltTLSPH forcefield: 
-            saltTLSPH(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
+            saltTLSPH(beadtype=index, userid=&#34;salt&#34;) &#34;&#34;&#34;
         # super().__init__()
         if userid!=None: self.userid = userid
         self.beadtype = beadtype
@@ -990,10 +990,10 @@ rigidwall(beadtype=index, userid="mywall")</p></div>
 <dd>
 <div class="desc"><p>SALTLSPH (smd:tlsph): ongoing "salting" beadtype for rheology control
 saltTLSPH()
-saltTLSPH(beadtype=index, userid="myfood", USER=&hellip;)</p>
+saltTLSPH(beadtype=index, userid="salt", USER=&hellip;)</p>
 <p>override any property with USER.property = value</p>
 <p>saltTLSPH forcefield:
-saltTLSPH(beadtype=index, userid="myfood")</p></div>
+saltTLSPH(beadtype=index, userid="salt")</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1001,7 +1001,7 @@ saltTLSPH(beadtype=index, userid="myfood")</p></div>
 <pre><code class="python">class saltTLSPH(tlsph):
     &#34;&#34;&#34; SALTLSPH (smd:tlsph): ongoing &#34;salting&#34; beadtype for rheology control
             saltTLSPH()
-            saltTLSPH(beadtype=index, userid=&#34;myfood&#34;, USER=...)
+            saltTLSPH(beadtype=index, userid=&#34;salt&#34;, USER=...)
             
             override any property with USER.property = value
     &#34;&#34;&#34;
@@ -1013,7 +1013,7 @@ saltTLSPH(beadtype=index, userid="myfood")</p></div>
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         &#34;&#34;&#34; saltTLSPH forcefield: 
-            saltTLSPH(beadtype=index, userid=&#34;myfood&#34;) &#34;&#34;&#34;
+            saltTLSPH(beadtype=index, userid=&#34;salt&#34;) &#34;&#34;&#34;
         # super().__init__()
         if userid!=None: self.userid = userid
         self.beadtype = beadtype

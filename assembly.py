@@ -69,7 +69,7 @@ collection = b1+b2+b3+b4 # interaction between particles
 
 fullscript = init + collection.script + inte + thermo + equilsteps + dmp + moves
 
-fullscript.write("./tmp/in.swimmingpool")
+fullscript.write("./tmp/in.swimmingpool") # os.path.join(pizza.__path__[0],'tmp')
 
 
 
