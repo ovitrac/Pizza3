@@ -4,8 +4,7 @@ __pycache__/
 *$py.class
 
 # C extensions
-# include C extensions for private/PIL
-#*.so
+*.so
 
 # Distribution / packaging
 .Python
