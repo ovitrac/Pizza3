@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.42"
+__version__ = "0.421"
 
 """
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -88,10 +88,32 @@ __version__ = "0.42"
     See: copyalongpath(), scatter(), emulsion(), coreshell()
     
     Examples follow in the __main__ section
+    
+    --------------------------------------------------------------------
+    BUILDING REQUIREMENTS:
+        Since version 0.40, overlay(), torgb() and live previews
+        use Pizza3.pizza.private.PIL library
+        
+        The customized version of PIL needs to be compiled for your system
+        By assuming that anaconda is used:
+            
+            condainit
+            
+            cd Pizza3/pizza/private/PIL
+            python3 setup.py install
+            
+            unzip -l dist/UNKNOWN-9.1.0-py3.9-linux-x86_64.egg
+            unzip -j "dist/UNKNOWN-9.1.0-py3.9-linux-x86_64.egg" "PIL/_imaging.cpython-39-x86_64-linux-gnu.so" .
+            
+            rm -rf dist/
+            rm -rf build/
+            rm -rf ../UNKNOWN.egg-info
+            
+    --------------------------------------------------------------------
         
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-04-24
+# INRAE\Olivier Vitrac - rev. 2022-04-26
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -111,10 +133,11 @@ __version__ = "0.42"
 # 2022-04-01 add maxtype to  raster.data(), e.g. raster.data(maxtype=4)
 # 2022-04-08 add beadtype2(alternative beadtype, ratio) to salt objects
 # 2022-04-13 descale volume in data() for stability reason
-# 2022-04-23 very first overlay implementation (alpha version)
+# 2022-04-23 very first overlay implementation (alpha version) -- version 0.40
 # 2022-04-24 full implementation of overlay (not fully tested yet, intended to behave has a regular object)
 # 2022-04-25 full integration of PIL
 # 2022-04-26 add torgb(), thumbnails, add angle, scale=(scalex,scaley) to overlay()
+# 2022-04-26 add building instructions, version 0.421
 
 # %% Imports and private library
 import os
