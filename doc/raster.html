@@ -36,7 +36,7 @@ __credits__ = [&#34;Olivier Vitrac&#34;]
 __license__ = &#34;GPLv3&#34;
 __maintainer__ = &#34;Olivier Vitrac&#34;
 __email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
-__version__ = &#34;0.4&#34;
+__version__ = &#34;0.42&#34;
 
 &#34;&#34;&#34;
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -141,6 +141,8 @@ __version__ = &#34;0.4&#34;
 # 2022-04-13 descale volume in data() for stability reason
 # 2022-04-23 very first overlay implementation (alpha version)
 # 2022-04-24 full implementation of overlay (not fully tested yet, intended to behave has a regular object)
+# 2022-04-25 full integration of PIL
+# 2022-04-26 add torgb(), thumbnails, add angle, scale=(scalex,scaley) to overlay()
 
 # %% Imports and private library
 import os
@@ -150,9 +152,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.path as path
 import matplotlib.patches as patches
+import matplotlib.cm as cmap
+from IPython.display import display
 from pizza.data3 import data as data3
 from pizza.private.struct import struct
-from pizza.private.PIL import Image
+from pizza.private.PIL import Image, ImagePalette
 
 def _rotate(x0,y0,xc,yc,angle):
     angle = np.pi * angle / 180.0
@@ -168,10 +172,27 @@ def _extents(f):
 # usage: data = np.random.randn(5,10)
 #        imagesc(data)
 def imagesc(im,x=None,y=None):
+    &#34;&#34;&#34;  imagesc à la Matlab
+            imagesc(np2array) &#34;&#34;&#34;
     if x==None: x=np.arange(1,np.shape(im)[1]+1)
     if y==None: y=np.arange(1,np.shape(im)[0]+1)
     plt.imshow(im, extent=_extents(x) + _extents(y), 
                aspect=&#34;auto&#34;, origin=&#34;lower&#34;, interpolation=&#34;none&#34;)
+
+# convert indexed image to RGB (using PIL)
+# rgbim = ind2rgb(im,ncolors=number of colors)
+def ind2rgb(im,ncolors=64):
+    &#34;&#34;&#34; Convert indexed image (NumPy array) to RGB
+            rgb = ind2rgb(np2array,ncolors=nc)
+            use rgb.save(&#34;/path/filename.png&#34;) for saving
+    &#34;&#34;&#34;
+    raw = Image.fromarray(np.flipud(im),&#34;P&#34;)
+    col0 = np.array(np.round(255*cmap.get_cmap(&#34;viridis&#34;,ncolors).colors[:,:3]),dtype=&#34;uint8&#34;)
+    col = bytearray(np.resize(col0,(256,3)).flatten())
+    pal = ImagePalette.ImagePalette(mode=&#34;RGB&#34;,palette=col)
+    #Image.convert(mode=None, matrix=None, dither=None, palette=Palette.WEB, colors=256)
+    raw.putpalette(pal)
+    return raw
 
 # helper for parametric functions
 def linear(xmin=10,ymin=10,xmax=80,ymax=80,n=5,USER=struct()):
@@ -216,20 +237,22 @@ class raster:
             mass, volume, radius, contactradius, velocities, forces: bead scaling
             filename
         
-        List of available properties: default values
+        List of available properties = default values
         
-                   name: &#34;default raster&#34;
-                  width: 100
-                 height: 100
-                    dpi: 200
-               fontsize: 10
-                   mass: 1
-                 volume: 1
-                 radius: 1.5
-          contactradius: 0.5
-             velocities: [0, 0, 0]
-                 forces: [0, 0, 0]
-               filename: [&#34;%dx%d raster (%s)&#34; % (self.width,self.height,self.name)]
+                   name = &#34;default raster&#34;
+                  width = 100
+                 height = 100
+                    dpi = 200
+               fontsize = 10
+                   mass = 1
+                 volume = 1
+                 radius = 1.5
+          contactradius = 0.5
+             velocities = [0, 0, 0]
+                 forces = [0, 0, 0]
+                preview = True
+           previewthumb = (128,128)
+               filename = [&#34;%dx%d raster (%s)&#34; % (self.width,self.height,self.name)]
     
     Graphical objects
         
@@ -296,6 +319,8 @@ class raster:
                  contactradius=0.5,
                  velocities=[0,0,0],
                  forces=[0,0,0],
+                 preview=True,
+                 previewthumb = (128,128),
                  filename=&#34;&#34;
                  ):
         
@@ -330,6 +355,9 @@ class raster:
         self.contactradius = contactradius
         self.velocities = velocities
         self.forces =forces
+        
+        self.preview = preview
+        self.previewthumb = previewthumb
         
         if filename == &#34;&#34;:
             self.filename = [&#34;%dx%d raster (%s)&#34; % (self.width,self.height,self.name)]
@@ -466,10 +494,31 @@ class raster:
         else:
             print(&#34;\tno bead assigned&#34;)
         print(&#34;-&#34;*40)
+        if self.preview and len(self)&gt;0 and self.max&gt;0:
+            display(self.torgb(&#34;beadtype&#34;,self.previewthumb))
+            display(self.torgb(&#34;objindex&#34;,self.previewthumb))
         return &#34;RASTER AREA %d x %d with %d objects (%d types, %d beads).&#34; % \
         (self.width,self.height,self.nobjects,len(ctyp),nbt)
 
-    # count method ---------------------------- 
+    # TORGB method ---------------------------- 
+    def torgb(self,what=&#34;beadtype&#34;,thumb=None):
+        &#34;&#34;&#34; converts bead raster to image 
+                rgb = raster.torgb(what=&#34;beadtype&#34;)
+                thumbnail = raster.torgb(what=&#34;beadtype&#34;,(128,128))
+                use: rgb.save(&#34;/path/filename.png&#34;) for saving
+                
+            what = &#34;beadtype&#34; or &#34;objindex&#34;
+        &#34;&#34;&#34;
+        if what==&#34;beadtype&#34;:
+            rgb = ind2rgb(self.imbead,ncolors=self.max+1)
+        elif what == &#34;objindex&#34;:
+            rgb = ind2rgb(self.imobj,ncolors=len(self)+1)
+        else:
+            raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)
+        if thumb is not None: rgb.thumbnail(thumb)
+        return rgb
+
+    # COUNT method ---------------------------- 
     def count(self):
         &#34;&#34;&#34; count objects by type &#34;&#34;&#34;
         typlist = []
@@ -483,6 +532,23 @@ class raster:
         for t in utypes:
             c.append((t,typlist.count(t)))
         return c
+    
+    # max method ------------------------------
+    @property
+    def max(self):
+        &#34;&#34;&#34; max bead type &#34;&#34;&#34;
+        typlist = []
+        for  o in self.names():
+            if isinstance(self.objects[o].beadtype,list):
+                typlist += self.objects[o].beadtype
+            else:
+                typlist.append(self.objects[o].beadtype)
+        return max(typlist)
+    
+    # len method ------------------------------
+    def __len__(self):
+        &#34;&#34;&#34; len method &#34;&#34;&#34;
+        return len(R.objects)
 
     # NAMES method ---------------------------- 
     def names(self):
@@ -702,7 +768,10 @@ class raster:
                 beadtype = None,
                 beadtype2 = None,
                 ismask = False,
-                fake = False
+                fake = False,
+                flipud = True,
+                angle = 0,
+                scale= (1,1)
                 ):
         &#34;&#34;&#34;
             overlay object: made from an image converted to nc colors
@@ -710,7 +779,10 @@ class raster:
             note: if palette found, no conversion is applied
             
             O = overlay(x0,y0,filename=&#34;/this/is/my/image.png&#34;,ncolors=nc,color=ic,colormax=jc,beadtype=b)
+            O = overlay(...angle=0,scale=(1,1)) to induce rotation and change of scale
             O = overlay(....ismask=False,fake=False)
+            
+            note use overlay(...flipud=False) to prevent image fliping (standard)
             
             Outputs:
                 O.original original image (PIL)
@@ -723,7 +795,10 @@ class raster:
                     filename = filename,
                     xmin = x0,
                     ymin = y0,
-                    ncolors = ncolors
+                    ncolors = ncolors,
+                    flipud = flipud,
+                    angle = angle,
+                    scale = scale
                     )
         O.select(color=color, colormax=colormax)
         if (name is not None) and (name !=&#34;&#34;):
@@ -1201,10 +1276,15 @@ class overlay(coregeometry):
                  filename=&#34;./sandbox/image.jpg&#34;,
                  xmin = 0,
                  ymin = 0,
-                 ncolors = 4
+                 ncolors = 4,
+                 flipud = True,
+                 angle = 0,
+                 scale = (1,1)
                  ):
         &#34;&#34;&#34; generate an overlay from file
                 overlay(counter=(c1,c2),filename=&#34;this/is/myimage.jpg&#34;,xmin=x0,ymin=y0,colors=4)
+                additional options
+                    overlay(...,flipud=True,angle=0,scale=(1,1))
         &#34;&#34;&#34;
         self.name = &#34;over%03d&#34; % counter[1]
         self.kind = &#34;overlay&#34;       # kind of object
@@ -1220,6 +1300,12 @@ class overlay(coregeometry):
         self.index = counter[0]
         self.subindex = counter[1]
         self.translate = [0.0,0.0]  # modification used when an object is duplicated
+        if scale is None: scale = 1
+        if not isinstance(scale,(tuple,list)): scale = (scale,scale)
+        self.scale = scale
+        if angle is None: angle = 0
+        self.angle = angle
+        self.flipud = flipud        
         if not os.path.isfile(filename):
             raise IOError(f&#39;the file &#34;{filename}&#34; does not exist&#39;)
         self.filename = filename
@@ -1233,15 +1319,13 @@ class overlay(coregeometry):
         self.ymax0 = ymin + self.im.shape[0]
         self.xcenter0 = (self.xmin+self.xmax)/2
         self.ycenter0 = (self.ymin+self.ymax)/2
-        self.angle = 0
         
-        
-    def select(self,color=None,colormax=None):
+    def select(self,color=None,colormax=None,scale=None,angle=None):
         &#34;&#34;&#34; select the color index:
                 select(color = c) peeks pixels = c
                 select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax
         &#34;&#34;&#34;
-        if color is None:
+        if color is None: 
             color = self.color
         else:
             self.color = color
@@ -1252,7 +1336,7 @@ class overlay(coregeometry):
         if isinstance(color,int) and color&lt;len(self.map):
             S = np.logical_and(self.im&gt;=color,self.im&lt;=colormax)
             self.nbeads = np.count_nonzero(S)
-            return S
+            return np.flipud(S) if self.flipud else S
         raise ValueError(&#34;color must be an integer lower than %d&#34; % len(self.map))
         
     def load(self):
@@ -1263,6 +1347,10 @@ class overlay(coregeometry):
                 image is converted to an indexed image without dihtering
         &#34;&#34;&#34;
         I = Image.open(self.filename)
+        if self.angle != 0:
+            I= I.rotate(self.angle)
+        if self.scale[0] * self.scale[1] != 1:
+            I = I.resize((round(I.size[0]*self.scale[0]),round(I.size[1]*self.scale[1])))
         palette = I.getpalette()
         if palette is None:
             J=I.convert(mode=&#34;P&#34;,colors=self.ncolors,palette=Image.Palette.ADAPTIVE)
@@ -1759,6 +1847,7 @@ if __name__ == &#39;__main__&#39;:
     
     R.label(&#34;rect003&#34;)
     R.plot()
+    
     R.list()
     R.show()
     
@@ -1837,13 +1926,16 @@ if __name__ == &#39;__main__&#39;:
     
 # %% overlay example
     I = raster(width=600,height=600)
-    I.overlay(100,100,name=&#34;pix0&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=0,beadtype=1)
-    I.overlay(100,100,name=&#34;pix2&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=2,beadtype=2)
+    I.overlay(100,100,name=&#34;pix0&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=0,beadtype=1,angle=10,scale=(1.1,1.1))
+    I.overlay(100,100,name=&#34;pix2&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=2,beadtype=2,angle=10,scale=(1.1,1.1))
     I.label(&#34;pix0&#34;)
     I.plot()
     I.show(extra=&#34;label&#34;)
     I.pix0.original
-    I.pix0.raw</code></pre>
+    I.pix0.raw
+    a = I.torgb(&#34;objindex&#34;,(512,512))
+    a.show()
+    a.save(&#34;../tmp/preview.png&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -1891,16 +1983,44 @@ see: <a href="https://rosettacode.org/wiki/Circles_of_given_radius_through_two_p
 <span>def <span class="ident">imagesc</span></span>(<span>im, x=None, y=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>imagesc à la Matlab
+imagesc(np2array)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def imagesc(im,x=None,y=None):
+    &#34;&#34;&#34;  imagesc à la Matlab
+            imagesc(np2array) &#34;&#34;&#34;
     if x==None: x=np.arange(1,np.shape(im)[1]+1)
     if y==None: y=np.arange(1,np.shape(im)[0]+1)
     plt.imshow(im, extent=_extents(x) + _extents(y), 
                aspect=&#34;auto&#34;, origin=&#34;lower&#34;, interpolation=&#34;none&#34;)</code></pre>
+</details>
+</dd>
+<dt id="raster.ind2rgb"><code class="name flex">
+<span>def <span class="ident">ind2rgb</span></span>(<span>im, ncolors=64)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert indexed image (NumPy array) to RGB
+rgb = ind2rgb(np2array,ncolors=nc)
+use rgb.save("/path/filename.png") for saving</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ind2rgb(im,ncolors=64):
+    &#34;&#34;&#34; Convert indexed image (NumPy array) to RGB
+            rgb = ind2rgb(np2array,ncolors=nc)
+            use rgb.save(&#34;/path/filename.png&#34;) for saving
+    &#34;&#34;&#34;
+    raw = Image.fromarray(np.flipud(im),&#34;P&#34;)
+    col0 = np.array(np.round(255*cmap.get_cmap(&#34;viridis&#34;,ncolors).colors[:,:3]),dtype=&#34;uint8&#34;)
+    col = bytearray(np.resize(col0,(256,3)).flatten())
+    pal = ImagePalette.ImagePalette(mode=&#34;RGB&#34;,palette=col)
+    #Image.convert(mode=None, matrix=None, dither=None, palette=Palette.WEB, colors=256)
+    raw.putpalette(pal)
+    return raw</code></pre>
 </details>
 </dd>
 <dt id="raster.linear"><code class="name flex">
@@ -3289,12 +3409,14 @@ def polygon2plot(self):
 </dd>
 <dt id="raster.overlay"><code class="flex name class">
 <span>class <span class="ident">overlay</span></span>
-<span>(</span><span>counter=(0, 0), filename='./sandbox/image.jpg', xmin=0, ymin=0, ncolors=4)</span>
+<span>(</span><span>counter=(0, 0), filename='./sandbox/image.jpg', xmin=0, ymin=0, ncolors=4, flipud=True, angle=0, scale=(1, 1))</span>
 </code></dt>
 <dd>
 <div class="desc"><p>generic overlay class </p>
 <p>generate an overlay from file
-overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)</p></div>
+overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)
+additional options
+overlay(&hellip;,flipud=True,angle=0,scale=(1,1))</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3310,10 +3432,15 @@ overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)
                  filename=&#34;./sandbox/image.jpg&#34;,
                  xmin = 0,
                  ymin = 0,
-                 ncolors = 4
+                 ncolors = 4,
+                 flipud = True,
+                 angle = 0,
+                 scale = (1,1)
                  ):
         &#34;&#34;&#34; generate an overlay from file
                 overlay(counter=(c1,c2),filename=&#34;this/is/myimage.jpg&#34;,xmin=x0,ymin=y0,colors=4)
+                additional options
+                    overlay(...,flipud=True,angle=0,scale=(1,1))
         &#34;&#34;&#34;
         self.name = &#34;over%03d&#34; % counter[1]
         self.kind = &#34;overlay&#34;       # kind of object
@@ -3329,6 +3456,12 @@ overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)
         self.index = counter[0]
         self.subindex = counter[1]
         self.translate = [0.0,0.0]  # modification used when an object is duplicated
+        if scale is None: scale = 1
+        if not isinstance(scale,(tuple,list)): scale = (scale,scale)
+        self.scale = scale
+        if angle is None: angle = 0
+        self.angle = angle
+        self.flipud = flipud        
         if not os.path.isfile(filename):
             raise IOError(f&#39;the file &#34;{filename}&#34; does not exist&#39;)
         self.filename = filename
@@ -3342,15 +3475,13 @@ overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)
         self.ymax0 = ymin + self.im.shape[0]
         self.xcenter0 = (self.xmin+self.xmax)/2
         self.ycenter0 = (self.ymin+self.ymax)/2
-        self.angle = 0
         
-        
-    def select(self,color=None,colormax=None):
+    def select(self,color=None,colormax=None,scale=None,angle=None):
         &#34;&#34;&#34; select the color index:
                 select(color = c) peeks pixels = c
                 select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax
         &#34;&#34;&#34;
-        if color is None:
+        if color is None: 
             color = self.color
         else:
             self.color = color
@@ -3361,7 +3492,7 @@ overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)
         if isinstance(color,int) and color&lt;len(self.map):
             S = np.logical_and(self.im&gt;=color,self.im&lt;=colormax)
             self.nbeads = np.count_nonzero(S)
-            return S
+            return np.flipud(S) if self.flipud else S
         raise ValueError(&#34;color must be an integer lower than %d&#34; % len(self.map))
         
     def load(self):
@@ -3372,6 +3503,10 @@ overlay(counter=(c1,c2),filename="this/is/myimage.jpg",xmin=x0,ymin=y0,colors=4)
                 image is converted to an indexed image without dihtering
         &#34;&#34;&#34;
         I = Image.open(self.filename)
+        if self.angle != 0:
+            I= I.rotate(self.angle)
+        if self.scale[0] * self.scale[1] != 1:
+            I = I.resize((round(I.size[0]*self.scale[0]),round(I.size[1]*self.scale[1])))
         palette = I.getpalette()
         if palette is None:
             J=I.convert(mode=&#34;P&#34;,colors=self.ncolors,palette=Image.Palette.ADAPTIVE)
@@ -3434,6 +3569,10 @@ image is converted to an indexed image without dihtering</p></div>
             image is converted to an indexed image without dihtering
     &#34;&#34;&#34;
     I = Image.open(self.filename)
+    if self.angle != 0:
+        I= I.rotate(self.angle)
+    if self.scale[0] * self.scale[1] != 1:
+        I = I.resize((round(I.size[0]*self.scale[0]),round(I.size[1]*self.scale[1])))
     palette = I.getpalette()
     if palette is None:
         J=I.convert(mode=&#34;P&#34;,colors=self.ncolors,palette=Image.Palette.ADAPTIVE)
@@ -3448,7 +3587,7 @@ image is converted to an indexed image without dihtering</p></div>
 </details>
 </dd>
 <dt id="raster.overlay.select"><code class="name flex">
-<span>def <span class="ident">select</span></span>(<span>self, color=None, colormax=None)</span>
+<span>def <span class="ident">select</span></span>(<span>self, color=None, colormax=None, scale=None, angle=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>select the color index:
@@ -3458,12 +3597,12 @@ select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax</p></d
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def select(self,color=None,colormax=None):
+<pre><code class="python">def select(self,color=None,colormax=None,scale=None,angle=None):
     &#34;&#34;&#34; select the color index:
             select(color = c) peeks pixels = c
             select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax
     &#34;&#34;&#34;
-    if color is None:
+    if color is None: 
         color = self.color
     else:
         self.color = color
@@ -3474,7 +3613,7 @@ select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax</p></d
     if isinstance(color,int) and color&lt;len(self.map):
         S = np.logical_and(self.im&gt;=color,self.im&lt;=colormax)
         self.nbeads = np.count_nonzero(S)
-        return S
+        return np.flipud(S) if self.flipud else S
     raise ValueError(&#34;color must be an integer lower than %d&#34; % len(self.map))</code></pre>
 </details>
 </dd>
@@ -3498,7 +3637,7 @@ select(color = c, colormax = cmax) peeks pixels&gt;=c and pixels&lt;=cmax</p></d
 </dd>
 <dt id="raster.raster"><code class="flex name class">
 <span>class <span class="ident">raster</span></span>
-<span>(</span><span>name='default raster', width=100, height=100, dpi=200, fontsize=10, mass=1, volume=1, radius=1.5, contactradius=0.5, velocities=[0, 0, 0], forces=[0, 0, 0], filename='')</span>
+<span>(</span><span>name='default raster', width=100, height=100, dpi=200, fontsize=10, mass=1, volume=1, radius=1.5, contactradius=0.5, velocities=[0, 0, 0], forces=[0, 0, 0], preview=True, previewthumb=(128, 128), filename='')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>raster class for LAMMPS SMD </p>
@@ -3513,20 +3652,22 @@ additional properties for R.data()
     mass, volume, radius, contactradius, velocities, forces: bead scaling
     filename
 
-List of available properties: default values
+List of available properties = default values
 
-           name: "default raster"
-          width: 100
-         height: 100
-            dpi: 200
-       fontsize: 10
-           mass: 1
-         volume: 1
-         radius: 1.5
-  contactradius: 0.5
-     velocities: [0, 0, 0]
-         forces: [0, 0, 0]
-       filename: ["%dx%d raster (%s)" % (self.width,self.height,self.name)]
+           name = "default raster"
+          width = 100
+         height = 100
+            dpi = 200
+       fontsize = 10
+           mass = 1
+         volume = 1
+         radius = 1.5
+  contactradius = 0.5
+     velocities = [0, 0, 0]
+         forces = [0, 0, 0]
+        preview = True
+   previewthumb = (128,128)
+       filename = ["%dx%d raster (%s)" % (self.width,self.height,self.name)]
 </code></pre>
 <p>Graphical objects</p>
 <pre><code>R.rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode="lower", angle=0, ismask=False])
@@ -3590,20 +3731,22 @@ X.write("/tmp/myfile")</p>
             mass, volume, radius, contactradius, velocities, forces: bead scaling
             filename
         
-        List of available properties: default values
+        List of available properties = default values
         
-                   name: &#34;default raster&#34;
-                  width: 100
-                 height: 100
-                    dpi: 200
-               fontsize: 10
-                   mass: 1
-                 volume: 1
-                 radius: 1.5
-          contactradius: 0.5
-             velocities: [0, 0, 0]
-                 forces: [0, 0, 0]
-               filename: [&#34;%dx%d raster (%s)&#34; % (self.width,self.height,self.name)]
+                   name = &#34;default raster&#34;
+                  width = 100
+                 height = 100
+                    dpi = 200
+               fontsize = 10
+                   mass = 1
+                 volume = 1
+                 radius = 1.5
+          contactradius = 0.5
+             velocities = [0, 0, 0]
+                 forces = [0, 0, 0]
+                preview = True
+           previewthumb = (128,128)
+               filename = [&#34;%dx%d raster (%s)&#34; % (self.width,self.height,self.name)]
     
     Graphical objects
         
@@ -3670,6 +3813,8 @@ X.write("/tmp/myfile")</p>
                  contactradius=0.5,
                  velocities=[0,0,0],
                  forces=[0,0,0],
+                 preview=True,
+                 previewthumb = (128,128),
                  filename=&#34;&#34;
                  ):
         
@@ -3704,6 +3849,9 @@ X.write("/tmp/myfile")</p>
         self.contactradius = contactradius
         self.velocities = velocities
         self.forces =forces
+        
+        self.preview = preview
+        self.previewthumb = previewthumb
         
         if filename == &#34;&#34;:
             self.filename = [&#34;%dx%d raster (%s)&#34; % (self.width,self.height,self.name)]
@@ -3840,10 +3988,31 @@ X.write("/tmp/myfile")</p>
         else:
             print(&#34;\tno bead assigned&#34;)
         print(&#34;-&#34;*40)
+        if self.preview and len(self)&gt;0 and self.max&gt;0:
+            display(self.torgb(&#34;beadtype&#34;,self.previewthumb))
+            display(self.torgb(&#34;objindex&#34;,self.previewthumb))
         return &#34;RASTER AREA %d x %d with %d objects (%d types, %d beads).&#34; % \
         (self.width,self.height,self.nobjects,len(ctyp),nbt)
 
-    # count method ---------------------------- 
+    # TORGB method ---------------------------- 
+    def torgb(self,what=&#34;beadtype&#34;,thumb=None):
+        &#34;&#34;&#34; converts bead raster to image 
+                rgb = raster.torgb(what=&#34;beadtype&#34;)
+                thumbnail = raster.torgb(what=&#34;beadtype&#34;,(128,128))
+                use: rgb.save(&#34;/path/filename.png&#34;) for saving
+                
+            what = &#34;beadtype&#34; or &#34;objindex&#34;
+        &#34;&#34;&#34;
+        if what==&#34;beadtype&#34;:
+            rgb = ind2rgb(self.imbead,ncolors=self.max+1)
+        elif what == &#34;objindex&#34;:
+            rgb = ind2rgb(self.imobj,ncolors=len(self)+1)
+        else:
+            raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)
+        if thumb is not None: rgb.thumbnail(thumb)
+        return rgb
+
+    # COUNT method ---------------------------- 
     def count(self):
         &#34;&#34;&#34; count objects by type &#34;&#34;&#34;
         typlist = []
@@ -3857,6 +4026,23 @@ X.write("/tmp/myfile")</p>
         for t in utypes:
             c.append((t,typlist.count(t)))
         return c
+    
+    # max method ------------------------------
+    @property
+    def max(self):
+        &#34;&#34;&#34; max bead type &#34;&#34;&#34;
+        typlist = []
+        for  o in self.names():
+            if isinstance(self.objects[o].beadtype,list):
+                typlist += self.objects[o].beadtype
+            else:
+                typlist.append(self.objects[o].beadtype)
+        return max(typlist)
+    
+    # len method ------------------------------
+    def __len__(self):
+        &#34;&#34;&#34; len method &#34;&#34;&#34;
+        return len(R.objects)
 
     # NAMES method ---------------------------- 
     def names(self):
@@ -4076,7 +4262,10 @@ X.write("/tmp/myfile")</p>
                 beadtype = None,
                 beadtype2 = None,
                 ismask = False,
-                fake = False
+                fake = False,
+                flipud = True,
+                angle = 0,
+                scale= (1,1)
                 ):
         &#34;&#34;&#34;
             overlay object: made from an image converted to nc colors
@@ -4084,7 +4273,10 @@ X.write("/tmp/myfile")</p>
             note: if palette found, no conversion is applied
             
             O = overlay(x0,y0,filename=&#34;/this/is/my/image.png&#34;,ncolors=nc,color=ic,colormax=jc,beadtype=b)
+            O = overlay(...angle=0,scale=(1,1)) to induce rotation and change of scale
             O = overlay(....ismask=False,fake=False)
+            
+            note use overlay(...flipud=False) to prevent image fliping (standard)
             
             Outputs:
                 O.original original image (PIL)
@@ -4097,7 +4289,10 @@ X.write("/tmp/myfile")</p>
                     filename = filename,
                     xmin = x0,
                     ymin = y0,
-                    ncolors = ncolors
+                    ncolors = ncolors,
+                    flipud = flipud,
+                    angle = angle,
+                    scale = scale
                     )
         O.select(color=color, colormax=colormax)
         if (name is not None) and (name !=&#34;&#34;):
@@ -4497,6 +4692,28 @@ X.write("/tmp/myfile")</p>
         else:
             raise TypeError(&#34;the first argument must be an emulsion object&#34;)</code></pre>
 </details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="raster.raster.max"><code class="name">var <span class="ident">max</span></code></dt>
+<dd>
+<div class="desc"><p>max bead type</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def max(self):
+    &#34;&#34;&#34; max bead type &#34;&#34;&#34;
+    typlist = []
+    for  o in self.names():
+        if isinstance(self.objects[o].beadtype,list):
+            typlist += self.objects[o].beadtype
+        else:
+            typlist.append(self.objects[o].beadtype)
+    return max(typlist)</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="raster.raster.circle"><code class="name flex">
@@ -5133,14 +5350,16 @@ labelobj(obj [, contour=True,edgecolor="orange",facecolor="none",linewidth=2, ax
 </details>
 </dd>
 <dt id="raster.raster.overlay"><code class="name flex">
-<span>def <span class="ident">overlay</span></span>(<span>self, x0, y0, name=None, filename=None, color=1, colormax=None, ncolors=4, beadtype=None, beadtype2=None, ismask=False, fake=False)</span>
+<span>def <span class="ident">overlay</span></span>(<span>self, x0, y0, name=None, filename=None, color=1, colormax=None, ncolors=4, beadtype=None, beadtype2=None, ismask=False, fake=False, flipud=True, angle=0, scale=(1, 1))</span>
 </code></dt>
 <dd>
 <div class="desc"><p>overlay object: made from an image converted to nc colors
 the object is made from the level ranged between ic and jc (bounds included)
 note: if palette found, no conversion is applied</p>
 <p>O = overlay(x0,y0,filename="/this/is/my/image.png",ncolors=nc,color=ic,colormax=jc,beadtype=b)
+O = overlay(&hellip;angle=0,scale=(1,1)) to induce rotation and change of scale
 O = overlay(....ismask=False,fake=False)</p>
+<p>note use overlay(&hellip;flipud=False) to prevent image fliping (standard)</p>
 <h2 id="outputs">Outputs</h2>
 <p>O.original original image (PIL)
 O.raw image converted to ncolors if needed</p></div>
@@ -5157,7 +5376,10 @@ O.raw image converted to ncolors if needed</p></div>
             beadtype = None,
             beadtype2 = None,
             ismask = False,
-            fake = False
+            fake = False,
+            flipud = True,
+            angle = 0,
+            scale= (1,1)
             ):
     &#34;&#34;&#34;
         overlay object: made from an image converted to nc colors
@@ -5165,7 +5387,10 @@ O.raw image converted to ncolors if needed</p></div>
         note: if palette found, no conversion is applied
         
         O = overlay(x0,y0,filename=&#34;/this/is/my/image.png&#34;,ncolors=nc,color=ic,colormax=jc,beadtype=b)
+        O = overlay(...angle=0,scale=(1,1)) to induce rotation and change of scale
         O = overlay(....ismask=False,fake=False)
+        
+        note use overlay(...flipud=False) to prevent image fliping (standard)
         
         Outputs:
             O.original original image (PIL)
@@ -5178,7 +5403,10 @@ O.raw image converted to ncolors if needed</p></div>
                 filename = filename,
                 xmin = x0,
                 ymin = y0,
-                ncolors = ncolors
+                ncolors = ncolors,
+                flipud = flipud,
+                angle = angle,
+                scale = scale
                 )
     O.select(color=color, colormax=colormax)
     if (name is not None) and (name !=&#34;&#34;):
@@ -5552,6 +5780,37 @@ from another type and with a given ratio
     return [&#34;&#34;.join(map(chr,x)) for x in num]</code></pre>
 </details>
 </dd>
+<dt id="raster.raster.torgb"><code class="name flex">
+<span>def <span class="ident">torgb</span></span>(<span>self, what='beadtype', thumb=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>converts bead raster to image
+rgb = raster.torgb(what="beadtype")
+thumbnail = raster.torgb(what="beadtype",(128,128))
+use: rgb.save("/path/filename.png") for saving</p>
+<p>what = "beadtype" or "objindex"</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def torgb(self,what=&#34;beadtype&#34;,thumb=None):
+    &#34;&#34;&#34; converts bead raster to image 
+            rgb = raster.torgb(what=&#34;beadtype&#34;)
+            thumbnail = raster.torgb(what=&#34;beadtype&#34;,(128,128))
+            use: rgb.save(&#34;/path/filename.png&#34;) for saving
+            
+        what = &#34;beadtype&#34; or &#34;objindex&#34;
+    &#34;&#34;&#34;
+    if what==&#34;beadtype&#34;:
+        rgb = ind2rgb(self.imbead,ncolors=self.max+1)
+    elif what == &#34;objindex&#34;:
+        rgb = ind2rgb(self.imobj,ncolors=len(self)+1)
+    else:
+        raise ValueError(&#39;&#34;beadtype&#34; and &#34;objindex&#34; are the only acceptable values&#39;)
+    if thumb is not None: rgb.thumbnail(thumb)
+    return rgb</code></pre>
+</details>
+</dd>
 <dt id="raster.raster.triangle"><code class="name flex">
 <span>def <span class="ident">triangle</span></span>(<span>self, xc, yc, radius, name=None, shaperatio=1, angle=0, beadtype=None, ismask=False, shiftangle=0, fake=False, beadtype2=None)</span>
 </code></dt>
@@ -5710,6 +5969,7 @@ def n(self):
 <ul class="">
 <li><code><a title="raster.arc" href="#raster.arc">arc</a></code></li>
 <li><code><a title="raster.imagesc" href="#raster.imagesc">imagesc</a></code></li>
+<li><code><a title="raster.ind2rgb" href="#raster.ind2rgb">ind2rgb</a></code></li>
 <li><code><a title="raster.linear" href="#raster.linear">linear</a></code></li>
 </ul>
 </li>
@@ -5817,6 +6077,7 @@ def n(self):
 <li><code><a title="raster.raster.labelobj" href="#raster.raster.labelobj">labelobj</a></code></li>
 <li><code><a title="raster.raster.length" href="#raster.raster.length">length</a></code></li>
 <li><code><a title="raster.raster.list" href="#raster.raster.list">list</a></code></li>
+<li><code><a title="raster.raster.max" href="#raster.raster.max">max</a></code></li>
 <li><code><a title="raster.raster.names" href="#raster.raster.names">names</a></code></li>
 <li><code><a title="raster.raster.newfigure" href="#raster.raster.newfigure">newfigure</a></code></li>
 <li><code><a title="raster.raster.numeric" href="#raster.raster.numeric">numeric</a></code></li>
@@ -5829,6 +6090,7 @@ def n(self):
 <li><code><a title="raster.raster.scatter" href="#raster.raster.scatter">scatter</a></code></li>
 <li><code><a title="raster.raster.show" href="#raster.raster.show">show</a></code></li>
 <li><code><a title="raster.raster.string" href="#raster.raster.string">string</a></code></li>
+<li><code><a title="raster.raster.torgb" href="#raster.raster.torgb">torgb</a></code></li>
 <li><code><a title="raster.raster.triangle" href="#raster.raster.triangle">triangle</a></code></li>
 <li><code><a title="raster.raster.unlabel" href="#raster.raster.unlabel">unlabel</a></code></li>
 <li><code><a title="raster.raster.valid" href="#raster.raster.valid">valid</a></code></li>

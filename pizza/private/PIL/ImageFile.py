@@ -33,7 +33,7 @@ import struct
 import sys
 
 from . import Image
-from ._util import is_path
+from ._util import isPath
 
 MAXBLOCK = 65536
 
@@ -99,7 +99,7 @@ class ImageFile(Image.Image):
         self.decoderconfig = ()
         self.decodermaxblock = MAXBLOCK
 
-        if is_path(fp):
+        if isPath(fp):
             # filename
             self.fp = open(fp, "rb")
             self.filename = fp

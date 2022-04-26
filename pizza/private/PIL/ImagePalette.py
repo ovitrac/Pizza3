@@ -17,9 +17,9 @@
 #
 
 import array
+import warnings
 
 from . import GimpGradientFile, GimpPaletteFile, ImageColor, PaletteFile
-from ._deprecate import deprecate
 
 
 class ImagePalette:
@@ -32,6 +32,8 @@ class ImagePalette:
         an array or a list of ints between 0-255. The list must consist of
         all channels for one color followed by the next color (e.g. RGBRGBRGB).
         Defaults to an empty palette.
+    :param size: An optional palette size. If given, an error is raised
+        if ``palette`` is not of equal length.
     """
 
     def __init__(self, mode="RGB", palette=None, size=0):
@@ -40,7 +42,11 @@ class ImagePalette:
         self.palette = palette or bytearray()
         self.dirty = None
         if size != 0:
-            deprecate("The size parameter", 10, None)
+            warnings.warn(
+                "The size parameter is deprecated and will be removed in Pillow 10 "
+                "(2023-07-01).",
+                DeprecationWarning,
+            )
             if size != len(self.palette):
                 raise ValueError("wrong palette size")
 

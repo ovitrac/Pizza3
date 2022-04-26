@@ -1336,14 +1336,14 @@ class TiffImageFile(ImageFile.ImageFile):
 
         logger.debug(f"- size: {self.size}")
 
-        sample_format = self.tag_v2.get(SAMPLEFORMAT, (1,))
-        if len(sample_format) > 1 and max(sample_format) == min(sample_format) == 1:
+        sampleFormat = self.tag_v2.get(SAMPLEFORMAT, (1,))
+        if len(sampleFormat) > 1 and max(sampleFormat) == min(sampleFormat) == 1:
             # SAMPLEFORMAT is properly per band, so an RGB image will
             # be (1,1,1).  But, we don't support per band pixel types,
             # and anything more than one band is a uint8. So, just
             # take the first element. Revisit this if adding support
             # for more exotic images.
-            sample_format = (1,)
+            sampleFormat = (1,)
 
         bps_tuple = self.tag_v2.get(BITSPERSAMPLE, (1,))
         extra_tuple = self.tag_v2.get(EXTRASAMPLES, ())
@@ -1364,18 +1364,18 @@ class TiffImageFile(ImageFile.ImageFile):
             # presume it is the same number of bits for all of the samples.
             bps_tuple = bps_tuple * bps_count
 
-        samples_per_pixel = self.tag_v2.get(
+        samplesPerPixel = self.tag_v2.get(
             SAMPLESPERPIXEL,
             3 if self._compression == "tiff_jpeg" and photo in (2, 6) else 1,
         )
-        if len(bps_tuple) != samples_per_pixel:
+        if len(bps_tuple) != samplesPerPixel:
             raise SyntaxError("unknown data organization")
 
         # mode: check photometric interpretation and bits per pixel
         key = (
             self.tag_v2.prefix,
             photo,
-            sample_format,
+            sampleFormat,
             fillorder,
             bps_tuple,
             extra_tuple,
@@ -1880,16 +1880,16 @@ class AppendingTiffWriter:
         self.whereToWriteNewIFDOffset = None
         self.offsetOfNewPage = 0
 
-        self.IIMM = iimm = self.f.read(4)
-        if not iimm:
+        self.IIMM = IIMM = self.f.read(4)
+        if not IIMM:
             # empty file - first page
             self.isFirst = True
             return
 
         self.isFirst = False
-        if iimm == b"II\x2a\x00":
+        if IIMM == b"II\x2a\x00":
             self.setEndian("<")
-        elif iimm == b"MM\x00\x2a":
+        elif IIMM == b"MM\x00\x2a":
             self.setEndian(">")
         else:
             raise RuntimeError("Invalid TIFF file header")
@@ -1904,20 +1904,20 @@ class AppendingTiffWriter:
         # fix offsets
         self.f.seek(self.offsetOfNewPage)
 
-        iimm = self.f.read(4)
-        if not iimm:
+        IIMM = self.f.read(4)
+        if not IIMM:
             # raise RuntimeError("nothing written into new page")
             # Make it easy to finish a frame without committing to a new one.
             return
 
-        if iimm != self.IIMM:
+        if IIMM != self.IIMM:
             raise RuntimeError("IIMM of new page doesn't match IIMM of first page")
 
-        ifd_offset = self.readLong()
-        ifd_offset += self.offsetOfNewPage
+        IFDoffset = self.readLong()
+        IFDoffset += self.offsetOfNewPage
         self.f.seek(self.whereToWriteNewIFDOffset)
-        self.writeLong(ifd_offset)
-        self.f.seek(ifd_offset)
+        self.writeLong(IFDoffset)
+        self.f.seek(IFDoffset)
         self.fixIFD()
 
     def newFrame(self):
@@ -1948,9 +1948,9 @@ class AppendingTiffWriter:
         pos = self.f.tell()
 
         # pad to 16 byte boundary
-        pad_bytes = 16 - pos % 16
-        if 0 < pad_bytes < 16:
-            self.f.write(bytes(pad_bytes))
+        padBytes = 16 - pos % 16
+        if 0 < padBytes < 16:
+            self.f.write(bytes(padBytes))
         self.offsetOfNewPage = self.f.tell()
 
     def setEndian(self, endian):
@@ -1961,14 +1961,14 @@ class AppendingTiffWriter:
 
     def skipIFDs(self):
         while True:
-            ifd_offset = self.readLong()
-            if ifd_offset == 0:
+            IFDoffset = self.readLong()
+            if IFDoffset == 0:
                 self.whereToWriteNewIFDOffset = self.f.tell() - 4
                 break
 
-            self.f.seek(ifd_offset)
-            num_tags = self.readShort()
-            self.f.seek(num_tags * 12, os.SEEK_CUR)
+            self.f.seek(IFDoffset)
+            numTags = self.readShort()
+            self.f.seek(numTags * 12, os.SEEK_CUR)
 
     def write(self, data):
         return self.f.write(data)
@@ -1983,68 +1983,68 @@ class AppendingTiffWriter:
 
     def rewriteLastShortToLong(self, value):
         self.f.seek(-2, os.SEEK_CUR)
-        bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        if bytes_written is not None and bytes_written != 4:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 4")
+        bytesWritten = self.f.write(struct.pack(self.longFmt, value))
+        if bytesWritten is not None and bytesWritten != 4:
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
 
     def rewriteLastShort(self, value):
         self.f.seek(-2, os.SEEK_CUR)
-        bytes_written = self.f.write(struct.pack(self.shortFmt, value))
-        if bytes_written is not None and bytes_written != 2:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 2")
+        bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
+        if bytesWritten is not None and bytesWritten != 2:
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 2")
 
     def rewriteLastLong(self, value):
         self.f.seek(-4, os.SEEK_CUR)
-        bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        if bytes_written is not None and bytes_written != 4:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 4")
+        bytesWritten = self.f.write(struct.pack(self.longFmt, value))
+        if bytesWritten is not None and bytesWritten != 4:
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
 
     def writeShort(self, value):
-        bytes_written = self.f.write(struct.pack(self.shortFmt, value))
-        if bytes_written is not None and bytes_written != 2:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 2")
+        bytesWritten = self.f.write(struct.pack(self.shortFmt, value))
+        if bytesWritten is not None and bytesWritten != 2:
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 2")
 
     def writeLong(self, value):
-        bytes_written = self.f.write(struct.pack(self.longFmt, value))
-        if bytes_written is not None and bytes_written != 4:
-            raise RuntimeError(f"wrote only {bytes_written} bytes but wanted 4")
+        bytesWritten = self.f.write(struct.pack(self.longFmt, value))
+        if bytesWritten is not None and bytesWritten != 4:
+            raise RuntimeError(f"wrote only {bytesWritten} bytes but wanted 4")
 
     def close(self):
         self.finalize()
         self.f.close()
 
     def fixIFD(self):
-        num_tags = self.readShort()
+        numTags = self.readShort()
 
-        for i in range(num_tags):
-            tag, field_type, count = struct.unpack(self.tagFormat, self.f.read(8))
+        for i in range(numTags):
+            tag, fieldType, count = struct.unpack(self.tagFormat, self.f.read(8))
 
-            field_size = self.fieldSizes[field_type]
-            total_size = field_size * count
-            is_local = total_size <= 4
-            if not is_local:
+            fieldSize = self.fieldSizes[fieldType]
+            totalSize = fieldSize * count
+            isLocal = totalSize <= 4
+            if not isLocal:
                 offset = self.readLong()
                 offset += self.offsetOfNewPage
                 self.rewriteLastLong(offset)
 
             if tag in self.Tags:
-                cur_pos = self.f.tell()
+                curPos = self.f.tell()
 
-                if is_local:
+                if isLocal:
                     self.fixOffsets(
-                        count, isShort=(field_size == 2), isLong=(field_size == 4)
+                        count, isShort=(fieldSize == 2), isLong=(fieldSize == 4)
                     )
-                    self.f.seek(cur_pos + 4)
+                    self.f.seek(curPos + 4)
                 else:
                     self.f.seek(offset)
                     self.fixOffsets(
-                        count, isShort=(field_size == 2), isLong=(field_size == 4)
+                        count, isShort=(fieldSize == 2), isLong=(fieldSize == 4)
                     )
-                    self.f.seek(cur_pos)
+                    self.f.seek(curPos)
 
-                offset = cur_pos = None
+                offset = curPos = None
 
-            elif is_local:
+            elif isLocal:
                 # skip the locally stored value that is not an offset
                 self.f.seek(4, os.SEEK_CUR)
 

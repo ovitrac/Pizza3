@@ -1,37 +1,3 @@
-"""
-
-    CUSTOMIZED and REDUCED version of the Python Image Library (PIL)
-    made from PILLOW 9.1.0 (April 2022) for Pizza3
-    
-    The main module is pizza.private.Image and its class pizza.private.Image.Image
-    The module also provides functions to load images from files, and to create new images.
-    
-    from pizza.private.PIL import Image
-    import numpy as np
-
-    source: https://pillow.readthedocs.io/en/stable/
-    documentation: https://pillow.readthedocs.io/en/stable/reference/Image.html
-
-    
-    ----- Example -----
-
-    imagefile = "../sandbox/image.jpg"
-    colors = 4
-
-    I = Image.open(imagefile)
-    palette = I.getpalette()
-    if palette is None:
-        J=I.convert(mode="P",colors=colors,palette=Image.Palette.ADAPTIVE)
-        palette = J.getpalette()
-    else:
-        J = I
-    p = np.array(palette).reshape((int(len(palette)/3),3))
-    ncolors = len(p.sum(axis=1).nonzero()[0]);
-    Dmap = p[:colors,:]
-    D = np.array(J,dtype="uint8")
-    
-"""
-
 #
 # The Python Imaging Library.
 # $Id$
@@ -84,17 +50,28 @@ except ImportError:
 # Use __version__ instead.
 from . import ImageMode, TiffTags, UnidentifiedImageError, __version__, _plugins
 from ._binary import i32le, o32be, o32le
-from ._deprecate import deprecate
-from ._util import DeferredError, is_path
+from ._util import deferred_error, isPath
 
 
 def __getattr__(name):
+    deprecated = "deprecated and will be removed in Pillow 10 (2023-07-01). "
     categories = {"NORMAL": 0, "SEQUENCE": 1, "CONTAINER": 2}
     if name in categories:
-        deprecate("Image categories", 10, "is_animated", plural=True)
+        warnings.warn(
+            "Image categories are " + deprecated + "Use is_animated instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return categories[name]
     elif name in ("NEAREST", "NONE"):
-        deprecate(name, 10, "Resampling.NEAREST or Dither.NONE")
+        warnings.warn(
+            name
+            + " is "
+            + deprecated
+            + "Use Resampling.NEAREST or Dither.NONE instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return 0
     old_resampling = {
         "LINEAR": "BILINEAR",
@@ -102,11 +79,31 @@ def __getattr__(name):
         "ANTIALIAS": "LANCZOS",
     }
     if name in old_resampling:
-        deprecate(name, 10, f"Resampling.{old_resampling[name]}")
+        warnings.warn(
+            name
+            + " is "
+            + deprecated
+            + "Use Resampling."
+            + old_resampling[name]
+            + " instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return Resampling[old_resampling[name]]
     for enum in (Transpose, Transform, Resampling, Dither, Palette, Quantize):
         if name in enum.__members__:
-            deprecate(name, 10, f"{enum.__name__}.{name}")
+            warnings.warn(
+                name
+                + " is "
+                + deprecated
+                + "Use "
+                + enum.__name__
+                + "."
+                + name
+                + " instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             return enum[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
@@ -132,7 +129,7 @@ try:
     # import Image and use the Image.core variable instead.
     # Also note that Image.core is not a publicly documented interface,
     # and should be considered private and subject to change.
-    from pizza.private.PIL import _imaging as core
+    from . import _imaging as core
 
     if __version__ != getattr(core, "PILLOW_VERSION", None):
         raise ImportError(
@@ -142,7 +139,7 @@ try:
         )
 
 except ImportError as v:
-    core = DeferredError(ImportError("The _imaging C module is not installed."))
+    core = deferred_error(ImportError("The _imaging C module is not installed."))
     # Explanations for ways that we know we might have an import error
     if str(v).startswith("Module use of python"):
         # The _imaging C module is present, but not compiled for
@@ -541,7 +538,12 @@ class Image:
 
     def __getattr__(self, name):
         if name == "category":
-            deprecate("Image categories", 10, "is_animated", plural=True)
+            warnings.warn(
+                "Image categories are deprecated and will be removed in Pillow 10 "
+                "(2023-07-01). Use is_animated instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
             return self._category
         raise AttributeError(name)
 
@@ -611,7 +613,7 @@ class Image:
         # Instead of simply setting to None, we're setting up a
         # deferred error that will better explain that the core image
         # object is gone.
-        self.im = DeferredError(ValueError("Operation on closed image"))
+        self.im = deferred_error(ValueError("Operation on closed image"))
 
     def _copy(self):
         self.load()
@@ -1718,8 +1720,6 @@ class Image:
             # FIXME: _imaging returns a confusing error message for this case
             raise ValueError("point operation not supported for this mode")
 
-        if mode != "F":
-            lut = [round(i) for i in lut]
         return self._new(self.im.point(lut, mode))
 
     def putalpha(self, alpha):
@@ -2024,7 +2024,6 @@ class Image:
 
         size = tuple(size)
 
-        self.load()
         if box is None:
             box = (0, 0) + self.size
         else:
@@ -2249,15 +2248,15 @@ class Image:
         if isinstance(fp, Path):
             filename = str(fp)
             open_fp = True
-        elif is_path(fp):
-            filename = fp
+        elif isPath(fp):
+            filename = os.path.abspath(fp) # fix OV 2022-04-25
             open_fp = True
         elif fp == sys.stdout:
             try:
                 fp = sys.stdout.buffer
             except AttributeError:
                 pass
-        if not filename and hasattr(fp, "name") and is_path(fp.name):
+        if not filename and hasattr(fp, "name") and isPath(fp.name):
             # only set the name for metadata purposes
             filename = fp.name
 
@@ -2449,7 +2448,6 @@ class Image:
         :returns: None
         """
 
-        self.load()
         x, y = map(math.floor, size)
         if x >= self.width and y >= self.height:
             return
@@ -3063,7 +3061,7 @@ def open(fp, mode="r", formats=None):
     filename = ""
     if isinstance(fp, Path):
         filename = str(fp.resolve())
-    elif is_path(fp):
+    elif isPath(fp):
         filename = fp
 
     if filename:
