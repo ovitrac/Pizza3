@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.421"
+__version__ = "0.422"
 
 """
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -113,7 +113,7 @@ __version__ = "0.421"
         
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-04-26
+# INRAE\Olivier Vitrac - rev. 2022-04-27
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -138,6 +138,7 @@ __version__ = "0.421"
 # 2022-04-25 full integration of PIL
 # 2022-04-26 add torgb(), thumbnails, add angle, scale=(scalex,scaley) to overlay()
 # 2022-04-26 add building instructions, version 0.421
+# 2022-04-27 add scale to the representation of overlay objects (0.422)
 
 # %% Imports and private library
 import os
@@ -1362,11 +1363,12 @@ class overlay(coregeometry):
         """ display for rectangle class """
         print("%s - %s object" % (self.name, self.kind))
         print(f'\tfilename: "{self.filename}"')
+        print("\tangle = %0.4g (original image)" % self.angle)
+        print("\tscale = [%0.4g, %0.4g] (original image)" % self.scale)
         print(f"\tncolors = {self.ncolors} (selected={self.color})")
         print("\trange x = [%0.4g %0.4g]" % (self.xmin,self.xmax))
         print("\trange y = [%0.4g %0.4g]" % (self.ymin,self.ymax))
         print("\tcenter = [%0.4g %0.4g]" % (self.xcenter,self.ycenter))
-        print("\tangle = %0.4g" % self.angle)
         print("\ttranslate = [%0.4g %0.4g]" % (self.translate[0],self.translate[1]))
         print("note: use the attribute origina,raw to see the raw image")
         return "%s object: %s (beadtype=%d)" % (self.kind,self.name,self.beadtype)
@@ -1921,8 +1923,8 @@ if __name__ == '__main__':
     
 # %% overlay example
     I = raster(width=600,height=600)
-    I.overlay(100,100,name="pix0",filename="../sandbox/image.jpg",ncolors=4,color=0,beadtype=1,angle=10,scale=(1.1,1.1))
-    I.overlay(100,100,name="pix2",filename="../sandbox/image.jpg",ncolors=4,color=2,beadtype=2,angle=10,scale=(1.1,1.1))
+    I.overlay(30,100,name="pix0",filename="../sandbox/image.jpg",ncolors=4,color=0,beadtype=1,angle=10,scale=(1.1,1.1))
+    I.overlay(30,100,name="pix2",filename="../sandbox/image.jpg",ncolors=4,color=2,beadtype=2,angle=10,scale=(1.1,1.1))
     I.label("pix0")
     I.plot()
     I.show(extra="label")
