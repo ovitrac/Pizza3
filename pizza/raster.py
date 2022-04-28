@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.422"
+__version__ = "0.4221"
 
 """
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -139,6 +139,7 @@ __version__ = "0.422"
 # 2022-04-26 add torgb(), thumbnails, add angle, scale=(scalex,scaley) to overlay()
 # 2022-04-26 add building instructions, version 0.421
 # 2022-04-27 add scale to the representation of overlay objects (0.422)
+# 2022-04-28 fix len(raster object) - typo error (0.4221)
 
 # %% Imports and private library
 import os
@@ -544,7 +545,7 @@ class raster:
     # len method ------------------------------
     def __len__(self):
         """ len method """
-        return len(R.objects)
+        return len(self.objects)
 
     # NAMES method ---------------------------- 
     def names(self):
