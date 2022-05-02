@@ -16,6 +16,15 @@
     This module may be need to be compiled again for your system using this script.
     This distrubution should be compiled from Pizza3/pizza/private/PIL
     
+    
+    PROCEDURE WITH BUILD
+    -------------------    
+    cd Pizza3/pizza/private/PIL
+    python3 setup.py build
+    cp build/lib.linux-x86_64-3.9/PIL/_imaging.cpython-39-x86_64-linux-gnu.so .
+
+    PROCEDURE WITH INSTALL
+    -----------------------
     If you use Anaconda, type condainit in a terminal and launch
     python3 setup.py install
     
