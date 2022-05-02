@@ -8,7 +8,7 @@ __credits__ = ["Steve Plimpton", "Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.35"
+__version__ = "0.42"
 
 
 # Pizza.py toolkit, www.cs.sandia.gov/~sjplimp/pizza.html
@@ -28,6 +28,8 @@ __version__ = "0.35"
 # 2022-02-08 add the method kind(), the property type, the operator + (for merging)
 # 2022-02-09 vecs accepts inputs as list or tuple: ["id","x","y","z"]
 # 2022-02-10 kind has 2 internal styles ("vxyz" and "xyz") and can be supplied with a user style
+# 2022-05-02 extend read_snapshot() to store additional ITEMS (realtime from TIME), store aselect as bool instead as float
+# 2022-05-02 add realtime() (relatime is based on ITEM tim if available)
 
 # ======================================
 # dump tool
@@ -375,7 +377,7 @@ class dump:
         snap.tselect = 1
         snap.nselect = snap.natoms
         for i in range(snap.natoms):
-            snap.aselect[i] = 1
+            snap.aselect[i] = True
         self.nsnaps += 1
         self.nselect += 1
 
@@ -390,16 +392,34 @@ class dump:
     #   convert xs,xu to x in names
 
     def read_snapshot(self, f):
+        """ low-level method to read a snapshot from a file identifier """
+        
+        # expand the list of keywords if needed (INRAE\Olivier Vitrac)
+        # "keyname": ["name in snap","type"]
+        itemkeywords = {"TIME": ["realtime","float"],
+                        "TIMESTEP": ["time","int"], 
+                        "NUMBER OF ATOMS": ["natoms","int"]}
         try:
             snap = Snap()
-            item = f.readline()
-            snap.time = int(f.readline().split()[0])  # just grab 1st field
-            item = f.readline()
-            snap.natoms = int(f.readline())
+            
+            # read and guess the first keywords based on itemkeywords
+            found = True
+            while found:
+                item = f.readline()
+                varitem = item.split("ITEM:")[1].strip()
+                found = varitem in itemkeywords
+                if found:
+                    tmp = f.readline().split()[0]  # just grab 1st field
+                    if itemkeywords[varitem][1]=="int":
+                        valitem = int(tmp)
+                    else:
+                        valitem = float(tmp)
+                    setattr(snap,itemkeywords[varitem][0],valitem)
 
-            snap.aselect = np.zeros(snap.natoms)
+            # prefetch
+            snap.aselect = np.zeros(snap.natoms,dtype=bool)
 
-            item = f.readline()
+            # we assume that the next item is BOX BOUNDS (pp ff pp)
             words = item.split("BOUNDS ")
             if len(words) == 1:
                 snap.boxstr = ""
@@ -1003,8 +1023,11 @@ class dump:
 
     # --------------------------------------------------------------------
     # return vector of selected snapshot time stamps
+    #   time is based on TIMESTEP item
+    #   realtime is based on TIME item
 
     def time(self):
+        """ timestep as stored: time()"""
         vec = self.nselect * [0]
         i = 0
         for snap in self.snaps:
@@ -1014,6 +1037,17 @@ class dump:
             i += 1
         return vec
 
+    def realtime(self):
+        """ time as simulated: realtime() """
+        vec = self.nselect * [0.0]
+        i = 0
+        for snap in self.snaps:
+            if not snap.tselect or not hasattr(snap,"realtime"):
+                continue
+            vec[i] = snap.realtime
+            i += 1
+        return vec
+    
     # --------------------------------------------------------------------
     # extract vector(s) of values for atom ID n at each selected timestep
 
@@ -1597,13 +1631,13 @@ class aselect:
                 if not snap.tselect:
                     continue
                 for i in range(snap.natoms):
-                    snap.aselect[i] = 1
+                    snap.aselect[i] = True
                 snap.nselect = snap.natoms
         else:  # one timestep
             n = data.findtime(args[0])
             snap = data.snaps[n]
             for i in range(snap.natoms):
-                snap.aselect[i] = 1
+                snap.aselect[i] = True
             snap.nselect = snap.natoms
 
     # --------------------------------------------------------------------
@@ -1637,7 +1671,7 @@ class aselect:
                     # Python 3.x
                     flag = eval(evalcmd)
                     if not flag:
-                        snap.aselect[i] = 0
+                        snap.aselect[i] = False
                         snap.nselect -= 1
             for i in range(data.nsnaps):
                 if data.snaps[i].tselect:
@@ -1673,7 +1707,7 @@ class aselect:
                 # Python 3.x
                 flag = eval(evalcmd)
                 if not flag:
-                    snap.aselect[i] = 0
+                    snap.aselect[i] = False
                     snap.nselect -= 1
 
 
@@ -1685,13 +1719,14 @@ class aselect:
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':
-    f1 = "../data/play_data/dump.play.1frames"
-    f2 = "../data/play_data/dump.play.50frames"
-    X1 = dump(f1)
-    X1.kind()
-    X1.type
-    X50 = dump(f2)
-    X50.kind()
-    X50.type
-    X = X50 + X1
-    xy=X.vecs(82500,('x','y'))
+    X = dump("/home/olivi/billy/python/issues/time/dump.vwall_0.01")
+    # f1 = "../data/play_data/dump.play.1frames"
+    # f2 = "../data/play_data/dump.play.50frames"
+    # X1 = dump(f1)
+    # X1.kind()
+    # X1.type
+    # X50 = dump(f2)
+    # X50.kind()
+    # X50.type
+    # X = X50 + X1
+    # xy=X.vecs(82500,('x','y'))
