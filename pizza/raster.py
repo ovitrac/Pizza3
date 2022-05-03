@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.4221"
+__version__ = "0.43"
 
 """
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -113,7 +113,7 @@ __version__ = "0.4221"
         
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-04-27
+# INRAE\Olivier Vitrac - rev. 2022-05-03
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -140,6 +140,7 @@ __version__ = "0.4221"
 # 2022-04-26 add building instructions, version 0.421
 # 2022-04-27 add scale to the representation of overlay objects (0.422)
 # 2022-04-28 fix len(raster object) - typo error (0.4221)
+# 2022-05-03 add hexpacking to data(), enables you to reproduces an hexgonal packaging
 
 # %% Imports and private library
 import os
@@ -363,11 +364,15 @@ class raster:
         
 
     # DATA ---------------------------- 
-    def data(self,scale=(1,1),center=(0,0),maxtype=None):
+    def data(self,scale=(1,1),center=(0,0),maxtype=None,hexpacking=None):
         """
-        data()
-        data(scale=(scalex,scaley),center=(centerx,centery),maxtype=number)
-        return a pizza.data object  """
+            return a pizza.data object     
+                data()
+                data(scale=(scalex,scaley),
+                     center=(centerx,centery),
+                     maxtype=number,
+                     hexpacking=(0.5,0))
+        """
         if not isinstance(scale,tuple) or len(scale)!=2:
             raise ValueError("scale must be tuple (scalex,scaley)")
         if not isinstance(center,tuple) or len(scale)!=2:
@@ -377,6 +382,17 @@ class raster:
         maxtypeheader = self.count()[-1][0] if maxtype is None else maxtype
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
+        x = (j+0.5-center[0])*scale[0]
+        y = (i+0.5-center[1])*scale[1]
+        if hexpacking is not None:
+            if isinstance(hexpacking,tuple) and len(hexpacking)==2:
+                for k in range(len(i)):
+                    if i[k] % 2:
+                        x[k] = (j[k]+0.5+hexpacking[1]-center[0])*scale[0]
+                    else:
+                        x[k] = (j[k]+0.5+hexpacking[0]-center[0])*scale[0]
+            else:
+                raise ValueError("hexpacking should be a tuple (shiftodd,shifteven)")
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + "(raster)"
         X.headers = {'atoms': n,
@@ -392,12 +408,12 @@ class raster:
         X.append('Atoms',self.mass*scalevol,False,"mass")    # mass
         X.append('Atoms',self.radius*scalez,False,"radius")         # radius
         X.append('Atoms',self.contactradius*scalez,False,"c_contact_radius") # c_contact_radius
-        X.append('Atoms',(j+0.5-center[0])*scale[0],False,"x")        # x
-        X.append('Atoms',(i+0.5-center[1])*scale[1],False,"y")        # y
-        X.append('Atoms',0,False,"z")                                 # z
-        X.append('Atoms',(j+0.5-center[0])*scale[0],False,"x0")       # x0
-        X.append('Atoms',(i+0.5-center[1])*scale[1],False,"y0")       # y0
-        X.append('Atoms',0,False,"z0")                                # z0
+        X.append('Atoms',x,False,"x")        # x
+        X.append('Atoms',y,False,"y")        # y
+        X.append('Atoms',0,False,"z")        # z
+        X.append('Atoms',x,False,"x0")       # x0
+        X.append('Atoms',y,False,"y0")       # y0
+        X.append('Atoms',0,False,"z0")       # z0
         # [VELOCITIES] section
         X.append('Velocities',list(range(1,n+1)),True,"id") # id
         X.append('Velocities',self.velocities[0],False,"vx") # vx

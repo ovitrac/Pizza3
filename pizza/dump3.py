@@ -8,7 +8,7 @@ __credits__ = ["Steve Plimpton", "Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.42"
+__version__ = "0.43"
 
 
 # Pizza.py toolkit, www.cs.sandia.gov/~sjplimp/pizza.html
@@ -205,7 +205,7 @@ d.extra(obj)				   extract bond/tri/line info from obj
 #     boxstr = format string after BOX BOUNDS, if it exists
 #     triclinic = 0/1 for orthogonal/triclinic based on BOX BOUNDS fields
 #     nselect = # of selected atoms in this snapshot
-#     aselect[i] = 0/1 for each atom
+#     aselect[i] = True/False for each atom
 #     xlo,xhi,ylo,yhi,zlo,zhi,xy,xz,yz = box bounds (float)
 #     atoms[i][j] = 2d array of floats, i = 0 to natoms-1, j = 0 to ncols-1
 
@@ -1085,7 +1085,13 @@ class dump:
     # extract vector(s) of values for selected atoms at chosen timestep
 
     def vecs(self, n, *colname):
-        """ tab = vecs(time,"id","x","y") or tab = vecs(time,["id","x","y"],"z")  """
+        """ 
+            vecs(timeste,columname1,columname2,...)
+            Examples:
+                tab = vecs(timestep,"id","x","y") 
+                tab = vecs(timestep,["id","x","y"],"z")
+                X.vecs(X.time()[50],"vx","vy")
+        """
         snap = self.snaps[self.findtime(n)]
 
         if len(colname) == 0:
@@ -1620,11 +1626,17 @@ class tselect:
 
 class aselect:
     def __init__(self, data):
+        """ private constructor (not to be used directly) """
         self.data = data
 
     # --------------------------------------------------------------------
 
     def all(self, *args):
+        """ 
+            select all atoms:
+                aselect.all()
+                aselect.all(timestep)
+        """
         data = self.data
         if len(args) == 0:  # all selected timesteps
             for snap in data.snaps:
@@ -1643,6 +1655,10 @@ class aselect:
     # --------------------------------------------------------------------
 
     def test(self, teststr, *args):
+        """"
+            aselect.test(stringexpression [,timestep])
+            example: aselect.test("$y>0.4e-3 and $y<0.6e-3")
+        """
         data = self.data
 
         # replace all $var with snap.atoms references and compile test string
@@ -1719,14 +1735,14 @@ class aselect:
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':
-    X = dump("/home/olivi/billy/python/issues/time/dump.vwall_0.01")
-    # f1 = "../data/play_data/dump.play.1frames"
-    # f2 = "../data/play_data/dump.play.50frames"
-    # X1 = dump(f1)
-    # X1.kind()
-    # X1.type
-    # X50 = dump(f2)
-    # X50.kind()
-    # X50.type
-    # X = X50 + X1
-    # xy=X.vecs(82500,('x','y'))
+    #X = dump("../issues/time/dump.vwall_0.01")
+    f1 = "../data/play_data/dump.play.1frames"
+    f2 = "../data/play_data/dump.play.50frames"
+    X1 = dump(f1)
+    X1.kind()
+    X1.type
+    X50 = dump(f2)
+    X50.kind()
+    X50.type
+    X = X50 + X1
+    xy=X.vecs(82500,('x','y'))
