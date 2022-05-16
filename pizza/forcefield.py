@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.352"
+__version__ = "0.45"
 
 """
     --- forcefield methods for LAMMPS ---
@@ -113,7 +113,7 @@ __version__ = "0.352"
 """
 
 
-# INRAE\Olivier Vitrac - rev. 2022-02-13
+# INRAE\Olivier Vitrac - rev. 2022-05-16
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -124,6 +124,7 @@ __version__ = "0.352"
 # 2022-03-02 fix off-diagonal order for i,j
 # 2022-03-19 standardized pizza path
 # 2022-04-16 add saltTLSPH() forcefield in the material library, and document it better
+# 2022-05-16 force sortdefintions for + and += with parameterforcefield()
 
 # %% Dependencies
 import types
@@ -139,10 +140,20 @@ from pizza.private.struct import struct,param
 
 # container of forcefield parameters
 class parameterforcefield(param):
-    """ class of forcefields parameters, derived from param """
+    """ class of forcefields parameters, derived from param
+        note that conctanating two forcefields force them
+        to to be sorted
+    """
     _type = "FF"
     _fulltype = "forcefield"
     _ftype = "parameter"
+    _maxdisplay = 80
+    
+    def __add__(self,p):
+        return super(parameterforcefield,self).__add__(p,sortdefinitions=True)
+    
+    def __iadd__(self,p):
+        return super(parameterforcefield,self).__iadd__(p,sortdefinitions=True)
      
     
 # core class
@@ -443,7 +454,7 @@ class solidfood(tlsph):
 class saltTLSPH(tlsph):
     """ SALTLSPH (smd:tlsph): ongoing "salting" beadtype for rheology control
             saltTLSPH()
-            saltTLSPH(beadtype=index, userid="myfood", USER=...)
+            saltTLSPH(beadtype=index, userid="salt", USER=...)
             
             override any property with USER.property = value
     """
@@ -455,7 +466,7 @@ class saltTLSPH(tlsph):
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         """ saltTLSPH forcefield: 
-            saltTLSPH(beadtype=index, userid="myfood") """
+            saltTLSPH(beadtype=index, userid="salt") """
         # super().__init__()
         if userid!=None: self.userid = userid
         self.beadtype = beadtype

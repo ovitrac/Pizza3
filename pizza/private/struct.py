@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.41"
+__version__ = "0.45"
 
 """
 Matlab-like Structure class
@@ -42,6 +42,12 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-03-31 add dispmax()
 # 2022-04-05 add check(), such that a.check(b) is similar to b+a
 # 2022-04-09 manage None and [] values in check()
+# 2022-05-14 s[:4], s[(3,5,2)] indexing a structure with a slice, list, turple generates a substructure
+# 2022-05-14 isempty (property) is TRUE for an empty structure
+# 2022-05-15 __getitem__ and __set__item are now vectorized, add clear()
+# 2022-05-16 add sortdefinitions(), isexpression, isdefined(), isstrdefined()
+# 2022-05-16 __add__ and __iadd__ when called explicitly (not with + and +=) accept sordefinitions=True
+# 2022-05-16 improved help, add tostatic() - v 0.45 (major version)
 
 # %% Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -134,29 +140,132 @@ class struct():
                  d= None,
                 ee= None
                  )
-    > Overview of implemented methods
-        check()
-        dict2struct()
+        
+    > Structures can be concatenated and indexed as list
+        a = struct(a=1,b=2)
+        b = struct(c=3,d=4,e=5,f=6,g=7)
+        c = a+b
+        c[0]
+        c[-1]
+        for v in c: print(v,end=" ")
+        d = struct(a=10,b=20,c=30,d=40,e=50,f=60,g=70)
+        c[:2] = d[:2]
+        c[[4,5,6]] = d[[4,5,6]]
+        c.generator()
+    leads to
+        X = struct(
+                 a= 10,
+                 b= 20,
+                 c= 3,
+                 d= 4,
+                 e= 50,
+                 f= 60,
+                 g= 70
+                 )
+    note: "f" in c returns True as it check the key, not the value
+    
+    > struct() offers low-level control to param() features
+        s = struct(d=3,e="${c}+{d}",c = '${a}+${b}',a=1,b=2)
+        s.sortdefintions() will return
+        --------:----------------------------------------
+               d: 3
+               a: 1
+               b: 2
+               c: ${a}+${b}
+               e: ${c}+${d}
+        --------:----------------------------------------
+      Out[63]: structure (struct object) with 5 fields
+      
+      note: similar results can be obtained with param()
+      p = param(sortdefinitions=True,d=3,e="${c}+${d}",c = '${a}+${b}',a=1,b=2)
+      -----------:----------------------------------------
+                d: 3
+                a: 1
+                b: 2
+                c: ${a}+${b}
+                 = 3
+                e: ${c}+${d}
+                 = 6
+      -----------:----------------------------------------
+    Out[80]: parameter list (param object) with 5 definitions
+    
+    note: variables shorthands $a, $b... can replace ${a}, ${b} in param()
+    sortdefintions() do not recognize them (no protection)
+        
+    
+    > Overview of implemented methods and arguments
+      methods only available for param() objects are indicated with [*]
+      
+        check(default)
+        clear()    
+        dict2struct(dico,makeparam=False)
+        dispmax(content)
         disp()
-        dispmax()
-        format()
-        fromkeys()
-        fromkeysvalues()
+        escape(s)   [*]
+        eval(s="",protection=False)   [*]
+        eval(value,ispstr=False)
+        formateval(s,protection=False)   [*]
+        format(s,escape=False)
+        fromkeys(keys)
+        fromkeysvalues(keys,values,makeparam=False)
         generator()
         getattr(key)
         hasattr(key)
+        isdefined(ref=None)
+        isempty()
+        isexpression()
+        isstrdefined(s,ref)
+        isstrexpression(s)
         items()
         keys()
-        keyssorted()
-        read()
-        scan()
-        set()
-        setattr()
+        keyssorted(reverse=True)
+        protect(s="")   [*]
+        read(file)
+        scan(s)
+        setattr(key,value)
+        set(**kwargs)
+        sortdefinitions()
         struct2dict()
-        struct2param()
+        struct2param(protection=False,evaluation=True)
+        topath()
+        tostatic()  [*]
+        tostruct(protection=False)  [*]
         values()
-        write()
+        write(file)
         zip()
+    
+    overloaded methods and operators: str(), list(), in, +, +=, /
+    
+        __add__(s,sortdefinitions=False)
+        __add__(value)
+        __contains__(item)
+        __copy__()
+        __deepcopy__( memo)
+        __getattr__(key)
+        __getitem__(idx)
+        __getstate__()
+        __iadd__(s,sortdefinitions=False)
+        __iadd__(value)
+        __init__(**kwargs)
+        __init__(_protection=False,_evaluation=True,**kwargs)
+        __isub__(s)
+        __len__()
+        __next__()
+        __repr__()
+        __repr__()
+        __setattr__(key,value)
+        __setitem__(idx,value)
+        __setstate__(state)
+        __str__()
+        __sub__(s)
+        __truediv__(value)
+
+    
+    > dynamic properties
+        isempty
+        isdefinition
+        
+        
     
     """
     
@@ -185,10 +294,10 @@ class struct():
         return zip(self.keys(),self.values())
     
     @staticmethod
-    def dict2struct(dico):
+    def dict2struct(dico,makeparam=False):
         """ create a structure from a dictionary """
         if isinstance(dico,dict):
-            s = struct()
+            s = param() if makeparam else struct()
             s.set(**dico)
             return s
         raise TypeError("the argument must be a dictionary")
@@ -264,13 +373,15 @@ class struct():
         return [pstr.eval(value) for key,value in self.__dict__.items() if key not in self._excludedattr]
     
     @staticmethod
-    def fromkeysvalues(keys,values):
-        """ create a structure from keys and values """
+    def fromkeysvalues(keys,values,makeparam=False):
+        """ struct.keysvalues(keys,values) creates a structure from keys and values
+            use makeparam = True to create a param instead of struct
+        """
         if keys is None: raise AttributeError("the keys must not empty")
         if not isinstance(keys,(list,tuple,np.ndarray,np.generic)): keys = [keys]
         if not isinstance(values,(list,tuple,np.ndarray,np.generic)): values = [values]
         nk,nv = len(keys), len(values)
-        s = struct()
+        s = param() if makeparam else struct()
         if nk>0 and nv>0:
             iv = 0
             for ik in range(nk):
@@ -278,26 +389,61 @@ class struct():
                 iv = min(nv-1,iv+1)
             for ik in range(nk,nv):
                 s.setattr(f"key{ik}", values[ik])
-            return s
-        raise ValueError("Provide at least one key and one value")
-    
+        return s
+            
     def items(self):
         """ return all elements as iterable key, value """
         return self.zip()
     
     def __getitem__(self,idx):
-        """ return the ith element of the structure  """
-        if idx<len(self):
-            return self.getattr(self.keys()[idx])
-        raise IndexError(f"the {self._ftype} index should be comprised between 0 and {len(self)-1}")
+        """ 
+            s[i] returns the ith element of the structure
+            s[:4] returns a structure with the four first fields
+            s[[1,3]] returns the second and fourth elements
+        """
+        if isinstance(idx,int):
+            if idx<len(self):
+                return self.getattr(self.keys()[idx])
+            raise IndexError(f"the {self._ftype} index should be comprised between 0 and {len(self)-1}")
+        elif isinstance(idx,slice):
+            return struct.fromkeysvalues(self.keys()[idx], self.values()[idx])
+        elif isinstance(idx,(list,tuple)):
+            k,v= self.keys(), self.values()
+            nk = len(k)
+            s = param() if isinstance(self,param) else struct()
+            for i in idx:
+                if isinstance(i,int) and i>=0 and i<nk:
+                    s.setattr(k[i],v[i])
+                else:
+                    raise IndexError("idx must contains only integers ranged between 0 and %d" % (nk-1))
+            return s
+        else:
+            raise TypeError("The index must be an integer or a slice")
          
     def __setitem__(self,idx,value):
         """ set the ith element of the structure  """
-        if idx<len(self):
-            self.setattr(self.keys()[idx], value)
-        else:
-            raise IndexError(f"the {self._ftype} index should be comprised between 0 and {len(self)-1}")
-        
+        if isinstance(idx,int):
+            if idx<len(self):
+                self.setattr(self.keys()[idx], value)
+            else:
+                raise IndexError(f"the {self._ftype} index should be comprised between 0 and {len(self)-1}")
+        elif isinstance(idx,slice):
+            k = self.keys()[idx]
+            if len(value)<=1:
+                for i in range(len(k)): self.setattr(k[i], value)
+            elif len(k) == len(value):
+                for i in range(len(k)): self.setattr(k[i], value[i])
+            else:
+                raise IndexError("the number of values (%d) does not match the number of elements in the slive (%d)" \
+                       % (len(value),len(idx)))
+        elif isinstance(idx,(list,tuple)):
+            if len(value)<=1:
+                for i in range(len(idx)): self[idx[i]]=value
+            elif len(idx) == len(value):
+                for i in range(len(idx)): self[idx[i]]=value[i]
+            else:
+                raise IndexError("the number of values (%d) does not match the number of indices (%d)" \
+                                 % (len(value),len(idx)))
         
     def __len__(self):
         """ return the number of fields """
@@ -319,19 +465,25 @@ class struct():
         self._iter_ = 0
         raise StopIteration(f"Maximum {self._ftype} iteration reached {len(self)}")
         
-    def __add__(self,s):
-        """ add a structure """
+    def __add__(self,s,sortdefinitions=False):
+        """ add a structure
+            set sortdefintions=True to sort definitions (to maintain executability)
+        """
         if not isinstance(s,struct):
             raise TypeError(f"the second operand must be {self._type}")
         dup = duplicate(self)
         dup.__dict__.update(s.__dict__)
+        if sortdefinitions: dup.sortdefinitions()
         return dup
     
-    def __iadd__(self,s):
-        """ iadd a structure """
+    def __iadd__(self,s,sortdefinitions=False):
+        """ iadd a structure
+            set sortdefintions=True to sort definitions (to maintain executability)
+        """
         if not isinstance(s,struct):
             raise TypeError(f"the second operand must be {self._type}")
         self.__dict__.update(s.__dict__)
+        if sortdefinitions: self.sortdefinitions()
         return self
 
     def __sub__(self,s):
@@ -404,7 +556,16 @@ class struct():
 
     def __str__(self):
         return f"{self._fulltype} ({self._type} object) with {len(self.__dict__)} {self._ftype}s"
-        
+
+    @property
+    def isempty(self):
+        """ isempty is set to True for an empty structure """
+        return len(self)==0
+    
+    def clear(self):
+        """ clear() delete all fields while preserving the original class """
+        for k in self.keys(): delattr(self,k)
+
     def format(self,s,escape=False):
         """ 
             format a string with field (use {field} as placeholders)
@@ -429,9 +590,8 @@ class struct():
     
     @staticmethod
     def scan(s):
-        """ scan a string for variables """
-        if not isinstance(s,str):
-            raise TypeError("scan() requires a string")
+        """ scan(string) scan a string for variables """
+        if not isinstance(s,str): raise TypeError("scan() requires a string")
         tmp = struct()
         #return tmp.fromkeys(set(re.findall(r"\$\{(.*?)\}",s)))
         found = re.findall(r"\$\{(.*?)\}",s);
@@ -439,7 +599,100 @@ class struct():
         for x in found:
             if x not in uniq: uniq.append(x)
         return tmp.fromkeys(uniq)
+    
+    @staticmethod
+    def isstrexpression(s):
+        """ isstrexpression(string) returns true if s contains an expression  """
+        if not isinstance(s,str): raise TypeError("s must a string")
+        return re.search(r"\$\{.*?\}",s) is not None
+    
+    @property
+    def isexpression(self):
+        """ same structure with True if it is an expression """
+        s = param() if isinstance(self,param) else struct()
+        for k,v in self.items():
+            if isinstance(v,str):
+                s.setattr(k,struct.isstrexpression(v))
+            else:
+                s.setattr(k,False)
+        return s
 
+    @staticmethod
+    def isstrdefined(s,ref):
+        """ isstrdefined(string,ref) returns true if it is defined in ref  """
+        if not isinstance(s,str): raise TypeError("s must a string")
+        if not isinstance(ref,struct): raise TypeError("ref must be a structure")
+        if struct.isstrexpression(s):
+            k = struct.scan(s).keys()
+            allfound,i,nk = True,0,len(k)
+            while (i<nk) and allfound:
+                allfound = k[i] in ref
+                i += 1
+            return allfound
+        else:
+            return False
+                
+                 
+    def isdefined(self,ref=None):
+        """ isdefined(ref) returns true if it is defined in ref """
+        s = param() if isinstance(self,param) else struct()
+        k,v,isexpr = self.keys(), self.values(), self.isexpression.values()
+        nk = len(k)
+        if ref is None:
+            for i in range(nk):
+                if isexpr[i]:
+                    s.setattr(k[i],struct.isstrdefined(v[i],self[:i]))
+                else:
+                    s.setattr(k[i],True)                
+        else:
+            if not isinstance(ref,struct): raise TypeError("ref must be a structure")
+            for i in range(nk):
+                if isexpr[i]:
+                    s.setattr(k[i],struct.isstrdefined(v[i],ref))
+                else:
+                    s.setattr(k[i],True)
+        return s
+
+    def sortdefinitions(self):
+        """ sortdefintions sorts all definitions
+            so that they can be executed as param().
+            If any inconsistency is found, an error message is generated.
+        """
+        find = lambda xlist: [i for i, x in enumerate(xlist) if x]
+        findnot = lambda xlist: [i for i, x in enumerate(xlist) if not x]
+        k,v,isexpr =  self.keys(), self.values(), self.isexpression.values()
+        istatic = findnot(isexpr)
+        idynamic = find(isexpr)
+        static = struct.fromkeysvalues(
+            [ k[i] for i in istatic ],
+            [ v[i] for i in istatic ],
+            makeparam = False)
+        dynamic = struct.fromkeysvalues(
+            [ k[i] for i in idynamic ],
+            [ v[i] for i in idynamic ],
+            makeparam=False)
+        current = static # make static the current structure
+        nmissing, anychange = len(dynamic), False
+        while nmissing:
+            itst, found = 0, False
+            while itst<nmissing and not found:
+                teststruct = current + dynamic[[itst]] # add the test field
+                found = all(list(teststruct.isdefined()))
+                ifound = itst
+                itst += 1
+            if found:
+                current = teststruct # we accept the new field
+                dynamic[ifound] = []
+                nmissing -= 1
+                anychange = True
+            else:
+                raise ValueError("unable to interpret %d definitions" % (nmissing))
+        if anychange:
+            self.clear() # reset all fields and assign them in the proper order
+            k,v = current.keys(), current.values()
+            for i in range(len(k)):
+                self.setattr(k[i],v[i])
+            
     def generator(self):
         """ generate Python code of the equivalent structure """
         nk = len(self)
@@ -634,6 +887,22 @@ class param(struct):
         p=struct.fromkeysvalues(["a","b","c","d"],[1,2,3]).struct2param()
         ptxt = p.protect("$c=$a+$b")
     
+        # Example with interpretation and rearranging
+        s = param(
+            a = 1,
+            f = "${e}/3",
+            e = "${a}*${c}",
+            c = "${a}+${b}",
+            b = 2,
+            d = "${c}*2"
+            )
+        s.isexpression
+        struct.isstrdefined("${a}+${b}",s)
+        s.isdefined()
+        s.sortdefinitions()
+        s.disp()
+    
+    
     """
     
     # override
@@ -643,11 +912,13 @@ class param(struct):
     _evalfeature = True    # This class can be evaluated with .eval()
     
     # magic constructor
-    def __init__(self,_protection=False,_evaluation=True,**kwargs):
+    def __init__(self,_protection=False,_evaluation=True,
+                 sortdefinitions=False,**kwargs):
         """ constructor """
         super().__init__(**kwargs)
         self._protection = _protection
         self._evaluation = _evaluation
+        if sortdefinitions: self.sortdefinitions()
 
     # escape definitions if needed
     @staticmethod
@@ -695,7 +966,7 @@ class param(struct):
             if escape: t = t.replace("££","\$")
             if isinstance(s,pstr): t = pstr(t)
             return t, escape
-        raise ValueError('the argument must be string')
+        raise TypeError('the argument must be string')
         
       
     # lines starting with # (hash) are interpreted as comments
@@ -813,6 +1084,14 @@ class param(struct):
         """
         return self.eval(protection=protection)
 
+    # returns the equivalent structure evaluated
+    def tostatic(self):
+        """ convert dynamic a param() object to a static struct() object.
+            note: no interpretation
+            note: use tostruct() to interpret them and convert it to struct
+            note: tostatic().struct2param() makes it reversible
+        """
+        return struct.fromkeysvalues(self.keys(),self.values(),makeparam=False)
 
 # %% str class for file and paths
 # this class guarantees that paths are POSIX at any time
@@ -891,7 +1170,7 @@ if __name__ == '__main__':
 #     p = alias(fullfodsfile)
 #     p.disp()
 # =============================================================================
-    # path example
+    # path example   
     s0 = struct(a=pstr("/tmp/"),b=pstr("test////"),c=pstr("${a}/${b}"),d=pstr("${a}/${c}"),e=pstr("$c/$a"))
     s = struct.struct2param(s0,protection=True)
     s.disp()
@@ -925,3 +1204,25 @@ if __name__ == '__main__':
     tst = struct(a=10)
     tst.check(default)
     tst.disp()
+    # multiple assigment
+    a = struct(a=1,b=2,c=3,d=4)
+    b = struct(a=10,b=20,c=30,d=40)
+    a[:2] = b[1:3]
+    a[:2] = b[(1,3)]
+    # reorganize definitions to enable param.eval()
+    s = param(
+        a = 1,
+        f = "${e}/3",
+        e = "${a}*${c}",
+        c = "${a}+${b}",
+        b = 2,
+        d = "${c}*2"
+        )
+    #s[0:2] = [1,2]
+    s.isexpression
+    struct.isstrdefined("${a}+${b}",s)
+    s.isdefined()
+    s.sortdefinitions()
+    s.disp()
+    
+ 

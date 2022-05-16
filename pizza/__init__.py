@@ -11,7 +11,7 @@
 
 # list of public classes: data, dump, raster, script, forcefield, struct, param
 
-# $ last revision - 2022-03-24 $
+# $ last revision - 2022-05-16 $
 
 # input data objects and methods
 from pizza.data3 import data
@@ -23,11 +23,14 @@ from pizza.raster import raster,emulsion,coreshell
 from pizza.script import *
 # forcefield objects and derived classes
 from pizza.forcefield import *
+from pizza.generic import *
 # script objects and derived classes
 from pizza.script import *
 # basic tools à la Matlab
 # including a feature similar to MS/alias() from INRAE/MS Toolbox
 from pizza.private.struct import struct,param
+# Image
+from pizza.private.PIL.Image import Image
 
 # other libraries will be added there
 from workshop0 import *
