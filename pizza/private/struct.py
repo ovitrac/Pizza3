@@ -8,11 +8,11 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.451"
+__version__ = "0.46"
 
 """
 Matlab-like Structure class
-Matlab MS.alias like class (with MS = Molecular Studio, author Olivier V.)
+Matlab MS.alias like class (with MS = Molecular Studio, author INRAE\Olivier Vitrac)
 
 Created on Sun Jan 23 14:19:03 2022
 
@@ -49,6 +49,8 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-05-16 __add__ and __iadd__ when called explicitly (not with + and +=) accept sordefinitions=True
 # 2022-05-16 improved help, add tostatic() - v 0.45 (major version)
 # 2022-05-17 new class paramauto() to simplify the management of multiple definitions
+# 2022-05-17 catches most common errors in expressions and display explicit error messages - v 0.46
+
 
 # %% Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -167,7 +169,7 @@ class struct():
     
     > struct() offers low-level control to param() features
         s = struct(d=3,e="${c}+{d}",c = '${a}+${b}',a=1,b=2)
-        s.sortdefintions() will return
+        s.sortdefinitions() will return
         --------:----------------------------------------
                d: 3
                a: 1
@@ -466,7 +468,7 @@ class struct():
         self._iter_ = 0
         raise StopIteration(f"Maximum {self._ftype} iteration reached {len(self)}")
         
-    def __add__(self,s,sortdefinitions=False):
+    def __add__(self,s,sortdefinitions=False,raiseerror=True):
         """ add a structure
             set sortdefintions=True to sort definitions (to maintain executability)
         """
@@ -474,17 +476,17 @@ class struct():
             raise TypeError(f"the second operand must be {self._type}")
         dup = duplicate(self)
         dup.__dict__.update(s.__dict__)
-        if sortdefinitions: dup.sortdefinitions()
+        if sortdefinitions: dup.sortdefinitions(raiseerror=raiseerror)
         return dup
     
-    def __iadd__(self,s,sortdefinitions=False):
+    def __iadd__(self,s,sortdefinitions=False,raiseerror=False):
         """ iadd a structure
             set sortdefintions=True to sort definitions (to maintain executability)
         """
         if not isinstance(s,struct):
             raise TypeError(f"the second operand must be {self._type}")
         self.__dict__.update(s.__dict__)
-        if sortdefinitions: self.sortdefinitions()
+        if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror)
         return self
 
     def __sub__(self,s):
@@ -565,7 +567,7 @@ class struct():
         self.__repr__()
 
     def __str__(self):
-        return f"{self._fulltype} ({self._type} object) with {len(self.__dict__)} {self._ftype}s"
+        return f"{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s"
 
     @property
     def isempty(self):
@@ -576,7 +578,7 @@ class struct():
         """ clear() delete all fields while preserving the original class """
         for k in self.keys(): delattr(self,k)
 
-    def format(self,s,escape=False):
+    def format(self,s,escape=False,raiseerror=True):
         """ 
             format a string with field (use {field} as placeholders)
                 s.replace(string), s.replace(string,escape=True)
@@ -585,14 +587,24 @@ class struct():
                     string is a string with possibly ${variable1}
                     escape is a flag to prevent ${} replaced by {}
         """
-        try:
+        if raiseerror:
+            try:
+                if escape:
+                    return s.format(**self.__dict__)
+                else:
+                    return s.replace("${","{").format(**self.__dict__)
+            except KeyError as kerr:
+                s_ = s.replace("{","${")
+                print(f"WARNING: the {self._ftype} {kerr} is undefined in '{s_}'")
+                return s
+            except Exception as othererr:
+                s_ = s.replace("{","${")
+                raise RuntimeError from othererr
+        else:
             if escape:
                 return s.format(**self.__dict__)
             else:
-                return s.replace("${","{").format(**self.__dict__)
-        except KeyError:
-            print(f'\n Missing {self._ftype} unable interpret the expression:\n\t"{s}"')
-            raise
+                return s.replace("${","{").format(**self.__dict__)                
 
     def fromkeys(self,keys):
         """ returns a structure from keys """
@@ -663,7 +675,7 @@ class struct():
                     s.setattr(k[i],True)
         return s
 
-    def sortdefinitions(self):
+    def sortdefinitions(self,raiseerror=True):
         """ sortdefintions sorts all definitions
             so that they can be executed as param().
             If any inconsistency is found, an error message is generated.
@@ -682,7 +694,7 @@ class struct():
             [ v[i] for i in idynamic ],
             makeparam=False)
         current = static # make static the current structure
-        nmissing, anychange = len(dynamic), False
+        nmissing, anychange, errorfound = len(dynamic), False, False
         while nmissing:
             itst, found = 0, False
             while itst<nmissing and not found:
@@ -696,7 +708,17 @@ class struct():
                 nmissing -= 1
                 anychange = True
             else:
-                raise KeyError("unable to interpret %d definitions" % (nmissing))
+                if raiseerror:
+                    raise KeyError('unable to interpret %d/%d expressions in "%ss"' % \
+                                   (nmissing,len(self),self._ftype))
+                else:
+                    if not errorfound:
+                        print('WARNING: unable to interpret %d/%d expressions in "%ss"' % \
+                              (nmissing,len(self),self._ftype))
+                    current = teststruct # we accept the new field (even if it cannot be interpreted)
+                    dynamic[ifound] = []
+                    nmissing -= 1
+                    errorfound = True
         if anychange:
             self.clear() # reset all fields and assign them in the proper order
             k,v = current.keys(), current.values()
@@ -913,6 +935,37 @@ class param(struct):
         s.disp()
     
     
+    Error handling (most common errors are captured)    
+    
+        p = param(b="${a}+1",c="${a}+${d}",a=1)
+        p.disp()
+
+    returns the first error on each line
+        -----------:----------------------------------------
+                  b: ${a}+1
+                   = < undef definition "${a}" >
+                  c: ${a}+${d}
+                   = < undef definition "${a}" >
+                  a: 1
+        -----------:----------------------------------------
+
+    calling p.sortdefinitions() generates an error
+        KeyError: 'unable to interpret 1/3 expressions in "definitions"'
+
+    calling p.sortdefinitions(raiseerror=False) generates only a warning    
+        WARNING: unable to interpret 1/3 expressions in "definitions"
+    and p.disp()
+        -----------:----------------------------------------
+                  a: 1
+                  b: ${a}+1
+                   = 2
+                  c: ${a}+${d}
+                   = < undef definition "${d}" >
+        -----------:----------------------------------------
+        
+    note: paramauto() simplifies operations and inheritances
+    on objects with patial definitions (some definitions are missing)
+    
     """
     
     # override
@@ -1032,7 +1085,23 @@ class param(struct):
                         elif escape:  # partial evaluation
                             tmp.setattr(key, tmp.format(valuesafe,escape=True))
                         else: # full evaluation
-                            tmp.setattr(key, eval(tmp.format(valuesafe)))
+                            try:
+                                resstr = tmp.format(valuesafe,raiseerror=False)
+                            except (KeyError,NameError) as nameerr:
+                                strnameerr = str(nameerr).replace("'","")
+                                tmp.setattr(key,'< undef %s "${%s}" >' % \
+                                            (self._ftype,strnameerr))
+                            except (SyntaxError,TypeError,ValueError) as commonerr:
+                                tmp.setattr(key,"ERROR < %s >" % commonerr)
+                            except Exception as othererr:
+                                tmp.setattr(key,"Unknown Error < %s >" % othererr)                                
+                            else:
+                                try:
+                                    reseval = eval(resstr)
+                                except Exception as othererr:
+                                    tmp.setattr(key,"Eval Error < %s >" % othererr)
+                                else:
+                                    tmp.setattr(key,reseval)
             elif isinstance(value,(int,float,list,tuple)): # already a number
                 tmp.setattr(key, value) # store the value with the key
             else: # unsupported types
@@ -1160,7 +1229,7 @@ class pstr(str):
     def __iadd__(self,value):
         return pstr(str(self)+value)
         
-# %% class paramauto() which enforces sortdefinitions = True
+# %% class paramauto() which enforces sortdefinitions = True, raiseerror=False
 class paramauto(param):
     """
         paramauto() inherits all param() features with sorteddefinitions = True
@@ -1173,16 +1242,86 @@ class paramauto(param):
         
         paramauto() is more computationally-intensive
         
+        Usage:
+            Contrarily to param(), defintions can be stacked irrespectively
+            their execution order.
+            
+                p = paramauto()
+                p.b = "${aa}"
+                p.disp()
+            yields
+                WARNING: unable to interpret 1/1 expressions in "definitions"
+                  -----------:----------------------------------------
+                            b: ${aa}
+                             = < undef definition "${aa}" >
+                  -----------:----------------------------------------            
+                  p.aa = 2
+                  p.disp()
+            yields
+                -----------:----------------------------------------
+                         aa: 2
+                          b: ${aa}
+                           = 2
+                -----------:----------------------------------------
+                q = paramauto(c="${aa}+${b}")+p
+                q.disp()
+            yields
+                -----------:----------------------------------------
+                         aa: 2
+                          b: ${aa}
+                           = 2
+                          c: ${aa}+${b}
+                           = 4
+                -----------:----------------------------------------
+                q.aa = 30
+                q.disp()
+            yields
+                -----------:----------------------------------------
+                         aa: 30
+                          b: ${aa}
+                           = 30
+                          c: ${aa}+${b}
+                           = 60
+                -----------:----------------------------------------  
+                q.aa = "${d}"
+                q.disp()
+            yields multiple errors (recursion)
+            WARNING: unable to interpret 3/3 expressions in "definitions"
+              -----------:----------------------------------------
+                       aa: ${d}
+                         = < undef definition "${d}" >
+                        b: ${aa}
+                         = Eval Error < invalid [...] (<string>, line 1) >
+                        c: ${aa}+${b}
+                         = Eval Error < invalid [...] (<string>, line 1) >
+              -----------:----------------------------------------            
+                q.d = 100
+                q.disp()
+            yields
+              -----------:----------------------------------------
+                        d: 100
+                       aa: ${d}
+                         = 100
+                        b: ${aa}
+                         = 100
+                        c: ${aa}+${b}
+                         = 200
+              -----------:----------------------------------------
+
+        
         Example:
+            
             p = paramauto(b="${a}+1",c="${a}+${d}",a=1)
             p.disp()
         generates:
-             WARNING the object "parameter list" has some missing "definitions"
-              --------:----------------------------------------
-                     b: ${a}+1
-                     c: ${a}+${d}
-                     a: 1
-              --------:----------------------------------------   
+            WARNING: unable to interpret 1/3 expressions in "definitions"
+              -----------:----------------------------------------
+                        a: 1
+                        b: ${a}+1
+                         = 2
+                        c: ${a}+${d}
+                         = < undef definition "${d}" >
+              -----------:----------------------------------------
         setting p.d
             p.d = 2
             p.disp()
@@ -1198,23 +1337,14 @@ class paramauto(param):
     """
     
     def __add__(self,p):
-        return super(param,self).__add__(p,sortdefinitions=True)
+        return super(param,self).__add__(p,sortdefinitions=True,raiseerror=False)
     
     def __iadd__(self,p):
-        return super(param,self).__iadd__(p,sortdefinitions=True)
+        return super(param,self).__iadd__(p,sortdefinitions=True,raiseerror=False)
 
     def __repr__(self):
-        try:
-            self.sortdefinitions()
-            erroroccurred = False
-        except KeyError:
-            print(f'\n WARNING the object "{self._fulltype}" has some missing "{self._ftype}s"')
-            erroroccurred = True
-        if erroroccurred:
-           q = self.tostatic()
-           q.disp()
-        else: 
-            super(param,self).__repr__()
+        self.sortdefinitions(raiseerror=False)
+        super(param,self).__repr__()
         return str(self)
 
 # %% DEBUG  
@@ -1235,8 +1365,6 @@ if __name__ == '__main__':
 #     p = alias(fullfodsfile)
 #     p.disp()
 # =============================================================================
-    p = paramauto(b="${a}+1",c="${a}+${d}",a=1)
-    p.disp()
     # path example   
     s0 = struct(a=pstr("/tmp/"),b=pstr("test////"),c=pstr("${a}/${b}"),d=pstr("${a}/${c}"),e=pstr("$c/$a"))
     s = struct.struct2param(s0,protection=True)
@@ -1291,5 +1419,7 @@ if __name__ == '__main__':
     s.isdefined()
     s.sortdefinitions()
     s.disp()
+    p = param(b="${a}+1",c="${a}+${d}",a=1)
+    p.disp()
     
  
