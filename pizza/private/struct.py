@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.45"
+__version__ = "0.451"
 
 """
 Matlab-like Structure class
@@ -48,6 +48,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-05-16 add sortdefinitions(), isexpression, isdefined(), isstrdefined()
 # 2022-05-16 __add__ and __iadd__ when called explicitly (not with + and +=) accept sordefinitions=True
 # 2022-05-16 improved help, add tostatic() - v 0.45 (major version)
+# 2022-05-17 new class paramauto() to simplify the management of multiple definitions
 
 # %% Dependencies
 from math import * # import math to authorize all math expressions in parameters
@@ -543,10 +544,19 @@ class struct():
                     else:
                         print(fmt % key,type(value))
                     if self._evalfeature:
-                        if isinstance(value,pstr):
-                            print(fmteval % "",'p"'+self.dispmax(tmp.getattr(key))+'"')
-                        elif isinstance(value,str):
-                            print(fmteval % "",self.dispmax(tmp.getattr(key)))
+                        if isinstance(self,paramauto):
+                            try:
+                                if isinstance(value,pstr):
+                                    print(fmteval % "",'p"'+self.dispmax(tmp.getattr(key))+'"')
+                                elif isinstance(value,str):
+                                    print(fmteval % "",self.dispmax(tmp.getattr(key)))
+                            except Exception as err:
+                                print(fmteval % "",err.message, err.args)
+                        else:
+                            if isinstance(value,pstr):
+                                print(fmteval % "",'p"'+self.dispmax(tmp.getattr(key))+'"')
+                            elif isinstance(value,str):
+                                print(fmteval % "",self.dispmax(tmp.getattr(key)))
             print(line)
             return f"{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s"
 
@@ -686,7 +696,7 @@ class struct():
                 nmissing -= 1
                 anychange = True
             else:
-                raise ValueError("unable to interpret %d definitions" % (nmissing))
+                raise KeyError("unable to interpret %d definitions" % (nmissing))
         if anychange:
             self.clear() # reset all fields and assign them in the proper order
             k,v = current.keys(), current.values()
@@ -1150,7 +1160,62 @@ class pstr(str):
     def __iadd__(self,value):
         return pstr(str(self)+value)
         
+# %% class paramauto() which enforces sortdefinitions = True
+class paramauto(param):
+    """
+        paramauto() inherits all param() features with sorteddefinitions = True
+        for concatenation (+ or +=) and display
+        
+        These features are used when a param() object is augmented irrespectively
+        is capacity of executing expressions.
+        Note that it is mandatory to use ${variable} and not $variable
+        (which is tolerated in param() with an internal protection)
+        
+        paramauto() is more computationally-intensive
+        
+        Example:
+            p = paramauto(b="${a}+1",c="${a}+${d}",a=1)
+            p.disp()
+        generates:
+             WARNING the object "parameter list" has some missing "definitions"
+              --------:----------------------------------------
+                     b: ${a}+1
+                     c: ${a}+${d}
+                     a: 1
+              --------:----------------------------------------   
+        setting p.d
+            p.d = 2
+            p.disp()
+        produces
+              -----------:----------------------------------------
+                        a: 1
+                        d: 2
+                        b: ${a}+1
+                         = 2
+                        c: ${a}+${d}
+                         = 3
+              -----------:----------------------------------------
+    """
+    
+    def __add__(self,p):
+        return super(param,self).__add__(p,sortdefinitions=True)
+    
+    def __iadd__(self,p):
+        return super(param,self).__iadd__(p,sortdefinitions=True)
 
+    def __repr__(self):
+        try:
+            self.sortdefinitions()
+            erroroccurred = False
+        except KeyError:
+            print(f'\n WARNING the object "{self._fulltype}" has some missing "{self._ftype}s"')
+            erroroccurred = True
+        if erroroccurred:
+           q = self.tostatic()
+           q.disp()
+        else: 
+            super(param,self).__repr__()
+        return str(self)
 
 # %% DEBUG  
 # ===================================================   
@@ -1170,6 +1235,8 @@ if __name__ == '__main__':
 #     p = alias(fullfodsfile)
 #     p.disp()
 # =============================================================================
+    p = paramauto(b="${a}+1",c="${a}+${d}",a=1)
+    p.disp()
     # path example   
     s0 = struct(a=pstr("/tmp/"),b=pstr("test////"),c=pstr("${a}/${b}"),d=pstr("${a}/${c}"),e=pstr("$c/$a"))
     s = struct.struct2param(s0,protection=True)

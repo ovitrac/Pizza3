@@ -36,7 +36,7 @@ __credits__ = [&#34;Olivier Vitrac&#34;]
 __license__ = &#34;GPLv3&#34;
 __maintainer__ = &#34;Olivier Vitrac&#34;
 __email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
-__version__ = &#34;0.42&#34;
+__version__ = &#34;0.43&#34;
 
 &#34;&#34;&#34;
     RASTER method to generate LAMMPS input files (in 2D for this version)
@@ -116,10 +116,32 @@ __version__ = &#34;0.42&#34;
     See: copyalongpath(), scatter(), emulsion(), coreshell()
     
     Examples follow in the __main__ section
+    
+    --------------------------------------------------------------------
+    BUILDING REQUIREMENTS:
+        Since version 0.40, overlay(), torgb() and live previews
+        use Pizza3.pizza.private.PIL library
+        
+        The customized version of PIL needs to be compiled for your system
+        By assuming that anaconda is used:
+            
+            condainit
+            
+            cd Pizza3/pizza/private/PIL
+            python3 setup.py install
+            
+            unzip -l dist/UNKNOWN-9.1.0-py3.9-linux-x86_64.egg
+            unzip -j &#34;dist/UNKNOWN-9.1.0-py3.9-linux-x86_64.egg&#34; &#34;PIL/_imaging.cpython-39-x86_64-linux-gnu.so&#34; .
+            
+            rm -rf dist/
+            rm -rf build/
+            rm -rf ../UNKNOWN.egg-info
+            
+    --------------------------------------------------------------------
         
 &#34;&#34;&#34;
 
-# INRAE\Olivier Vitrac - rev. 2022-04-24
+# INRAE\Olivier Vitrac - rev. 2022-05-03
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -139,10 +161,14 @@ __version__ = &#34;0.42&#34;
 # 2022-04-01 add maxtype to  raster.data(), e.g. raster.data(maxtype=4)
 # 2022-04-08 add beadtype2(alternative beadtype, ratio) to salt objects
 # 2022-04-13 descale volume in data() for stability reason
-# 2022-04-23 very first overlay implementation (alpha version)
+# 2022-04-23 very first overlay implementation (alpha version) -- version 0.40
 # 2022-04-24 full implementation of overlay (not fully tested yet, intended to behave has a regular object)
 # 2022-04-25 full integration of PIL
 # 2022-04-26 add torgb(), thumbnails, add angle, scale=(scalex,scaley) to overlay()
+# 2022-04-26 add building instructions, version 0.421
+# 2022-04-27 add scale to the representation of overlay objects (0.422)
+# 2022-04-28 fix len(raster object) - typo error (0.4221)
+# 2022-05-03 add hexpacking to data(), enables you to reproduces an hexgonal packaging
 
 # %% Imports and private library
 import os
@@ -366,11 +392,15 @@ class raster:
         
 
     # DATA ---------------------------- 
-    def data(self,scale=(1,1),center=(0,0),maxtype=None):
+    def data(self,scale=(1,1),center=(0,0),maxtype=None,hexpacking=None):
         &#34;&#34;&#34;
-        data()
-        data(scale=(scalex,scaley),center=(centerx,centery),maxtype=number)
-        return a pizza.data object  &#34;&#34;&#34;
+            return a pizza.data object     
+                data()
+                data(scale=(scalex,scaley),
+                     center=(centerx,centery),
+                     maxtype=number,
+                     hexpacking=(0.5,0))
+        &#34;&#34;&#34;
         if not isinstance(scale,tuple) or len(scale)!=2:
             raise ValueError(&#34;scale must be tuple (scalex,scaley)&#34;)
         if not isinstance(center,tuple) or len(scale)!=2:
@@ -380,6 +410,17 @@ class raster:
         maxtypeheader = self.count()[-1][0] if maxtype is None else maxtype
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
+        x = (j+0.5-center[0])*scale[0]
+        y = (i+0.5-center[1])*scale[1]
+        if hexpacking is not None:
+            if isinstance(hexpacking,tuple) and len(hexpacking)==2:
+                for k in range(len(i)):
+                    if i[k] % 2:
+                        x[k] = (j[k]+0.5+hexpacking[1]-center[0])*scale[0]
+                    else:
+                        x[k] = (j[k]+0.5+hexpacking[0]-center[0])*scale[0]
+            else:
+                raise ValueError(&#34;hexpacking should be a tuple (shiftodd,shifteven)&#34;)
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + &#34;(raster)&#34;
         X.headers = {&#39;atoms&#39;: n,
@@ -395,12 +436,12 @@ class raster:
         X.append(&#39;Atoms&#39;,self.mass*scalevol,False,&#34;mass&#34;)    # mass
         X.append(&#39;Atoms&#39;,self.radius*scalez,False,&#34;radius&#34;)         # radius
         X.append(&#39;Atoms&#39;,self.contactradius*scalez,False,&#34;c_contact_radius&#34;) # c_contact_radius
-        X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x&#34;)        # x
-        X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y&#34;)        # y
-        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                                 # z
-        X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x0&#34;)       # x0
-        X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y0&#34;)       # y0
-        X.append(&#39;Atoms&#39;,0,False,&#34;z0&#34;)                                # z0
+        X.append(&#39;Atoms&#39;,x,False,&#34;x&#34;)        # x
+        X.append(&#39;Atoms&#39;,y,False,&#34;y&#34;)        # y
+        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)        # z
+        X.append(&#39;Atoms&#39;,x,False,&#34;x0&#34;)       # x0
+        X.append(&#39;Atoms&#39;,y,False,&#34;y0&#34;)       # y0
+        X.append(&#39;Atoms&#39;,0,False,&#34;z0&#34;)       # z0
         # [VELOCITIES] section
         X.append(&#39;Velocities&#39;,list(range(1,n+1)),True,&#34;id&#34;) # id
         X.append(&#39;Velocities&#39;,self.velocities[0],False,&#34;vx&#34;) # vx
@@ -548,7 +589,7 @@ class raster:
     # len method ------------------------------
     def __len__(self):
         &#34;&#34;&#34; len method &#34;&#34;&#34;
-        return len(R.objects)
+        return len(self.objects)
 
     # NAMES method ---------------------------- 
     def names(self):
@@ -1367,11 +1408,12 @@ class overlay(coregeometry):
         &#34;&#34;&#34; display for rectangle class &#34;&#34;&#34;
         print(&#34;%s - %s object&#34; % (self.name, self.kind))
         print(f&#39;\tfilename: &#34;{self.filename}&#34;&#39;)
+        print(&#34;\tangle = %0.4g (original image)&#34; % self.angle)
+        print(&#34;\tscale = [%0.4g, %0.4g] (original image)&#34; % self.scale)
         print(f&#34;\tncolors = {self.ncolors} (selected={self.color})&#34;)
         print(&#34;\trange x = [%0.4g %0.4g]&#34; % (self.xmin,self.xmax))
         print(&#34;\trange y = [%0.4g %0.4g]&#34; % (self.ymin,self.ymax))
         print(&#34;\tcenter = [%0.4g %0.4g]&#34; % (self.xcenter,self.ycenter))
-        print(&#34;\tangle = %0.4g&#34; % self.angle)
         print(&#34;\ttranslate = [%0.4g %0.4g]&#34; % (self.translate[0],self.translate[1]))
         print(&#34;note: use the attribute origina,raw to see the raw image&#34;)
         return &#34;%s object: %s (beadtype=%d)&#34; % (self.kind,self.name,self.beadtype)
@@ -1926,8 +1968,8 @@ if __name__ == &#39;__main__&#39;:
     
 # %% overlay example
     I = raster(width=600,height=600)
-    I.overlay(100,100,name=&#34;pix0&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=0,beadtype=1,angle=10,scale=(1.1,1.1))
-    I.overlay(100,100,name=&#34;pix2&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=2,beadtype=2,angle=10,scale=(1.1,1.1))
+    I.overlay(30,100,name=&#34;pix0&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=0,beadtype=1,angle=10,scale=(1.1,1.1))
+    I.overlay(30,100,name=&#34;pix2&#34;,filename=&#34;../sandbox/image.jpg&#34;,ncolors=4,color=2,beadtype=2,angle=10,scale=(1.1,1.1))
     I.label(&#34;pix0&#34;)
     I.plot()
     I.show(extra=&#34;label&#34;)
@@ -3523,11 +3565,12 @@ overlay(&hellip;,flipud=True,angle=0,scale=(1,1))</p></div>
         &#34;&#34;&#34; display for rectangle class &#34;&#34;&#34;
         print(&#34;%s - %s object&#34; % (self.name, self.kind))
         print(f&#39;\tfilename: &#34;{self.filename}&#34;&#39;)
+        print(&#34;\tangle = %0.4g (original image)&#34; % self.angle)
+        print(&#34;\tscale = [%0.4g, %0.4g] (original image)&#34; % self.scale)
         print(f&#34;\tncolors = {self.ncolors} (selected={self.color})&#34;)
         print(&#34;\trange x = [%0.4g %0.4g]&#34; % (self.xmin,self.xmax))
         print(&#34;\trange y = [%0.4g %0.4g]&#34; % (self.ymin,self.ymax))
         print(&#34;\tcenter = [%0.4g %0.4g]&#34; % (self.xcenter,self.ycenter))
-        print(&#34;\tangle = %0.4g&#34; % self.angle)
         print(&#34;\ttranslate = [%0.4g %0.4g]&#34; % (self.translate[0],self.translate[1]))
         print(&#34;note: use the attribute origina,raw to see the raw image&#34;)
         return &#34;%s object: %s (beadtype=%d)&#34; % (self.kind,self.name,self.beadtype)</code></pre>
@@ -3860,11 +3903,15 @@ X.write("/tmp/myfile")</p>
         
 
     # DATA ---------------------------- 
-    def data(self,scale=(1,1),center=(0,0),maxtype=None):
+    def data(self,scale=(1,1),center=(0,0),maxtype=None,hexpacking=None):
         &#34;&#34;&#34;
-        data()
-        data(scale=(scalex,scaley),center=(centerx,centery),maxtype=number)
-        return a pizza.data object  &#34;&#34;&#34;
+            return a pizza.data object     
+                data()
+                data(scale=(scalex,scaley),
+                     center=(centerx,centery),
+                     maxtype=number,
+                     hexpacking=(0.5,0))
+        &#34;&#34;&#34;
         if not isinstance(scale,tuple) or len(scale)!=2:
             raise ValueError(&#34;scale must be tuple (scalex,scaley)&#34;)
         if not isinstance(center,tuple) or len(scale)!=2:
@@ -3874,6 +3921,17 @@ X.write("/tmp/myfile")</p>
         maxtypeheader = self.count()[-1][0] if maxtype is None else maxtype
         n = self.length()
         i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
+        x = (j+0.5-center[0])*scale[0]
+        y = (i+0.5-center[1])*scale[1]
+        if hexpacking is not None:
+            if isinstance(hexpacking,tuple) and len(hexpacking)==2:
+                for k in range(len(i)):
+                    if i[k] % 2:
+                        x[k] = (j[k]+0.5+hexpacking[1]-center[0])*scale[0]
+                    else:
+                        x[k] = (j[k]+0.5+hexpacking[0]-center[0])*scale[0]
+            else:
+                raise ValueError(&#34;hexpacking should be a tuple (shiftodd,shifteven)&#34;)
         X = data3()  # empty pizza.data3.data object
         X.title = self.name + &#34;(raster)&#34;
         X.headers = {&#39;atoms&#39;: n,
@@ -3889,12 +3947,12 @@ X.write("/tmp/myfile")</p>
         X.append(&#39;Atoms&#39;,self.mass*scalevol,False,&#34;mass&#34;)    # mass
         X.append(&#39;Atoms&#39;,self.radius*scalez,False,&#34;radius&#34;)         # radius
         X.append(&#39;Atoms&#39;,self.contactradius*scalez,False,&#34;c_contact_radius&#34;) # c_contact_radius
-        X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x&#34;)        # x
-        X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y&#34;)        # y
-        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                                 # z
-        X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x0&#34;)       # x0
-        X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y0&#34;)       # y0
-        X.append(&#39;Atoms&#39;,0,False,&#34;z0&#34;)                                # z0
+        X.append(&#39;Atoms&#39;,x,False,&#34;x&#34;)        # x
+        X.append(&#39;Atoms&#39;,y,False,&#34;y&#34;)        # y
+        X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)        # z
+        X.append(&#39;Atoms&#39;,x,False,&#34;x0&#34;)       # x0
+        X.append(&#39;Atoms&#39;,y,False,&#34;y0&#34;)       # y0
+        X.append(&#39;Atoms&#39;,0,False,&#34;z0&#34;)       # z0
         # [VELOCITIES] section
         X.append(&#39;Velocities&#39;,list(range(1,n+1)),True,&#34;id&#34;) # id
         X.append(&#39;Velocities&#39;,self.velocities[0],False,&#34;vx&#34;) # vx
@@ -4042,7 +4100,7 @@ X.write("/tmp/myfile")</p>
     # len method ------------------------------
     def __len__(self):
         &#34;&#34;&#34; len method &#34;&#34;&#34;
-        return len(R.objects)
+        return len(self.objects)
 
     # NAMES method ---------------------------- 
     def names(self):
@@ -5005,21 +5063,29 @@ USER : structure to pass specific parameters</p>
 </details>
 </dd>
 <dt id="raster.raster.data"><code class="name flex">
-<span>def <span class="ident">data</span></span>(<span>self, scale=(1, 1), center=(0, 0), maxtype=None)</span>
+<span>def <span class="ident">data</span></span>(<span>self, scale=(1, 1), center=(0, 0), maxtype=None, hexpacking=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>data()
-data(scale=(scalex,scaley),center=(centerx,centery),maxtype=number)
-return a pizza.data object</p></div>
+<div class="desc"><p>return a pizza.data object
+<br>
+data()
+data(scale=(scalex,scaley),
+center=(centerx,centery),
+maxtype=number,
+hexpacking=(0.5,0))</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def data(self,scale=(1,1),center=(0,0),maxtype=None):
+<pre><code class="python">def data(self,scale=(1,1),center=(0,0),maxtype=None,hexpacking=None):
     &#34;&#34;&#34;
-    data()
-    data(scale=(scalex,scaley),center=(centerx,centery),maxtype=number)
-    return a pizza.data object  &#34;&#34;&#34;
+        return a pizza.data object     
+            data()
+            data(scale=(scalex,scaley),
+                 center=(centerx,centery),
+                 maxtype=number,
+                 hexpacking=(0.5,0))
+    &#34;&#34;&#34;
     if not isinstance(scale,tuple) or len(scale)!=2:
         raise ValueError(&#34;scale must be tuple (scalex,scaley)&#34;)
     if not isinstance(center,tuple) or len(scale)!=2:
@@ -5029,6 +5095,17 @@ return a pizza.data object</p></div>
     maxtypeheader = self.count()[-1][0] if maxtype is None else maxtype
     n = self.length()
     i,j = self.imbead.nonzero() # x=j+0.5 y=i+0.5
+    x = (j+0.5-center[0])*scale[0]
+    y = (i+0.5-center[1])*scale[1]
+    if hexpacking is not None:
+        if isinstance(hexpacking,tuple) and len(hexpacking)==2:
+            for k in range(len(i)):
+                if i[k] % 2:
+                    x[k] = (j[k]+0.5+hexpacking[1]-center[0])*scale[0]
+                else:
+                    x[k] = (j[k]+0.5+hexpacking[0]-center[0])*scale[0]
+        else:
+            raise ValueError(&#34;hexpacking should be a tuple (shiftodd,shifteven)&#34;)
     X = data3()  # empty pizza.data3.data object
     X.title = self.name + &#34;(raster)&#34;
     X.headers = {&#39;atoms&#39;: n,
@@ -5044,12 +5121,12 @@ return a pizza.data object</p></div>
     X.append(&#39;Atoms&#39;,self.mass*scalevol,False,&#34;mass&#34;)    # mass
     X.append(&#39;Atoms&#39;,self.radius*scalez,False,&#34;radius&#34;)         # radius
     X.append(&#39;Atoms&#39;,self.contactradius*scalez,False,&#34;c_contact_radius&#34;) # c_contact_radius
-    X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x&#34;)        # x
-    X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y&#34;)        # y
-    X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)                                 # z
-    X.append(&#39;Atoms&#39;,(j+0.5-center[0])*scale[0],False,&#34;x0&#34;)       # x0
-    X.append(&#39;Atoms&#39;,(i+0.5-center[1])*scale[1],False,&#34;y0&#34;)       # y0
-    X.append(&#39;Atoms&#39;,0,False,&#34;z0&#34;)                                # z0
+    X.append(&#39;Atoms&#39;,x,False,&#34;x&#34;)        # x
+    X.append(&#39;Atoms&#39;,y,False,&#34;y&#34;)        # y
+    X.append(&#39;Atoms&#39;,0,False,&#34;z&#34;)        # z
+    X.append(&#39;Atoms&#39;,x,False,&#34;x0&#34;)       # x0
+    X.append(&#39;Atoms&#39;,y,False,&#34;y0&#34;)       # y0
+    X.append(&#39;Atoms&#39;,0,False,&#34;z0&#34;)       # z0
     # [VELOCITIES] section
     X.append(&#39;Velocities&#39;,list(range(1,n+1)),True,&#34;id&#34;) # id
     X.append(&#39;Velocities&#39;,self.velocities[0],False,&#34;vx&#34;) # vx

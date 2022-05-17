@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.45"
+__version__ = "0.451"
 
 """
     --- forcefield methods for LAMMPS ---
@@ -125,11 +125,12 @@ __version__ = "0.45"
 # 2022-03-19 standardized pizza path
 # 2022-04-16 add saltTLSPH() forcefield in the material library, and document it better
 # 2022-05-16 force sortdefintions for + and += with parameterforcefield()
+# 2022-05-17 direct use of pizza.private.struct.paramauto()
 
 # %% Dependencies
 import types
 # All forcefield parameters are stored à la Matlab in a structure
-from pizza.private.struct import struct,param
+from pizza.private.struct import struct,paramauto
 
 
 # %% Parent class (not to be called directly)
@@ -139,7 +140,7 @@ from pizza.private.struct import struct,param
 #                     use getallattributes() to see all attributes
 
 # container of forcefield parameters
-class parameterforcefield(param):
+class parameterforcefield(paramauto):
     """ class of forcefields parameters, derived from param
         note that conctanating two forcefields force them
         to to be sorted
@@ -148,14 +149,8 @@ class parameterforcefield(param):
     _fulltype = "forcefield"
     _ftype = "parameter"
     _maxdisplay = 80
-    
-    def __add__(self,p):
-        return super(parameterforcefield,self).__add__(p,sortdefinitions=True)
-    
-    def __iadd__(self,p):
-        return super(parameterforcefield,self).__iadd__(p,sortdefinitions=True)
-     
-    
+
+         
 # core class
 class forcefield():
     """ core forcefield class (not to be called directly) """

@@ -69,7 +69,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.45"
+__version__ = "0.451"
 
 # INRAE\Olivier Vitrac - rev. 2022-02-13
 # contact: olivier.vitrac@agroparistech.fr
