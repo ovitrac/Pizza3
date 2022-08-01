@@ -602,9 +602,11 @@ The videos are generated with Ovito directly from dump files.
 <video width="50%" controls="controls" preload="auto">
     <source type="video/mp4" src="https://github.com/ovitrac/Pizza3/raw/main/examples/workshop1_run.mp4">
 </video>
+
+
 ## Extensions offered by workshop2
 
-### Overview
+### Scope
 
 Workshop 2 addresses several issues and improve the user experience (better commenting, documentation, certain improvements to the intuition) and elaborates specific aspects of the pipeline. New features include
 
@@ -674,6 +676,8 @@ A block of fluid is squeezed between two surfaces, the lower surface is "sensory
 #### shear_flow
 
 <img src="https://github.com/ovitrac/Pizza3/raw/main/examples/shearing.png" style="zoom:33%;" />
+
+
 
 ## pizza.raster()
 
