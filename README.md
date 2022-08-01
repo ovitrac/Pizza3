@@ -663,11 +663,11 @@ By default, all spatial arguments are 'EDGE' which means the edge of the domain 
 
 #### squeeze_flow
 
-A block of fluid is squeezed between two surfaces, the lower surface is "sensory" and detects stresses
+A block of fluid is squeezed between two surfaces, the lower surface is "sensing" and detects stresses
 
 
 
-<img src="tmp/workshop2/images/squeezing.png" style="zoom:33%;" /><img src="https://github.com/ovitrac/Pizza3/raw/main/examples/squeezing_salted.png" style="zoom:33%;" />
+<img src="https://github.com/ovitrac/Pizza3/raw/main/examples/squeezing.png" style="zoom:33%;" /><img src="https://github.com/ovitrac/Pizza3/raw/main/examples/squeezing_salted.png" style="zoom:33%;" />
 
 
 
