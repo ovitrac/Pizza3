@@ -6,7 +6,9 @@
 >
 > ​	INRAE\William Jenkinson, E-mail: [william.jenkinson@agroparistech.fr](olivier.vitrac@agroparistech.fr)
 >
-> $ 2020-03-24 $
+> ​	INRAE\Pei Sun, E-mail: [pei.sun@agroparistech.fr](olivier.vitrac@agroparistech.fr)
+>
+> $ 2022-08-01 $
 
 *Click [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html) to read this file in HTML (including with videos)*
 
@@ -22,17 +24,15 @@
 
 ## Overview
 
-Main scripts and classes are shown here. The demonstrations of implemented features are available as "==workshops==" (currently 0 = draft and 1=first workable). <kbd>Pizza3</kbd> is fully object-oriented and use a universal container a structure à la Matlab with self-evaluating capabilities (`param()`) or not (`pizza.private.struct()`). The design capabilities will remain limited in <kbd>Pizza3</kbd> but a set of methods are proposed in `pizza.raster()` to allow the testing of 2D algorithms with a much lower computational cost than in 3D without a loss of generality. 
+Main scripts and classes are shown here. The demonstrations of implemented features are available as "==workshops==" (currently 0 = draft, 1=first workable, 2=first production). <kbd>Pizza3</kbd> is fully object-oriented and use a universal container a structure à la Matlab with self-evaluating capabilities (`param()`) or not (`pizza.private.struct()`). The design capabilities will remain limited in <kbd>Pizza3</kbd> but a set of methods are proposed in `pizza.raster()` to allow the testing of 2D algorithms with a much lower computational cost than in 3D without a loss of generality. 
 
 
 
->The class `pizza.script()` is the main class to code in [LAMMPS](https://www.lammps.org/) from *codelets* written in Python.  *Codelets* are essential for our purpose of multiscale modeling. They parse and interpret [LAMMPS](https://www.lammps.org/) codes, so-called `TEMPLATES`, without importing them in LAMMPS either in real or deferred time. *Codelet* instances offer static, global and local variables, so-called `DEFINITIONS`, which facilitate the chaining of instructions (*e.g.*, programmed displacements, forcefield definitions) and the conversion from one style to the other.
+>The class `pizza.script()` is the main class to code in [LAMMPS](https://www.lammps.org/) from *codelets* written in Python.  *Codelets* are essential for our purpose of multiscale modeling. They parse and interpret [LAMMPS](https://www.lammps.org/) codes, so-called `TEMPLATES`, without importing them in LAMMPS either in real or deferred time. *Codelet* instances offer static, global and local variables, so-called `DEFINITIONS`, which facilitate the chaining of instructions (*e.g.*, programmed displacements, forcefield definitions) and the conversion from one style to the other. The static interpreter reorders mathematical expressions and definitions to make them executable.
 
-Input and output [LAMMPS](https://www.lammps.org/) data are managed as `pizza.data()` and `pizza.dump()` original objects. New methods extend original capabilities to facilitate the manipulation of frames, the conversion of outputs to inputs.
+Input and output [LAMMPS](https://www.lammps.org/) data are managed as `pizza.data()` and `pizza.dump()` original objects. New methods extend original capabilities to facilitate the manipulation of frames, the conversion of outputs to inputs (equivalent restart files).
 
-
-
-> Forcefields are specific to each style and are manipulated through the concept of inheritance. A user library of forcefields can be set by overriding exisiting definitions.
+> Forcefields are specific to each style and are manipulated through the concept of inheritance. A user library of forcefields can be set by overriding existing definitions. It is recommended to implement user rules with the class `pizza.generic()` (follows ) . 
 
 
 
@@ -41,6 +41,7 @@ Input and output [LAMMPS](https://www.lammps.org/) data are managed as `pizza.da
 | Workshops<br> (workable demonstrations) |             **Main classes<br/>and subclasses**              |                    Low-level<br/> classes                    |
 | :-------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
 |          class: ==workshop1==           |                2D drawing class: pizza.raster                |    generic struct class à la Matlab: pizza.private.struct    |
+|          class: ==workshop2==           | as above (with exemplification of advanced features, incl. time-steps, region of interest and salting selection |                           as above                           |
 |            script: geometry             |      class to read/write input files: pizza.data3.data       | self-evaluable struct with scripting/alias features: pizza.private.param |
 |            script: assembly             |         class to manage dump files: pizza.dump3.dump         |                                                              |
 |                                         | advanced scripting classes: pizza.script.script, pizza.script.datascript, pizza.script.scriptobject, pizza.script.scriptobjectgroup, pizza.script.pipescript |                                                              |
@@ -601,6 +602,9 @@ The videos are generated with Ovito directly from dump files.
 <video width="50%" controls="controls" preload="auto">
     <source type="video/mp4" src="https://github.com/ovitrac/Pizza3/raw/main/examples/workshop1_run.mp4">
 </video>
+## Extensions offered by workshop2
+
+to be done
 
 ## pizza.raster()
 
