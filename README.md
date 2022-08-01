@@ -604,7 +604,76 @@ The videos are generated with Ovito directly from dump files.
 </video>
 ## Extensions offered by workshop2
 
-to be done
+### Overview
+
+Workshop 2 addresses several issues and improve the user experience (better commenting, documentation, certain improvements to the intuition) and elaborates specific aspects of the pipeline. New features include
+
+1. Inputs set from microscopic images
+2. Setting time-step,  salting
+3.  two examples (squeeze case and shearing case)
+
+> With workshop 2, more complex systems should be achievable to the user including the use of "*sensing*" surfaces and better control of system parameters such as viscosity.
+
+
+
+### New classes and updates
+
+A few classes have been updated/improved to be more usable and funcitonal, and two new classes have been created; file and group. Both these classes give additional methods of creating groups in lammps to suppliment the use of the intereactions class.
+
+#### workshop2.file
+
+The *file* class can be used to read the files, and it is a new method of creating a group. If you want all the atoms in your file to be part of a group, use the arguments group=True and specify an ID for them with group_name = "your_group_name"
+
+Example:
+
+```PYTHON
+files = file(file_name=["./file1"],group=True,group_name=["sensor"]) & \
+        file(file_name=["./file2"],group=True,group_name=["substance"], append = True)
+```
+
+N.B. for subsequent files, if you want to preserve the files already uploaded use append=True
+
+#### workshop2.group
+
+The group class can create new groups from an input of arguments to specify a sub-domain of the simulation. You have four arguments; x = [x1 x2], x = [x1 x2], x = [x1 x2] and groupID="sensor".
+
+Example:
+
+```PYTHON
+groups = group(groupID = ['bottom'], y=['EDGE',0.2])
+```
+
+By default, all spatial arguments are 'EDGE' which means the edge of the domain box.
+
+### Improvements and updates
+
+#### workshop2.equilibrate
+
+- by default, tlsph object are frozen but using static='yourgroup', an group of atoms can be frozen
+- equilibrate is simplified, periodically all velocities in the simulation are set to 0 in order to remove the kinetic energy from the system, it= can be used to specify the number of such cycles
+
+#### workshop2.translation/force
+
+- bugs in the translation and force classes resolved
+- names can be specified case-by-case and multiple actions can be performed
+
+### Examples
+
+#### squeeze_flow
+
+A block of fluid is squeezed between two surfaces, the lower surface is "sensory" and detects stresses
+
+
+
+<img src="tmp/workshop2/images/squeezing.png" style="zoom:33%;" /><img src="https://github.com/ovitrac/Pizza3/raw/main/examples/squeezing_salted.png" style="zoom:33%;" />
+
+
+
+
+
+#### shear_flow
+
+<img src="https://github.com/ovitrac/Pizza3/raw/main/examples/shearing.png" style="zoom:33%;" />
 
 ## pizza.raster()
 
