@@ -50,6 +50,10 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-05-16 improved help, add tostatic() - v 0.45 (major version)
 # 2022-05-17 new class paramauto() to simplify the management of multiple definitions
 # 2022-05-17 catches most common errors in expressions and display explicit error messages - v 0.46
+# 2023-01-18 add indexing as a dictionary s["a"] is the same as s.a - 0.461
+# 2023-01-19 add % as comment instead of # to enable replacement
+# 2023-01-27 param.eval() add % to freeze an interpretation (needed when a list is spanned as a string)
+# 2023-01-27 struct.format() will replace {var} by ${var} if var is not defined
 
 
 # %% Dependencies
@@ -63,10 +67,10 @@ from pathlib import PurePosixPath as PurePath
 
 # %% core struct class
 class struct():
-    """ 
-    mini class behaving as a Matlab Stucture 
+    """
+    mini class behaving as a Matlab Stucture
     Use param() if you need evaluation as MS.alias()
-    
+
     s=struct(a=1,b=2,c='${a}+${b} # evaluate me if you can')
     generates
       --------:----------------------------------------
@@ -75,8 +79,8 @@ class struct():
              c: ${a}+${b} # evaluate me if you can
       --------:----------------------------------------
     Out: structure (struct object) with 3 fields
-    
-    
+
+
     s=param(a=1,b=2,c='${a}+${b} # evaluate me if you can')
     generates instead:
       --------:----------------------------------------
@@ -84,18 +88,18 @@ class struct():
              b: 2
              c: ${a}+${b} # evaluate me if you can   (= 3 )
       --------:----------------------------------------
-    Out: parameter list (param object) with 3 definitions    
-        
-    
+    Out: parameter list (param object) with 3 definitions
+
+
     Data can be appended or changed
         s.a = 10
         s.d = 11
-    
+
     Data can be indexed
         for x in s: print(x)
         s[0]
         s[-1]
-    
+
     To delete a field, use either
         delattr(s,'d') # Python's way
     or
@@ -105,8 +109,8 @@ class struct():
         hasattr(s,'b') # Python' way
     or
         'b' in s       # other Python's way'
-        
-    
+
+
     Concatenate or remove structures
     Note: the definitions in the most right structure will overwrite existing values
         a=struct(a=1,b=2)
@@ -116,9 +120,9 @@ class struct():
         e=c-a
         f=b-struct(e="")
         b-=struct(e="")
-        
+
     Practical shorthands
-    
+
     > construct a structure from keys
         s = struct.fromkeys(["a","b","c","d"])
           --------:----------------------------------------
@@ -128,7 +132,7 @@ class struct():
                  d: None
           --------:----------------------------------------
         Out: structure (struct object) with 4 fields
-        
+
     > build a structure from variables in a string
         s = struct.scan("${a}+${b}*${c}/${d} --- ${ee}")
         s.a = 1
@@ -143,7 +147,7 @@ class struct():
                  d= None,
                 ee= None
                  )
-        
+
     > Structures can be concatenated and indexed as list
         a = struct(a=1,b=2)
         b = struct(c=3,d=4,e=5,f=6,g=7)
@@ -166,7 +170,7 @@ class struct():
                  g= 70
                  )
     note: "f" in c returns True as it check the key, not the value
-    
+
     > struct() offers low-level control to param() features
         s = struct(d=3,e="${c}+{d}",c = '${a}+${b}',a=1,b=2)
         s.sortdefinitions() will return
@@ -178,7 +182,7 @@ class struct():
                e: ${c}+${d}
         --------:----------------------------------------
       Out[63]: structure (struct object) with 5 fields
-      
+
       note: similar results can be obtained with param()
       p = param(sortdefinitions=True,d=3,e="${c}+${d}",c = '${a}+${b}',a=1,b=2)
       -----------:----------------------------------------
@@ -191,16 +195,16 @@ class struct():
                  = 6
       -----------:----------------------------------------
     Out[80]: parameter list (param object) with 5 definitions
-    
+
     note: variables shorthands $a, $b... can replace ${a}, ${b} in param()
     sortdefintions() do not recognize them (no protection)
-        
-    
+
+
     > Overview of implemented methods and arguments
       methods only available for param() objects are indicated with [*]
-      
+
         check(default)
-        clear()    
+        clear()
         dict2struct(dico,makeparam=False)
         dispmax(content)
         disp()
@@ -236,9 +240,9 @@ class struct():
         values()
         write(file)
         zip()
-    
+
     overloaded methods and operators: str(), list(), in, +, +=, /
-    
+
         __add__(s,sortdefinitions=False)
         __add__(value)
         __contains__(item)
@@ -255,7 +259,6 @@ class struct():
         __len__()
         __next__()
         __repr__()
-        __repr__()
         __setattr__(key,value)
         __setitem__(idx,value)
         __setstate__(state)
@@ -263,39 +266,39 @@ class struct():
         __sub__(s)
         __truediv__(value)
 
-    
+
     > dynamic properties
         isempty
         isdefinition
-        
-        
-    
+
+
+
     """
-    
+
     # attributes to be overdefined
     _type = "struct"        # object type
     _fulltype = "structure" # full name
     _ftype = "field"        # field name
     _evalfeature = False    # true if eval() is available
     _maxdisplay = 40        # maximum number of characters to display (should be even)
-    
+
     # attributes for the iterator method
     # Please keep it static, duplicate the object before changing _iter_
-    _iter_ = 0              
-    
+    _iter_ = 0
+
     # excluded attributes (keep the , in the Tupple if it is singleton)
     _excludedattr = ('_iter_','__class__','_protection','_evaluation') # used by keys() and len()
-    
-    
+
+
     # Methods
     def __init__(self,**kwargs):
         """ constructor """
         self.set(**kwargs)
-    
+
     def zip(self):
         """ zip keys and values """
         return zip(self.keys(),self.values())
-    
+
     @staticmethod
     def dict2struct(dico,makeparam=False):
         """ create a structure from a dictionary """
@@ -304,11 +307,11 @@ class struct():
             s.set(**dico)
             return s
         raise TypeError("the argument must be a dictionary")
-        
+
     def struct2dict(self):
         """ create a dictionary from the current structure """
         return dict(self.zip())
-    
+
     def struct2param(self,protection=False,evaluation=True):
         """ convert an object struct() to param() """
         p = param(**self.struct2dict())
@@ -317,64 +320,64 @@ class struct():
         p._protection = protection
         p._evaluation = evaluation
         return p
-        
+
     def set(self,**kwargs):
         """ initialization """
         self.__dict__.update(kwargs)
-        
+
     def setattr(self,key,value):
         """ set field and value """
         if isinstance(value,list) and len(value)==0 and key in self:
             delattr(self, key)
         else:
             self.__dict__[key] = value
-        
+
     def getattr(self,key):
         """ get value """
         if key in self.keys():
             return self.__dict__[key]
         raise AttributeError(f'the {self._ftype} "{key}" does not exist')
-    
+
     def hasattr(self,key):
         """ return true if the field exist """
         return key in self.keys()
-    
+
     def __getstate__(self):
         """ getstate for cooperative inheritance / duplication """
         return self.__dict__.copy()
-    
+
     def __setstate__(self,state):
         """ setstate for cooperative inheritance / duplication """
         self.__dict__.update(state)
-    
+
     def __getattr__(self,key):
-        """ get attribure override """
+        """ get attribute override """
         return pstr.eval(self.getattr(key))
 
     def __setattr__(self,key,value):
         """ set attribute override """
         self.setattr(key,value)
-        
+
     def __contains__(self,item):
         """ in override """
         return self.hasattr(item)
-    
+
     def keys(self):
         """ return the fields """
         # keys() is used by struct() and its iterator
         return [key for key in self.__dict__.keys() if key not in self._excludedattr]
-    
+
     def keyssorted(self,reverse=True):
         """ sort keys by length() """
         klist = self.keys()
         l = [len(k) for k in klist]
         return [k for _,k in sorted(zip(l,klist),reverse=reverse)]
-        
+
     def values(self):
         """ return the values """
         # values() is used by struct() and its iterator
         return [pstr.eval(value) for key,value in self.__dict__.items() if key not in self._excludedattr]
-    
+
     @staticmethod
     def fromkeysvalues(keys,values,makeparam=False):
         """ struct.keysvalues(keys,values) creates a structure from keys and values
@@ -393,13 +396,13 @@ class struct():
             for ik in range(nk,nv):
                 s.setattr(f"key{ik}", values[ik])
         return s
-            
+
     def items(self):
         """ return all elements as iterable key, value """
         return self.zip()
-    
+
     def __getitem__(self,idx):
-        """ 
+        """
             s[i] returns the ith element of the structure
             s[:4] returns a structure with the four first fields
             s[[1,3]] returns the second and fourth elements
@@ -420,9 +423,11 @@ class struct():
                 else:
                     raise IndexError("idx must contains only integers ranged between 0 and %d" % (nk-1))
             return s
+        elif isinstance(idx,str):
+            return self.getattr(idx)
         else:
-            raise TypeError("The index must be an integer or a slice")
-         
+            raise TypeError("The index must be an integer or a slice and not a %s" % type(idx).__name__)
+
     def __setitem__(self,idx,value):
         """ set the ith element of the structure  """
         if isinstance(idx,int):
@@ -447,19 +452,19 @@ class struct():
             else:
                 raise IndexError("the number of values (%d) does not match the number of indices (%d)" \
                                  % (len(value),len(idx)))
-        
+
     def __len__(self):
         """ return the number of fields """
         # len() is used by struct() and its iterator
         return len(self.keys())
-    
+
     def __iter__(self):
         """ struct iterator """
         # note that in the original object _iter_ is a static property not in dup
         dup = duplicate(self)
         dup._iter_ = 0
         return dup
-    
+
     def __next__(self):
         """ increment iterator """
         self._iter_ += 1
@@ -467,7 +472,7 @@ class struct():
             return self[self._iter_-1]
         self._iter_ = 0
         raise StopIteration(f"Maximum {self._ftype} iteration reached {len(self)}")
-        
+
     def __add__(self,s,sortdefinitions=False,raiseerror=True):
         """ add a structure
             set sortdefintions=True to sort definitions (to maintain executability)
@@ -478,7 +483,7 @@ class struct():
         dup.__dict__.update(s.__dict__)
         if sortdefinitions: dup.sortdefinitions(raiseerror=raiseerror)
         return dup
-    
+
     def __iadd__(self,s,sortdefinitions=False,raiseerror=False):
         """ iadd a structure
             set sortdefintions=True to sort definitions (to maintain executability)
@@ -499,7 +504,7 @@ class struct():
             if k in listofkeys:
                 delattr(dup,k)
         return dup
-    
+
     def __isub__(self,s):
         """ isub a structure """
         if not isinstance(s,struct):
@@ -509,7 +514,7 @@ class struct():
             if k in listofkeys:
                 delattr(self,k)
         return self
-    
+
     def dispmax(self,content):
         """ optimize display """
         strcontent = str(content)
@@ -573,13 +578,13 @@ class struct():
     def isempty(self):
         """ isempty is set to True for an empty structure """
         return len(self)==0
-    
+
     def clear(self):
         """ clear() delete all fields while preserving the original class """
         for k in self.keys(): delattr(self,k)
 
     def format(self,s,escape=False,raiseerror=True):
-        """ 
+        """
             format a string with field (use {field} as placeholders)
                 s.replace(string), s.replace(string,escape=True)
                 where:
@@ -596,7 +601,7 @@ class struct():
             except KeyError as kerr:
                 s_ = s.replace("{","${")
                 print(f"WARNING: the {self._ftype} {kerr} is undefined in '{s_}'")
-                return s
+                return s_ # instead of s (we put back $) - OV 2023/01/27
             except Exception as othererr:
                 s_ = s.replace("{","${")
                 raise RuntimeError from othererr
@@ -604,12 +609,12 @@ class struct():
             if escape:
                 return s.format(**self.__dict__)
             else:
-                return s.replace("${","{").format(**self.__dict__)                
+                return s.replace("${","{").format(**self.__dict__)
 
     def fromkeys(self,keys):
         """ returns a structure from keys """
         return self+struct(**dict.fromkeys(keys,None))
-    
+
     @staticmethod
     def scan(s):
         """ scan(string) scan a string for variables """
@@ -621,13 +626,13 @@ class struct():
         for x in found:
             if x not in uniq: uniq.append(x)
         return tmp.fromkeys(uniq)
-    
+
     @staticmethod
     def isstrexpression(s):
         """ isstrexpression(string) returns true if s contains an expression  """
         if not isinstance(s,str): raise TypeError("s must a string")
         return re.search(r"\$\{.*?\}",s) is not None
-    
+
     @property
     def isexpression(self):
         """ same structure with True if it is an expression """
@@ -653,8 +658,8 @@ class struct():
             return allfound
         else:
             return False
-                
-                 
+
+
     def isdefined(self,ref=None):
         """ isdefined(ref) returns true if it is defined in ref """
         s = param() if isinstance(self,param) else struct()
@@ -665,7 +670,7 @@ class struct():
                 if isexpr[i]:
                     s.setattr(k[i],struct.isstrdefined(v[i],self[:i]))
                 else:
-                    s.setattr(k[i],True)                
+                    s.setattr(k[i],True)
         else:
             if not isinstance(ref,struct): raise TypeError("ref must be a structure")
             for i in range(nk):
@@ -724,7 +729,7 @@ class struct():
             k,v = current.keys(), current.values()
             for i in range(len(k)):
                 self.setattr(k[i],v[i])
-            
+
     def generator(self):
         """ generate Python code of the equivalent structure """
         nk = len(self)
@@ -746,7 +751,7 @@ class struct():
                     print(fmt % k,v,end=end)
                 else:
                     print(fmt % k,"/* unsupported type */",end=end)
-                    
+
     # copy and deep copy methpds for the class
     def __copy__(self):
         """ copy method """
@@ -766,7 +771,7 @@ class struct():
 
     # write a file
     def write(self,file):
-        """ 
+        """
             write the equivalent structure (not recursive for nested struct)
                 write(filename)
         """
@@ -780,13 +785,13 @@ class struct():
             elif isinstance(v,str):
                 print(k,'="',v,'"',file=f,sep="")
             else:
-              print(k,"=",str(v),file=f,sep="")  
+              print(k,"=",str(v),file=f,sep="")
         f.close()
-        
+
     # write a file
     @staticmethod
     def read(file):
-        """ 
+        """
             read the equivalent structure
                 read(filename)
         """
@@ -814,7 +819,7 @@ class struct():
         populate fields from a default structure
             check(defaultstruct)
             missing field, None and [] values are replaced by default ones
-            
+
             Note: a.check(b) is equivalent to b+a except for [] and None values
         """
         if not isinstance(default,struct):
@@ -828,18 +833,18 @@ class struct():
                 if ((current is None)  or (current==[])) and \
                     ((ref is not None) and (ref!=[])):
                         self.setattr(f, ref)
-                
-                 
+
+
 # %% param class with scripting and evaluation capabilities
 class param(struct):
-    """ 
+    """
     class parameters derived from struct() with dynamic evaluation
     container obj.param = value
-    
+
     Example:
         s=param(a=1,b=2,c='${a}+${b} # evaluate me if you can',
                 d="$this is a string",e="1000 # this is my number")
-        
+
     returns
           --------:----------------------------------------
                  a: 1
@@ -852,9 +857,9 @@ class param(struct):
                   = 1000
           --------:----------------------------------------
         Out: parameter list (param object) with 5 definitions
-        
+
         s.a=10
-        
+
     produces
           --------:----------------------------------------
                  a: 10
@@ -867,15 +872,15 @@ class param(struct):
                   = 1000
           --------:----------------------------------------
       Out: parameter list (param object) with 5 definitions
-      
-      
+
+
      Other example with text parameters
       s = param()
-      s.mypath = "$/this/folder" 
+      s.mypath = "$/this/folder"
       s.myfile = "$file"
       s.myext = "$ext"
       s.fullfile = "$${mypath}/${myfile}.${myext}"
-      
+
     generates
           --------:----------------------------------------
             mypath: $/this/folder
@@ -888,37 +893,37 @@ class param(struct):
                   = /this/folder/file.ext
           --------:----------------------------------------
     Out: parameter list (param object) with 4 definitions
-    
-    
+
+
     Evaluate a string with variables define in s
         s.eval("this a string with ${variable1}, ${variable2}")
-    
+
     note: \${variable} prevents the evaluation
     note: use s.eval("...$variable",protection=True) to add automatically {}
-    
+
     Examples:
-        
+
         definitions = param(a=1,b="${a}*10+${a}",c="\${a}+10",d='\${myparam}')
         text = definitions.formateval("this my text ${a}, ${b}, \${myvar}=${c}+${d}")
         print(text)
-        
+
         definitions = param(a=1,b="$a*10+$a",c="\$a+10",d='\$myparam')
         text = definitions.formateval("this my text $a, $b, \$myvar=$c+$d",protection=True)
         print(text)
-        
+
         s = struct(a=1,b=2)
         s[1] = 3
         s.disp()
-        
+
         s = {"a":1, "b":2}
         t=struct.dict2struct(s)
         t.disp()
         sback = t.struct2dict()
         sback.__repr__()
-        
+
         p=struct.fromkeysvalues(["a","b","c","d"],[1,2,3]).struct2param()
         ptxt = p.protect("$c=$a+$b")
-    
+
         # Example with interpretation and rearranging
         s = param(
             a = 1,
@@ -933,10 +938,10 @@ class param(struct):
         s.isdefined()
         s.sortdefinitions()
         s.disp()
-    
-    
-    Error handling (most common errors are captured)    
-    
+
+
+    Error handling (most common errors are captured)
+
         p = param(b="${a}+1",c="${a}+${d}",a=1)
         p.disp()
 
@@ -952,7 +957,7 @@ class param(struct):
     calling p.sortdefinitions() generates an error
         KeyError: 'unable to interpret 1/3 expressions in "definitions"'
 
-    calling p.sortdefinitions(raiseerror=False) generates only a warning    
+    calling p.sortdefinitions(raiseerror=False) generates only a warning
         WARNING: unable to interpret 1/3 expressions in "definitions"
     and p.disp()
         -----------:----------------------------------------
@@ -962,18 +967,18 @@ class param(struct):
                   c: ${a}+${d}
                    = < undef definition "${d}" >
         -----------:----------------------------------------
-        
+
     note: paramauto() simplifies operations and inheritances
     on objects with patial definitions (some definitions are missing)
-    
+
     """
-    
+
     # override
     _type = "param"
     _fulltype = "parameter list"
     _ftype = "definition"
     _evalfeature = True    # This class can be evaluated with .eval()
-    
+
     # magic constructor
     def __init__(self,_protection=False,_evaluation=True,
                  sortdefinitions=False,**kwargs):
@@ -986,10 +991,10 @@ class param(struct):
     # escape definitions if needed
     @staticmethod
     def escape(s):
-        """ 
+        """
             escape \${} as ${{}} --> keep variable names
             convert ${} as {} --> prepare Python replacement
-            
+
             Examples:
                 escape("\${a}")
                 returns ('${{a}}', True)
@@ -1002,7 +1007,7 @@ class param(struct):
 
                 escape("${tata}")
                 returns ('{tata}', False)
-            
+
         """
         se, start, found = "", 0, True
         while found:
@@ -1030,23 +1035,23 @@ class param(struct):
             if isinstance(s,pstr): t = pstr(t)
             return t, escape
         raise TypeError('the argument must be string')
-        
-      
+
+
     # lines starting with # (hash) are interpreted as comments
     # ${variable} or {variable} are substituted by variable.value
     # any line starting with $ is assumed to be a string (no interpretation)
     # ^ is accepted in formula(replaced by **))
     def eval(self,s="",protection=False):
-        """ 
+        """
             Eval method for structure such as MS.alias
-            
-                s = p.eval() or s = s = p.eval(string)
-                
+
+                s = p.eval() or s = p.eval(string)
+
                 where :
                     p is a param object
                     s is a structure with evaluated fields
-                    string is only to used whether definitions have been forgotten
-                    
+                    string is only used to determine whether definitions have been forgotten
+
         """
         # Evaluate all DEFINITIONS
         # the argument s is only used by formateval() for error management
@@ -1076,6 +1081,8 @@ class param(struct):
                     tmp.setattr(key, pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr))
                 elif valuesafe.startswith("$") and not escape:
                     tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard $
+                elif valuesafe.startswith("%"):
+                    tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard %
                 else: # string empty or which can be evaluated
                     if valuesafe=="":
                         tmp.setattr(key,valuesafe) # empty content
@@ -1094,7 +1101,7 @@ class param(struct):
                             except (SyntaxError,TypeError,ValueError) as commonerr:
                                 tmp.setattr(key,"ERROR < %s >" % commonerr)
                             except Exception as othererr:
-                                tmp.setattr(key,"Unknown Error < %s >" % othererr)                                
+                                tmp.setattr(key,"Unknown Error < %s >" % othererr)
                             else:
                                 try:
                                     reseval = eval(resstr)
@@ -1114,19 +1121,19 @@ class param(struct):
     # formateval obeys to following rules
     # lines starting with # (hash) are interpreted as comments
     def formateval(self,s,protection=False):
-        """ 
+        """
             format method with evaluation feature
-                
+
                 txt = p.formateval("this my text with ${variable1}, ${variable2} ")
-                               
+
                 where:
                     p is a paramm object
-                    
+
                 Example:
                     definitions = param(a=1,b="${a}",c="\${a}")
                     text = definitions.formateval("this my text ${a}, ${b}, ${c}")
                     print(text)
-                    
+
         """
         tmp = self.eval(s,protection=protection)
         # Do all replacements in s (keep comments)
@@ -1137,15 +1144,15 @@ class param(struct):
             ssafe, escape = param.escape(s)
             slines = ssafe.split("\n")
             for i in range(len(slines)):
-                poscomment = slines[i].find("#")               
+                poscomment = slines[i].find("#")
                 if poscomment>=0:
                     while (poscomment>0) and (slines[i][poscomment-1]==" "):
-                        poscomment -= 1 
+                        poscomment -= 1
                     comment = slines[i][poscomment:len(slines[i])]
                     slines[i]  = slines[i][0:poscomment]
                 else:
                     comment = ""
-                # Protect variables if reuired
+                # Protect variables if required
                 if protection or self._protection:
                     slines[i], escape2 = self.protect(slines[i])
                 # conversion
@@ -1153,8 +1160,11 @@ class param(struct):
                     slines[i] = pstr.eval(tmp.format(slines[i],escape=escape),ispstr=ispstr)
                 else:
                     slines[i] = tmp.format(slines[i],escape=escape)+comment
+                # convert starting % into # to authorize replacement in comments
+                if len(slines[i])>0:
+                    if slines[i][0] == "%": slines[i]="#"+slines[i][1:]
             return "\n".join(slines)
-        
+
     # returns the equivalent structure evaluated
     def tostruct(self,protection=False):
         """
@@ -1176,35 +1186,35 @@ class param(struct):
 # this class guarantees that paths are POSIX at any time
 
 class pstr(str):
-    """ 
+    """
         str class for paths and filenames
             a = pstr("this/is/mypath//")
             b = pstr("mylocalfolder/myfile.ext")
             c = a / b # this/is/mypath/mylocalfolder/myfile.ext
-            
+
             note: keep trailing "/" if present
-            
+
             Methods such as replace()... convert pstr back to str
             use pstr.eval("some/path/afterreplcament",ispstr=True) to keep the class pstr
-            
+
             Operators + and += generate a pstr
 
     """
-     
+
     def __repr__(self):
         result = self.topath()
         if result[-1] != "/" and self[-1] == "/":
             result += "/"
         return result
-    
+
     def topath(self):
         """ return a validated path """
         value = pstr(PurePath(self))
         if value[-1] != "/" and self [-1]=="/":
             value += "/"
         return value
-    
-    
+
+
     @staticmethod
     def eval(value,ispstr=False):
         """ evaluate the path of it os a path """
@@ -1214,7 +1224,7 @@ class pstr(str):
             return pstr(value).topath()
         else:
             return value
-        
+
     def __truediv__(self,value):
         """ overload / """
         operand = pstr.eval(value)
@@ -1222,30 +1232,30 @@ class pstr(str):
         if result[-1] != "/" and operand[-1] == "/":
             result += "/"
         return result
-    
+
     def __add__(self,value):
         return pstr(str(self)+value)
-    
+
     def __iadd__(self,value):
         return pstr(str(self)+value)
-        
+
 # %% class paramauto() which enforces sortdefinitions = True, raiseerror=False
 class paramauto(param):
     """
         paramauto() inherits all param() features with sorteddefinitions = True
         for concatenation (+ or +=) and display
-        
+
         These features are used when a param() object is augmented irrespectively
         is capacity of executing expressions.
         Note that it is mandatory to use ${variable} and not $variable
         (which is tolerated in param() with an internal protection)
-        
+
         paramauto() is more computationally-intensive
-        
+
         Usage:
             Contrarily to param(), defintions can be stacked irrespectively
             their execution order.
-            
+
                 p = paramauto()
                 p.b = "${aa}"
                 p.disp()
@@ -1254,7 +1264,7 @@ class paramauto(param):
                   -----------:----------------------------------------
                             b: ${aa}
                              = < undef definition "${aa}" >
-                  -----------:----------------------------------------            
+                  -----------:----------------------------------------
                   p.aa = 2
                   p.disp()
             yields
@@ -1282,7 +1292,7 @@ class paramauto(param):
                            = 30
                           c: ${aa}+${b}
                            = 60
-                -----------:----------------------------------------  
+                -----------:----------------------------------------
                 q.aa = "${d}"
                 q.disp()
             yields multiple errors (recursion)
@@ -1294,7 +1304,7 @@ class paramauto(param):
                          = Eval Error < invalid [...] (<string>, line 1) >
                         c: ${aa}+${b}
                          = Eval Error < invalid [...] (<string>, line 1) >
-              -----------:----------------------------------------            
+              -----------:----------------------------------------
                 q.d = 100
                 q.disp()
             yields
@@ -1308,9 +1318,9 @@ class paramauto(param):
                          = 200
               -----------:----------------------------------------
 
-        
+
         Example:
-            
+
             p = paramauto(b="${a}+1",c="${a}+${d}",a=1)
             p.disp()
         generates:
@@ -1335,22 +1345,23 @@ class paramauto(param):
                          = 3
               -----------:----------------------------------------
     """
-    
+
     def __add__(self,p):
         return super(param,self).__add__(p,sortdefinitions=True,raiseerror=False)
-    
+
     def __iadd__(self,p):
         return super(param,self).__iadd__(p,sortdefinitions=True,raiseerror=False)
 
     def __repr__(self):
         self.sortdefinitions(raiseerror=False)
-        super(param,self).__repr__()
+        #super(param,self).__repr__()
+        super().__repr__()
         return str(self)
 
-# %% DEBUG  
-# ===================================================   
+# %% DEBUG
+# ===================================================
 # main()
-# ===================================================   
+# ===================================================
 # for debugging purposes (code called as a script)
 # the code is called from here
 # ===================================================
@@ -1365,7 +1376,10 @@ if __name__ == '__main__':
 #     p = alias(fullfodsfile)
 #     p.disp()
 # =============================================================================
-    # path example   
+# new feature
+    a = struct(a=1,b=2)
+    a["b"]
+# path example
     s0 = struct(a=pstr("/tmp/"),b=pstr("test////"),c=pstr("${a}/${b}"),d=pstr("${a}/${c}"),e=pstr("$c/$a"))
     s = struct.struct2param(s0,protection=True)
     s.disp()
@@ -1376,7 +1390,7 @@ if __name__ == '__main__':
     definitions = param(a=1,b="${a}*10+${a}",c="\${a}+10",d='\${myparam}')
     text = definitions.formateval("this my text ${a}, ${b}, \${myvar}=${c}+${d}")
     print(text)
-    
+
     definitions = param(a=1,b="$a*10+$a",c="\$a+10",d='\$myparam')
     text = definitions.formateval("this my text $a, $b, \$myvar=$c+$d",protection=True)
     print(text)
@@ -1421,5 +1435,3 @@ if __name__ == '__main__':
     s.disp()
     p = param(b="${a}+1",c="${a}+${d}",a=1)
     p.disp()
-    
- 

@@ -12,22 +12,22 @@ __version__ = "0.43"
 
 """
     RASTER method to generate LAMMPS input files (in 2D for this version)
-    
+
     Generate a raster area
         R = raster()
         R = raster(width=200, height=200, dpi=300)
-        
+
     Set objects (rectangle, circle, triangle, diamond...)
         R.rectangle(1,24,2,20,name='rect1')
         R.rectangle(60,80,50,81,name='rect2',beadtype=2,angle=40)
         R.rectangle(50,50,10,10,mode="center",angle=45,beadtype=1)
         R.circle(45,20,5,name='C1',beadtype=3)
         R.circle(35,10,5,name='C2',beadtype=3)
-        
+
         R.circle(15,30,10,name='p1',beadtype=4,shaperatio=0.2,angle=-30)
         R.circle(12,40,8,name='p2',beadtype=4,shaperatio=0.2,angle=20)
         R.circle(12,80,22,name='p3',beadtype=4,shaperatio=1.3,angle=20)
-        
+
         R.triangle(85,20,10,name='T1',beadtype=5,angle=20)
         R.diamond(85,35,5,name='D1',beadtype=5,angle=20)
         R.pentagon(50,35,5,name='P1',beadtype=5,angle=90)
@@ -38,33 +38,33 @@ __version__ = "0.43"
         R.get("p1")
         R.p1
         R.C1
-        
+
     List objects in a collection
-        R.C1.get("p1") 
+        R.C1.get("p1")
         R.C1.p1 shows the object p1 in the collection C1
 
-    Build objects and show them 
+    Build objects and show them
         R.plot()
         R.show()
-        
+
     Show and manage labels
         R.show(extra="label",contour=True)
         R.label("rect003")
         R.unlabel('rect1')
-        
+
     Manage objects, update and show
-    
+
     Get the image and convert the image to text
         I = R.numeric()
         T = R.string()
         R.print()
-        
+
     Create a pizza.dump3.dump object
         X = R.data()
         X=R.data(scale=(1,1),center=(0,0))
         X.write("/tmp/myfile")
-        
-        
+
+
     Build an emulsion/suspension
         C = raster(width=400,height=400)
         e = emulsion(xmin=10, ymin=10, xmax=390, ymax=390)
@@ -73,7 +73,7 @@ __version__ = "0.43"
         C.plot()
         C.show()
 
-        
+
     Build a core-shell dispersion
         D = raster(width=400,height=400)
         cs = coreshell(xmin=10, ymin=10, xmax=390, ymax=390)
@@ -81,40 +81,40 @@ __version__ = "0.43"
         D.scatter(cs,name="core-shell")
         D.plot()
         D.show()
-        
-        
+
+
     More advanced features enable object copy, duplication along a path
     Contruction of scattered particles
     See: copyalongpath(), scatter(), emulsion(), coreshell()
-    
+
     Examples follow in the __main__ section
-    
+
     --------------------------------------------------------------------
     BUILDING REQUIREMENTS:
         Since version 0.40, overlay(), torgb() and live previews
         use Pizza3.pizza.private.PIL library
-        
+
         The customized version of PIL needs to be compiled for your system
         By assuming that anaconda is used:
-            
+
             condainit
-            
+
             cd Pizza3/pizza/private/PIL
             python3 setup.py install
-            
+
             unzip -l dist/UNKNOWN-9.1.0-py3.9-linux-x86_64.egg
             unzip -j "dist/UNKNOWN-9.1.0-py3.9-linux-x86_64.egg" "PIL/_imaging.cpython-39-x86_64-linux-gnu.so" .
-            
+
             rm -rf dist/
             rm -rf build/
             rm -rf ../UNKNOWN.egg-info
-            
+
     --------------------------------------------------------------------
-        
+
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-05-03
-# contact: olivier.vitrac@agroparistech.fr
+# INRAE\Olivier Vitrac - rev. 2023-01-03
+# contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # History
 # 2022-02-05 first alpha version
@@ -141,9 +141,11 @@ __version__ = "0.43"
 # 2022-04-27 add scale to the representation of overlay objects (0.422)
 # 2022-04-28 fix len(raster object) - typo error (0.4221)
 # 2022-05-03 add hexpacking to data(), enables you to reproduces an hexgonal packaging
+# 2023-01-03 workaround to have raster working on Windows without restrictions
 
 # %% Imports and private library
 import os
+from platform import system as sys
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate
 import numpy as np
@@ -154,7 +156,16 @@ import matplotlib.cm as cmap
 from IPython.display import display
 from pizza.data3 import data as data3
 from pizza.private.struct import struct
-from pizza.private.PIL import Image, ImagePalette
+if sys()=="Windows":
+    try:
+        from PIL import Image, ImagePalette
+        PILavailable = True
+    except ImportError:
+        print("WARNING: no image capabilities in Windows")
+        PILavailable = False
+else:
+    from pizza.private.PIL import Image, ImagePalette
+    PILavailable = True
 
 def _rotate(x0,y0,xc,yc,angle):
     angle = np.pi * angle / 180.0
@@ -174,7 +185,7 @@ def imagesc(im,x=None,y=None):
             imagesc(np2array) """
     if x==None: x=np.arange(1,np.shape(im)[1]+1)
     if y==None: y=np.arange(1,np.shape(im)[0]+1)
-    plt.imshow(im, extent=_extents(x) + _extents(y), 
+    plt.imshow(im, extent=_extents(x) + _extents(y),
                aspect="auto", origin="lower", interpolation="none")
 
 # convert indexed image to RGB (using PIL)
@@ -207,7 +218,7 @@ def arc(xmin=10,ymin=50,xmax=80,ymax=50,n=5,USER=struct(radius=20,direction=1)):
         see: https://rosettacode.org/wiki/Circles_of_given_radius_through_two_points
     """
     R = 0 if "radius" not in USER else USER.radius
-    direction = +1 if "direction" not in USER else USER.direction    
+    direction = +1 if "direction" not in USER else USER.direction
     dx,dy = xmax-xmin, ymax-ymin
     q = np.sqrt(dx**2+dy**2) # distance
     R = max(R,q/2) # radius constraint
@@ -221,22 +232,22 @@ def arc(xmin=10,ymin=50,xmax=80,ymax=50,n=5,USER=struct(radius=20,direction=1)):
 
 # %% raster class
 class raster:
-    """ raster class for LAMMPS SMD 
-    
+    """ raster class for LAMMPS SMD
+
     Constructor
-    
+
         R = raster(width=100,height=100...)
 
         Extra properties
             dpi, fontsize
-        
+
         additional properties for R.data()
             scale, center : full scaling
             mass, volume, radius, contactradius, velocities, forces: bead scaling
             filename
-        
+
         List of available properties = default values
-        
+
                    name = "default raster"
                   width = 100
                  height = 100
@@ -251,9 +262,9 @@ class raster:
                 preview = True
            previewthumb = (128,128)
                filename = ["%dx%d raster (%s)" % (self.width,self.height,self.name)]
-    
+
     Graphical objects
-        
+
         R.rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode="lower", angle=0, ismask=False])
         R.rectangle(xcenter,ycenter,width,height [, beadtype=1,mode="center", angle=0, ismask=False])
         R.circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
@@ -261,14 +272,14 @@ class raster:
         R.diamond(...)
         R.pentagon(...)
         R.hexagon(...)
-        
-        R.overlay(xleft,xright,filename=="valid/image.ext",color=2,beadtype=1) 
-        
+
+        R.overlay(xleft,xright,filename=="valid/image.ext",color=2,beadtype=1)
+
         note: use fake=True to generate an object without inserting it
-        
+
         R.collection(...) generates collection of existing or fake objects
         R.object.copy(...) enables to copy an object
-        
+
     Display methods (precedence affects the result)
         R.plot()
         R.show(), R.show(extra="label",contour=True,what="beadtype" or "objindex")
@@ -280,12 +291,12 @@ class raster:
         R.unlabel("object")
         R.figure()
         R.newfigure(dpi=300)
-        
+
         R.numeric()
         R.string(), R.string(what="beadtype" or "objindex"))
         R.names()
         R.print()
-        
+
     Clear and delete
         R.clear()
         R.clear("all")
@@ -298,10 +309,10 @@ class raster:
     Generate an input data object
         X = R.data() or X=R.data(scale=(1,1),center=(0,0))
         X.write("/tmp/myfile")
-    
+
     """
-    
-    # CONSTRUCTOR ---------------------------- 
+
+    # CONSTRUCTOR ----------------------------
     def __init__(self,
                  # raster properties
                  name="default raster",
@@ -321,7 +332,7 @@ class raster:
                  previewthumb = (128,128),
                  filename=""
                  ):
-        
+
         """ initialize raster """
         self.name = name
         self.width = width
@@ -353,20 +364,20 @@ class raster:
         self.contactradius = contactradius
         self.velocities = velocities
         self.forces =forces
-        
+
         self.preview = preview
         self.previewthumb = previewthumb
-        
+
         if filename == "":
             self.filename = ["%dx%d raster (%s)" % (self.width,self.height,self.name)]
         else:
             self.filename = filename
-        
 
-    # DATA ---------------------------- 
+
+    # DATA ----------------------------
     def data(self,scale=(1,1),center=(0,0),maxtype=None,hexpacking=None):
         """
-            return a pizza.data object     
+            return a pizza.data object
                 data()
                 data(scale=(scalex,scaley),
                      center=(centerx,centery),
@@ -419,11 +430,11 @@ class raster:
         X.append('Velocities',self.velocities[0],False,"vx") # vx
         X.append('Velocities',self.velocities[1],False,"vy") # vy
         X.append('Velocities',self.velocities[2],False,"vz") # vz
-        # pseudo-filename        
+        # pseudo-filename
         X.flist = self.filename
         return X
-     
-    # LENGTH ---------------------------- 
+
+    # LENGTH ----------------------------
     def length(self,t=None,what="beadtype"):
         """ returns the total number of beads length(type,"beadtype") """
         if what == "beadtype":
@@ -436,13 +447,13 @@ class raster:
             return np.count_nonzero(num>0)
         else:
             return np.count_nonzero(num==t)
-        
-    # NUMERIC ---------------------------- 
+
+    # NUMERIC ----------------------------
     def numeric(self):
         """ retrieve the image as a numpy.array """
         return self.imbead, self.imobj
 
-    # STRING ---------------------------- 
+    # STRING ----------------------------
     def string(self,what="beadtype"):
         """ convert the image as ASCII strings """
         if what == "beadtype":
@@ -455,7 +466,7 @@ class raster:
         num[num==0] = 32
         num = list(num)
         return ["".join(map(chr,x)) for x in num]
-        
+
     # GET -----------------------------
     def get(self,name):
         """ returns the object """
@@ -468,8 +479,8 @@ class raster:
     def __getattr__(self,key):
         """ get attribute override """
         return self.get(key)
-        
-    # CLEAR ---------------------------- 
+
+    # CLEAR ----------------------------
     def clear(self,what="nothing"):
         """ clear the plotting area, use clear("all")) to remove all objects """
         self.imbead = np.zeros((self.height,self.width),dtype=np.int8)
@@ -487,7 +498,7 @@ class raster:
         plt.cla()
         self.show()
 
-    # DISP method ---------------------------- 
+    # DISP method ----------------------------
     def __repr__(self):
         """ display method """
         ctyp = self.count() # count objects (not beads)
@@ -508,18 +519,21 @@ class raster:
             print("\tno bead assigned")
         print("-"*40)
         if self.preview and len(self)>0 and self.max>0:
-            display(self.torgb("beadtype",self.previewthumb))
-            display(self.torgb("objindex",self.previewthumb))
+            if PILavailable:
+                display(self.torgb("beadtype",self.previewthumb))
+                display(self.torgb("objindex",self.previewthumb))
+            else:
+                print("no PIL image")
         return "RASTER AREA %d x %d with %d objects (%d types, %d beads)." % \
         (self.width,self.height,self.nobjects,len(ctyp),nbt)
 
-    # TORGB method ---------------------------- 
+    # TORGB method ----------------------------
     def torgb(self,what="beadtype",thumb=None):
-        """ converts bead raster to image 
+        """ converts bead raster to image
                 rgb = raster.torgb(what="beadtype")
                 thumbnail = raster.torgb(what="beadtype",(128,128))
                 use: rgb.save("/path/filename.png") for saving
-                
+
             what = "beadtype" or "objindex"
         """
         if what=="beadtype":
@@ -531,7 +545,7 @@ class raster:
         if thumb is not None: rgb.thumbnail(thumb)
         return rgb
 
-    # COUNT method ---------------------------- 
+    # COUNT method ----------------------------
     def count(self):
         """ count objects by type """
         typlist = []
@@ -545,7 +559,7 @@ class raster:
         for t in utypes:
             c.append((t,typlist.count(t)))
         return c
-    
+
     # max method ------------------------------
     @property
     def max(self):
@@ -557,13 +571,13 @@ class raster:
             else:
                 typlist.append(self.objects[o].beadtype)
         return max(typlist)
-    
+
     # len method ------------------------------
     def __len__(self):
         """ len method """
         return len(self.objects)
 
-    # NAMES method ---------------------------- 
+    # NAMES method ----------------------------
     def names(self):
         """ return the names of objects sorted as index """
         namesunsorted=namessorted=list(self.objects.keys())
@@ -571,8 +585,8 @@ class raster:
         for iobj in range(nobj):
             namessorted[self.objects[namesunsorted[iobj]].index-1] = namesunsorted[iobj]
         return namessorted
-        
-    # LIST method ---------------------------- 
+
+    # LIST method ----------------------------
     def list(self):
         """ list objects """
         fmt = "%%%ss:" % max(10,max([len(n) for n in self.names()])+2)
@@ -584,16 +598,16 @@ class raster:
                        self.objects[o].index,
                        self.objects[o].subindex,
                        self.objects[o].nbeads))
-            
-    # EXIST method ---------------------------- 
+
+    # EXIST method ----------------------------
     def exist(self,name):
         """ exist object """
         return name in self.objects
-    
-    # DELETE method ---------------------------- 
+
+    # DELETE method ----------------------------
     def delete(self,name):
         """ delete object """
-        if name in self.objects: 
+        if name in self.objects:
             if not self.objects[name].ismask:
                 self.nbeads -= self.objects[name].nbeads
             del self.objects[name]
@@ -603,12 +617,12 @@ class raster:
         self.clear()
         self.plot()
         self.show(extra="label")
-        
+
     # VALID method
     def valid(self,x,y):
         """ validation of coordinates """
         return min(self.width,max(0,round(x))),min(self.height,max(0,round(y)))
-    
+
     # frameobj method
     def frameobj(self,obj):
         """ frame coordinates by taking into account translation """
@@ -620,15 +634,15 @@ class raster:
         xmax, ymax = self.valid(obj.xmax+envelope, obj.ymax+envelope)
         return xmin, ymin, xmax, ymax
 
-    # RECTANGLE ----------------------------     
+    # RECTANGLE ----------------------------
     def rectangle(self,a,b,c,d,
                   mode="lowerleft",name=None,angle=0,
                   beadtype=None,ismask=False,fake=False,beadtype2=None):
-        """ 
+        """
         rectangle object
             rectangle(xleft,xright,ybottom,ytop [, beadtype=1,mode="lower", angle=0, ismask=False])
             rectangle(xcenter,ycenter,width,height [, beadtype=1,mode="center", angle=0, ismask=False])
-            
+
             use rectangle(...,beadtype2=(type,ratio)) to salt an object with beads
             from another type and with a given ratio
         """
@@ -681,7 +695,7 @@ class raster:
                      path.Path.CLOSEPOLY
                     ]
         R.nvertices = len(R.vertices)-1
-        R.xmin0, R.ymin0, R.xmax0, R.ymax0 = R.corners()        
+        R.xmin0, R.ymin0, R.xmax0, R.ymax0 = R.corners()
         R.xmin0, R.ymin0 = self.valid(R.xmin0,R.ymin0)
         R.xmax0, R.ymax0 = self.valid(R.xmax0,R.ymax0)
         R.angle = angle
@@ -695,12 +709,12 @@ class raster:
             self.nobjects += 1
             return None
 
-        
-    # CIRCLE ----------------------------     
+
+    # CIRCLE ----------------------------
     def circle(self,xc,yc,radius,
                   name=None,shaperatio=1,angle=0,beadtype=None,ismask=False,
                   resolution=20,shiftangle=0,fake=False,beadtype2=None):
-        """ 
+        """
         circle object (or any regular polygon)
             circle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False], resolution=20, shiftangle=0)
             use circle(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
@@ -752,7 +766,7 @@ class raster:
             if i==0:
                 G.codes.append(path.Path.MOVETO)
             elif i==G.resolution:
-                G.codes.append(path.Path.CLOSEPOLY)        
+                G.codes.append(path.Path.CLOSEPOLY)
             else:
                 G.codes.append(path.Path.LINETO)
         G.nvertices = len(G.vertices)-1
@@ -770,7 +784,7 @@ class raster:
             self.objects[name] = G
             self.nobjects += 1
             return None
- 
+
     # OVERLAY -------------------------------
     def overlay(self,x0,y0,
                 name = None,
@@ -790,17 +804,17 @@ class raster:
             overlay object: made from an image converted to nc colors
             the object is made from the level ranged between ic and jc (bounds included)
             note: if palette found, no conversion is applied
-            
+
             O = overlay(x0,y0,filename="/this/is/my/image.png",ncolors=nc,color=ic,colormax=jc,beadtype=b)
             O = overlay(...angle=0,scale=(1,1)) to induce rotation and change of scale
             O = overlay(....ismask=False,fake=False)
-            
+
             note use overlay(...flipud=False) to prevent image fliping (standard)
-            
+
             Outputs:
                 O.original original image (PIL)
                 O.raw image converted to ncolors if needed
-            
+
         """
         if filename is None or filename=="":
             raise ValueError("filename is required (valid image)")
@@ -837,9 +851,9 @@ class raster:
         else:
             self.objects[name] = O
             self.nobjects += 1
-            return None      
-    
-    
+            return None
+
+
     # COLLECTION ----------------------------
     def collection(self,*obj,
                    name=None,
@@ -852,7 +866,7 @@ class raster:
             collection of objects:
                 collection(draftraster,name="mycollect" [,beadtype=1,ismask=True]
                 collection(name="mycollect",newobjname1 = obj1, newobjname2 = obj2...)
-        """ 
+        """
         self.counter["all"] += 1
         self.counter["collection"] += 1
         C = Collection((self.counter["all"],self.counter["collection"]))
@@ -886,53 +900,53 @@ class raster:
             self.objects[name] = C
             self.nobjects += 1
             return None
-    
+
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # =========== pseudo methods connected to circle() ===========
-    # TRIANGLE, DIAMOND, PENTAGON, HEXAGON, -----------------------     
+    # TRIANGLE, DIAMOND, PENTAGON, HEXAGON, -----------------------
     def triangle(self,xc,yc,radius,name=None,
                  shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False,beadtype2=None):
         """
-        triangle object 
+        triangle object
             triangle(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False]
             use triangle(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
         """
         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=3,
            angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake,beadtype2=beadtype2)
-        
+
     def diamond(self,xc,yc,radius,name=None,
                  shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False,beadtype2=None):
         """
-        diamond object 
+        diamond object
             diamond(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False]
             use diamond(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
         """
         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=4,
             angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake,beadtype2=beadtype2)
-        
+
     def pentagon(self,xc,yc,radius,name=None,
                  shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False,beadtype2=None):
         """
-        pentagon object 
+        pentagon object
             pentagon(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False]
             use pentagon(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
         """
         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=5,
             angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake,beadtype2=beadtype2)
-        
+
     def hexagon(self,xc,yc,radius,name=None,
                  shaperatio=1,angle=0,beadtype=None,ismask=False,shiftangle=0,fake=False,beadtype2=None):
         """
-        hexagon object 
+        hexagon object
             hexagon(xcenter,ycenter,radius [, beadtype=1,shaperatio=1, angle=0, ismask=False]
             use hexagon(...,beadtype2=(type,ratio)) to salt an object with beads from another type and with a given ratio
         """
         self.circle(xc,yc,radius,name=name,shaperatio=shaperatio,resolution=6,
             angle=angle,beadtype=beadtype,ismask=ismask,shiftangle=0,fake=fake,beadtype2=beadtype2)
-        
+
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    # label method ---------------------------- 
+    # label method ----------------------------
     def label(self,name,**fmt):
         """
             label:
@@ -950,7 +964,7 @@ class raster:
                 self.objects[name].islabelled = True
         else:
             raise ValueError("%d is not a valid name (use list()) to list valid objects" % name)
-            
+
     # label object method -----------------------------
     def labelobj(self,obj,contour=True,edgecolor="orange",facecolor="none",linewidth=2,ax=plt.gca()):
         """
@@ -958,7 +972,7 @@ class raster:
                 labelobj(obj [, contour=True,edgecolor="orange",facecolor="none",linewidth=2, ax=plt.gca()])
         """
         if contour: contour = obj.hascontour # e.g. overlays do not have contour
-        
+
         if contour:
             patch = patches.PathPatch(obj.polygon2plot,
                                       facecolor=facecolor,
@@ -975,8 +989,8 @@ class raster:
                  verticalalignment = "center_baseline",
                  fontsize=self.fontsize
                  )
-        
-   
+
+
     def unlabel(self,name):
         """ unlabel """
         if name in self.objects:
@@ -987,16 +1001,16 @@ class raster:
                 self.objects[name].islabelled = False
         else:
             raise ValueError("%d is not a valid name (use list()) to list valid objects" % name)
-        
 
-    # PLOT method ---------------------------- 
+
+    # PLOT method ----------------------------
     def plot(self):
         """ plot """
         for o in self.objects:
             if not self.objects[o].isplotted:
                 if self.objects[o].alike == "mixed":
                     for o2 in self.objects[o].collection:
-                        self.plotobj(o2)    
+                        self.plotobj(o2)
                 else:
                     self.plotobj(self.objects[o])
                 # store it as plotted
@@ -1037,7 +1051,7 @@ class raster:
                                 self.imbead[points[k,1],points[k,0]] = obj.beadtype
                             self.imobj[points[k,1],points[k,0]] = obj.index
                             obj.nbeads += 1
-                            
+
         elif obj.alike == "overlay":
             xmin, ymin, xmax, ymax = self.frameobj(obj)
             j,i = np.meshgrid(range(xmin,xmax), range(ymin,ymax))
@@ -1069,9 +1083,9 @@ class raster:
                             obj.nbeads += 1
 
         else:
-            raise ValueError("This object type is notimplemented")        
+            raise ValueError("This object type is notimplemented")
 
-    # SHOW method ---------------------------- 
+    # SHOW method ----------------------------
     def show(self,extra="none",contour=True,what="beadtype"):
         """ show method: show(extra="label",contour=True,what="beadtype") """
         self.figure()
@@ -1080,7 +1094,7 @@ class raster:
         elif what == "objindex":
             imagesc(self.imobj)
         else:
-            raise ValueError('"beadtype" and "objindex" are the only acceptable values')        
+            raise ValueError('"beadtype" and "objindex" are the only acceptable values')
         if extra == "label":
             ax = plt.gca()
             for o in self.names():
@@ -1089,27 +1103,27 @@ class raster:
             ax.set_title("raster area: %s \n (n=%d, $n_p$=%d)" %\
                       (self.name,self.length(),self.nbeads) )
             plt.show()
-            
-    # SHOW method ---------------------------- 
+
+    # SHOW method ----------------------------
     def print(self,what="beadtype"):
         """ print method """
         txt = self.string(what=what)
         for i in range(len(txt)):
             print(txt[i],end="\n")
-         
-            
-    # FIGURE method ---------------------------- 
+
+
+    # FIGURE method ----------------------------
     def figure(self):
         """ set the current figure """
         if self.hfig==[] or not plt.fignum_exists(self.hfig.number):
             self.newfigure()
         plt.figure(self.hfig.number)
-    
-    # NEWFIGURE method ---------------------------- 
+
+    # NEWFIGURE method ----------------------------
     def newfigure(self):
         """ create a new figure (dpi=200) """
         self.hfig = plt.figure(dpi=self.dpi)
-        
+
     # COPY OBJECT ALONG a contour -----------------
     def copyalongpath(self,obj,
                       name="path",
@@ -1122,10 +1136,10 @@ class raster:
                          n=7,
                       USER=struct()):
         """
-        
+
         The method enable to copy an existing object (from the current raster,
-        from another raster or a fake object) amp,g 
-        
+        from another raster or a fake object) amp,g
+
         Parameters
         ----------
         obj : real or fake object
@@ -1167,7 +1181,7 @@ class raster:
                                         name=nameobj,
                                         beadtype=btyp)
         self.collection(**collect,name=name)
-     
+
 
     # SCATTER -------------------------------
     def scatter(self,
@@ -1177,7 +1191,7 @@ class raster:
                  ismask = False
                  ):
         """
-        
+
 
         Parameters
         ----------
@@ -1210,8 +1224,8 @@ class raster:
             self.collection(**collect,name=name)
         else:
             raise TypeError("the first argument must be an emulsion object")
-            
-            
+
+
 # %% PRIVATE SUB-CLASSES
 # Use the equivalent methods of raster() to call these constructors
 #   raster.rectangle, raster.circle, raster.triangle... raster.collection
@@ -1228,7 +1242,7 @@ class raster:
 
 class coregeometry:
     """ core geometry object"""
-        
+
     @property
     def xcenter(self):
         """ xcenter with translate """
@@ -1267,7 +1281,7 @@ class coregeometry:
         if self.alike != "mixed":
             dup = deepduplicate(self)
             if translate != None: # applies translation
-                dup.translate[0] += translate[0] 
+                dup.translate[0] += translate[0]
                 dup.translate[1] += translate[1]
             if beadtype != None: # update beadtype
                 dup.beadtype = beadtype
@@ -1276,14 +1290,14 @@ class coregeometry:
             return dup
         else:
             raise ValueError("collections cannot be copied, regenerate the collection instead")
-            
+
 
 class overlay(coregeometry):
     """ generic overlay class """
-    
+
     hascontour = False
     hasclosefit = True
-    
+
     def __init__(self,
                  counter = (0,0),
                  filename="./sandbox/image.jpg",
@@ -1318,7 +1332,7 @@ class overlay(coregeometry):
         self.scale = scale
         if angle is None: angle = 0
         self.angle = angle
-        self.flipud = flipud        
+        self.flipud = flipud
         if not os.path.isfile(filename):
             raise IOError(f'the file "{filename}" does not exist')
         self.filename = filename
@@ -1332,13 +1346,13 @@ class overlay(coregeometry):
         self.ymax0 = ymin + self.im.shape[0]
         self.xcenter0 = (self.xmin+self.xmax)/2
         self.ycenter0 = (self.ymin+self.ymax)/2
-        
+
     def select(self,color=None,colormax=None,scale=None,angle=None):
         """ select the color index:
                 select(color = c) peeks pixels = c
                 select(color = c, colormax = cmax) peeks pixels>=c and pixels<=cmax
         """
-        if color is None: 
+        if color is None:
             color = self.color
         else:
             self.color = color
@@ -1351,11 +1365,11 @@ class overlay(coregeometry):
             self.nbeads = np.count_nonzero(S)
             return np.flipud(S) if self.flipud else S
         raise ValueError("color must be an integer lower than %d" % len(self.map))
-        
+
     def load(self):
-        """ load image and process it 
+        """ load image and process it
                 returns the image, the indexed image and its color map (à la Matlab, such as imread)
-                
+
                 note: if the image contains a palette it is used, if not the
                 image is converted to an indexed image without dihtering
         """
@@ -1375,7 +1389,7 @@ class overlay(coregeometry):
         if ncolors<self.ncolors:
             print(f"only {ncolors} are available")
         return I,J, np.array(J,dtype="uint8"), p[:ncolors,:]
-    
+
     def __repr__(self):
         """ display for rectangle class """
         print("%s - %s object" % (self.name, self.kind))
@@ -1390,17 +1404,17 @@ class overlay(coregeometry):
         print("note: use the attribute origina,raw to see the raw image")
         return "%s object: %s (beadtype=%d)" % (self.kind,self.name,self.beadtype)
 
-        
+
 
 class genericpolygon(coregeometry):
     """ generic polygon methods """
-    
+
     hascontour = True
     hasclosefit = False
 
     @property
     def polygon(self):
-        """ 
+        """
         R.polygon = path.Path(R.vertices,R.codes,closed=True)
         """
         v = self.vertices
@@ -1444,7 +1458,7 @@ class Rectangle(genericpolygon):
         self.index = counter[0]
         self.subindex = counter[1]
         self.translate = [0.0,0.0]  # modification used when an object is duplicated
-        
+
     def __repr__(self):
         """ display for rectangle class """
         print("%s - %s object" % (self.name, self.kind))
@@ -1452,9 +1466,9 @@ class Rectangle(genericpolygon):
         print("\trange y = [%0.4g %0.4g]" % (self.ymin,self.ymax))
         print("\tcenter = [%0.4g %0.4g]" % (self.xcenter,self.ycenter))
         print("\tangle = %0.4g" % self.angle)
-        print("\ttranslate = [%0.4g %0.4g]" % (self.translate[0],self.translate[1]))        
+        print("\ttranslate = [%0.4g %0.4g]" % (self.translate[0],self.translate[1]))
         return "%s object: %s (beadtype=%d)" % (self.kind,self.name,self.beadtype)
-    
+
 
 class Circle(genericpolygon):
     """ Circle class """
@@ -1464,7 +1478,7 @@ class Circle(genericpolygon):
         self.alike = "circle"        # similar object for plotting
         self.resolution = resolution # default resolution
         self.beadtype = 1            # bead type
-        self.beadtype2 = None        # bead type 2 (alternative beadtype, ratio)        
+        self.beadtype2 = None        # bead type 2 (alternative beadtype, ratio)
         self.nbeads = 0              # number of beads
         self.ismask = False          # True if beadtype == 0
         self.isplotted = False       # True if plotted
@@ -1474,7 +1488,7 @@ class Circle(genericpolygon):
         self.subindex = counter[1]
         self.translate = [0.0,0.0]   # modification used when an object is duplicated
 
-        
+
     def __repr__(self):
         """ display circle """
         print("%s - %s object" % (self.name,self.kind) )
@@ -1484,7 +1498,7 @@ class Circle(genericpolygon):
         print("\tradius = %0.4g" % self.radius)
         print("\tshaperatio = %0.4g" % self.shaperatio)
         print("\tangle = %0.4g" % self.angle)
-        print("\ttranslate = [%0.4g %0.4g]" % (self.translate[0],self.translate[1]))        
+        print("\ttranslate = [%0.4g %0.4g]" % (self.translate[0],self.translate[1]))
         return "%s object: %s (beadtype=%d)" % (self.kind, self.name,self.beadtype)
 
 class Triangle(Circle):
@@ -1517,7 +1531,7 @@ class Hexagon(Circle):
         super().__init__(counter,resolution=6)
         self.name = "hex%03d" % counter[1]
         self.kind = "Hexagon"     # kind of object
-        
+
 class collection(struct):
     """ collection class container (not to be called directly) """
     _type = "collect"               # object type
@@ -1551,7 +1565,7 @@ class Collection:
         self.subindex = counter[1]
         self.collection = collection()
         self.translate = [0.0,0.0]
-        
+
     def __repr__(self):
         keylengths = [len(key) for key in self.collection.keys()]
         width = max(10,max(keylengths)+2)
@@ -1584,7 +1598,7 @@ class Collection:
     def __getattr__(self,key):
         """ get attribute override """
         return self.get(key)
-    
+
     @property
     def xycenter(self):
         """ returns the xcenter and ycenter of  the collection """
@@ -1594,17 +1608,17 @@ class Collection:
             sx += o.xcenter
             sy += o.ycenter
         return sx/n, sy/n
-    
+
     @property
     def xcenter(self):
         """ returns xcenter """
         xc,_ = self.xycenter
-        
+
     @property
     def ycenter(self):
         """ returns ycenter """
         _,yc = self.xycenter
-        
+
     @property
     def beadtype(self):
         """ returns the xcenter and ycenter of the collection """
@@ -1616,7 +1630,7 @@ class Collection:
             return 1
         else:
             return b
-        
+
 
 # %% scatter class and emulsion class
 #    Simplified scatter and emulsion generator
@@ -1628,7 +1642,7 @@ class scatter():
         The scatter class provides an easy constructor
         to distribute in space objects according to their
         positions x,y, size r (radius) and beadtype.
-        
+
         The class is used to derive emulsions.
 
         Returns
@@ -1636,15 +1650,15 @@ class scatter():
         None.
 
         """
-        self.x = np.array([],dtype=int) 
+        self.x = np.array([],dtype=int)
         self.y = np.array([],dtype=int)
         self.r = np.array([],dtype=int)
         self.beadtype = []
-        
+
     @property
     def n(self):
         return len(self.x)
-    
+
     def pairdist(self,x,y):
         """ pair distance to the surface of all disks/spheres """
         if self.n==0:
@@ -1655,11 +1669,11 @@ class scatter():
 
 class emulsion(scatter):
     """ emulsion generator """
-    
-    def __init__(self, xmin=10, ymin=10, xmax=90, ymax=90, 
+
+    def __init__(self, xmin=10, ymin=10, xmax=90, ymax=90,
                  maxtrials=1000, beadtype=1, forcedinsertion=True):
         """
-        
+
 
         Parameters
         ----------
@@ -1693,13 +1707,13 @@ class emulsion(scatter):
         self.forcedinsertion = forcedinsertion
 
     def __repr__(self):
-        print(f" Emulsion object\n\t{self.width}x{self.height} starting at x={self.xmin}, y={self.ymin}")        
+        print(f" Emulsion object\n\t{self.width}x{self.height} starting at x={self.xmin}, y={self.ymin}")
         print(f"\tcontains {self.n} insertions")
         print("\tmaximum insertion trials:", self.maxtrials)
         print("\tforce next insertion if previous fails:", self.forcedinsertion)
         return f"emulsion with {self.n} insertions"
 
-        
+
     def walldist(self,x,y):
         """ shortest distance to the wall """
         return min(abs(x-self.xmin),abs(y-self.ymin),abs(x-self.xmax),abs(y-self.ymax))
@@ -1707,16 +1721,16 @@ class emulsion(scatter):
     def dist(self,x,y):
         """ shortest distance of the center (x,y) to the wall or any object"""
         return np.minimum(np.min(self.pairdist(x,y)),self.walldist(x,y))
-    
+
     def accepted(self,x,y,r):
         """ acceptation criterion """
         return self.dist(x,y)>r
-    
+
     def rand(self):
         """ random position x,y  """
         return  np.round(np.random.uniform(low=self.xmin,high=self.xmax)), \
                 np.round(np.random.uniform(low=self.ymin,high=self.ymax))
-                
+
     def setbeadtype(self,beadtype):
         """ set the default or the supplied beadtype  """
         if beadtype == None:
@@ -1725,7 +1739,7 @@ class emulsion(scatter):
         else:
             self.beadtype.append(beadtype)
             return beadtype
-     
+
     def insertone(self,x=None,y=None,r=None,beadtype=None,overlap=False):
         """
             insert one object of radius r
@@ -1776,7 +1790,7 @@ class emulsion(scatter):
             print(f"partial success: {nsuccess} of {ntodo} objects inserted")
         return nsuccess
 
-    
+
 class coreshell(emulsion):
     """
         coreshell generator
@@ -1784,13 +1798,13 @@ class coreshell(emulsion):
             the method insertion has been modified to integrate
                 thickess = shell thickness value
                 beadtype = (shell beadtype, core beadtype)
-    """       
+    """
 
     def insertion(self,rlist,thickness=None, beadtype=(1,2)):
         """
             insert a list of objects
                 nsuccess=insertion(...)
-                
+
                 List of properties
                     rlist = [r1, r2,...]
                     thickness = shell thcikness value
@@ -1812,11 +1826,11 @@ class coreshell(emulsion):
             rshell = rlist[n-1]
             rcore = rshell - thickness
             if rcore<=0:
-                raise ValueError( 
+                raise ValueError(
  f"The external radius={rshell} cannot be smaller than the shell thickness={thickness}")
             # do the insertion of the shell (largest radius)
             success = self.insertone(r=rshell,beadtype=beadtype[0],overlap=False)
-            if success: 
+            if success:
                 success = self.insertone(
                     x = self.lastinsertion[0],
                     y = self.lastinsertion[1],
@@ -1832,13 +1846,13 @@ class coreshell(emulsion):
         return nsuccess
 
 # %% debug section - generic code to test methods (press F5)
-# ===================================================   
+# ===================================================
 # main()
-# ===================================================   
+# ===================================================
 # for debugging purposes (code called as a script)
 # the code is called from here
 # ===================================================
-if __name__ == '__main__':   
+if __name__ == '__main__':
 
 # %% basic example
 
@@ -1849,32 +1863,32 @@ if __name__ == '__main__':
     R.rectangle(50,50,10,10,mode="center",angle=45,beadtype=1)
     R.circle(45,20,5,name='C1',beadtype=3,beadtype2=(8,0.25))
     R.circle(35,10,5,name='C2',beadtype=3)
-    
+
     R.circle(15,30,10,name='p1',beadtype=4,shaperatio=0.2,angle=-30)
     R.circle(12,40,8,name='p2',beadtype=4,shaperatio=0.2,angle=20)
     R.circle(12,80,22,name='p3',beadtype=4,shaperatio=1.3,angle=20,beadtype2=(9,0.1))
-    
+
     R.triangle(85,20,10,name='T1',beadtype=5,angle=20)
     R.diamond(85,35,5,name='D1',beadtype=5,angle=20,beadtype2=(9,0.5))
     R.pentagon(50,35,5,name='P1',beadtype=5,angle=90)
     R.hexagon(47,85,12,name='H1',beadtype=5,angle=90)
-    
+
     R.label("rect003")
     R.plot()
-    
+
     R.list()
     R.show()
-    
+
     R.clear()
     R.show()
     R.plot()
     R.show(extra="label")
     R.label("rect003")
     R.unlabel('rect1')
-    
+
     X=R.data()
-    
-# %% another example    
+
+# %% another example
     S = raster(width=1000,height=1000)
     S.rectangle(150,850,850,1000,name="top",beadtype=1)
     S.rectangle(150,850,0,150,name="bottom",beadtype=2)
@@ -1885,9 +1899,9 @@ if __name__ == '__main__':
     S.rectangle(500,450,320,320,name="food",mode="center",beadtype=3)
     S.plot()
     S.show(extra="label",contour=False)
-    
 
-    
+
+
 # %% advanced example
     #plt.close("all")
     draft = raster()
@@ -1900,12 +1914,12 @@ if __name__ == '__main__':
 
     A = raster()
     A.collection(draft,name="C1",beadtype=1,translate=[10,30])
-    A.__repr__()
+    repr(A)
     A.objects
     A.plot()
     A.show(extra="label")
     A.objects
-    
+
     B = raster()
     #B.collection(X=draft.X,beadtype=1,translate=[50,50])
     B.copyalongpath(draft.X,name="PX",beadtype=2,
@@ -1917,8 +1931,8 @@ if __name__ == '__main__':
                         n=12)
     B.plot()
     B.show(extra="label")
-    
-    
+
+
 # %% emulsion example
     C = raster(width=400,height=400)
     e = emulsion(xmin=10, ymin=10, xmax=390, ymax=390)
@@ -1929,7 +1943,7 @@ if __name__ == '__main__':
     C.plot()
     C.show()
 
-    
+
 # %% core-shell example
     D = raster(width=400,height=400)
     cs = coreshell(xmin=10, ymin=10, xmax=390, ymax=390)
@@ -1937,11 +1951,11 @@ if __name__ == '__main__':
     D.scatter(cs,name="core-shell")
     D.plot()
     D.show()
-    
+
 # %% overlay example
     I = raster(width=600,height=600)
-    I.overlay(30,100,name="pix0",filename="../sandbox/image.jpg",ncolors=4,color=0,beadtype=1,angle=10,scale=(1.1,1.1))
-    I.overlay(30,100,name="pix2",filename="../sandbox/image.jpg",ncolors=4,color=2,beadtype=2,angle=10,scale=(1.1,1.1))
+    I.overlay(30,100,name="pix0",filename="./sandbox/image.jpg",ncolors=4,color=0,beadtype=1,angle=10,scale=(1.1,1.1))
+    I.overlay(30,100,name="pix2",filename="./sandbox/image.jpg",ncolors=4,color=2,beadtype=2,angle=10,scale=(1.1,1.1))
     I.label("pix0")
     I.plot()
     I.show(extra="label")
@@ -1949,4 +1963,4 @@ if __name__ == '__main__':
     I.pix0.raw
     a = I.torgb("objindex",(512,512))
     a.show()
-    a.save("../tmp/preview.png")
+    a.save("./tmp/preview.png")

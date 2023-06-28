@@ -8,21 +8,21 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.35"
+__version__ = "0.51"
 
 """
 
     The class script() and derived facilitate the coding in LAMMPS
     Each section is remplaced by a template as a class inherited from script()
-    
+
     The class include two important attribues:
         TEMPLATE is a string  efines between """ """ the LAMMPS code
         The variables used by TEMPLATE are stored in DEFINITIONS.
-        DEFINITIONS is a scripdata() object accepting scalar, mathematical expressions, 
+        DEFINITIONS is a scripdata() object accepting scalar, mathematical expressions,
         text almost as in LAMMPS.
-        
+
         Variables can be inherited between sections using + or += operator
-                
+
     Toy example
         G = globalsection()
         print(G)
@@ -44,7 +44,7 @@ __version__ = "0.35"
         print(s)
         r = runsection()
         print(r)
-        
+
         # all sections as a single script
         myscript = G+c+g+d+b+i+t+d+s+r
         print("\n"*4,'='*80,'\n\n this is the full script\n\n','='*80,'\n')
@@ -52,23 +52,23 @@ __version__ = "0.35"
 
     Additional classes: scriptobject(), scriptobjectgroup(), pipescript()
     They generate dynamic scripts from objects, collection of objects or scripts
-    
+
     Variables (DEFINITIONS and USER) are stored in scriptdata() objects
-    
-    
+
+
     How the variables are stored and used.
          STATIC: set in the script class (with the attribute DEFINITIONS)
          GLOBAL: set in the instance of the script during construction
                  or within the USER scriptdata(). These values can be changed
-                 at runtime but the values are overwritten if the script are 
+                 at runtime but the values are overwritten if the script are
                  combined with the operator +
           LOCAL: set (bypass) in the pipeline with the keyword USER[step]
-          
+
     Example with pipelines:
         Build pipelines with:
             p = G | c | g # using the symbol pipe "|"
-            p = p = pipescript(G)*4 # using the constructor pipescript()
-            
+            p = pipescript(G)*4 # using the constructor pipescript()
+
                 Pipeline with 4 scripts and
                 D(STATIC:GLOBAL:LOCAL) DEFINITIONS
                   ------------:----------------------------------------
@@ -76,14 +76,14 @@ __version__ = "0.35"
                   [-]  01: script:global:example with D(19: 0: 0)
                   [-]  02: script:global:example with D(19: 0: 0)
                   [-]  03: script:global:example with D(19: 0: 0)
-                  ------------:----------------------------------------        
+                  ------------:----------------------------------------
 
     Change the GLOBAL variables for script with idx=0
         p.scripts[0].USER.a=1  # set a=1 for all scripts onwards
         p.scripts[0].USER.b=2  # set b=2
     Change the LOCAL variables for script with idx=0
         p.USER[0].a=10        # set a=10 for the script 00
-                
+
                 ------------:----------------------------------------
                 [-]  00: script:global:example with D(19: 2: 1)
                 [-]  01: script:global:example with D(19: 0: 0)
@@ -97,14 +97,14 @@ __version__ = "0.35"
         GLOBAL: p.scripts[i].USER.var to modify the user space from p[i] and onwards
         STATIC: p.scripts[i].DEFINITIONS
         p.rename(idx=range(2),name=["A","B"]), p.clear(idx=[0,3,4])
-        p.script(), p.script(idx=range(5)), p[0:5].script()        
+        p.script(), p.script(idx=range(5)), p[0:5].script()
 
 Created on Sat Feb 19 11:00:43 2022
 
 @author: olivi
 """
 
-# INRAE\Olivier Vitrac - rev. 2022-03-15
+# INRAE\Olivier Vitrac - rev. 2023-01-31
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -125,12 +125,19 @@ Created on Sat Feb 19 11:00:43 2022
 # 2022-03-16 overload +=, *, several fixes and update help for pipescript
 # 2022-03-18 modification to script method, \ttype specified for groups
 # 2022-03-19 standardized pizza path
+# 2023-01-09 update __repr__() for scripts to show both DEFINITIONS and USER if verbose = True
+# 2023-01-19 fix do() for pipescripts when the pipe has been already fully executed (statically)
+# 2023-01-20 add picker() and possibility to get list indices in pipe
+# 2023-01-26 add pipescript.join()
+# 2023-01-27 add tmpwrite()
+# 2023-01-27 use % instead of $ for lists in script.do(), in line with the new feature implemented in param.eval()
+# 2023-01-31 fix the temporary file on Linux 
 
 # %% Dependencies
 import types
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate
-import datetime, os, socket, getpass
+import datetime, os, socket, getpass, tempfile
 
 # All forcefield parameters are stored à la Matlab in a structure
 from pizza.forcefield import *
@@ -139,12 +146,18 @@ from pizza.private.struct import param,struct
 # span vector into a single string
 def span(vector,sep=" ",left="",right=""): return left+sep.join(map(str,vector))+right
 
+# select elements from a list L based on indices as L(indices) in Matlab
+def picker(L,indices): return [L[i] for i in indices if (i>=0 and i<len(L))]
+
+# UTF-8 encoded Byte Order Mark (sequence: 0xef, 0xbb, 0xbf)
+BOM_UTF8 = b'\xef\xbb\xbf'
+
 # %% Top generic classes for storing script data and objects
 # they are not intended to be used outside script data and objects
 
 class scriptdata(param):
-    """ 
-        class of script parameters 
+    """
+        class of script parameters
             Typical constructor:
                 DEFINITIONS = scriptdata(
                     var1 = value1,
@@ -156,11 +169,11 @@ class scriptdata(param):
     _fulltype = "script data"
     _ftype = "definition"
 
-     
+
 # object data (for scripts)
 class scriptobject(struct):
-    """ 
-        class of script object 
+    """
+        class of script object
             OBJ = scriptobject(...)
             Implemented properties:
                 beadtype=1,2,...
@@ -169,22 +182,22 @@ class scriptobject(struct):
                 filename = "/path/to/your/inputfile"
                 style = "smd"
                 forcefield = any valid forcefield instance (default = rigidwall())
-        
+
         note: use a forcefield instance with the keywork USER to pass user FF parameters
         examples:   rigidwall(USER=scriptdata(...))
                     solidfood(USER==scriptdata(...))
                     water(USER==scriptdata(...))
-        
+
         group objects with OBJ1+OBJ2... into scriptobjectgroups
-        
+
         objects can be compared and sorted based on beadtype and name
-        
+
     """
     _type = "SO"
     _fulltype = "script object"
     _ftype = "propertie"
-    
-    def __init__(self, 
+
+    def __init__(self,
                  beadtype = 1,
                  name = "undefined",
                  fullname="",
@@ -226,14 +239,14 @@ class scriptobject(struct):
             return scriptobjectgroup(self)+SO
         else:
             return ValueError("The object should a script object or its container")
-        
+
     def __or__(self, pipe):
         """ overload | or for pipe """
         if isinstance(pipe,(pipescript,script,scriptobject,scriptobjectgroup)):
             return pipescript(self) | pipe
         else:
             raise ValueError("the argument must a pipescript, a scriptobject or a scriptobjectgroup")
-        
+
     def __eq__(self, SO):
         return isinstance(SO,scriptobject) and (self.beadtype == SO.beadtype) \
             and (self.name == SO.name)
@@ -252,44 +265,44 @@ class scriptobject(struct):
 
     def __ge__(self, SO):
         return self.beadtype >= SO.beadtype
-                    
-        
+
+
 # group of script objects  (special kind of list)
 class scriptobjectgroup(struct):
-    """ 
+    """
         class of script object group
             script object groups are built from script objects OBJ1, OBJ2,..
             GRP = scriptobjectgroup(OBJ1,OBJ2,...)
             GRP = OBJ1+OBJ2+...
-            
+
         note: each beadtype occurs once in the group (if not an error message is generated)
-            
+
         List of methods
             struct() converts data as structure
             select([1,2,4]) selects objects with matching beadtypes
-            
+
         List of properties (dynamically calculated)
             converted data: list, str, zip, beadtype, name, groupname, group, filename
             numeric: len, min, max, minmax
             forcefield related: interactions, forcefield
             script: generate the script (load,group,forcefield)
-        
+
         Full syntax (toy example)
-        
+
     b1 = scriptobject(name="bead 1",group = ["A", "B", "C"],filename='myfile1',forcefield=rigidwall())
     b2 = scriptobject(name="bead 2", group = ["B", "C"],filename = 'myfile1',forcefield=rigidwall())
     b3 = scriptobject(name="bead 3", group = ["B", "D", "E"],forcefield=solidfood())
     b4 = scriptobject(name="bead 4", group = "D",beadtype = 1,filename="myfile2",forcefield=water())
-    
+
         note: beadtype are incremented during the collection (effect of order)
-            
+
             # generate a collection, select a typ 1 and a subgroup, generate the script for 1,2
-            
+
             collection = b1+b2+b3+b4
             grp_typ1 = collection.select(1)
             grpB = collection.group.B
             script12 = collection.select([1,2]).script
-        
+
         note: collection.group.B returns a strcture with 6 fields
         -----------:----------------------------------------
             groupid: 2 <-- automatic group numbering
@@ -299,12 +312,12 @@ class scriptobjectgroup(struct):
                name: ['bead 1', 'bead 2', 'bead 3'] <-- their names
                 str: group B 1 2 3 <-- LAMMPS syntax
         -----------:----------------------------------------
-        
+
     """
     _type = "SOG"
     _fulltype = "script object group"
     _ftype = "object"
-    
+
     def __init__(self,*SOgroup):
         """ SOG constructor """
         super(scriptobjectgroup,self).__init__()
@@ -360,7 +373,7 @@ class scriptobjectgroup(struct):
             return dup
         else:
             raise ValueError("the argument #%d is not a script object or a script object group")
-    
+
     def __or__(self, pipe):
         """ overload | or for pipe """
         if isinstance(pipe,(pipescript,script,scriptobject,scriptobjectgroup)):
@@ -372,7 +385,7 @@ class scriptobjectgroup(struct):
     def list(self):
         """ convert into a list """
         return sorted(self)
-    
+
     @property
     def zip(self):
         """ zip beadtypes and names """
@@ -389,12 +402,12 @@ class scriptobjectgroup(struct):
     def beadtype(self):
         """ returns the beads in the group """
         return [x for x,_,_,_ in self.zip]
-        
+
     @property
     def name(self):
         """ "return the list of names """
         return [x for _,x,_,_ in self.zip]
-    
+
     @property
     def groupname(self):
         """ "return the list of groupnames """
@@ -402,20 +415,20 @@ class scriptobjectgroup(struct):
         for _,_,glist,_ in self.zip:
             for g in glist:
                 if g not in grp: grp.append(g)
-        return grp    
+        return grp
 
     @property
     def filename(self):
         """ "return the list of names as a dictionary """
         files = {}
         for _,n,_,fn in self.zip:
-            if fn != "": 
+            if fn != "":
                 if fn not in files:
                     files[fn] = [n]
                 else:
                     files[fn].append(n)
         return files
-    
+
     @property
     def str(self):
         return span(self.beadtype)
@@ -430,22 +443,22 @@ class scriptobjectgroup(struct):
                    name = self.name,
                     str = "group %s %s" % (groupidname, span(self.beadtype))
                )
-    
+
     @property
     def minmax(self):
         """ returns the min,max of beadtype """
         return self.min,self.max
-    
+
     @property
     def min(self):
         """ returns the min of beadtype """
         return min(self.beadtype)
-    
+
     @property
     def max(self):
         """ returns the max of beadtype """
         return max(self.beadtype)
-    
+
     def select(self,beadtype=None):
         """ select bead from a keep beadlist """
         if beadtype==None: beadtype = list(range(self.min,self.max+1))
@@ -455,7 +468,7 @@ class scriptobjectgroup(struct):
             if b in beadtype:
                 dup = dup + self.getattr(n)
         return dup
-    
+
     @property
     def group(self):
         """ build groups from group (groupname contains synonyms) """
@@ -467,7 +480,7 @@ class scriptobjectgroup(struct):
             b =[x for x,_,gx,_ in bng if g in gx]
             groupdef.setattr(g,self.select(b).struct(groupid = gid, groupidname = g))
         return groupdef
-    
+
     @property
     def interactions(self):
         """ update and accumulate all forcefields """
@@ -490,13 +503,13 @@ class scriptobjectgroup(struct):
         # end
         TEMPLATE += "\n# ===== [ END FORCEFIELD SECTION ] "+"="*82+"\n"
         return FF,TEMPLATE
-    
+
     @property
     def forcefield(self):
         """ interaction forcefields """
         FF,_ = self.interactions
         return FF
-    
+
     @property
     def script(self):
         """ basic scripting from script objects """
@@ -534,15 +547,15 @@ class scriptobjectgroup(struct):
 # %% script core class
 # note: please derive this class when you use it, do not alter it
 class script():
-    """ 
+    """
         core script class (flexible design)
         --------------------------------------
-        
+
         The class script enables to generate dynamically LAMMPS sections
         "NONE","GLOBAL","INITIALIZE","GEOMETRY","DISCRETIZATION",
         "BOUNDARY","INTERACTIONS","INTEGRATION","DUMP","STATUS","RUN"
-        
-        
+
+
         # %% This the typical construction for a class
         class XXXXsection(script):
             "" " LAMMPS script: XXXX session "" "
@@ -552,58 +565,58 @@ class script():
             section = 0
             userid = "example"
             version = 0.1
-            
+
             DEFINITIONS = scriptdata(
                  value= 1,
             expression= "${value+1}",
                   text= "$my text"
                 )
-            
+
             TEMPLATE = "" "
         # :UNDEF SECTION:
         #   to be defined
         LAMMPS code with ${value}, ${expression}, ${text}
             "" "
-        
+
         DEFINTIONS can be inherited from a previous section
         DEFINITIONS = previousection.DEFINTIONS + scriptdata(
                  value= 1,
             expression= "${value+1}",
-                  text= "$my text"            
+                  text= "$my text"
             )
-        
-        
+
+
         Recommandation: Split a large script into a small classes or actions
-        An example of use could be: 
+        An example of use could be:
             move1 = translation(displacement=10)+rotation(angle=30)
             move2 = shear(rate=0.1)+rotation(angle=20)
             bigmove = move1+move2+move1
             script = bigmove.do() generates the script
-        
+
         NOTE1: Use the print() and the method do() to get the script interpreted
-        
+
         NOTE2: DEFINITIONS can be pretified using DEFINITIONS.generator()
-        
+
         NOTE3: Variables can extracted from a template using TEMPLATE.scan()
-        
+
         NOTE4: Scripts can be joined (from top down to bottom).
         The first definitions keep higher precedence. Please do not use
         a variable twice with different contents.
-        
+
         myscript = s1 + s2 + s3 will propagate the definitions
         without overwritting previous values). myscript will be
         defined as s1 (same name, position, userid, etc.)
-    
+
         myscript += s appends the script section s to myscript
-        
+
         NOTE5: rules of precedence when script are concatenated
         The attributes from the class (name, description...) are kept from the left
         The values of the right overwrite all DEFINITIONS
-        
+
         NOTE6: user variables (instance variables) can set with USER or at the construction
         myclass_instance = myclass(myvariable = myvalue)
         myclass_instance.USER.myvariable = myvalue
-        
+
         NOTE7: how to change variables for all instances at once?
         In the example below, let x is a global variable (instance independent)
         and y a local variable (instance dependent)
@@ -612,38 +625,38 @@ class script():
         instance3.USER.y=3 --> y=3 in instance3
         instance1.DEFINITIONS.x = 10 --> x=10 in all instances (1,2,3)
 
-        If x is also defined in the USER section, its value will be used        
+        If x is also defined in the USER section, its value will be used
         Setting instance3.USER.x = 30 will assign x=30 only in instance3
-        
+
         NOTE8: if a the script is used with different values for a same parameter
         use the operator & to concatenate the results instead of the script
         example: load(file="myfile1") & load(file="myfile2) & load(file="myfile3")+...
-                                             
+
         NOTE9: lists (e.g., [1,2,'a',3] are expanded ("1 2 a 3")
                tuples (e.g. (1,2)) are expanded ("1,2")
                It is easier to read ["lost","ignore"] than "$ lost ignore"
-        
+
         NOTE 10: New operators >> and || extend properties
             + merge all scripts but overwrite definitions
             & execute statically script content
             >> pass only DEFINITIONS but not TEMPLATE to the right
             | pipe execution such as in Bash, the result is a pipeline
-            
+
         NOTE 11: Scripts in pipelines are very flexible, they support
         full indexing à la Matlab, including staged executions
             method do(idx) generates the script corresponding to indices idx
             method script(idx) generates the corresponding script object
-        
+
         --------------------------[ FULL EXAMPLE ]-----------------------------
 
         # Import the class
         from pizza.script import *
-        
+
         # Override the class globalsection
         class scriptexample(globalsection):
             description = "demonstrate commutativity of additions"
             verbose = True
-            
+
             DEFINITIONS = scriptdata(
                 X = 10,
                 Y = 20,
@@ -655,21 +668,21 @@ class script():
             ${R1} = ${X} + ${Y}
             ${R2} = ${Y} + ${X}
          "" "
-            
+
         # derived from scriptexample, X and Y are reused
         class scriptexample2(scriptexample):
             description = "demonstrate commutativity of multiplications"
             verbose = True
             DEFINITIONS = scriptexample.DEFINITIONS + scriptdata(
                 R3 = "${X} * ${Y}",
-                R4 = "${Y} * ${X}",        
-                )            
+                R4 = "${Y} * ${X}",
+                )
             TEMPLATE = "" "
             # Property of the multiplication
             ${R3} = ${X} * ${Y}
             ${R4} = ${Y} * ${X}
          "" "
-        
+
         # call the first class and override the values X and Y
         s1 = scriptexample()
         s1.USER.X = 1  # method 1 of override
@@ -683,7 +696,7 @@ class script():
         print("this is my full script")
         s.description
         s.do()
-        
+
         # The result for s1 is
             3 = 1 + 2
             3 = 2 + 1
@@ -693,11 +706,11 @@ class script():
         # The result for s=s1+s2 is
             # Property of the addition
             3000 = 1000 + 2000
-            3000 = 2000 + 1000 
+            3000 = 2000 + 1000
             # Property of the multiplication
             2000000 = 1000 * 2000
             2000000 = 2000 * 1000
-    
+
     """
     type = "script"                         # type (class name)
     name = "empty script"                   # name
@@ -708,23 +721,24 @@ class script():
     version = 0.40                          # version
     verbose = False                         # set it to True to force verbosity
     _contact = ("INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr",
-                "INRAE\SAYFOOD\william.jenkinson@agroparistech.fr")
-    
+                "INRAE\SAYFOOD\william.jenkinson@agroparistech.fr",
+                "INRAE\SAYFOOD\han.chen@inrae.fr")
+
     SECTIONS = ["NONE","GLOBAL","INITIALIZE","GEOMETRY","DISCRETIZATION",
                 "BOUNDARY","INTERACTIONS","INTEGRATION","DUMP","STATUS","RUN"]
-   
+
     # Main class variables
     # These definitions are for instances
     DEFINITIONS = scriptdata()
     TEMPLATE = """
         # empty LAMMPS script
     """
-    
+
     # constructor
     def __init__(self,**userdefinitions):
         """ constructor adding instance definitions stored in USER """
         self.USER = scriptdata(**userdefinitions)
-    
+
     # print method for headers (static, no implicit argument)
     @staticmethod
     def printheader(txt,align="^",width=80,filler="~"):
@@ -733,14 +747,14 @@ class script():
             print("\n"+filler*(width+6)+"\n")
         else:
             print(("\n{:"+filler+"{align}{width}}\n").format(' [ '+txt+' ] ', align=align, width=str(width)))
-    
+
     # String representation
     def __str__(self):
         """ string representation """
         return f"{self.type}:{self.name}:{self.userid}"
 
     # Display/representation method
-    def __repr__(self):    
+    def __repr__(self):
         """ disp method """
         stamp = str(self)
         self.printheader(f"{stamp} | version={self.version}",filler="/")
@@ -750,11 +764,13 @@ class script():
         print(f"  description: {self.description}")
         self.printheader("DEFINITIONS",filler="-",align=">")
         if len(self.DEFINITIONS)<15:
-            self.DEFINITIONS
+            self.DEFINITIONS.__repr__()
         else:
             print("too many definitions: ",self.DEFINITIONS)
-        self.printheader("TEMPLATE",filler="-",align=">")
         if self.verbose:
+            self.printheader("USER",filler="-",align=">")
+            self.USER.__repr__()
+            self.printheader("TEMPLATE",filler="-",align=">")
             print(self.TEMPLATE)
             self.printheader("SCRIPT",filler="-",align=">")
         print(self.do(printflag=False))
@@ -766,21 +782,21 @@ class script():
         """ advanced method to get all attributes including class ones"""
         return {k: getattr(self, k) for k in dir(self) \
                 if (not k.startswith('_')) and (not isinstance(getattr(self, k),types.MethodType))}
-                   
+
     # Generate the script
     def do(self,printflag=True):
         """ generate the script """
         inputs = self.DEFINITIONS + self.USER
         for k in inputs.keys():
             if isinstance(inputs.getattr(k),list):
-                inputs.setattr(k,"$ "+span(inputs.getattr(k)))
+                inputs.setattr(k,"% "+span(inputs.getattr(k)))
             elif isinstance(inputs.getattr(k),tuple):
-                inputs.setattr(k,"$ "+span(inputs.getattr(k),sep=","))
+                inputs.setattr(k,"% "+span(inputs.getattr(k),sep=","))
         cmd = inputs.formateval(self.TEMPLATE)
         cmd = cmd.replace("[comment]",f"[position {self.position}:{self.userid}]")
         if printflag: print(cmd)
         return cmd
-    
+
     # Return the role of the script (based on section)
     @property
     def role(self):
@@ -810,7 +826,7 @@ class script():
             self.TEMPLATE = "\n".join([self.TEMPLATE,s.TEMPLATE])
         else:
             raise TypeError("the second operand must a script object")
-            
+
     # override >>
     def __rshift__(self,s):
         """ overload right  shift operator (keep only the last template) """
@@ -822,7 +838,7 @@ class script():
             return dup
         else:
             raise TypeError("the second operand must a script object")
-    
+
     # override &
     def __and__(self,s):
         """ overload and operator """
@@ -831,7 +847,7 @@ class script():
             dup.TEMPLATE = "\n".join([self.do(),s.do()])
             return dup
         raise TypeError("the second operand must a script object")
- 
+
     # override *
     def __mul__(self,ntimes):
         """ overload * operator """
@@ -851,7 +867,7 @@ class script():
                for n in range(1,ntimes): res = res & self
            return res
         raise ValueError("multiplicator should be a strictly positive integer")
-    
+
     # pipe scripts
     def __or__(self,pipe):
         """ overload | or for pipe """
@@ -859,20 +875,33 @@ class script():
             return pipescript(self) | pipe
         else:
             raise ValueError("the argument must a pipescript, a scriptobject or a scriptobjectgroup")
-    
+
     # header
     @staticmethod
     def header():
         return   f"# Automatic LAMMPS script (version {script.version})\n" + \
                  f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
                  f'# {datetime.datetime.now().strftime("%c")}\n\n'
-    
+
     # write file
     def write(self, file):
+        """ write file """
         f = open(file, "w")
         print(script.header(),"\n"*3,file=f)
         print(self.do(),file=f)
         f.close()
+
+    # tempfile
+    def tmpwrite(self):
+        """ write file """
+        ftmp = tempfile.NamedTemporaryFile(mode="w+b",prefix="script_",suffix=".txt")
+        content = f"# <-- {str(datetime.datetime.now())} -->\n" + \
+                   "# This is a temporary file (it will be deleted automatically)" + \
+                   "\n"*2 + script.header() + "\n"*3 +self.do()
+        ftmp.write(BOM_UTF8+content.encode('utf-8'))
+        ftmp.seek(0)
+        print("\n"*2,"A temporary file has been generated here:\n",ftmp.name)
+        return ftmp
 
 # %% pipe script
 class pipescript():
@@ -880,7 +909,7 @@ class pipescript():
         Pipescript class stores scripts in pipelines
             By assuming: s0, s1, s2... scripts, scriptobject or scriptobjectgroup
             p = s0 | s1 | s2 generates a pipe script
-            
+
             Example of pipeline:
           ------------:----------------------------------------
           [-]  00: G with (0>>0>>19) DEFINITIONS
@@ -895,38 +924,38 @@ class pipescript():
           [-]  09: r with (0>>0>>20) DEFINITIONS
           ------------:----------------------------------------
         Out[35]: pipescript containing 11 scripts with 8 executed[*]
-        
+
         note: XX>>YY>>ZZ represents the number of stored variables
              and the direction of propagation (inheritance from left)
              XX: number of definitions in the pipeline USER space
              YY: number of definitions in the script instance (frozen in the pipeline)
              ZZ: number of definitions in the script (frozen space)
-            
+
             pipelines are executed sequentially (i.e. parameters can be multivalued)
                 cmd = p.do()
                 fullscript = p.script()
-                
+
             pipelines are indexed
                 cmd = p[[0,2]].do()
                 cmd = p[0:2].do()
                 cmd = p.do([0,2])
-                
+
             pipelines can be reordered
                 q = p[[2,0,1]]
-                
+
             steps can be deleted
                 p[[0,1]] = []
-                
+
             clear all executions with
                 p.clear()
                 p.clear(idx=1,2)
-                
+
             local USER space can be accessed via
             (affects only the considered step)
                 p.USER[0].a = 1
                 p.USER[0].b = [1 2]
                 p.USER[0].c = "$ hello world"
-                
+
             global USER space can accessed via
             (affects all steps onward)
                 p.scripts[0].USER.a = 10
@@ -935,9 +964,9 @@ class pipescript():
 
             static definitions
                 p.scripts[0].DEFINITIONS
-                
+
             steps can be renamed with the method rename()
-                
+
             syntaxes are à la Matlab:
                 p = pipescript()
                 p | i
@@ -952,9 +981,13 @@ class pipescript():
                 sp = p.script([0,1,4,7])
                 r = collection | p
 
-            Pending: mechanism to store LAMMPS results (dump3) in the pipeline                
+            join joins a list (static method)
+                p = pipescript.join([p1,p2,s3,s4])
+
+
+            Pending: mechanism to store LAMMPS results (dump3) in the pipeline
     """
-    
+
     def __init__(self,s=None):
         """ constructor """
         self.globalscript = None
@@ -962,7 +995,7 @@ class pipescript():
         self.listUSER = []
         self.verbose = True # set it to False to reduce verbosity
         self.cmd = ""
-        if isinstance(s,script): 
+        if isinstance(s,script):
             self.listscript = [duplicate(s)]
             self.listUSER = [scriptdata()]
         elif isinstance(s,scriptobject):
@@ -981,7 +1014,7 @@ class pipescript():
             self.executed = []
 
     def setUSER(self,idx,key,value):
-        """ 
+        """
             setUSER sets USER variables
             setUSER(idx,varname,varvalue)
         """
@@ -989,9 +1022,9 @@ class pipescript():
             self.listUSER[idx].setattr(key,value)
         else:
             raise IndexError(f"the index in the pipe should be comprised between 0 and {len(self)-1}")
-        
+
     def getUSER(self,idx,key):
-        """ 
+        """
             getUSER get USER variable
             getUSER(idx,varname)
         """
@@ -1007,7 +1040,7 @@ class pipescript():
             p.USER[idx].var = val assigns the value val to the USER variable var
         """
         return self.listUSER  # override listuser
-    
+
     @property
     def scripts(self):
         """
@@ -1040,7 +1073,7 @@ class pipescript():
             return res
         else:
             raise ValueError("the operand must be a pipescript")
-                        
+
     def __or__(self,s):
         """ overload | pipe """
         leftarg = deepduplicate(self)
@@ -1062,7 +1095,7 @@ class pipescript():
             leftarg.name.append(rightname)
             leftarg.executed.append(False)
         return leftarg
-        
+
     def __str__(self):
         """ string representation """
         return f"pipescript containing {self.n} scripts with {self.nrun} executed[*]"
@@ -1094,25 +1127,25 @@ class pipescript():
                   'p.rename(idx=range(2),name=["A","B"]), p.clear(idx=[0,3,4])',
                   "p.script(), p.script(idx=range(5)), p[0:5].script()","",sep="\n")
         else:
-             print(line)   
-        return str(self)        
+             print(line)
+        return str(self)
 
     def __len__(self):
         """ len() method """
         return len(self.listscript)
-        
+
     @property
     def n(self):
         """ number of scripts """
         return len(self)
-    
+
     @property
     def nrun(self):
         """ number of scripts executed continuously from origin """
         n, nmax  = 0, len(self)
         while n<nmax and self.executed[n]: n+=1
         return n
-    
+
     def __getitem__(self,idx):
         """ return the ith or slice element(s) of the pipe  """
         dup = deepduplicate(self)
@@ -1120,7 +1153,7 @@ class pipescript():
             dup.listscript = dup.listscript[idx]
             dup.listUSER = dup.listUSER[idx]
             dup.name = dup.name[idx]
-            dup.executed = dup.executed[idx]                    
+            dup.executed = dup.executed[idx]
         elif isinstance(idx,int):
             if idx<len(self):
                 dup.listscript = dup.listscript[idx:idx+1]
@@ -1129,12 +1162,17 @@ class pipescript():
                 dup.executed = dup.executed[idx:idx+1]
             else:
                 raise IndexError(f"the index in the pipe should be comprised between 0 and {len(self)-1}")
+        elif isinstance(idx,list):
+            dup.listscript = picker(dup.listscript,idx)
+            dup.listUSER = picker(dup.listUSER,idx)
+            dup.name = picker(dup.name,idx)
+            dup.executed = picker(dup.executed,idx)
         else:
             raise IndexError("the index needs to be a slice or an integer")
         return dup
-    
+
     def __setitem__(self,idx,s):
-        """ 
+        """
             modify the ith element of the pipe
                 p[4] = [] removes the 4th element
                 p[4:7] = [] removes the elements from position 4 to 6
@@ -1185,15 +1223,15 @@ class pipescript():
                     for i in range(len(s)):
                         self.__setitem__(idx[i], s[i]) # call as a scalar
                 else:
-                    raise IndexError(f"the number of indices {len(list)} does not match the number of values {len(s)}")                    
+                    raise IndexError(f"the number of indices {len(list)} does not match the number of values {len(s)}")
             elif isinstance(idx,slice):
                 ilist = list(range(*idx.indices(len(self)+len(s))))
                 self.__setitem__(ilist, s) # call as a list
             else:
                 raise IndexError("unrocognized index value, the index should be an integer or a slice")
-                
+
     def rename(self,name="",idx=None):
-        """ 
+        """
             rename scripts in the pipe
                 p.rename(idx=[0,2,3],name=["A","B","C"])
         """
@@ -1209,7 +1247,7 @@ class pipescript():
             self.name[idx] = name
         else:
             raise ValueError("provide a non empty name and valid index")
-            
+
     def clear(self,idx=None):
         if len(self)>0:
             if idx==None:
@@ -1226,7 +1264,7 @@ class pipescript():
             if not self.executed[0]:
                 self.globalscript = None
                 self.cmd = ""
-                
+
 
     def do(self,idx=None):
         """
@@ -1243,7 +1281,8 @@ class pipescript():
                 self.cmd = ""
             else:
                 start = self.nrun
-            if idx == None: idx = range(start,stop+1)
+            if start>stop: return self.cmd
+            if idx is None: idx = range(start,stop+1)
             if isinstance(idx,range): idx = list(idx)
             if isinstance(idx,int): idx = [idx]
             start,stop = min(idx),max(idx)
@@ -1262,12 +1301,12 @@ class pipescript():
                 self.executed[i] = True
             return self.cmd
         else:
-            return "# empty pipe - nothing to do"    
-            
+            return "# empty pipe - nothing to do"
+
 
     def script(self,idx=None):
         """
-            execute the pipeline or parts of the pipeline
+            script the pipeline or parts of the pipeline
                 s = p.script()
                 s = p.script([0,2])
         """
@@ -1277,15 +1316,36 @@ class pipescript():
         if len(self)>1:
             s.userid = self.name[0]+"->"+self.name[-1]
         elif len(self)==1:
-            s.userid = self.name[0]            
+            s.userid = self.name[0]
         else:
             s.userid = "empty pipeline"
         s.TEMPLATE = script.header()+self.do(idx)
         s.DEFINITIONS = duplicate(self.globalscript.DEFINITIONS)
         s.USER = duplicate(self.globalscript.USER)
         return s
-        
-        
+
+    @staticmethod
+    def join(liste):
+        """
+            join a combination scripts and pipescripts within a pipescript
+                p = pipescript.join([s1,s2,p3,p4,p5...])
+        """
+        if not isinstance(liste,list):
+            raise ValueError("the argument should be a list")
+        ok = True
+        for i in range(len(liste)):
+            ok = ok and isinstance(liste[i],(script,pipescript))
+            if not ok:
+                raise ValueError(f"the entry [{i}] should be a script or pipescript")
+        if len(liste)<1:
+            return liste
+        out = liste[0]
+        for i in range(1,len(liste)):
+            out = out | liste[i]
+        return out
+
+
+
 # %% Child classes of script sessions (to be derived)
 # navigate with the outline tab through the different classes
 #   globalsection()
@@ -1307,13 +1367,13 @@ class globalsection(script):
     section = 1
     userid = "example"
     version = 0.1
-    
+
     DEFINITIONS = scriptdata(
   outputfile= "$dump.mouthfeel_v5_long    # from the project of the same name",
         tsim= "500000                     # may be too long",
      outstep= 10
         )
-    
+
     MATERIALS = scriptdata(
          rho_saliva= "1000 # mass density saliva",
             rho_obj= "1300 # mass density solid objects",
@@ -1332,9 +1392,9 @@ class globalsection(script):
                  Hg= "10 # Hourglass control coefficient for solid objects",
                  Cp= "1.0 # heat capacity -- not used here"
                   )
-    
+
     DEFINITIONS += MATERIALS # append MATERIALS data
-    
+
     TEMPLATE = """
 # :GLOBAL SECTION:
 #   avoid to set variables in LAMMPS script
@@ -1348,16 +1408,16 @@ class globalsection(script):
      variable outputfile string "${outputfile}"
      variable tsim equal ${tsim}
      variable outstep equal ${outstep}
-    
+
     # ####################################################################################################
-    # # MATERIAL PARAMETERS 
+    # # MATERIAL PARAMETERS
     # ####################################################################################################
     # variable        rho_saliva equal 1000 # mass density saliva
     # variable        rho_obj equal 1300 # mass density solid objects
     # variable        c0 equal 10.0 # speed of sound for saliva
     # variable        E equal 5*${c0}*${c0}*${rho_saliva} # Young's modulus for solid objects
-    # variable        Etongue1 equal 10*${E} # Young's modulus for tongue 
-    # variable        Etongue2 equal 2*${Etongue1} # Young's modulus for tongue 
+    # variable        Etongue1 equal 10*${E} # Young's modulus for tongue
+    # variable        Etongue2 equal 2*${Etongue1} # Young's modulus for tongue
     # variable        nu equal 0.3 # Poisson ratio for solid objects
     # variable        sigma_yield equal 0.1*${E} # plastic yield stress for solid objects
     # variable        hardening_food equal 0 # plastic hardening parameter for solid food
@@ -1369,7 +1429,7 @@ class globalsection(script):
     # variable        Hg equal 10 # Hourglass control coefficient for solid objects
     # variable        Cp equal 1.0 # heat capacity -- not used here
     """
-    
+
 # %% Initialize section template
 class initializesection(script):
     """ LAMMPS script: global session """
@@ -1379,7 +1439,7 @@ class initializesection(script):
     section = 2
     userid = "example"
     version = 0.1
-    
+
     DEFINITIONS = scriptdata(
                units= "$ si",
            dimension= 2,
@@ -1392,7 +1452,7 @@ class initializesection(script):
          atom_modify= "$ map array",
           comm_style= "$ tiled"
         )
-    
+
     TEMPLATE = """
 # :INITIALIZE SECTION:
 #   initialize styles, dimensions, boundaries and communivation
@@ -1410,7 +1470,7 @@ class initializesection(script):
     atom_modify     ${atom_modify}
     comm_style      ${comm_style}
     """
-    
+
 # %% Geometry section template
 class geometrysection(script):
     """ LAMMPS script: global session """
@@ -1420,7 +1480,7 @@ class geometrysection(script):
     section = 3
     userid = "example"
     version = 0.1
-    
+
     DEFINITIONS = scriptdata(
          l0= 0.05,
        hgap= "0.25        # gap to prevent direct contact at t=0 (too much enery)",
@@ -1449,7 +1509,7 @@ class geometrysection(script):
     crunchd= "2*(sin((${crunchp}*${crunchw})/4)^2)/${crunchw}",
     crunchv= "${crunchl}/${crunchd}"
         )
-    
+
     TEMPLATE = """
 # :GEOMETRY SECTION:
 #   Build geometry (very specific example)
@@ -1475,11 +1535,11 @@ class geometrysection(script):
     group           saliva type 1
     create_atoms    3 region mouth
     group           mouth type 3
-    
+
     print "Crunch distance:${crunchl}"  # 3.65
     print "Crunch distance:${crunchv}"  # 0.1147
-    
-    
+
+
     # bottom part of the tongue: to1 (real tongue)
     # warning: all displacements are relative to the bottom part
     region          to1 block 1 11 ${yfloor1} ${yroof1} EDGE EDGE units box
@@ -1490,7 +1550,7 @@ class geometrysection(script):
     create_atoms    5 region to2
     group           tongue1 type 4
     group           tongue2 type 5
-    
+
     # create some solid objects to be pushed around
     region          pr1 prism 2 2.6 ${yfloor2a} ${yroof2a} EDGE EDGE 0.3 0 0 units box
     region          bl1 block 3 3.6 ${yfloor2a} ${yroof2a} EDGE EDGE units box
@@ -1501,7 +1561,7 @@ class geometrysection(script):
     region          sp5 sphere 7.1 ${yfloor2c} 0 ${rsph} units box
     region          sp6 sphere 6.05 ${yfloor2d} 0 ${rsph} units box
     region          br2 block 3 3.6 ${yfloor2b} ${yroof2b} EDGE EDGE units box
-    
+
     # fill the regions with atoms (note that atoms = smoothed hydrodynamics particles)
     create_atoms    2 region pr1
     create_atoms    2 region bl1
@@ -1512,19 +1572,19 @@ class geometrysection(script):
     create_atoms    2 region sp5
     create_atoms    2 region sp6
     create_atoms    2 region br2
-    
+
     # atoms of objects are grouped with two id
     # fix apply only to groups
     group           solidfoods type 2
     group           tlsph type 2
-    
+
     # group heavy
-    group           allheavy type 1:4 
+    group           allheavy type 1:4
 
 
     """
 
-    
+
 # %% Discretization section template
 class discretizationsection(script):
     """ LAMMPS script: discretization session """
@@ -1534,7 +1594,7 @@ class discretizationsection(script):
     section = 4
     userid = "example"
     version = 0.1
-    
+
     # inherit properties from geometrysection
     DEFINITIONS = geometrysection.DEFINITIONS + scriptdata(
               h= "2.5*${l0} # SPH kernel diameter",
@@ -1544,7 +1604,7 @@ class discretizationsection(script):
            skin= "${h} # Verlet list range",
   contact_scale= 1.5
         )
-    
+
     TEMPLATE = """
 # :DISCRETIZATION SECTION:
 #   discretization
@@ -1563,7 +1623,7 @@ class discretizationsection(script):
 
     """
 
-    
+
 # %% Boundary section template
 class boundarysection(script):
     """ LAMMPS script: boundary session """
@@ -1573,13 +1633,13 @@ class boundarysection(script):
     section = 5
     userid = "example"
     version = 0.1
-    
+
     # inherit properties from geometrysection
     DEFINITIONS = geometrysection.DEFINITIONS + scriptdata(
         gravity = -9.81,
         vector = "$ 0 1 0"
         )
-    
+
     TEMPLATE = """
 # :BOUNDARY SECTION:
 #   boundary section
@@ -1591,8 +1651,8 @@ class boundarysection(script):
     # thus these particles never move. This is equivalent to a fixed displacement boundary condition.
     ####################################################################################################
     fix             gfix allheavy gravity ${gravity} vector ${vector} # add gravity
-    
-    
+
+
     ####################################################################################################
     # moving top "tongue" (to2)
     ####################################################################################################
@@ -1610,11 +1670,11 @@ class interactionsection(script):
     section = 6
     userid = "example"
     version = 0.1
-    
+
     DEFINITIONS = globalsection.DEFINITIONS + \
                   geometrysection.DEFINITIONS + \
                   discretizationsection.DEFINITIONS
-    
+
     TEMPLATE = """
 # :INTERACTIONS SECTION:
 #   Please use forcefield() to make a robust code
@@ -1643,7 +1703,7 @@ class interactionsection(script):
                     *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening_tongue} &
                     *EOS_LINEAR &
                     *END
-    
+
     pair_coeff      3 3 none   # wall-wall
     pair_coeff      1 2 smd/hertz ${contact_stiffness} # saliva-food
     pair_coeff      1 3 smd/hertz ${contact_wall} # saliva-wall
@@ -1662,7 +1722,7 @@ class interactionsection(script):
     pair_coeff      5 5 smd/hertz ${contact_stiffness} # tongue2-tongue2
 
     """
-    
+
 
 # %% Time integration section template
 class integrationsection(script):
@@ -1673,12 +1733,12 @@ class integrationsection(script):
     section = 7
     userid = "example"
     version = 0.1
-    
+
     DEFINITIONS = scriptdata(
               dt = 0.1,
    adjust_redius = "$ 1.01 10 15"
         )
-    
+
     TEMPLATE = """
 # :INTEGRATION SECTION:
 #   Time integration conditions
@@ -1688,10 +1748,10 @@ class integrationsection(script):
     fix             integration_fix_solids solidfoods smd/integrate_tlsph
     fix             integration_fix_tongue1 tongue1 smd/integrate_tlsph
     fix             integration_fix_tongue2 tongue2 smd/integrate_tlsph
-    
+
     """
 
-    
+
 # %% Dump section template
 class dumpsection(script):
     """ LAMMPS script: dump session """
@@ -1701,9 +1761,9 @@ class dumpsection(script):
     section = 8
     userid = "example"
     version = 0.1
-    
+
     DEFINITIONS = globalsection().DEFINITIONS
-    
+
     TEMPLATE = """
 # :DUMP SECTION:
 #   Dump configuration
@@ -1718,15 +1778,15 @@ class dumpsection(script):
     compute         epl solidfoods smd/plastic/strain
     compute         vol all smd/vol
     compute         rho all smd/rho
-    
+
     dump            dump_id all custom ${outstep} ${outputfile} id type x y &
                     fx fy vx vy c_eint c_contact_radius mol &
                     c_S[1] c_S[2] c_S[4] mass radius c_epl c_vol c_rho c_nn proc
     dump_modify     dump_id first yes
-    
+
     """
 
-    
+
 # %% Status section template
 class statussection(script):
     """ LAMMPS script: status session """
@@ -1736,11 +1796,11 @@ class statussection(script):
     section = 9
     userid = "example"
     version = 0.1
-    
+
     DEFINITIONS = scriptdata(
         thermo = 100
         )
-    
+
     TEMPLATE = """
 # :STATUS SECTION:
 #   Status configuration
@@ -1755,8 +1815,8 @@ class statussection(script):
     thermo_modify   lost ignore
 
     """
-    
-    
+
+
 # %% Run section template
 class runsection(script):
     """ LAMMPS script: run session """
@@ -1766,11 +1826,11 @@ class runsection(script):
     section = 10
     userid = "example"
     version = 0.1
-    
+
     DEFINITIONS = globalsection.DEFINITIONS + scriptdata(
         balance = "$ 500 0.9 rcb"
         )
-    
+
     TEMPLATE = """
 # :RUN SECTION:
 #   run configuration
@@ -1781,15 +1841,27 @@ class runsection(script):
     fix             balance_fix all balance ${balance} # load balancing for MPI
     run             ${tsim}
     """
-    
-# %% DEBUG  
-# ===================================================   
+
+# %% DEBUG
+# ===================================================
 # main()
-# ===================================================   
+# ===================================================
 # for debugging purposes (code called as a script)
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':
+
+    # example for debugging
+    # from pizza.region import region
+    # R = region(name="my region")
+    # R.ellipsoid(0,0,0,1,1,1,name="E2",side="out",move=["left","${up}*3",None],up=0.1)
+    # R.E2.VARIABLES.left = '"swiggle(%s,%s,%s)"%(${a},${b},${c})'
+    # R.E2.VARIABLES.a="${b}-5"
+    # R.E2.VARIABLES.b=5
+    # R.E2.VARIABLES.c=100
+    # code2 = R.E2.do()
+    # p = R.E2.script
+    # code = p.do(0)
 
     # example of scriptobject()
     b1 = scriptobject(name="bead 1",group = ["A", "B", "C"],filename='myfile1',forcefield=rigidwall())
@@ -1800,9 +1872,9 @@ if __name__ == '__main__':
     collection = b1+b2+b3+b4
     grp_typ1 = collection.select(1)
     grpB = collection.group.B
-    
+
     collection.interactions
-    
+
     # main example of script()
     G = globalsection()
     print(G)
@@ -1824,7 +1896,7 @@ if __name__ == '__main__':
     print(s)
     r = runsection()
     print(r)
-    
+
     # # all sections as a single script
     myscript = G+c+g+d+b+i+t+d+s+r
     p = pipescript()
@@ -1837,7 +1909,7 @@ if __name__ == '__main__':
     p[0:1] = q[0:1]
     print("\n"*4,'='*80,'\n\n this is the full script\n\n','='*80,'\n')
     print(myscript.do())
-    
+
     # pipe full demo
     p = G | c | g | d | b | i | t | d | s | r
     p.rename(["G","c","g","d","b","i","t","d","s","r"])

@@ -1,5 +1,5 @@
 # __init__.py
-# Pizza library for Python 3.x 
+# Pizza library for Python 3.x
 #   It is back compatible with original Pizza with more features
 #   INRAE\olivier.vitrac@agroparistech.fr
 
@@ -11,7 +11,14 @@
 
 # list of public classes: data, dump, raster, script, forcefield, struct, param
 
-# $ last revision - 2022-05-16 $
+# $ last revision - 2023-01-03 $
+
+# Revision history
+# 2022-05-16 RC
+# 2023-01-03 # 2023-01-03 workaround to have raster working on Windows without restrictions
+
+# to test system (isPC)
+from platform import system as sys
 
 # input data objects and methods
 from pizza.data3 import data
@@ -30,7 +37,15 @@ from pizza.script import *
 # including a feature similar to MS/alias() from INRAE/MS Toolbox
 from pizza.private.struct import struct,param
 # Image
-from pizza.private.PIL.Image import Image
+if sys()=="Windows":
+    try:
+        from PIL import Image
+        print("pizza.private.PIL.Image not compiled on Windows\n\t>>try the default Pillow (installed v. %s)"
+              % Image.__version__)
+    except ImportError:
+        print("please add Pillow to your Python 3.x\n\t>> https://pillow.readthedocs.io/en/latest/installation.html")
+else:
+    from pizza.private.PIL.Image import Image
 
 # other libraries will be added there
 from workshop0 import *
