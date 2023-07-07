@@ -72,7 +72,7 @@ __version__ = "0.532"
 # 2023-02-16 fix object counters, add width, height, depth to region(), data are stored in live
 # 2023-02-16 add a specific >> (__rshift__) method for LammpsVariables, to be used by pipescript.do()
 # 2023-02-21 add gel compression exemple, modification of the footer section to account for several beadtypes
-
+# 2023-03-16 add emulsion, collection
 # %% Imports and private library
 import os, sys
 from datetime import datetime
@@ -853,7 +853,7 @@ class Collection:
 
     # GROUP -------------------------------
     def group(self):
-        """ return the list of grouped coregeometry objects """
+        """ return the grouped coregeometry object """
         if len(self) == 0:return pipescript()
         # execute all objects
         for i in range(len(self)): self.collection[i].do()
@@ -861,7 +861,7 @@ class Collection:
         liste = [x.SECTIONS["variables"] for x in self.collection] + \
                 [x.SECTIONS["region"] for x in self.collection] + \
                 [x.SECTIONS["create"] for x in self.collection]
-        return liste
+        return pipescript.join(liste)
 
 
     # LEN ---------------------------------
@@ -892,7 +892,7 @@ class region:
     # The code will evolve according to the needs, please come back regularly.
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-    # CONSTRUCTOR ----------------------------
+    # CONSTRUCTOR ---------------------------- 
     def __init__(self,
                  # region properties
                  name="default region",
@@ -1993,14 +1993,11 @@ class region:
         """ pipescript all objects in the region """
         if len(self)<1: return pipescript()
         # execute all objects
-        for myobj in self:
-            if not isinstance(myobj,Collection): myobj.do() 
+        for myobj in self: myobj.do()
         # concatenate all objects into a pipe script
-        liste = [x.SECTIONS["variables"] for x in self  if not isinstance(x,Collection) ]  + \
-                [x.SECTIONS["region"]    for x in self  if not isinstance(x,Collection) ] + \
-                [x.SECTIONS["create"]    for x in self  if not isinstance(x,Collection) ]
-        for x in self:
-            if isinstance(x,Collection): liste += x.group()
+        liste = [x.SECTIONS["variables"] for x in self] + \
+                [x.SECTIONS["region"] for x in self] + \
+                [x.SECTIONS["create"] for x in self]
         return pipescript.join(liste)
 
     # SCRIPT add header and foodter to PIPECRIPT
@@ -2219,113 +2216,110 @@ class emulsion(scatter):
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':
-    # # early example
-    # a=region(name="region A")
-    # b=region(name="region B")
-    # c = [a,b]
-    # # step 1
-    # R = region(name="my region")
-    # R.ellipsoid(0, 0, 0, 1, 1, 1,name="E1",toto=3)
-    # R
-    # repr(R.E1)
-    # R.E1.VARIABLES.a=1
-    # R.E1.VARIABLES.b=2
-    # R.E1.VARIABLES.c="(${a},${b},100)"
-    # R.E1.VARIABLES.d = '"%s%s" %("test",${c}) # note that test could be replaced by any function'
-    # R.E1
-    # code1 = R.E1.do()
-    # print(code1)
-    # # step 2
-    # R.ellipsoid(0,0,0,1,1,1,name="E2",side="out",move=["left","${up}*3",None],up=0.1)
-    # R.E2.VARIABLES.left = '"swiggle(%s,%s,%s)"%(${a},${b},${c})'
-    # R.E2.VARIABLES.a="${b}-5"
-    # R.E2.VARIABLES.b=5
-    # R.E2.VARIABLES.c=100
-    # code2 = R.E2.do()
-    # print(R)
-    # repr(R.E2)
-    # print(code2)
-    # print(R.names)
-    # R.list()
+    # early example
+    a=region(name="region A")
+    b=region(name="region B")
+    c = [a,b]
+    # step 1
+    R = region(name="my region")
+    R.ellipsoid(0, 0, 0, 1, 1, 1,name="E1",toto=3)
+    R
+    repr(R.E1)
+    R.E1.VARIABLES.a=1
+    R.E1.VARIABLES.b=2
+    R.E1.VARIABLES.c="(${a},${b},100)"
+    R.E1.VARIABLES.d = '"%s%s" %("test",${c}) # note that test could be replaced by any function'
+    R.E1
+    code1 = R.E1.do()
+    print(code1)
+    # step 2
+    R.ellipsoid(0,0,0,1,1,1,name="E2",side="out",move=["left","${up}*3",None],up=0.1)
+    R.E2.VARIABLES.left = '"swiggle(%s,%s,%s)"%(${a},${b},${c})'
+    R.E2.VARIABLES.a="${b}-5"
+    R.E2.VARIABLES.b=5
+    R.E2.VARIABLES.c=100
+    code2 = R.E2.do()
+    print(R)
+    repr(R.E2)
+    print(code2)
+    print(R.names)
+    R.list()
 
-    # # eval objects
-    # R.set('E3',R.E2)
-    # R.E3.beadtype = 2
-    # R.set('add',R.E1 + R.E2)
-    # R.addd2 = R.E1 + R.E2
-    # R.eval(R.E1 | R.E2,'E12')
-
-
-    # # How to manage pipelines
-    # print("\n","-"*20,"pipeline","-"*20)
-    # p = R.E2.script
-    # s = p.script() # first execution
-    # s = p.script() # do nothing
-    # s # check
-
-    # # reorganize scripts
-    # print("\n","-"*20,"change order","-"*20)
-    # p.clear() # undo executions first
-    # q = p[[0,2,1]]
-    # sq = q.script()
-    # print(q.do())
-
-    # # join sections
-    # liste = [x.SECTIONS["variables"] for x in R]
-    # pliste = pipescript.join(liste)
+    # eval objects
+    R.set('E3',R.E2)
+    R.E3.beadtype = 2
+    R.set('add',R.E1 + R.E2)
+    R.addd2 = R.E1 + R.E2
+    R.eval(R.E1 | R.E2,'E12')
 
 
-    # # Example closer to production
-    # P = region(name="live test",width = 20)
-    # P.ellipsoid(0, 0, 0, "${Ra}", "${Rb}", "${Rc}",
-    #           name="E1", Ra=5,Rb=2,Rc=3)
-    # P.sphere(7,0,0,radius="${R}",name = "S1", R=2)
-    # cmd = P.do()
-    # print(cmd)
-    # #outputfile = P.dolive()
+    # How to manage pipelines
+    print("\n","-"*20,"pipeline","-"*20)
+    p = R.E2.script
+    s = p.script() # first execution
+    s = p.script() # do nothing
+    s # check
 
-    # # EXAMPLE: gel compression
-    # name = ['top','food','tongue','bottom']
-    # scale = 1 # tested up to scale = 10 to reach million of beads
-    # radius = [10,5,8,10]
-    # height = [1,4,3,1]
-    # spacer = 2 * scale
-    # radius = [r*scale for r in radius]
-    # height = [h*scale for h in height]
-    # position_original = [spacer+height[1]+height[2]+height[3],
-    #                      height[2]+height[3],
-    #                      height[3],
-    #                      0]
-    # beadtype = [1,2,3,1]
-    # total_height = sum(height) +spacer
-    # position = [x-total_height/2 for x in position_original]
-    # B = region(name = 'region container',
-    #            width=2*max(radius),
-    #            height=total_height,
-    #            depth=2*max(radius))
-    # for i in range(len(name)):
-    #     B.cylinder(name = name[i],
-    #                c1=0,
-    #                c2=0,
-    #                radius=radius[i],
-    #                lo=position[i],
-    #                hi=position[i]+height[i],
-    #                beadtype=beadtype[i])
-    # B.dolive()
-   
-    # b = region()
-    # a = region()
-    # a.sphere(1,1,1,1,name='sphere1')
-    # a.sphere(1,2,2,1,name='sphere2')
-    # b.collection(a, name='acollection')
+    # reorganize scripts
+    print("\n","-"*20,"change order","-"*20)
+    p.clear() # undo executions first
+    q = p[[0,2,1]]
+    sq = q.script()
+    print(q.do())
 
-       
-    e = emulsion(xmin=-5, ymin=-5, zmin=-5,xmax=5, ymax=5, zmax=5)
-    e.insertion([2,2,2,1,1.6,1.2,1.4,1.3],beadtype=3)
-    e.insertion([0.6,0.3,2,1.5,1.5,1,2,1.2,1.1,1.3],beadtype=1)
-    e.insertion([3,1,2,2,4,1,1.2,2,2.5,1.2,1.4,1.6,1.7],beadtype=2)
-    C = region(name='cregion')
-    C.scatter(e)
-    g = C.emulsion.group()
-    C.script()
-    C.dolive()
+    # join sections
+    liste = [x.SECTIONS["variables"] for x in R]
+    pliste = pipescript.join(liste)
+
+
+    # Example closer to production
+    P = region(name="live test",width = 20)
+    P.ellipsoid(0, 0, 0, "${Ra}", "${Rb}", "${Rc}",
+              name="E1", Ra=5,Rb=2,Rc=3)
+    P.sphere(7,0,0,radius="${R}",name = "S1", R=2)
+    cmd = P.do()
+    print(cmd)
+    #outputfile = P.dolive()
+
+    # EXAMPLE: gel compression
+    name = ['top','food','tongue','bottom']
+    scale = 1 # tested up to scale = 10 to reach million of beads
+    radius = [10,5,8,10]
+    height = [1,4,3,1]
+    spacer = 2 * scale
+    radius = [r*scale for r in radius]
+    height = [h*scale for h in height]
+    position_original = [spacer+height[1]+height[2]+height[3],
+                          height[2]+height[3],
+                          height[3],
+                          0]
+    beadtype = [1,2,3,1]
+    total_height = sum(height) +spacer
+    position = [x-total_height/2 for x in position_original]
+    B = region(name = 'region container',
+                width=2*max(radius),
+                height=total_height,
+                depth=2*max(radius))
+    for i in range(len(name)):
+        B.cylinder(name = name[i],
+                    c1=0,
+                    c2=0,
+                    radius=radius[i],
+                    lo=position[i],
+                    hi=position[i]+height[i],
+                    beadtype=beadtype[i])
+    B.dolive()
+    # e = emulsion(xmin=-5, ymin=-5, zmin=-5,xmax=5, ymax=5, zmax=5)
+    # e.insertion([2,2,2,1,1.6,1.2,1.4,1.3],beadtype=3)
+    # e.insertion([0.6,0.3,2,1.5,1.5,1,2,1.2,1.1,1.3],beadtype=1)
+    # e.insertion([3,1,2,2,4,1,1.2,2,2.5,1.2,1.4,1.6,1.7],beadtype=2)
+
+    # # b = region()
+    # # a = region()
+    # # a.sphere(1,1,1,1,name='sphere1')
+    # # a.sphere(1,2,2,1,name='sphere2')
+    # # b.collection(a, name='acollection')
+
+    # C = region(name='cregion')
+    # C.scatter(e)
+    # g = C.emulsion.group()
