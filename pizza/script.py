@@ -104,7 +104,7 @@ Created on Sat Feb 19 11:00:43 2022
 @author: olivi
 """
 
-# INRAE\Olivier Vitrac - rev. 2023-01-31
+# INRAE\Olivier Vitrac - rev. 2023-07-14
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -131,12 +131,14 @@ Created on Sat Feb 19 11:00:43 2022
 # 2023-01-26 add pipescript.join()
 # 2023-01-27 add tmpwrite()
 # 2023-01-27 use % instead of $ for lists in script.do(), in line with the new feature implemented in param.eval()
-# 2023-01-31 fix the temporary file on Linux 
+# 2023-01-31 fix the temporary file on Linux
+# 2023-07-14 add and implement persistentfile and peristenfolder in scripts
 
 # %% Dependencies
 import types
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate
+from shutil import copy as copyfile
 import datetime, os, socket, getpass, tempfile
 
 # All forcefield parameters are stored à la Matlab in a structure
@@ -148,6 +150,9 @@ def span(vector,sep=" ",left="",right=""): return left+sep.join(map(str,vector))
 
 # select elements from a list L based on indices as L(indices) in Matlab
 def picker(L,indices): return [L[i] for i in indices if (i>=0 and i<len(L))]
+
+# Get the location of the `tmp` directory, in a system-independent way.
+get_tmp_location = lambda: tempfile.gettempdir()
 
 # UTF-8 encoded Byte Order Mark (sequence: 0xef, 0xbb, 0xbf)
 BOM_UTF8 = b'\xef\xbb\xbf'
@@ -735,8 +740,12 @@ class script():
     """
 
     # constructor
-    def __init__(self,**userdefinitions):
+    def __init__(self,persistentfile=True,
+                 persistentfolder = get_tmp_location(),
+                 **userdefinitions):
         """ constructor adding instance definitions stored in USER """
+        self.persistentfile = persistentfile
+        self.persistentfolder = persistentfolder
         self.USER = scriptdata(**userdefinitions)
 
     # print method for headers (static, no implicit argument)
@@ -901,6 +910,13 @@ class script():
         ftmp.write(BOM_UTF8+content.encode('utf-8'))
         ftmp.seek(0)
         print("\n"*2,"A temporary file has been generated here:\n",ftmp.name)
+        if self.persistentfile:
+            # make a persistent copy in /tmp
+            ftmpname = os.path.basename(ftmp.name)
+            fcopyname = os.path.join(self.persistentfolder, "script.preview." \
+                                     + ftmpname.rsplit('_', 1)[1])
+            copyfile(ftmp.name, fcopyname)
+            print("The persistent copy has been created here:\n", fcopyname)
         return ftmp
 
 # %% pipe script

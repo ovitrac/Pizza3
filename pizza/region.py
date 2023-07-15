@@ -50,7 +50,7 @@ __version__ = "0.532"
 """
 
 
-# INRAE\Olivier Vitrac - rev. 2023-02-21
+# INRAE\Olivier Vitrac - rev. 2023-07-15
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -73,6 +73,10 @@ __version__ = "0.532"
 # 2023-02-16 add a specific >> (__rshift__) method for LammpsVariables, to be used by pipescript.do()
 # 2023-02-21 add gel compression exemple, modification of the footer section to account for several beadtypes
 # 2023-03-16 add emulsion, collection
+# 2023-07-07 fix region.union()
+# 2023-07-15 add the preffix "$" to units, fix prism and other minor issues
+# 2023-07-15 (code works with the current state of Workshop4)
+
 # %% Imports and private library
 import os, sys
 from datetime import datetime
@@ -497,7 +501,7 @@ class coregeometry:
             if move in("","none"):
                 return ""
             else:
-                return f" move {move}"
+                return f"{prefix} move {move}"
         elif isinstance(move,(list,tuple)):
             if len(move)<3:
                 print("NULL will be added to move")
@@ -525,12 +529,13 @@ class coregeometry:
 
     def unitsarg(self,units):
         """ Validation for units arguments """
+        prefix = "$"
         if units is None:
             return ""
         elif isinstance(units,str):
             units = units.lower()
             if units in ("lattice","box"):
-                return f" units {units}"
+                return f"{prefix} units {units}"
             elif (units=="") or (units=="none"):
                 return ""
             else:
@@ -548,7 +553,7 @@ class coregeometry:
             if rotate in ("","none"):
                 return ""
             else:
-                return f" rotate {rotate}"
+                return f"{prefix} rotate {rotate}"
         elif isinstance(rotate,(list,tuple)):
             if len(rotate)<7:
                 print("NULL will be added to rotate")
@@ -571,17 +576,18 @@ class coregeometry:
 
     def openarg(self,open):
         """ Validation for open arguments """
+        prefix = "$"
         if open is None:
             return ""
         elif isinstance(open, str):
             raise TypeError(" the parameter open should be an integer or a list/tuple of integers from 1-6")
         elif isinstance(open, int):
             if open in range(1,7):
-                return f" open {open}"
+                return f"{prefix} open {open}"
             else:
                 raise TypeError(" open value should be integer from 1-6")
         elif isinstance(open, (list,tuple)):
-            openvalid = [f" open {i}" for i in range(1,7) if i in open]
+            openvalid = [f"{prefix} open {i}" for i in range(1,7) if i in open]
             return f"$ {span(openvalid)}"
 
     def __add__(self,C):
@@ -774,7 +780,7 @@ class Union(coregeometry):
                 )
 
 class Intersect(coregeometry):
-    """ Union class """
+    """ Intersect class """
 
     def __init__(self,counter,index=None,subindex=None,**variables):
         self.name = "intersect%03d" % counter[1]
@@ -892,7 +898,7 @@ class region:
     # The code will evolve according to the needs, please come back regularly.
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
-    # CONSTRUCTOR ---------------------------- 
+    # CONSTRUCTOR ----------------------------
     def __init__(self,
                  # region properties
                  name="default region",
@@ -1419,11 +1425,11 @@ class region:
             See examples for elliposid()
         """
         # prepare object creation
-        kind = "Prism"
+        kind = "prism"
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
         # create the object P with P for prism
-        P = Block((self.counter["all"]+1,self.counter[kind]+1),
+        P = Prism((self.counter["all"]+1,self.counter[kind]+1),
                       index=index,subindex=subindex,**variables)
         # feed USER fields
         if name not in (None,""): P.name = name # object name (if not defined, default name will be used)
@@ -1517,12 +1523,13 @@ class region:
 
     # UNION method ---------------------------
     # union args = N reg-ID1 reg-ID2
-    def union(self,name=None,beadtype=1,fake=False,
+    def union(self,*regID,
+              name=None,beadtype=1,fake=False,
               index = None,subindex = None,
-              *regID,**variables):
+              **variables):
         """
         creates a union region
-              union(name="myname",beadtype=1,"reg-ID1","reg-ID2",...)
+              union("reg-ID1","reg-ID2",name="myname",beadtype=1,...)
               reg-ID1,reg-ID2, ... = IDs of regions to join together
 
             URL: https://docs.lammps.org/region.html
@@ -1563,7 +1570,7 @@ class region:
                     raise KeyError(f'the object "{regID[ireg]}" does not exist')
             else:
                 raise KeyError(f"the {ireg+1}th object should be given as a string or an index")
-        args[0] = len(args)
+        args[0] = len(regID)
         U.USER.args = args   # args = [....] as defined in the class Union
         # Create the object if not fake
         if fake:
@@ -1577,12 +1584,13 @@ class region:
 
     # UNION method ---------------------------
     # union args = N reg-ID1 reg-ID2
-    def intersect(self,name=None,beadtype=1,fake=False,
+    def intersect(self,*regID,
+              name=None,beadtype=1,fake=False,
               index = None,subindex = None,
-              *regID,**variables):
+              **variables):
         """
         creates an intersection region
-              intersect(name="myname",beadtype=1,"reg-ID1","reg-ID2",...)
+              intersect("reg-ID1","reg-ID2",name="myname",beadtype=1,...)
               reg-ID1,reg-ID2, ... = IDs of regions to join together
 
             URL: https://docs.lammps.org/region.html
@@ -1623,7 +1631,7 @@ class region:
                     raise KeyError(f'the object "{regID[ireg]}" does not exist')
             else:
                 raise KeyError(f"the {ireg+1}th object should be given as a string or an index")
-        args[0] = len(args)
+        args[0] = len(regID)
         I.USER.args = args   # args = [....] as defined in the class Union
         # Create the object if not fake
         if fake:

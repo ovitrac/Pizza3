@@ -11,14 +11,29 @@
 
 # list of public classes: data, dump, raster, script, forcefield, struct, param
 
-# $ last revision - 2023-01-03 $
+# $ last revision - 2023-07-12 $
 
 # Revision history
 # 2022-05-16 RC
-# 2023-01-03 # 2023-01-03 workaround to have raster working on Windows without restrictions
+# 2023-01-03 workaround to have raster working on Windows without restrictions
+# 2023-07-12 add paramauto
 
 # to test system (isPC)
-from platform import system as sys
+from platform import system
+
+# check system
+def check_PIL():
+    if system().startswith("darwin") or system().startswith("win"):
+        try:
+            from PIL import Image
+            print("pizza.private.PIL.Image not compiled on Darwin or Windows\n\t>>try the default Pillow (installed v. %s)"
+                  % Image.__version__)
+        except ImportError:
+            print("please add Pillow to your Python 3.x\n\t>> https://pillow.readthedocs.io/en/latest/installation.html")
+        else:
+            raise Exception("PIL is not compatible with Darwin or Windows systems")
+    else:
+        from pizza.private.PIL.Image import Image
 
 # input data objects and methods
 from pizza.data3 import data
@@ -35,17 +50,12 @@ from pizza.generic import *
 from pizza.script import *
 # basic tools à la Matlab
 # including a feature similar to MS/alias() from INRAE/MS Toolbox
-from pizza.private.struct import struct,param
+from pizza.private.struct import struct,param,paramauto
+# region objects and methods
+from pizza.region import *
 # Image
-if sys()=="Windows":
-    try:
-        from PIL import Image
-        print("pizza.private.PIL.Image not compiled on Windows\n\t>>try the default Pillow (installed v. %s)"
-              % Image.__version__)
-    except ImportError:
-        print("please add Pillow to your Python 3.x\n\t>> https://pillow.readthedocs.io/en/latest/installation.html")
-else:
-    from pizza.private.PIL.Image import Image
+check_PIL()
+
 
 # other libraries will be added there
 from workshop0 import *
