@@ -76,6 +76,7 @@ __version__ = "0.532"
 # 2023-07-07 fix region.union()
 # 2023-07-15 add the preffix "$" to units, fix prism and other minor issues
 # 2023-07-15 (code works with the current state of Workshop4)
+# 2023-07-17 avoid duplicates if union or intersect is used, early implemeantion of "move"
 
 # %% Imports and private library
 import os, sys
@@ -281,6 +282,33 @@ class LammpsCreate(LammpsGeneric):
 create_atoms ${beadtype} region ${ID}
 """
 
+class LammpsMove(LammpsGeneric):
+    """ script for LAMMPS variables section """
+    name = "LammpsMove"
+    SECTIONS = ["move_fix"]
+    position = 4
+    role = "move along a trajectory"
+    description = "fix ID group-ID move style args keyword values ..."
+    userid = "move"
+    version = 0.2
+    verbose = True
+
+    # Definitions used in TEMPLATE
+    DEFINITIONS = scriptdata(
+                    ID = "${ID}",
+               groupID = "${groupID}",
+                 style = "${style}",
+                  args = "${args}",
+                 hasvariables = False
+                    )
+
+    # Template (using % instead of # enables replacements)
+    TEMPLATE = """
+# Move atoms fix ID group-ID move style args keyword values (https://docs.lammps.org/fix_move.html)
+% move_fix for group ${groupID} using ${style}
+fix ${ID} ${groupID} move ${style} ${args}
+"""
+
 
 class LammpsRegion(LammpsGeneric):
     """ generic region based on script """
@@ -404,7 +432,14 @@ class coregeometry:
         self.SECTIONS = {
             'variables': LammpsVariables(VARIABLES,**USER),
                'region': LammpsRegion(**USER),
-               'create': LammpsCreate(**USER)
+               'create': LammpsCreate(**USER),
+               'move':   LammpsMove(**USER)
+            }
+        self.FLAGSECTIONS = {
+            'variables': True,
+               'region': True,
+               'create': True,
+               'move':   False
             }
 
     def update(self):
@@ -415,6 +450,10 @@ class coregeometry:
             self.SECTIONS["region"].USER += self.USER
         if isinstance(self.SECTIONS["create"],script):
             self.SECTIONS["create"].USER += self.USER
+        if isinstance(self.SECTIONS["move"],script):
+            self.SECTIONS["move"].USER += self.USER
+
+
 
     def copy(self,beadtype=None,name=""):
         """ returns a copy of the graphical object """
@@ -443,11 +482,20 @@ class coregeometry:
     def script(self):
         """ generates a pipe script from sections """
         self.update()
-        return self.SECTIONS["variables"] | self.SECTIONS["region"] | self.SECTIONS["create"]
+        ptmp = self.SECTIONS["variables"] if self.FLAGSECTIONS["variables"] else None
+        if self.FLAGSECTIONS["region"]:
+            ptmp = self.SECTIONS["region"] if ptmp is None else ptmp | self.SECTIONS["region"]
+        if self.FLAGSECTIONS["create"]:
+            ptmp = self.SECTIONS["create"] if ptmp is None else ptmp | self.SECTIONS["create"]
+        if self.FLAGSECTIONS["move"]:
+            ptmp = self.SECTIONS["move"] if ptmp is None else ptmp | self.SECTIONS["move"]
+        return ptmp
+        # before 2023-07-17
+        #return self.SECTIONS["variables"] | self.SECTIONS["region"] | self.SECTIONS["create"]
 
     def do(self,printflag=True):
         """ generates a script """
-        p = self.script
+        p = self.script # intentional, force script before do(), comment added on 2023-07-17
         cmd = self.script.do()
         if printflag: print(cmd)
         return cmd
@@ -475,8 +523,14 @@ class coregeometry:
         return "%s object: %s (beadtype=%d)" % (self.kind,self.name,self.beadtype)
 
 
+    # ~~~~ validator for region arguments (the implementation is specific and not generic as fix move ones)
     def sidearg(self,side):
-        """ validator of side arguments """
+        """
+            Validation of side arguments for region command (https://docs.lammps.org/region.html)
+            side value = in or out
+              in = the region is inside the specified geometry
+              out = the region is outside the specified geometry
+        """
         prefix = "$"
         if side is None:
             return ""
@@ -492,7 +546,11 @@ class coregeometry:
             raise ValueError('the parameter side can be "in|out|None"')
 
     def movearg(self,move):
-        """ validator of move arguments """
+        """
+            Validation of move arguments for region command (https://docs.lammps.org/region.html)
+            move args = v_x v_y v_z
+              v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units)
+        """
         prefix = "$"
         if move is None:
             return ""
@@ -528,7 +586,12 @@ class coregeometry:
             raise TypeError("the parameter move should be a list or tuple")
 
     def unitsarg(self,units):
-        """ Validation for units arguments """
+        """
+            Validation for units arguments for region command (https://docs.lammps.org/region.html)
+            units value = lattice or box
+              lattice = the geometry is defined in lattice units
+              box = the geometry is defined in simulation box units
+        """
         prefix = "$"
         if units is None:
             return ""
@@ -544,13 +607,19 @@ class coregeometry:
             raise TypeError('the parameter units can be "lattice|box|None"')
 
     def rotatearg(self,rotate):
-        """ validator of rotate arguments """
+        """
+            Validation of rotate arguments for region command (https://docs.lammps.org/region.html)
+            rotate args = v_theta Px Py Pz Rx Ry Rz
+              v_theta = equal-style variable for rotaton of region over time (in radians)
+              Px,Py,Pz = origin for axis of rotation (distance units)
+              Rx,Ry,Rz = axis of rotation vector
+        """
         prefix = "$"
         if rotate is None:
             return ""
         elif isinstance(rotate, str):
             rotate = rotate.lower()
-            if rotate in ("","none"):
+            if rotate in ("","none",None):
                 return ""
             else:
                 return f"{prefix} rotate {rotate}"
@@ -559,7 +628,7 @@ class coregeometry:
                 print("NULL will be added to rotate")
             elif len(rotate)>7:
                 print("rotate will be truncated to 7 elements")
-            rotatevalid = ["NULL","NULL","NULL","NULL","NULL","NULL","NULL"]
+            rotatevalid = ["NULL"]*7
             for i in range(min(7,len(rotate))):
                 if isinstance(rotate[i],str):
                     if rotate[i].upper()!="NULL":
@@ -575,9 +644,26 @@ class coregeometry:
             raise TypeError("the parameter rotate should be a list or tuple")
 
     def openarg(self,open):
-        """ Validation for open arguments """
+        """
+            Validation of open arguments for region command (https://docs.lammps.org/region.html)
+            open value = integer from 1-6 corresponding to face index (see below)
+            The indices specified as part of the open keyword have the following meanings:
+
+            For style block, indices 1-6 correspond to the xlo, xhi, ylo, yhi, zlo, zhi surfaces of the block.
+            I.e. 1 is the yz plane at x = xlo, 2 is the yz-plane at x = xhi, 3 is the xz plane at y = ylo,
+            4 is the xz plane at y = yhi, 5 is the xy plane at z = zlo, 6 is the xy plane at z = zhi).
+            In the second-to-last example above, the region is a box open at both xy planes.
+
+            For style prism, values 1-6 have the same mapping as for style block.
+            I.e. in an untilted prism, open indices correspond to the xlo, xhi, ylo, yhi, zlo, zhi surfaces.
+
+            For style cylinder, index 1 corresponds to the flat end cap at the low coordinate along the cylinder axis,
+            index 2 corresponds to the high-coordinate flat end cap along the cylinder axis, and index 3 is the curved
+            cylinder surface. For example, a cylinder region with open 1 open 2 keywords will be open at both ends
+            (e.g. a section of pipe), regardless of the cylinder orientation.
+        """
         prefix = "$"
-        if open is None:
+        if open in ("","none",None):
             return ""
         elif isinstance(open, str):
             raise TypeError(" the parameter open should be an integer or a list/tuple of integers from 1-6")
@@ -589,6 +675,111 @@ class coregeometry:
         elif isinstance(open, (list,tuple)):
             openvalid = [f"{prefix} open {i}" for i in range(1,7) if i in open]
             return f"$ {span(openvalid)}"
+    # ~~~~ end validator for region arguments
+
+    # ~~~~ validator for fix move arguments (implemented generically on 2023-07-17)
+    def fixmoveargvalidator(self, argtype, arg, arglen):
+        """
+            Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html)
+
+            LAMMPS syntax:
+                fix ID group-ID move style args
+                - linear args = Vx Vy Vz
+                - wiggle args = Ax Ay Az period
+                - rotate args = Px Py Pz Rx Ry Rz period
+                - transrot args = Vx Vy Vz Px Py Pz Rx Ry Rz period
+                - variable args = v_dx v_dy v_dz v_vx v_vy v_vz
+
+            Args:
+                argtype: Type of the argument (linear, wiggle, rotate, transrot, variable)
+                arg: The argument to validate
+                arglen: Expected length of the argument
+        """
+        prefix = "$"
+        if arg in ("","none",None):
+            return ""
+        elif isinstance(arg,(list,tuple)):
+            if len(arg) < arglen:
+                print(f"NULL will be added to {argtype}")
+            elif len(arg) > arglen:
+                print(f"{argtype} will be truncated to {arglen} elements")
+            argvalid = ["NULL"]*arglen
+            for i in range(min(arglen,len(arg))):
+                if isinstance(arg[i],str):
+                    if arg[i].upper()!="NULL":
+                        if prefix in arg[i]:
+                            argvalid[i] = round(eval(self.VARIABLES.formateval(arg[i])),6)
+                        else:
+                            argvalid[i] = arg[i]
+                elif not isinstance(arg[i],(int,float)):
+                    if (arg[i] is not None):
+                        raise TypeError(f"{argtype} values should be str, int or float")
+            return f"{prefix} move {span(argvalid)}"
+        else:
+            raise TypeError(f"the parameter {argtype} should be a list or tuple")
+
+
+    def fixmoveargs(self, linear=None, wiggle=None, rotate=None, transrot=None, variable=None):
+        """
+            Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html)
+            the result is adictionary, all fixmove can be combined
+        """
+        argsdict = {
+            "linear": [linear, 3],
+            "wiggle": [wiggle, 4],
+            "rotate": [rotate, 7],
+            "transrot": [transrot, 10],
+            "variable": [variable, 6]
+        }
+
+        for argtype, arginfo in argsdict.items():
+            arg, arglen = arginfo
+            if arg is not None:
+                argsdict[argtype] = self.fixmoveargvalidator(argtype, arg, arglen)
+        return argsdict
+
+
+    def get_fixmovesyntax(self, argtype=None):
+        """
+        Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type
+
+        Args:
+        argtype: Optional; Type of the argument (linear, wiggle, rotate, transrot, variable)
+        """
+        syntax = {
+            "linear": "linear args = Vx Vy Vz\n"
+                      "Vx,Vy,Vz = components of velocity vector (velocity units), any component can be specified as NULL",
+            "wiggle": "wiggle args = Ax Ay Az period\n"
+                       "Ax,Ay,Az = components of amplitude vector (distance units), any component can be specified as NULL\n"
+                       "period = period of oscillation (time units)",
+            "rotate": "rotate args = Px Py Pz Rx Ry Rz period\n"
+                       "Px,Py,Pz = origin point of axis of rotation (distance units)\n"
+                       "Rx,Ry,Rz = axis of rotation vector\n"
+                       "period = period of rotation (time units)",
+            "transrot": "transrot args = Vx Vy Vz Px Py Pz Rx Ry Rz period\n"
+                        "Vx,Vy,Vz = components of velocity vector (velocity units)\n"
+                        "Px,Py,Pz = origin point of axis of rotation (distance units)\n"
+                        "Rx,Ry,Rz = axis of rotation vector\n"
+                        "period = period of rotation (time units)",
+            "variable": "variable args = v_dx v_dy v_dz v_vx v_vy v_vz\n"
+                        "v_dx,v_dy,v_dz = 3 variable names that calculate x,y,z displacement as function of time, any component can be specified as NULL\n"
+                        "v_vx,v_vy,v_vz = 3 variable names that calculate x,y,z velocity as function of time, any component can be specified as NULL",
+        }
+
+        base_syntax = (
+            "fix ID group-ID move style args\n"
+            " - linear args = Vx Vy Vz\n"
+            " - wiggle args = Ax Ay Az period\n"
+            " - rotate args = Px Py Pz Rx Ry Rz period\n"
+            " - transrot args = Vx Vy Vz Px Py Pz Rx Ry Rz period\n"
+            " - variable args = v_dx v_dy v_dz v_vx v_vy v_vz\n\n"
+            'use get_movesyntax("movemethod") for details'
+            "manual: https://docs.lammps.org/fix_move.html"
+        )
+
+        return syntax.get(argtype, base_syntax)
+
+    # ~~~~ end validator for fix move arguments
 
     def __add__(self,C):
         """ overload addition ("+") operator """
@@ -600,6 +791,11 @@ class coregeometry:
             dup.SECTIONS["variables"] = dup.SECTIONS["variables"] + C.SECTIONS["variables"]
             dup.SECTIONS["region"] = dup.SECTIONS["region"] + C.SECTIONS["region"]
             dup.SECTIONS["create"] = dup.SECTIONS["create"] + C.SECTIONS["create"]
+            dup.SECTIONS["move"] = dup.SECTIONS["move"] + C.SECTIONS["move"]
+            dup.FLAGSECTIONS["variables"] = dup.FLAGSECTIONS["variables"] or C.FLAGSECTIONS["variables"]
+            dup.FLAGSECTIONS["region"] = dup.FLAGSECTIONS["region"] or C.FLAGSECTIONS["region"]
+            dup.FLAGSECTIONS["create"] = dup.FLAGSECTIONS["create"] or C.FLAGSECTIONS["create"]
+            dup.FLAGSECTIONS["move"] = dup.FLAGSECTIONS["move"] or C.FLAGSECTIONS["move"]
             return dup
         raise TypeError("the second operand must a region.coregeometry object")
 
@@ -610,6 +806,11 @@ class coregeometry:
             self.SECTIONS["variables"] += C.SECTIONS["variables"]
             self.SECTIONS["region"] += C.SECTIONS["region"]
             self.SECTIONS["create"] += C.SECTIONS["create"]
+            self.SECTIONS["move"] += C.SECTIONS["move"]
+            self.FLAGSECTIONS["variables"] = self.FLAGSECTIONS["variables"] or C.FLAGSECTIONS["variables"]
+            self.FLAGSECTIONS["region"] = self.FLAGSECTIONS["region"] or C.FLAGSECTIONS["region"]
+            self.FLAGSECTIONS["create"] = self.FLAGSECTIONS["create"] or C.FLAGSECTIONS["create"]
+            self.FLAGSECTIONS["move"] = self.FLAGSECTIONS["move"] or C.FLAGSECTIONS["move"]
             return self
         raise TypeError("the operand must a region.coregeometry object")
 
@@ -623,6 +824,11 @@ class coregeometry:
             dup.SECTIONS["variables"] = dup.SECTIONS["variables"] | C.SECTIONS["variables"]
             dup.SECTIONS["region"] = dup.SECTIONS["region"] | C.SECTIONS["region"]
             dup.SECTIONS["create"] = dup.SECTIONS["create"] | C.SECTIONS["create"]
+            dup.SECTIONS["move"] = dup.SECTIONS["move"] | C.SECTIONS["move"]
+            self.FLAGSECTIONS["variables"] = self.FLAGSECTIONS["variables"] or C.FLAGSECTIONS["variables"]
+            self.FLAGSECTIONS["region"] = self.FLAGSECTIONS["region"] or C.FLAGSECTIONS["region"]
+            self.FLAGSECTIONS["create"] = self.FLAGSECTIONS["create"] or C.FLAGSECTIONS["create"]
+            self.FLAGSECTIONS["move"] = self.FLAGSECTIONS["move"] or C.FLAGSECTIONS["move"]
             return dup
         raise TypeError("the second operand must a region.coregeometry object")
 
@@ -1570,6 +1776,8 @@ class region:
                     raise KeyError(f'the object "{regID[ireg]}" does not exist')
             else:
                 raise KeyError(f"the {ireg+1}th object should be given as a string or an index")
+            # prevent the creation of atoms merged (avoid duplicates)
+            self.objects[regID[ireg]].FLAGSECTIONS["create"] = False
         args[0] = len(regID)
         U.USER.args = args   # args = [....] as defined in the class Union
         # Create the object if not fake
@@ -1631,6 +1839,8 @@ class region:
                     raise KeyError(f'the object "{regID[ireg]}" does not exist')
             else:
                 raise KeyError(f"the {ireg+1}th object should be given as a string or an index")
+            # prevent the creation of atoms (avoid duplicates)
+            self.objects[regID[ireg]].FLAGSECTIONS["create"] = False
         args[0] = len(regID)
         I.USER.args = args   # args = [....] as defined in the class Union
         # Create the object if not fake
@@ -2003,9 +2213,10 @@ class region:
         # execute all objects
         for myobj in self: myobj.do()
         # concatenate all objects into a pipe script
-        liste = [x.SECTIONS["variables"] for x in self] + \
-                [x.SECTIONS["region"] for x in self] + \
-                [x.SECTIONS["create"] for x in self]
+        liste = [x.SECTIONS["variables"] for x in self if x.FLAGSECTIONS["variables"]] + \
+                [x.SECTIONS["region"]    for x in self if x.FLAGSECTIONS["region"]] + \
+                [x.SECTIONS["create"]    for x in self if x.FLAGSECTIONS["create"]] + \
+                [x.SECTIONS["move"]      for x in self if x.FLAGSECTIONS["move"]]
         return pipescript.join(liste)
 
     # SCRIPT add header and foodter to PIPECRIPT
