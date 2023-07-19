@@ -35,10 +35,11 @@ __version__ = "0.532"
     Private features (i.e. to be used inside the code)
 
     	Overloading operators +, +=, | for any coregeometry object
-   	Note that coregeometry have three main SECTIONS (scripts)
+   	Note that coregeometry have four main SECTIONS (scripts)
    		SECTIONS["variables"]
    		SECTIONS["region"]
    		SECTIONS["create"]
+        SECTIONS["move"]
    		USER, VARIABLES are overdefined as attributes
 
 	+, += merge regions (no piping)
@@ -50,7 +51,7 @@ __version__ = "0.532"
 """
 
 
-# INRAE\Olivier Vitrac - rev. 2023-07-15
+# INRAE\Olivier Vitrac - rev. 2023-07-19
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -77,6 +78,8 @@ __version__ = "0.532"
 # 2023-07-15 add the preffix "$" to units, fix prism and other minor issues
 # 2023-07-15 (code works with the current state of Workshop4)
 # 2023-07-17 avoid duplicates if union or intersect is used, early implemeantion of "move"
+# 2023-07-19 add region.hasfixmove, region.livelammps.options["static" | "dynamic"]
+# 2023-07-19 early design for LammpsGroup class, Group class, region.group()
 
 # %% Imports and private library
 import os, sys
@@ -101,7 +104,7 @@ from pizza.script import pipescript, script, scriptdata, span
 # protected properties in region
 protectedregionkeys = ('name', 'live', 'nbeads' 'volume', 'mass', 'radius', 'contactradius', 'velocities', \
                         'forces', 'filename', 'index', 'objects', 'nobjects', 'counter','_iter_',\
-                        'livelammps','copy'
+                        'livelammps','copy', 'hasfixmove'
                             )
 
 # livelammps
@@ -286,7 +289,7 @@ class LammpsMove(LammpsGeneric):
     """ script for LAMMPS variables section """
     name = "LammpsMove"
     SECTIONS = ["move_fix"]
-    position = 4
+    position = 5
     role = "move along a trajectory"
     description = "fix ID group-ID move style args keyword values ..."
     userid = "move"
@@ -340,6 +343,31 @@ class LammpsRegion(LammpsGeneric):
 # keywords: side, units, move, rotate, open
 # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
 region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+"""
+
+
+class LammpsGroup(LammpsGeneric):
+    """ generic group class based on script """
+    name = "LammpsGroup"
+    SECTIONS = ["GROUP"]
+    position = 4
+    role = "group command definition"
+    description = "group ID style args"
+    userid = "region"              # user name
+    version = 0.2                  # version
+    verbose = True
+
+    # DEFINITIONS USED IN TEMPLATE
+    DEFINITIONS = scriptdata(
+                    ID = "${ID}",
+              regionID = "${regionID}",
+                 hasvariables = False
+                    )
+
+    # Template  (using % instead of # enables replacements)
+    TEMPLATE = """
+% Create group ${ID} region ${regionID} (URL: https://docs.lammps.org/group.html)
+region ${ID} region ${regionID}
 """
 
 
@@ -1013,6 +1041,10 @@ class Evalgeometry(coregeometry):
         self.subindex = subindex
         super().__init__()
 
+class Group:
+    """ generic Group class """
+    pass # see collection.group
+
 
 class Collection:
     """ Collection class (including many objects) """
@@ -1070,11 +1102,11 @@ class Collection:
         # execute all objects
         for i in range(len(self)): self.collection[i].do()
         # concatenate all objects into a pipe script
-        liste = [x.SECTIONS["variables"] for x in self.collection] + \
-                [x.SECTIONS["region"] for x in self.collection] + \
-                [x.SECTIONS["create"] for x in self.collection]
+        liste = [x.SECTIONS["variables"] for x in self.collection if x.FLAGSECTIONS["variables"]] + \
+                [x.SECTIONS["region"]    for x in self.collection if x.FLAGSECTIONS["region"]] + \
+                [x.SECTIONS["create"]    for x in self.collection if x.FLAGSECTIONS["create"]] + \
+                [x.SECTIONS["move"]      for x in self.collection if x.FLAGSECTIONS["move"]]
         return pipescript.join(liste)
-
 
     # LEN ---------------------------------
     def __len__(self):
@@ -1122,7 +1154,13 @@ class region:
                  index = None,
                  width = 10,
                  height = 10,
-                 depth = 10
+                 depth = 10,
+                 hasfixmove = False, # by default no fix move
+                 # livepreview options
+                 livepreview_options = {
+                     'static':{'run':1},
+                     'dynamic':{'run':100}
+                     }
                  ):
         """ constructor """
         self.name = name
@@ -1160,11 +1198,14 @@ class region:
                   "collection":0,
                   "all":0
             }
+        # fix move flag
+        self.hasfixmove = hasfixmove
         # livelammps (for live sessions) - added 2023-02-06
         self.livelammps = {
             "URL": livelammpsURL,
          "active": False,
-           "file": None
+           "file": None,
+        "options": livepreview_options
             }
 
 
@@ -1854,6 +1895,11 @@ class region:
             return None
 
 
+    # Group method ---------------------------
+    def group(self,obj,name=None,fake=False):
+        pass
+
+
     # COLLECTION method ---------------------------
     def collection(self,*obj,name=None,beadtype=None,fake=False,
               index = None,subindex = None,
@@ -2238,6 +2284,8 @@ class region:
                 for b2 in beadtypes:
                     if b2>b1:
                         USER.pair_coeff += livetemplate["pair_coeff"] %(b1,b2) +"\n"
+            livemode = "dynamic" if self.hasfixmove else "static"
+            USER.run =self.livelammps["options"][livemode]["run"]
             s = LammpsHeader(**USER)+s+LammpsFooter(**USER)
         return s
 
