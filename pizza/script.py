@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.51"
+__version__ = "0.55"
 
 """
 
@@ -104,7 +104,7 @@ Created on Sat Feb 19 11:00:43 2022
 @author: olivi
 """
 
-# INRAE\Olivier Vitrac - rev. 2023-07-14
+# INRAE\Olivier Vitrac - rev. 2023-07-20
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -133,6 +133,8 @@ Created on Sat Feb 19 11:00:43 2022
 # 2023-01-27 use % instead of $ for lists in script.do(), in line with the new feature implemented in param.eval()
 # 2023-01-31 fix the temporary file on Linux
 # 2023-07-14 add and implement persistentfile and peristenfolder in scripts
+# 2023-07-20 add header to script.tmpwrite()
+# 2023-07-20 add a persident script.preview.clean copy
 
 # %% Dependencies
 import types
@@ -904,12 +906,15 @@ class script():
     def tmpwrite(self):
         """ write file """
         ftmp = tempfile.NamedTemporaryFile(mode="w+b",prefix="script_",suffix=".txt")
-        content = f"# <-- {str(datetime.datetime.now())} -->\n" + \
+        header = r"# PIZZA.SCRIPT() TEMPORARY FILE\n# " + '-'*40 +'\n' + \
+                 f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
+                 f"# <-- {str(datetime.datetime.now())} -->\n"
+        content =  header + \
                    "# This is a temporary file (it will be deleted automatically)" + \
                    "\n"*2 + script.header() + "\n"*3 +self.do()
         ftmp.write(BOM_UTF8+content.encode('utf-8'))
         ftmp.seek(0)
-        print("\n"*2,"A temporary file has been generated here:\n",ftmp.name)
+        print("\n"*2,header,'\n',"A temporary file has been generated here:\n",ftmp.name)
         if self.persistentfile:
             # make a persistent copy in /tmp
             ftmpname = os.path.basename(ftmp.name)
@@ -917,6 +922,16 @@ class script():
                                      + ftmpname.rsplit('_', 1)[1])
             copyfile(ftmp.name, fcopyname)
             print("The persistent copy has been created here:\n", fcopyname)
+            # create a clean copy without empty lines and lines starting with #
+            with open(ftmp.name, 'r') as f:lines = f.readlines()
+            # remove empty lines and lines that start with #
+            bom_utf8_str = BOM_UTF8.decode('utf-8')
+            clean_lines = [line for line in lines if line.strip() \
+                           and not line.lstrip().startswith('#') \
+                           and not line.startswith(bom_utf8_str)]
+            fcleanname = os.path.join(self.persistentfolder, "script.preview.clean." + ftmpname.rsplit('_', 1)[1])
+            with open(fcleanname, 'w') as f: f.writelines(clean_lines)
+            print("The clean copy has been created here:\n", fcleanname)
         return ftmp
 
 # %% pipe script

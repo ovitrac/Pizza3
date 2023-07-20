@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.532"
+__version__ = "0.55"
 
 """
     REGION provide tools to define native geometries in Python for LAMMPS
@@ -80,6 +80,7 @@ __version__ = "0.532"
 # 2023-07-17 avoid duplicates if union or intersect is used, early implemeantion of "move"
 # 2023-07-19 add region.hasfixmove, region.livelammps.options["static" | "dynamic"]
 # 2023-07-19 early design for LammpsGroup class, Group class, region.group()
+# 2023-07-20 reimplement, validate and extend the original emulsion example
 
 # %% Imports and private library
 import os, sys
@@ -2257,12 +2258,15 @@ class region:
         """ pipescript all objects in the region """
         if len(self)<1: return pipescript()
         # execute all objects
-        for myobj in self: myobj.do()
+        for myobj in self:
+            if not isinstance(myobj,Collection): myobj.do()
         # concatenate all objects into a pipe script
-        liste = [x.SECTIONS["variables"] for x in self if x.FLAGSECTIONS["variables"]] + \
-                [x.SECTIONS["region"]    for x in self if x.FLAGSECTIONS["region"]] + \
-                [x.SECTIONS["create"]    for x in self if x.FLAGSECTIONS["create"]] + \
-                [x.SECTIONS["move"]      for x in self if x.FLAGSECTIONS["move"]]
+        liste = [x.SECTIONS["variables"] for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["variables"]] + \
+                [x.SECTIONS["region"]    for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["region"]] + \
+                [x.SECTIONS["create"]    for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["create"]] + \
+                [x.SECTIONS["move"]      for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["move"]]
+        for x in self:
+            if isinstance(x,Collection): liste += x.group()
         return pipescript.join(liste)
 
     # SCRIPT add header and foodter to PIPECRIPT
@@ -2576,17 +2580,24 @@ if __name__ == '__main__':
                     hi=position[i]+height[i],
                     beadtype=beadtype[i])
     B.dolive()
-    # e = emulsion(xmin=-5, ymin=-5, zmin=-5,xmax=5, ymax=5, zmax=5)
-    # e.insertion([2,2,2,1,1.6,1.2,1.4,1.3],beadtype=3)
-    # e.insertion([0.6,0.3,2,1.5,1.5,1,2,1.2,1.1,1.3],beadtype=1)
-    # e.insertion([3,1,2,2,4,1,1.2,2,2.5,1.2,1.4,1.6,1.7],beadtype=2)
 
-    # # b = region()
-    # # a = region()
-    # # a.sphere(1,1,1,1,name='sphere1')
-    # # a.sphere(1,2,2,1,name='sphere2')
-    # # b.collection(a, name='acollection')
 
-    # C = region(name='cregion')
-    # C.scatter(e)
-    # g = C.emulsion.group()
+    # emulsion example
+    mag = 3
+    e = emulsion(xmin=-5*mag, ymin=-5*mag, zmin=-5*mag,xmax=5*mag, ymax=5*mag, zmax=5*mag)
+    e.insertion([2,2,2,1,1.6,1.2,1.4,1.3],beadtype=3)
+    e.insertion([0.6,0.3,2,1.5,1.5,1,2,1.2,1.1,1.3],beadtype=1)
+    e.insertion([3,1,2,2,4,1,1.2,2,2.5,1.2,1.4,1.6,1.7],beadtype=2)
+    e.insertion([3,1,2,2,4,1,5.2,2,4.5,1.2,1.4,1.6,1.7],beadtype=4)
+
+    # b = region()
+    # a = region()
+    # a.sphere(1,1,1,1,name='sphere1')
+    # a.sphere(1,2,2,1,name='sphere2')
+    # b.collection(a, name='acollection')
+
+    C = region(name='cregion',width=11*mag,height=11*mag,depth=11*mag)
+    C.scatter(e)
+    C.script()
+    g = C.emulsion.group()
+    C.dolive()
