@@ -12,7 +12,7 @@ __version__ = "0.451"
 
 """
     --- forcefield methods for LAMMPS ---
-    
+
     The superclass provides a collection of classes to define materials
     and forcefields. Note that the following hierarchy is used:
         > forcefield() is the top class (to be called directly)
@@ -20,22 +20,22 @@ __version__ = "0.451"
         > customstyle(customff) defines a pair-style applicable to customff
         > custommaterial(customstyle) defines a new material
 
-    
+
     --- Material library (first implementations) ---
-        
+
         w = water(beadtype=1, userid="fluid")
         w.parameters.Cp = 20
         print("\n"*2,w)
 
         f = solidfood(beadtype=2, userid="elastic")
         print("\n"*2,f)
-        
+
         r = rigidwall(beadtype=3, userid="wall")
         print("\n"*2,r)
 
-    
+
     --- Template to define a material ---
-    
+
           class mymateral(myforcefield):
               userid = "short name"
               version = value
@@ -49,13 +49,13 @@ __version__ = "0.451"
                       param1 = value1,
                       param2 = value2,
                       param3 = "math expression with ${param1, ${param2}"
-                  )    
+                  )
 
-    
+
     --- Example of outputs | LAMMPS:SMD:tlsph:solidfood ---
-        
+
         ========================== [ elastic | version=0.1 ] ===========================
-        
+
           Bead of type 2 = [LAMMPS:SMD:tlsph:solidfood]
           -----------------:----------------------------------------
                         rho: 1000
@@ -72,48 +72,48 @@ __version__ = "0.451"
           contact_stiffness: 2.5*${c0}^2*${rho}
           -----------------:----------------------------------------
         forcefield object with 12 parameters
-        
+
         ............................... [ description ] ................................
-        
+
         	# 	LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)
         	# 	SMD:TLSPH - total Langrangian for solids
         	# 	food beads - solid behavior
-        
+
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [ methods ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        
+
         replace FFi,FFj by your variable names <<<
         	To assign a type, use: FFi.beadtype = integer value
         	Use the methods FFi.pair_style() and FFi.pair_coeff(FFj)
         	Note for pairs: the caller object is i (FFi), the argument is j (FFj or j)
-        
+
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [ template ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        
-        
+
+
             # [2:elastic] PAIR STYLE SMD
             pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
                                            smd/tlsph smd/hertz 1.5
-            
-        
+
+
             # [2:elastic x 2:elastic] Diagonal pair coefficient tlsph
             pair_coeff      2 2 smd/tlsph *COMMON 1000 500000.0 0.3 1.0 0.0 10 1.0 &
                             *STRENGTH_LINEAR_PLASTIC 50000.0 0 &
                             *EOS_LINEAR &
                             *END
-            
-        
+
+
             # [2:elastic x 1:none] Off-diagonal pair coefficient (generic)
             pair_coeff      2 1 smd/hertz 250000.0
-            
-        
+
+
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        
-    
+
+
     run this code by pressing <F5>
-    
+
 """
 
 
-# INRAE\Olivier Vitrac - rev. 2022-05-16
+# INRAE\Olivier Vitrac - rev. 2022-07-25
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -126,6 +126,7 @@ __version__ = "0.451"
 # 2022-04-16 add saltTLSPH() forcefield in the material library, and document it better
 # 2022-05-16 force sortdefintions for + and += with parameterforcefield()
 # 2022-05-17 direct use of pizza.private.struct.paramauto()
+# 2023-07-25 fix forcefield (deepduplicate instead of duplicate)
 
 # %% Dependencies
 import types
@@ -150,11 +151,11 @@ class parameterforcefield(paramauto):
     _ftype = "parameter"
     _maxdisplay = 80
 
-         
+
 # core class
 class forcefield():
     """ core forcefield class (not to be called directly) """
-    
+
     # Main attributes (instance independent)
     name = struct(forcefield="undefined", style="undefined", material="undefined")
     description = struct(forcefield="missing", style="missing", material="missing")
@@ -171,7 +172,7 @@ class forcefield():
             print("\n"+filler*(width+6)+"\n")
         else:
             print(("\n{:"+filler+"{align}{width}}\n").format(' [ '+txt+' ] ', align=align, width=str(width)))
-    
+
     # Display/representation method
     # The method provides full help for the end-user
     def __repr__(self):
@@ -211,7 +212,7 @@ class forcefield():
         cmd = cmd.replace("[comment]","{comment}").format(comment=("[%d:%s]" % (self.beadtype,self.userid)))
         if printflag: print(cmd)
         return cmd
-    
+
     def pair_diagcoeff(self,printflag=True,i=None):
         """ return diagonal pair_coeff from FFi.pair_diagcoeff(), FFi.pair_diagcoeff(i=override value) """
         if i==None: i = self.beadtype
@@ -242,7 +243,7 @@ class forcefield():
         cmd = cmd.replace("[comment]","{comment}").format(comment=("[%d:%s x %d:%s]" % (i,self.userid,j,oname)))
         if printflag: print(cmd)
         return cmd
-    
+
 
 # %% Forecefield library
 # This section can be upgraded by the end-user according to the manual of each style
@@ -263,7 +264,7 @@ class smd(forcefield):
     """ SMD forcefield """
     name = forcefield.name + struct(forcefield="LAMMPS:SMD")
     description = forcefield.description + struct(forcefield="LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)")
-    
+
     # forcefield definition (LAMMPS code between triple """)
     PAIR_STYLE = """
     # [comment] PAIR STYLE SMD
@@ -332,7 +333,7 @@ class none(smd):
 # END PAIR-COEFF FORCEFIELD ===========================
 
 
-        
+
 # %% Material library
 # template:
 #   class mymateral(myforcefield):
@@ -371,7 +372,7 @@ class water(ulsph):
     description = ulsph.description + struct(material="water beads - SPH-like")
     userid = 'water'
     version = 0.1
-    
+
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         """ water forcefield:
@@ -389,7 +390,7 @@ class water(ulsph):
             contact_scale = 1.5,
             contact_stiffness = '2.5*${c0}^2*${rho}'
             ) + USER # update with user properties if any
-        
+
 # END MATERIAL: WATER ==========================================
 
 
@@ -398,7 +399,7 @@ class solidfood(tlsph):
     """ solidfood material (smd:tlsph): model solid food object
             solidfood()
             solidfood(beadtype=index, userid="myfood", USER=...)
-            
+
             override any propery with USER.property=value (set only the parameters you want to override)
                 USER.rho: density in kg/m3 (default=1000)
                 USER.c0: speed of the sound in m/s (default=10.0)
@@ -417,7 +418,7 @@ class solidfood(tlsph):
     description = tlsph.description + struct(material="food beads - solid behavior")
     userid = 'solidfood'
     version = 0.1
-    
+
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         """ food forcefield:
@@ -441,7 +442,7 @@ class solidfood(tlsph):
             contact_scale = 1.5,
             contact_stiffness = "2.5*${c0}^2*${rho}"
             ) + USER # update with user properties if any
-        
+
 # END MATERIAL: SOLID FOOD ==========================================
 
 
@@ -450,17 +451,17 @@ class saltTLSPH(tlsph):
     """ SALTLSPH (smd:tlsph): ongoing "salting" beadtype for rheology control
             saltTLSPH()
             saltTLSPH(beadtype=index, userid="salt", USER=...)
-            
+
             override any property with USER.property = value
     """
     name = tlsph.name + struct(material="solidfood")
     description = tlsph.description + struct(material="food beads - solid behavior")
     userid = '"salt"'
     version = 0.1
-    
+
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
-        """ saltTLSPH forcefield: 
+        """ saltTLSPH forcefield:
             saltTLSPH(beadtype=index, userid="salt") """
         # super().__init__()
         if userid!=None: self.userid = userid
@@ -481,7 +482,7 @@ class saltTLSPH(tlsph):
             contact_scale = 1.5,
             contact_stiffness = '2.5*${c0}^2*${rho}'
             ) + USER # update with user properties if any
-        
+
 # END MATERIAL: SOLID FOOD ==========================================
 
 
@@ -502,7 +503,7 @@ class rigidwall(none):
     description = none.description + struct(material="rigid walls")
     userid = 'solidfood'
     version = 0.1
-    
+
     # constructor (do not forgert to include the constuctor)
     def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
         """ rigidwall forcefield:
@@ -517,14 +518,14 @@ class rigidwall(none):
             contact_scale = 1.5
             ) + USER # update with user properties if any
 
-        
+
 # END MATERIAL: RIGID WALLS ==========================================
 
 
-# %% DEBUG  
-# ===================================================   
+# %% DEBUG
+# ===================================================
 # main()
-# ===================================================   
+# ===================================================
 # for debugging purposes (code called as a script)
 # the code is called from here
 # ===================================================

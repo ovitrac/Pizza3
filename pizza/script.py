@@ -493,7 +493,7 @@ class scriptobjectgroup(struct):
         """ update and accumulate all forcefields """
         FF = []
         for b in self.beadtype:
-            selection = duplicate(self.select(b)[0])
+            selection = deepduplicate(self.select(b)[0])
             selection.forcefield.beadtype = selection.beadtype
             selection.forcefield.userid = selection.name
             FF.append(selection.forcefield)

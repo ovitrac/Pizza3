@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.55"
+__version__ = "0.553"
 
 """
     REGION provide tools to define native geometries in Python for LAMMPS
@@ -39,7 +39,8 @@ __version__ = "0.55"
    		SECTIONS["variables"]
    		SECTIONS["region"]
    		SECTIONS["create"]
-        SECTIONS["move"]
+      SECTIONS["group"]
+      SECTIONS["move"]
    		USER, VARIABLES are overdefined as attributes
 
 	+, += merge regions (no piping)
@@ -51,7 +52,7 @@ __version__ = "0.55"
 """
 
 
-# INRAE\Olivier Vitrac - rev. 2023-07-19
+# INRAE\Olivier Vitrac - rev. 2023-07-25
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -81,6 +82,7 @@ __version__ = "0.55"
 # 2023-07-19 add region.hasfixmove, region.livelammps.options["static" | "dynamic"]
 # 2023-07-19 early design for LammpsGroup class, Group class, region.group()
 # 2023-07-20 reimplement, validate and extend the original emulsion example
+# 2023-07-25 add group section (not active by default)
 
 # %% Imports and private library
 import os, sys
@@ -300,7 +302,8 @@ class LammpsMove(LammpsGeneric):
     # Definitions used in TEMPLATE
     DEFINITIONS = scriptdata(
                     ID = "${ID}",
-               groupID = "${groupID}",
+                moveID = "$fm${ID}", # freeze the interpretation
+               groupID = "$g${ID}", # freeze the interpretation
                  style = "${style}",
                   args = "${args}",
                  hasvariables = False
@@ -310,7 +313,9 @@ class LammpsMove(LammpsGeneric):
     TEMPLATE = """
 # Move atoms fix ID group-ID move style args keyword values (https://docs.lammps.org/fix_move.html)
 % move_fix for group ${groupID} using ${style}
-fix ${ID} ${groupID} move ${style} ${args}
+% prefix "g" added to ${ID} to indicate a group of atoms
+% prefix "fm" added to ${ID} to indicate the ID of the fix move
+fix ${moveID} ${groupID} move ${style} ${args}
 """
 
 
@@ -361,14 +366,15 @@ class LammpsGroup(LammpsGeneric):
     # DEFINITIONS USED IN TEMPLATE
     DEFINITIONS = scriptdata(
                     ID = "${ID}",
-              regionID = "${regionID}",
+               groupID = "$g${ID}", # freeze the interpretation
                  hasvariables = False
                     )
 
     # Template  (using % instead of # enables replacements)
     TEMPLATE = """
-% Create group ${ID} region ${regionID} (URL: https://docs.lammps.org/group.html)
-region ${ID} region ${regionID}
+% Create group ${groupID} region ${ID} (URL: https://docs.lammps.org/group.html)
+% prefix g added to ${ID} to indicate a group of atoms instead of the region itself
+group ${groupID} region ${ID}
 """
 
 
@@ -455,20 +461,29 @@ class coregeometry:
         do() generate the script
     """
 
-    def __init__(self,USER=regiondata(),VARIABLES=regiondata()):
-        """ constructor of the generic core geometry """
+    def __init__(self,USER=regiondata(),VARIABLES=regiondata(),
+                 hasgroup=False, hasmove=False):
+        """
+            constructor of the generic core geometry
+                USER: any definitions requires by the geometry
+           VARIABLES: variables used to define the geometry (to be used in LAMMPS)
+           hasgroup, hasmove: flag to force the sections group and move
+           SECTIONS: they must be PIZZA.script
+        """
         self.USER = USER
         self.SECTIONS = {
             'variables': LammpsVariables(VARIABLES,**USER),
                'region': LammpsRegion(**USER),
                'create': LammpsCreate(**USER),
-               'move':   LammpsMove(**USER)
+                'group': LammpsGroup(**USER),
+                 'move': LammpsMove(**USER)
             }
         self.FLAGSECTIONS = {
             'variables': True,
                'region': True,
                'create': True,
-               'move':   False
+                'group': hasgroup,
+                 'move': hasmove
             }
 
     def update(self):
@@ -479,6 +494,8 @@ class coregeometry:
             self.SECTIONS["region"].USER += self.USER
         if isinstance(self.SECTIONS["create"],script):
             self.SECTIONS["create"].USER += self.USER
+        if isinstance(self.SECTIONS["group"],script):
+            self.SECTIONS["group"].USER += self.USER
         if isinstance(self.SECTIONS["move"],script):
             self.SECTIONS["move"].USER += self.USER
 
@@ -516,6 +533,8 @@ class coregeometry:
             ptmp = self.SECTIONS["region"] if ptmp is None else ptmp | self.SECTIONS["region"]
         if self.FLAGSECTIONS["create"]:
             ptmp = self.SECTIONS["create"] if ptmp is None else ptmp | self.SECTIONS["create"]
+        if self.FLAGSECTIONS["group"]:
+            ptmp = self.SECTIONS["group"] if ptmp is None else ptmp | self.SECTIONS["group"]
         if self.FLAGSECTIONS["move"]:
             ptmp = self.SECTIONS["move"] if ptmp is None else ptmp | self.SECTIONS["move"]
         return ptmp
@@ -820,10 +839,12 @@ class coregeometry:
             dup.SECTIONS["variables"] = dup.SECTIONS["variables"] + C.SECTIONS["variables"]
             dup.SECTIONS["region"] = dup.SECTIONS["region"] + C.SECTIONS["region"]
             dup.SECTIONS["create"] = dup.SECTIONS["create"] + C.SECTIONS["create"]
+            dup.SECTIONS["group"] = dup.SECTIONS["group"] + C.SECTIONS["group"]
             dup.SECTIONS["move"] = dup.SECTIONS["move"] + C.SECTIONS["move"]
             dup.FLAGSECTIONS["variables"] = dup.FLAGSECTIONS["variables"] or C.FLAGSECTIONS["variables"]
             dup.FLAGSECTIONS["region"] = dup.FLAGSECTIONS["region"] or C.FLAGSECTIONS["region"]
             dup.FLAGSECTIONS["create"] = dup.FLAGSECTIONS["create"] or C.FLAGSECTIONS["create"]
+            dup.FLAGSECTIONS["group"] = dup.FLAGSECTIONS["group"] or C.FLAGSECTIONS["group"]
             dup.FLAGSECTIONS["move"] = dup.FLAGSECTIONS["move"] or C.FLAGSECTIONS["move"]
             return dup
         raise TypeError("the second operand must a region.coregeometry object")
@@ -835,10 +856,12 @@ class coregeometry:
             self.SECTIONS["variables"] += C.SECTIONS["variables"]
             self.SECTIONS["region"] += C.SECTIONS["region"]
             self.SECTIONS["create"] += C.SECTIONS["create"]
+            self.SECTIONS["group"] += C.SECTIONS["group"]
             self.SECTIONS["move"] += C.SECTIONS["move"]
             self.FLAGSECTIONS["variables"] = self.FLAGSECTIONS["variables"] or C.FLAGSECTIONS["variables"]
             self.FLAGSECTIONS["region"] = self.FLAGSECTIONS["region"] or C.FLAGSECTIONS["region"]
             self.FLAGSECTIONS["create"] = self.FLAGSECTIONS["create"] or C.FLAGSECTIONS["create"]
+            self.FLAGSECTIONS["group"] = self.FLAGSECTIONS["group"] or C.FLAGSECTIONS["group"]
             self.FLAGSECTIONS["move"] = self.FLAGSECTIONS["move"] or C.FLAGSECTIONS["move"]
             return self
         raise TypeError("the operand must a region.coregeometry object")
@@ -853,10 +876,12 @@ class coregeometry:
             dup.SECTIONS["variables"] = dup.SECTIONS["variables"] | C.SECTIONS["variables"]
             dup.SECTIONS["region"] = dup.SECTIONS["region"] | C.SECTIONS["region"]
             dup.SECTIONS["create"] = dup.SECTIONS["create"] | C.SECTIONS["create"]
+            dup.SECTIONS["group"] = dup.SECTIONS["group"] | C.SECTIONS["group"]
             dup.SECTIONS["move"] = dup.SECTIONS["move"] | C.SECTIONS["move"]
             self.FLAGSECTIONS["variables"] = self.FLAGSECTIONS["variables"] or C.FLAGSECTIONS["variables"]
             self.FLAGSECTIONS["region"] = self.FLAGSECTIONS["region"] or C.FLAGSECTIONS["region"]
             self.FLAGSECTIONS["create"] = self.FLAGSECTIONS["create"] or C.FLAGSECTIONS["create"]
+            self.FLAGSECTIONS["group"] = self.FLAGSECTIONS["group"] or C.FLAGSECTIONS["group"]
             self.FLAGSECTIONS["move"] = self.FLAGSECTIONS["move"] or C.FLAGSECTIONS["move"]
             return dup
         raise TypeError("the second operand must a region.coregeometry object")
@@ -889,7 +914,8 @@ class coregeometry:
 class Block(coregeometry):
     """ Block class """
 
-    def __init__(self,counter,index=None,subindex=None,**variables):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,**variables):
         self.name = "block%03d" % counter[1]
         self.kind = "block"     # kind of object
         self.alike = "block"    # similar object for plotting
@@ -899,13 +925,15 @@ class Block(coregeometry):
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$block"),
-                VARIABLES = regiondata(**variables)
+                VARIABLES = regiondata(**variables),
+                hasgroup=hasgroup,hasmove=hasmove
                 )
 
 class Cone(coregeometry):
     """ Cone class """
 
-    def __init__(self,counter,index=None,subindex=None,**variables):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,**variables):
         self.name = "cone%03d" % counter[1]
         self.kind = "cone"     # kind of object
         self.alike = "cone"    # similar object for plotting
@@ -915,13 +943,15 @@ class Cone(coregeometry):
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$cone"),
-                VARIABLES = regiondata(**variables)
+                VARIABLES = regiondata(**variables),
+                hasgroup=hasgroup,hasmove=hasmove
                 )
 
 class Cylinder(coregeometry):
     """ Cylinder class """
 
-    def __init__(self,counter,index=None,subindex=None,**variables):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,**variables):
         self.name = "cylinder%03d" % counter[1]
         self.kind = "cylinder"     # kind of object
         self.alike = "cylinder"    # similar object for plotting
@@ -931,13 +961,15 @@ class Cylinder(coregeometry):
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$cylinder"),
-                VARIABLES = regiondata(**variables)
+                VARIABLES = regiondata(**variables),
+                hasgroup=hasgroup,hasmove=hasmove
                 )
 
 class Ellipsoid(coregeometry):
     """ Ellipsoid class """
 
-    def __init__(self,counter,index=None,subindex=None,**variables):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,**variables):
         self.name = "ellipsoid%03d" % counter[1]
         self.kind = "ellipsoid"     # kind of object
         self.alike = "ellipsoid"    # similar object for plotting
@@ -947,13 +979,15 @@ class Ellipsoid(coregeometry):
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$ellipsoid"),
-                VARIABLES = regiondata(**variables)
+                VARIABLES = regiondata(**variables),
+                hasgroup=hasgroup,hasmove=hasmove
                 )
 
 class Plane(coregeometry):
     """ Plane class """
 
-    def __init__(self,counter,index=None,subindex=None,**variables):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,**variables):
         self.name = "plane%03d" % counter[1]
         self.kind = "plane"      # kind of object
         self.alike = "plane"     # similar object for plotting
@@ -963,13 +997,15 @@ class Plane(coregeometry):
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$plane"),
-                VARIABLES = regiondata(**variables)
+                VARIABLES = regiondata(**variables),
+                hasgroup=hasgroup,hasmove=hasmove
                 )
 
 class Prism(coregeometry):
     """ Prism class """
 
-    def __init__(self,counter,index=None,subindex=None,**variables):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,**variables):
         self.name = "prism%03d" % counter[1]
         self.kind = "prism"      # kind of object
         self.alike = "prism"     # similar object for plotting
@@ -979,13 +1015,15 @@ class Prism(coregeometry):
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$prism"),
-                VARIABLES = regiondata(**variables)
+                VARIABLES = regiondata(**variables),
+                hasgroup=hasgroup,hasmove=hasmove
                 )
 
 class Sphere(coregeometry):
     """ Sphere class """
 
-    def __init__(self,counter,index=None,subindex=None,**variables):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,**variables):
         self.name = "sphere%03d" % counter[1]
         self.kind = "sphere"      # kind of object
         self.alike = "ellipsoid"     # similar object for plotting
@@ -995,13 +1033,15 @@ class Sphere(coregeometry):
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$sphere"),
-                VARIABLES = regiondata(**variables)
+                VARIABLES = regiondata(**variables),
+                hasgroup=hasgroup,hasmove=hasmove
                 )
 
 class Union(coregeometry):
     """ Union class """
 
-    def __init__(self,counter,index=None,subindex=None,**variables):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,**variables):
         self.name = "union%03d" % counter[1]
         self.kind = "union"      # kind of object
         self.alike = "operator"     # similar object for plotting
@@ -1011,13 +1051,15 @@ class Union(coregeometry):
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$union"),
-                VARIABLES = regiondata(**variables)
+                VARIABLES = regiondata(**variables),
+                hasgroup=hasgroup,hasmove=hasmove
                 )
 
 class Intersect(coregeometry):
     """ Intersect class """
 
-    def __init__(self,counter,index=None,subindex=None,**variables):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,**variables):
         self.name = "intersect%03d" % counter[1]
         self.kind = "intersect"      # kind of object
         self.alike = "operator"     # similar object for plotting
@@ -1027,20 +1069,22 @@ class Intersect(coregeometry):
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$intersect"),
-                VARIABLES = regiondata(**variables)
+                VARIABLES = regiondata(**variables),
+                hasgroup=hasgroup,hasmove=hasmove
                 )
 
 class Evalgeometry(coregeometry):
     """ generic class to store evaluated objects with region.eval() """
 
-    def __init__(self,counter,index=None,subindex=None):
+    def __init__(self,counter,index=None,subindex=None,
+                 hasgroup=False,hasmove=False,):
         self.name = "eval%03d" % counter[1]
         self.kind = "eval"      # kind of object
         self.alike = "eval"     # similar object for plotting
         self.beadtype = 1       # bead type
         self.index = counter[0] if index is None else index
         self.subindex = subindex
-        super().__init__()
+        super().__init__(hasgroup=hasgroup,hasmove=hasmove)
 
 class Group:
     """ generic Group class """
@@ -1049,7 +1093,8 @@ class Group:
 
 class Collection:
     """ Collection class (including many objects) """
-    def __init__(self,counter, index = None, subindex = None):
+    def __init__(self,counter, index = None, subindex = None,
+                 group=None):
         self.name = "collect%03d" % counter[1]
         self.kind = "collection"    # kind of object
         self.alike = "mixed"        # similar object for plotting
@@ -1106,6 +1151,7 @@ class Collection:
         liste = [x.SECTIONS["variables"] for x in self.collection if x.FLAGSECTIONS["variables"]] + \
                 [x.SECTIONS["region"]    for x in self.collection if x.FLAGSECTIONS["region"]] + \
                 [x.SECTIONS["create"]    for x in self.collection if x.FLAGSECTIONS["create"]] + \
+                [x.SECTIONS["group"]     for x in self.collection if x.FLAGSECTIONS["group"]] + \
                 [x.SECTIONS["move"]      for x in self.collection if x.FLAGSECTIONS["move"]]
         return pipescript.join(liste)
 
@@ -2261,9 +2307,11 @@ class region:
         for myobj in self:
             if not isinstance(myobj,Collection): myobj.do()
         # concatenate all objects into a pipe script
+        # for collections, only group is accepted
         liste = [x.SECTIONS["variables"] for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["variables"]] + \
                 [x.SECTIONS["region"]    for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["region"]] + \
                 [x.SECTIONS["create"]    for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["create"]] + \
+                [x.SECTIONS["group"]    for x in self if x.FLAGSECTIONS["group"]] + \
                 [x.SECTIONS["move"]      for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["move"]]
         for x in self:
             if isinstance(x,Collection): liste += x.group()
