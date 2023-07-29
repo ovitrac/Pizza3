@@ -84,6 +84,7 @@ __version__ = "0.56"
 # 2023-07-20 reimplement, validate and extend the original emulsion example
 # 2023-07-25 add group section (not active by default)
 # 2023-07-29 symmetric design for coregeometry and collection objects with flag control, implementation in pipescript
+# 2023-07-29 fix for the class LammpsCollectionGroup() - previous bug resolved
 
 # %% Imports and private library
 import os, sys
@@ -360,7 +361,7 @@ class LammpsGroup(LammpsGeneric):
     SECTIONS = ["GROUP"]
     position = 4
     role = "group command definition"
-    description = "group ID style args"
+    description = "group ID region regionID"
     userid = "region"              # user name
     version = 0.2                  # version
     verbose = True
@@ -379,12 +380,29 @@ group ${groupID} region ${ID}
 """
 
 
-class LammpsCollectionGroup(LammpsGroup):
+class LammpsCollectionGroup(LammpsGeneric):
     """ Collection group class based on script """
-    name = "LammpsGroup"
+    name = "LammpsCollection Group"
     SECTIONS = ["COLLECTIONGROUP"]
     position = 5
+    role = "group command definition for a collection"
+    description = "group ID union regionID1 regionID2..."
+    userid = "collectionregion"              # user name
+    version = 0.3                            # version
+    verbose = True
 
+    # DEFINITIONS USED IN TEMPLATE
+    DEFINITIONS = scriptdata(
+                    ID = "${ID}",
+               groupID = "$"+groupprefix+"${ID}", # freeze the interpretation
+          hasvariables = False
+                    )
+
+    # Template  (ID is spanned over all regionIDs)
+    TEMPLATE = """
+% Create group ${groupID} region ${ID} (URL: https://docs.lammps.org/group.html)
+group ${groupID} union ${ID}
+"""
 
 class LammpsHeader(LammpsGeneric):
     """ generic header for pizza.region """
