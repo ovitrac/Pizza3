@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.553"
+__version__ = "0.56"
 
 """
     REGION provide tools to define native geometries in Python for LAMMPS
@@ -36,11 +36,11 @@ __version__ = "0.553"
 
     	Overloading operators +, +=, | for any coregeometry object
    	Note that coregeometry have four main SECTIONS (scripts)
-   		SECTIONS["variables"]
-   		SECTIONS["region"]
-   		SECTIONS["create"]
-      SECTIONS["group"]
-      SECTIONS["move"]
+       SECTIONS["variables"]
+       SECTIONS["region"]
+       SECTIONS["create"]
+       SECTIONS["group"]
+       SECTIONS["move"]
    		USER, VARIABLES are overdefined as attributes
 
 	+, += merge regions (no piping)
@@ -52,7 +52,7 @@ __version__ = "0.553"
 """
 
 
-# INRAE\Olivier Vitrac - rev. 2023-07-25
+# INRAE\Olivier Vitrac - rev. 2023-07-29
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -83,6 +83,7 @@ __version__ = "0.553"
 # 2023-07-19 early design for LammpsGroup class, Group class, region.group()
 # 2023-07-20 reimplement, validate and extend the original emulsion example
 # 2023-07-25 add group section (not active by default)
+# 2023-07-29 symmetric design for coregeometry and collection objects with flag control, implementation in pipescript
 
 # %% Imports and private library
 import os, sys
@@ -117,7 +118,8 @@ livetemplate = {
     'mass':'mass		    %d 1.0',
     'pair_coeff':'pair_coeff	    %d %d 1.0 1.0 2.5',
     }
-
+groupprefix = "GRP"  # prefix for all group IDs created from a named region
+fixmoveprefix = "FM" # prefix for all fix move IDs created from a named region
 # %% Low level functions
 # wrap and indent text for variables
 wrap = lambda k,op,v,indent,width,maxwidth: fill(
@@ -302,8 +304,8 @@ class LammpsMove(LammpsGeneric):
     # Definitions used in TEMPLATE
     DEFINITIONS = scriptdata(
                     ID = "${ID}",
-                moveID = "$fm${ID}", # freeze the interpretation
-               groupID = "$g${ID}", # freeze the interpretation
+                moveID = "$"+fixmoveprefix+"${ID}", # freeze the interpretation
+               groupID = "$"+groupprefix+"${ID}", # freeze the interpretation
                  style = "${style}",
                   args = "${args}",
                  hasvariables = False
@@ -366,16 +368,22 @@ class LammpsGroup(LammpsGeneric):
     # DEFINITIONS USED IN TEMPLATE
     DEFINITIONS = scriptdata(
                     ID = "${ID}",
-               groupID = "$g${ID}", # freeze the interpretation
+               groupID = "$"+groupprefix+"${ID}", # freeze the interpretation
                  hasvariables = False
                     )
 
     # Template  (using % instead of # enables replacements)
     TEMPLATE = """
 % Create group ${groupID} region ${ID} (URL: https://docs.lammps.org/group.html)
-% prefix g added to ${ID} to indicate a group of atoms instead of the region itself
 group ${groupID} region ${ID}
 """
+
+
+class LammpsCollectionGroup(LammpsGroup):
+    """ Collection group class based on script """
+    name = "LammpsGroup"
+    SECTIONS = ["COLLECTIONGROUP"]
+    position = 5
 
 
 class LammpsHeader(LammpsGeneric):
@@ -461,6 +469,10 @@ class coregeometry:
         do() generate the script
     """
 
+    _version = "0.31"
+    __custom_documentations__ = "pizza.region.coregeometry class"
+
+
     def __init__(self,USER=regiondata(),VARIABLES=regiondata(),
                  hasgroup=False, hasmove=False):
         """
@@ -500,7 +512,6 @@ class coregeometry:
             self.SECTIONS["move"].USER += self.USER
 
 
-
     def copy(self,beadtype=None,name=""):
         """ returns a copy of the graphical object """
         if self.alike != "mixed":
@@ -512,6 +523,64 @@ class coregeometry:
             return dup
         else:
             raise ValueError("collections cannot be copied, regenerate the collection instead")
+
+    def creategroup(self):
+        """  force the group creation in script """
+        self.FLAGSECTIONS["group"] = True
+
+    def createmove(self):
+        """  force the fix move creation in script """
+        self.FLAGSECTIONS["move"] = True
+
+    def removegroup(self):
+        """  force the group creation in script """
+        self.FLAGSECTIONS["group"] = False
+
+    def removemove(self):
+        """  force the fix move creation in script """
+        self.FLAGSECTIONS["move"] = False
+
+    @property
+    def hasvariables(self):
+        """ return the flag VARIABLES """
+        return isinstance(self.SECTIONS["variables"],script) \
+               and self.FLAGSECTIONS["variables"]
+
+    @property
+    def hasregion(self):
+        """ return the flag REGION """
+        return isinstance(self.SECTIONS["region"],script) \
+               and self.FLAGSECTIONS["region"]
+
+    @property
+    def hascreate(self):
+        """ return the flag CREATE """
+        return isinstance(self.SECTIONS["create"],script) \
+               and self.FLAGSECTIONS["create"]
+
+    @property
+    def hasgroup(self):
+        """ return the flag GROUP """
+        return isinstance(self.SECTIONS["group"],script) \
+               and self.FLAGSECTIONS["group"]
+
+    @property
+    def hasmove(self):
+        """ return the flag MOVE """
+        return isinstance(self.SECTIONS["move"],script) \
+               and self.FLAGSECTIONS["move"]
+
+    @property
+    def flags(self):
+        """ return a list of all flags that are currently set """
+        flag_names = list(self.SECTIONS.keys())
+        return [flag for flag in flag_names if getattr(self, f"has{flag}")]
+
+    @property
+    def shortflags(self):
+        """ return a string made from the first letter of each set flag """
+        return "".join([flag[0] for flag in self.flags])
+
 
     @property
     def VARIABLES(self):
@@ -528,14 +597,14 @@ class coregeometry:
     def script(self):
         """ generates a pipe script from sections """
         self.update()
-        ptmp = self.SECTIONS["variables"] if self.FLAGSECTIONS["variables"] else None
-        if self.FLAGSECTIONS["region"]:
+        ptmp = self.SECTIONS["variables"] if self.hasvariables else None
+        if self.hasregion:
             ptmp = self.SECTIONS["region"] if ptmp is None else ptmp | self.SECTIONS["region"]
-        if self.FLAGSECTIONS["create"]:
+        if self.hascreate:
             ptmp = self.SECTIONS["create"] if ptmp is None else ptmp | self.SECTIONS["create"]
-        if self.FLAGSECTIONS["group"]:
+        if self.hasgroup:
             ptmp = self.SECTIONS["group"] if ptmp is None else ptmp | self.SECTIONS["group"]
-        if self.FLAGSECTIONS["move"]:
+        if self.hasmove:
             ptmp = self.SECTIONS["move"] if ptmp is None else ptmp | self.SECTIONS["move"]
         return ptmp
         # before 2023-07-17
@@ -568,6 +637,8 @@ class coregeometry:
                     print(wrap(k,":",v[1:],20,60,80))
                     haskeys = True
         if not haskeys: print(wrap("no keywords","<","from side|move|units|rotate|open",20,60,80))
+        flags = self.flags
+        if flags: print(f'defined scripts: {span(flags,sep=",")}',"\n")
         return "%s object: %s (beadtype=%d)" % (self.kind,self.name,self.beadtype)
 
 
@@ -886,7 +957,7 @@ class coregeometry:
             return dup
         raise TypeError("the second operand must a region.coregeometry object")
 
-    # copy and deep copy methpds for the class (required)
+    # copy and deep copy methods for the class (required)
     def __getstate__(self):
         """ getstate for cooperative inheritance / duplication """
         return self.__dict__.copy()
@@ -908,7 +979,7 @@ class coregeometry:
         copie = cls.__new__(cls)
         memo[id(self)] = copie
         for k, v in self.__dict__.items():
-            setattr(copie, k, duplicatedeep(v, memo))
+            setattr(copie, k, deepduplicate(v, memo)) # replace duplicatedeep by deepduplicate (OV: 2023-07-28)
         return copie
 
 class Block(coregeometry):
@@ -1086,33 +1157,95 @@ class Evalgeometry(coregeometry):
         self.subindex = subindex
         super().__init__(hasgroup=hasgroup,hasmove=hasmove)
 
-class Group:
-    """ generic Group class """
-    pass # see collection.group
-
 
 class Collection:
-    """ Collection class (including many objects) """
-    def __init__(self,counter, index = None, subindex = None,
-                 group=None):
-        self.name = "collect%03d" % counter[1]
+    """
+        Collection class (including many objects)
+    """
+    _version = "0.31"
+    __custom_documentations__ = "pizza.region.Collection class"
+
+    # CONSTRUCTOR
+    def __init__(self,counter,
+                 name=None,
+                 index = None,
+                 subindex = None,
+                 hasgroup = False,
+                 USER = regiondata()):
+        if (name is None) or (name==""):
+            self.name = "collect%03d" % counter[1]
+        elif name in self:
+            raise KeyError(f'the name "{name}" already exist')
+        else:
+            self.name = name
+        if not isinstance(USER,regiondata):
+            raise TypeError("USER should be a regiondata object")
+        USER.groupID = "$"+self.name # the content is frozen
+        USER.ID = ""
+        self.USER = USER
         self.kind = "collection"    # kind of object
         self.alike = "mixed"        # similar object for plotting
         self.index = counter[0] if index is None else index
         self.subindex = counter[1]
         self.collection = regioncollection()
+        self.SECTIONS = {
+        	'group': LammpsCollectionGroup(**USER)
+        }
+        self.FLAGSECTIONS = {"group": hasgroup}
+
+    def update(self):
+        """ update the USER content for the script """
+        if isinstance(self.SECTIONS["group"],script):
+            self.USER.ID = "$"\
+                +span([groupprefix+x for x in self.list()]) # the content is frozen
+            self.SECTIONS["group"].USER += self.USER
+
+    def creategroup(self):
+        """  force the group creation in script """
+        for o in self.collection: o.creategroup()
+        self.update()
+        self.FLAGSECTIONS["group"] = True
+
+    def removegroup(self,recursive=True):
+        """  force the group creation in script """
+        if recursive:
+            for o in self.collection: o.removegroup()
+        self.FLAGSECTIONS["group"] = False
+
+    @property
+    def hasgroup(self):
+        """ return the flag hasgroup """
+        return self.FLAGSECTIONS["group"]
+
+    @property
+    def flags(self):
+        """ return a list of all flags that are currently set """
+        flag_names = list(self.SECTIONS.keys())
+        return [flag for flag in flag_names if getattr(self, f"has{flag}")]
+
+    @property
+    def shortflags(self):
+        """ return a string made from the first letter of each set flag """
+        return "".join([flag[0] for flag in self.flags])
+
+    @property
+    def script(self):
+        """ generates a pipe script from SECTIONS """
+        self.update()
+        return self.SECTIONS["group"]
 
     def __repr__(self):
         keylengths = [len(key) for key in self.collection.keys()]
         width = max(10,max(keylengths)+2)
         fmt = "%%%ss:" % width
         line = ( fmt % ('-'*(width-2)) ) + ( '-'*(min(40,width*5)) )
-        print("%s - %s object" % (self.name, self.kind))
-        print(line)
-        print(line,'  name: type "original name"', line,sep="\n")
+        print(line,"  %s - %s object" % (self.name, self.kind), line,sep="\n")
         for key,value in self.collection.items():
+            flags = "("+self.collection[key].shortflags+")" if self.collection[key].flags else "(no script)"
             print(fmt % key,value.kind,
-                  '"%s"' % value.name)
+                  '"%s"' % value.name," > ",flags)
+        flags = self.flags
+        if flags: print(line,f'defined scripts: {span(flags,sep=",")}',sep="\n")
         print(line)
         return "%s object: %s (beadtype=[%s])" % (self.kind,self.name,", ".join(map(str,self.beadtype)))
 
@@ -1121,6 +1254,8 @@ class Collection:
         """ returns the object """
         if name in self.collection:
             return self.collection.getattr(name)
+        elif name in ["collection","hasgroup","flags","shortflags","script"]:
+            return getattr(self,name)
         else:
             raise ValueError('the object "%s" does not exist, use list()' % name)
 
@@ -1148,11 +1283,11 @@ class Collection:
         # execute all objects
         for i in range(len(self)): self.collection[i].do()
         # concatenate all objects into a pipe script
-        liste = [x.SECTIONS["variables"] for x in self.collection if x.FLAGSECTIONS["variables"]] + \
-                [x.SECTIONS["region"]    for x in self.collection if x.FLAGSECTIONS["region"]] + \
-                [x.SECTIONS["create"]    for x in self.collection if x.FLAGSECTIONS["create"]] + \
-                [x.SECTIONS["group"]     for x in self.collection if x.FLAGSECTIONS["group"]] + \
-                [x.SECTIONS["move"]      for x in self.collection if x.FLAGSECTIONS["move"]]
+        liste = [x.SECTIONS["variables"] for x in self.collection if x.hasvariables] + \
+                [x.SECTIONS["region"]    for x in self.collection if x.hasregion] + \
+                [x.SECTIONS["create"]    for x in self.collection if x.hascreate] + \
+                [x.SECTIONS["group"]     for x in self.collection if x.hasgroup] + \
+                [x.SECTIONS["move"]      for x in self.collection if x.hasmove]
         return pipescript.join(liste)
 
     # LEN ---------------------------------
@@ -1160,12 +1295,20 @@ class Collection:
         """ return length of collection """
         return len(self.collection)
 
+    # LIST ---------------------------------
+    def list(self):
+        """ return the list of objects """
+        return self.collection.keys()
+
+
+
 # %% region class (main class)
 class region:
     """
         region main class
     """
-    _version = "0.3"
+    _version = "0.31"
+    __custom_documentations__ = "pizza.region.region class"
 
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
     #
@@ -1232,7 +1375,8 @@ class region:
         self.objects = {}    # object container
         self.nobjects = 0    # total number of objects (alive)
         # count objects per type
-        self.counter = {  "ellipsoid":0,
+        self.counter = {
+                  "ellipsoid":0,
                   "block":0,
                   "sphere":0,
                   "cone":0,
@@ -2038,12 +2182,13 @@ class region:
             width = max(10,max(l)+2)
             fmt = "%%%ss:" % width
             for i in range(self.nobjects):
+                flags = "("+self.objects[names[i]].shortflags+")" if self.objects[names[i]].flags else "(no script)"
                 if isinstance(self.objects[names[i]],Collection):
                         print(fmt % names[i]," %s region (%d beadtypes)" % \
-                              (self.objects[names[i]].kind,len(self.objects[names[i]].beadtype)))
+                              (self.objects[names[i]].kind,len(self.objects[names[i]].beadtype))," > ",flags)
                 else:
                     print(fmt % names[i]," %s region (beadtype=%d)" % \
-                          (self.objects[names[i]].kind,self.objects[names[i]].beadtype))
+                          (self.objects[names[i]].kind,self.objects[names[i]].beadtype)," > ",flags)
             print(wrap("they are",":",", ".join(self.names),10,60,80))
         print("-"*40)
         return "REGION container %s with %d objects (%s)" % \
@@ -2308,13 +2453,17 @@ class region:
             if not isinstance(myobj,Collection): myobj.do()
         # concatenate all objects into a pipe script
         # for collections, only group is accepted
-        liste = [x.SECTIONS["variables"] for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["variables"]] + \
-                [x.SECTIONS["region"]    for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["region"]] + \
-                [x.SECTIONS["create"]    for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["create"]] + \
-                [x.SECTIONS["group"]    for x in self if x.FLAGSECTIONS["group"]] + \
-                [x.SECTIONS["move"]      for x in self if not isinstance(x,Collection) and x.FLAGSECTIONS["move"]]
+        liste = [x.SECTIONS["variables"] for x in self if not isinstance(x,Collection) and x.hasvariables] + \
+                [x.SECTIONS["region"]    for x in self if not isinstance(x,Collection) and x.hasregion] + \
+                [x.SECTIONS["create"]    for x in self if not isinstance(x,Collection) and x.hascreate] + \
+                [x.SECTIONS["group"]     for x in self if not isinstance(x,Collection) and x.hasgroup] + \
+                [x.SECTIONS["move"]      for x in self if not isinstance(x,Collection) and x.hasmove]
+        # add the objects within the collection
         for x in self:
             if isinstance(x,Collection): liste += x.group()
+        # add the eventual group for the collection
+        liste += [x.SECTIONS["group"] for x in self if isinstance(x,Collection) and x.hasgroup]
+        # chain all scripts
         return pipescript.join(liste)
 
     # SCRIPT add header and foodter to PIPECRIPT

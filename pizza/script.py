@@ -906,7 +906,7 @@ class script():
     def tmpwrite(self):
         """ write file """
         ftmp = tempfile.NamedTemporaryFile(mode="w+b",prefix="script_",suffix=".txt")
-        header = r"# PIZZA.SCRIPT() TEMPORARY FILE\n# " + '-'*40 +'\n' + \
+        header = f"# PIZZA.SCRIPT() TEMPORARY FILE\n # " + '-'*40 +'\n' + \
                  f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
                  f"# <-- {str(datetime.datetime.now())} -->\n"
         content =  header + \
