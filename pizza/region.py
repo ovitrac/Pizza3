@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.56"
+__version__ = "0.58"
 
 """
     REGION provide tools to define native geometries in Python for LAMMPS
@@ -52,7 +52,7 @@ __version__ = "0.56"
 """
 
 
-# INRAE\Olivier Vitrac - rev. 2023-07-29
+# INRAE\Olivier Vitrac - rev. 2023-08-11
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -85,6 +85,7 @@ __version__ = "0.56"
 # 2023-07-25 add group section (not active by default)
 # 2023-07-29 symmetric design for coregeometry and collection objects with flag control, implementation in pipescript
 # 2023-07-29 fix for the class LammpsCollectionGroup() - previous bug resolved
+# 2023-08-11 full implementation of the space-filled model such as in pizza.raster
 
 # %% Imports and private library
 import os, sys
@@ -109,7 +110,7 @@ from pizza.script import pipescript, script, scriptdata, span
 # protected properties in region
 protectedregionkeys = ('name', 'live', 'nbeads' 'volume', 'mass', 'radius', 'contactradius', 'velocities', \
                         'forces', 'filename', 'index', 'objects', 'nobjects', 'counter','_iter_',\
-                        'livelammps','copy', 'hasfixmove'
+                        'livelammps','copy', 'hasfixmove', 'spacefilling', 'isspacefilled', 'spacefillingbeadtype'
                             )
 
 # livelammps
@@ -212,7 +213,7 @@ class LammpsGeneric(script):
     """
     def do(self,printflag=True,verbose=False):
         """ generate the LAMMPS code with VARIABLE definitions """
-        if self.DEFINITIONS.hasvariables:
+        if self.DEFINITIONS.hasvariables and hasattr(self,'VARIABLES'): # attribute VARIABLES checked 2023-08-11
             cmd = f"#[{str(datetime.now())}] {self.name} > {self.SECTIONS[0]}" \
                 if verbose else ""
             if len(self.VARIABLES)>0: cmd += \
@@ -230,7 +231,7 @@ class LammpsVariables(LammpsGeneric):
     """
     name = "LammpsVariables"
     SECTIONS = ["VARIABLES"]
-    position = 1
+    position = 2
     role = "variable command definition"
     description = "variable name style args"
     userid = "variable"
@@ -256,7 +257,7 @@ class LammpsVariables(LammpsGeneric):
     def __rshift__(self,s):
         """ overload right  shift operator (keep only the last template) """
         if isinstance(s,script):
-            dup = duplicate(self)
+            dup = deepduplicate(self) # instead of duplicate (added 2023-08-11)
             dup.DEFINITIONS = dup.DEFINITIONS + s.DEFINITIONS
             dup.USER = dup.USER + s.USER
             if self.DEFINITIONS.hasvariables and s.DEFINITIONS.hasvariables:
@@ -271,7 +272,7 @@ class LammpsCreate(LammpsGeneric):
     """ script for LAMMPS variables section """
     name = "LammpsCreate"
     SECTIONS = ["create_atoms"]
-    position = 3
+    position = 4
     role = "create_atoms command"
     description = "create_atoms type style args keyword values ..."
     userid = "create"
@@ -291,11 +292,35 @@ class LammpsCreate(LammpsGeneric):
 create_atoms ${beadtype} region ${ID}
 """
 
+class LammpsSetGroup(LammpsGeneric):
+    """ script for LAMMPS set group section """
+    name = "LammpsSetGroup"
+    SECTIONS = ["set group"]
+    position = 4
+    role = "create_atoms command"
+    description = "set group groupID type beadtype"
+    userid = "setgroup"
+    version = 0.1
+    verbose = True
+
+    # Definitions used in TEMPLATE
+    DEFINITIONS = scriptdata(
+                    ID = "${ID}",
+               groupID = "$"+groupprefix+"${ID}", # freeze the interpretation,
+          hasvariables = False
+                    )
+
+    # Template (using % instead of # enables replacements)
+    TEMPLATE = """
+% Reassign atom type to ${beadtype} for the group ${groupID} associated with region ${ID} (https://docs.lammps.org/set.html)
+set group ${groupID} type ${beadtype}
+"""
+
 class LammpsMove(LammpsGeneric):
     """ script for LAMMPS variables section """
     name = "LammpsMove"
     SECTIONS = ["move_fix"]
-    position = 5
+    position = 6
     role = "move along a trajectory"
     description = "fix ID group-ID move style args keyword values ..."
     userid = "move"
@@ -309,7 +334,7 @@ class LammpsMove(LammpsGeneric):
                groupID = "$"+groupprefix+"${ID}", # freeze the interpretation
                  style = "${style}",
                   args = "${args}",
-                 hasvariables = False
+          hasvariables = False
                     )
 
     # Template (using % instead of # enables replacements)
@@ -326,7 +351,7 @@ class LammpsRegion(LammpsGeneric):
     """ generic region based on script """
     name = "LammpsRegion"
     SECTIONS = ["REGION"]
-    position = 2
+    position = 3
     role = "region command definition"
     description = "region ID style args keyword arg"
     userid = "region"              # user name
@@ -359,7 +384,7 @@ class LammpsGroup(LammpsGeneric):
     """ generic group class based on script """
     name = "LammpsGroup"
     SECTIONS = ["GROUP"]
-    position = 4
+    position = 5
     role = "group command definition"
     description = "group ID region regionID"
     userid = "region"              # user name
@@ -370,6 +395,8 @@ class LammpsGroup(LammpsGeneric):
     DEFINITIONS = scriptdata(
                     ID = "${ID}",
                groupID = "$"+groupprefix+"${ID}", # freeze the interpretation
+          countgroupID = "$count"+"${groupID}", # either using $
+           grouptoshow = ["${groupID}"], # or []
                  hasvariables = False
                     )
 
@@ -377,6 +404,8 @@ class LammpsGroup(LammpsGeneric):
     TEMPLATE = """
 % Create group ${groupID} region ${ID} (URL: https://docs.lammps.org/group.html)
 group ${groupID} region ${ID}
+variable ${countgroupID} equal count(${grouptoshow})
+print "Number of atoms in ${groupID}: \${{countgroupID}}"
 """
 
 
@@ -384,7 +413,7 @@ class LammpsCollectionGroup(LammpsGeneric):
     """ Collection group class based on script """
     name = "LammpsCollection Group"
     SECTIONS = ["COLLECTIONGROUP"]
-    position = 5
+    position = 6
     role = "group command definition for a collection"
     description = "group ID union regionID1 regionID2..."
     userid = "collectionregion"              # user name
@@ -442,6 +471,40 @@ create_box	${nbeads} box
 # ------------------------------------------
 """
 
+class LammpsSpacefilling(LammpsGeneric):
+    """ Spacefilling script: fill space with a block """
+    name = "LammpsSpacefilling"
+    SECTIONS = ["SPACEFILLING"]
+    position = 1
+    role = "fill space with fillingbeadtype atoms"
+    description = 'fill the whole space (region "filledspace") with default atoms (beadtype)'
+    userid = "spacefilling"              # user name
+    version = 0.1                        # version
+    verbose = False
+
+    # DEFINITIONS USED IN TEMPLATE
+    DEFINITIONS = scriptdata(
+             fillingunits = "${fillingunits}",
+             fillingwidth = "${fillingwidth}",
+            fillingheight = "${fillingheight}",
+             fillingdepth = "${fillingdepth}",
+               fillingxlo = "-${fillingwidth}/2",
+               fillingxhi = "${fillingwidth}/2",
+               fillingylo = "-${fillingheight}/2",
+               fillingyhi = "${fillingheight}/2",
+               fillingzlo = "-${fillingdepth}/2",
+               fillingzhi = "${fillingdepth}/2",
+          fillingbeadtype = "${fillingbeadtype}",
+             fillingstyle = "${block}",
+             hasvariables = False
+                    )
+
+    # Template
+    TEMPLATE = """
+region filledspace ${fillingstyle} ${fillingxlo} ${fillingxhi} ${fillingylo} ${fillingyhi} ${fillingzlo} ${fillingzhi}
+create_atoms ${fillingbeadtype} region filledspace
+# ------------------------------------------
+"""
 
 class LammpsFooter(LammpsGeneric):
     """ generic header for pizza.region """
@@ -487,18 +550,20 @@ class coregeometry:
         do() generate the script
     """
 
-    _version = "0.31"
+    _version = "0.35"
     __custom_documentations__ = "pizza.region.coregeometry class"
 
 
     def __init__(self,USER=regiondata(),VARIABLES=regiondata(),
-                 hasgroup=False, hasmove=False):
+                 hasgroup=False, hasmove=False, spacefilling=False):
         """
             constructor of the generic core geometry
                 USER: any definitions requires by the geometry
            VARIABLES: variables used to define the geometry (to be used in LAMMPS)
            hasgroup, hasmove: flag to force the sections group and move
            SECTIONS: they must be PIZZA.script
+
+           The flag spacefilling is true of the container of objects (class region) is filled with beads
         """
         self.USER = USER
         self.SECTIONS = {
@@ -506,15 +571,18 @@ class coregeometry:
                'region': LammpsRegion(**USER),
                'create': LammpsCreate(**USER),
                 'group': LammpsGroup(**USER),
+             'setgroup': LammpsSetGroup(**USER),
                  'move': LammpsMove(**USER)
             }
         self.FLAGSECTIONS = {
             'variables': True,
                'region': True,
-               'create': True,
+               'create': not spacefilling,
                 'group': hasgroup,
+             'setgroup': spacefilling,
                  'move': hasmove
             }
+        self.spacefilling = spacefilling
 
     def update(self):
         """ update the USER content for all three scripts """
@@ -526,6 +594,8 @@ class coregeometry:
             self.SECTIONS["create"].USER += self.USER
         if isinstance(self.SECTIONS["group"],script):
             self.SECTIONS["group"].USER += self.USER
+        if isinstance(self.SECTIONS["setgroup"],script):
+            self.SECTIONS["setgroup"].USER += self.USER
         if isinstance(self.SECTIONS["move"],script):
             self.SECTIONS["move"].USER += self.USER
 
@@ -542,9 +612,14 @@ class coregeometry:
         else:
             raise ValueError("collections cannot be copied, regenerate the collection instead")
 
+
     def creategroup(self):
         """  force the group creation in script """
         self.FLAGSECTIONS["group"] = True
+
+    def setgroup(self):
+        """  force the group creation in script """
+        self.FLAGSECTIONS["setgroup"] = True
 
     def createmove(self):
         """  force the fix move creation in script """
@@ -574,7 +649,8 @@ class coregeometry:
     def hascreate(self):
         """ return the flag CREATE """
         return isinstance(self.SECTIONS["create"],script) \
-               and self.FLAGSECTIONS["create"]
+               and self.FLAGSECTIONS["create"] \
+               and (not self.spacefilling)
 
     @property
     def hasgroup(self):
@@ -583,10 +659,24 @@ class coregeometry:
                and self.FLAGSECTIONS["group"]
 
     @property
+    def hassetgroup(self):
+        """ return the flag GROUP """
+        return isinstance(self.SECTIONS["setgroup"],script) \
+               and self.FLAGSECTIONS["setgroup"] \
+               and self.hasgroup \
+               and (not self.hascreate)
+
+    @property
     def hasmove(self):
         """ return the flag MOVE """
         return isinstance(self.SECTIONS["move"],script) \
                and self.FLAGSECTIONS["move"]
+
+    @property
+    def isspacefilled(self):
+        """ return the flag spacefilling """
+        return isinstance(self.SECTIONS["spacefilling"],script) \
+               and self.FLAGSECTIONS["spacefilling"]
 
     @property
     def flags(self):
@@ -622,6 +712,8 @@ class coregeometry:
             ptmp = self.SECTIONS["create"] if ptmp is None else ptmp | self.SECTIONS["create"]
         if self.hasgroup:
             ptmp = self.SECTIONS["group"] if ptmp is None else ptmp | self.SECTIONS["group"]
+        if self.hassetgroup:
+            ptmp = self.SECTIONS["setgroup"] if ptmp is None else ptmp | self.SECTIONS["setgroup"]
         if self.hasmove:
             ptmp = self.SECTIONS["move"] if ptmp is None else ptmp | self.SECTIONS["move"]
         return ptmp
@@ -1004,7 +1096,7 @@ class Block(coregeometry):
     """ Block class """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "block%03d" % counter[1]
         self.kind = "block"     # kind of object
         self.alike = "block"    # similar object for plotting
@@ -1015,14 +1107,14 @@ class Block(coregeometry):
         super().__init__(
                 USER = regiondata(style="$block"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
 class Cone(coregeometry):
     """ Cone class """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "cone%03d" % counter[1]
         self.kind = "cone"     # kind of object
         self.alike = "cone"    # similar object for plotting
@@ -1033,14 +1125,14 @@ class Cone(coregeometry):
         super().__init__(
                 USER = regiondata(style="$cone"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
 class Cylinder(coregeometry):
     """ Cylinder class """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "cylinder%03d" % counter[1]
         self.kind = "cylinder"     # kind of object
         self.alike = "cylinder"    # similar object for plotting
@@ -1051,14 +1143,14 @@ class Cylinder(coregeometry):
         super().__init__(
                 USER = regiondata(style="$cylinder"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
 class Ellipsoid(coregeometry):
     """ Ellipsoid class """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "ellipsoid%03d" % counter[1]
         self.kind = "ellipsoid"     # kind of object
         self.alike = "ellipsoid"    # similar object for plotting
@@ -1069,14 +1161,14 @@ class Ellipsoid(coregeometry):
         super().__init__(
                 USER = regiondata(style="$ellipsoid"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
 class Plane(coregeometry):
     """ Plane class """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "plane%03d" % counter[1]
         self.kind = "plane"      # kind of object
         self.alike = "plane"     # similar object for plotting
@@ -1087,14 +1179,14 @@ class Plane(coregeometry):
         super().__init__(
                 USER = regiondata(style="$plane"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
 class Prism(coregeometry):
     """ Prism class """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "prism%03d" % counter[1]
         self.kind = "prism"      # kind of object
         self.alike = "prism"     # similar object for plotting
@@ -1105,14 +1197,14 @@ class Prism(coregeometry):
         super().__init__(
                 USER = regiondata(style="$prism"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
 class Sphere(coregeometry):
     """ Sphere class """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "sphere%03d" % counter[1]
         self.kind = "sphere"      # kind of object
         self.alike = "ellipsoid"     # similar object for plotting
@@ -1123,14 +1215,14 @@ class Sphere(coregeometry):
         super().__init__(
                 USER = regiondata(style="$sphere"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
 class Union(coregeometry):
     """ Union class """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "union%03d" % counter[1]
         self.kind = "union"      # kind of object
         self.alike = "operator"     # similar object for plotting
@@ -1141,14 +1233,14 @@ class Union(coregeometry):
         super().__init__(
                 USER = regiondata(style="$union"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
 class Intersect(coregeometry):
     """ Intersect class """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "intersect%03d" % counter[1]
         self.kind = "intersect"      # kind of object
         self.alike = "operator"     # similar object for plotting
@@ -1159,21 +1251,21 @@ class Intersect(coregeometry):
         super().__init__(
                 USER = regiondata(style="$intersect"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
 class Evalgeometry(coregeometry):
     """ generic class to store evaluated objects with region.eval() """
 
     def __init__(self,counter,index=None,subindex=None,
-                 hasgroup=False,hasmove=False,):
+                 hasgroup=False,hasmove=False,spacefilling=False):
         self.name = "eval%03d" % counter[1]
         self.kind = "eval"      # kind of object
         self.alike = "eval"     # similar object for plotting
         self.beadtype = 1       # bead type
         self.index = counter[0] if index is None else index
         self.subindex = subindex
-        super().__init__(hasgroup=hasgroup,hasmove=hasmove)
+        super().__init__(hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling)
 
 
 class Collection:
@@ -1305,6 +1397,7 @@ class Collection:
                 [x.SECTIONS["region"]    for x in self.collection if x.hasregion] + \
                 [x.SECTIONS["create"]    for x in self.collection if x.hascreate] + \
                 [x.SECTIONS["group"]     for x in self.collection if x.hasgroup] + \
+                [x.SECTIONS["setgroup"]  for x in self.collection if x.hassetgroup] + \
                 [x.SECTIONS["move"]      for x in self.collection if x.hasmove]
         return pipescript.join(liste)
 
@@ -1324,8 +1417,52 @@ class Collection:
 class region:
     """
         region main class
+        assuming a simulation box centered 0,0,0
+        and of size: width x height x depth
+
+        Attributes:
+        ----------
+        name : str, optional
+            Name of the region (default is 'region container').
+        nbeads : int, optional
+            Number of beads in the region (default is 1).
+        run : int, optional
+            Run configuration parameter (default is 1).
+        mass : float, optional
+            Mass of the region (default is 1).
+        volume : float, optional
+            Volume of the region (default is 1).
+        radius : float, optional
+            Radius of the region (default is 1.5).
+        contactradius : float, optional
+            Contact radius of the region (default is 0.5).
+        velocities : list of floats, optional
+            Velocities configuration (default is [0, 0, 0]).
+        forces : list of floats, optional
+            Forces configuration (default is [0, 0, 0]).
+        filename : str, optional
+            Name of the output file (default is an empty string, which leads to naming based on the region name).
+        index : int, optional
+            Index or identifier for the region.
+        width : float, optional
+            Width of the region (default is 10).
+        height : float, optional
+            Height of the region (default is 10).
+        depth : float, optional
+            Depth of the region (default is 10).
+        units: str, optional
+            Units for create_box (default is "")
+        hasfixmove : bool, optional
+            Indicates if the region has a fix move (default is False).
+        livepreview_options : dict, optional
+            Configuration for live preview, with 'static' and 'dynamic' options (default values provided).
+        spacefilling : bool, optional
+            Indicates if the design is space-filling (default is False).
+        fillingbeadtype : int, optional
+            Type of bead used for space filling (default is 1).
+
     """
-    _version = "0.31"
+    _version = "0.36"
     __custom_documentations__ = "pizza.region.region class"
 
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -1342,12 +1479,13 @@ class region:
     # objects of the class PIZZA.RASTER() and PIZZA.REGION().
     #
     # The code will evolve according to the needs, please come back regularly.
+    #
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
     # CONSTRUCTOR ----------------------------
     def __init__(self,
                  # region properties
-                 name="default region",
+                 name="region container",
                  nbeads=1,
                  run=1,
                  # for data conversion (not implemented for now)
@@ -1363,12 +1501,16 @@ class region:
                  width = 10,
                  height = 10,
                  depth = 10,
+                 units = "",
                  hasfixmove = False, # by default no fix move
                  # livepreview options
                  livepreview_options = {
                      'static':{'run':1},
                      'dynamic':{'run':100}
-                     }
+                     },
+                 # spacefilling design (added on 2023-08-10)
+                 spacefilling = False,
+                 fillingbeadtype = 1
                  ):
         """ constructor """
         self.name = name
@@ -1416,7 +1558,26 @@ class region:
            "file": None,
         "options": livepreview_options
             }
+        # space filling  added 2023-08-10
+        self.spacefilling = {
+            "flag": spacefilling,
+    "fillingstyle": "$block",
+ "fillingbeadtype": fillingbeadtype,
+    "fillingwidth": width,
+   "fillingheight": height,
+    "fillingdepth": depth,
+    "fillingunits": units
+         }
 
+
+    # space filling attributes (cannot be changed)
+    @property
+    def isspacefilled(self):
+        return self.spacefilling["flag"]
+
+    @property
+    def spacefillingbeadtype(self):
+        return self.spacefilling["fillingbeadtype"]
 
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
     #
@@ -1524,6 +1685,7 @@ class region:
         if subindex is None: subindex = self.counter[kind]+1
         # create the object C with C for cone
         B = Block((self.counter["all"]+1,self.counter[kind]+1),
+                      spacefilling=self.isspacefilled, # added on 2023-08-11
                       index=index,subindex=subindex,**variables)
         # feed USER fields
         if name not in (None,""): B.name = name # object name (if not defined, default name will be used)
@@ -1595,6 +1757,7 @@ class region:
         if subindex is None: subindex = self.counter[kind]+1
         # create the object C with C for cone
         C = Cone((self.counter["all"]+1,self.counter[kind]+1),
+                      spacefilling=self.isspacefilled, # added on 2023-08-11
                       index=index,subindex=subindex,**variables)
         # feed USER fields
         if name not in (None,""): C.name = name # object name (if not defined, default name will be used)
@@ -1667,6 +1830,7 @@ class region:
         if subindex is None: subindex = self.counter[kind]+1
         # create the object C with C for cylinder
         C = Cylinder((self.counter["all"]+1,self.counter[kind]+1),
+                      spacefilling=self.isspacefilled, # added on 2023-08-11
                       index=index,subindex=subindex,**variables)
         # feed USER fields
         if name not in (None,""): C.name = name # object name (if not defined, default name will be used)
@@ -1750,6 +1914,7 @@ class region:
         if subindex is None: subindex = self.counter[kind]+1
         # create the object E with E for Ellipsoid
         E = Ellipsoid((self.counter["all"]+1,self.counter[kind]+1),
+                      spacefilling=self.isspacefilled, # added on 2023-08-11
                       index=index,subindex=subindex,**variables)
         # feed USER fields
         if name not in (None,""): E.name = name # object name (if not defined, default name will be used)
@@ -1816,6 +1981,7 @@ class region:
         if subindex is None: subindex = self.counter[kind]+1
         # create the object P with P for plane
         P = Plane((self.counter["all"]+1,self.counter[kind]+1),
+                      spacefilling=self.isspacefilled, # added on 2023-08-11
                       index=index,subindex=subindex,**variables)
         # feed USER fields
         if name not in (None,""): P.name = name # object name (if not defined, default name will be used)
@@ -1886,6 +2052,7 @@ class region:
         if subindex is None: subindex = self.counter[kind]+1
         # create the object P with P for prism
         P = Prism((self.counter["all"]+1,self.counter[kind]+1),
+                      spacefilling=self.isspacefilled, # added on 2023-08-11
                       index=index,subindex=subindex,**variables)
         # feed USER fields
         if name not in (None,""): P.name = name # object name (if not defined, default name will be used)
@@ -1954,6 +2121,7 @@ class region:
         if subindex is None: subindex = self.counter[kind]+1
         # create the object S with S for sphere
         S = Sphere((self.counter["all"]+1,self.counter[kind]+1),
+                      spacefilling=self.isspacefilled, # added on 2023-08-11
                       index=index,subindex=subindex,**variables)
         # feed USER fields
         if name not in (None,""): S.name = name # object name (if not defined, default name will be used)
@@ -2192,8 +2360,10 @@ class region:
     # repr() method ----------------------------
     def __repr__(self):
         """ display method """
+        spacefillingstr = f"\n(space filled with beads of type {self.spacefillingbeadtype})" \
+            if self.isspacefilled else ""
         print("-"*40)
-        print('REGION container "%s" with %d objects' % (self.name,self.nobjects))
+        print('REGION container "%s" with %d objects %s' % (self.name,self.nobjects,spacefillingstr))
         if self.nobjects>0:
             names = self.names
             l = [len(n) for n in names]
@@ -2229,8 +2399,10 @@ class region:
     # getattr() method ----------------------------
     def __getattr__(self,name):
         """ getattr attribute override """
-        if name in self.__dict__:
+        if (name in self.__dict__) or (name in protectedregionkeys):
             return self.__dict__[name] # higher precedence for root attributes
+        elif name in protectedregionkeys:
+            return getattr(type(self), name).__get__(self) # for methods decorated as properties (@property)
         else:
             return self.get(name)
 
@@ -2369,7 +2541,8 @@ class region:
     def nbeads(self):
         "return the number of beadtypes used"
         if len(self)>0:
-            return max(len(self.count()),self.live.nbeads)
+            guess = max(len(self.count()),self.live.nbeads)
+            return guess+1 if self.isspacefilled else guess
         else:
             return self.live.nbeads
 
@@ -2475,6 +2648,7 @@ class region:
                 [x.SECTIONS["region"]    for x in self if not isinstance(x,Collection) and x.hasregion] + \
                 [x.SECTIONS["create"]    for x in self if not isinstance(x,Collection) and x.hascreate] + \
                 [x.SECTIONS["group"]     for x in self if not isinstance(x,Collection) and x.hasgroup] + \
+                [x.SECTIONS["setgroup"]  for x in self if not isinstance(x,Collection) and x.hassetgroup] + \
                 [x.SECTIONS["move"]      for x in self if not isinstance(x,Collection) and x.hasmove]
         # add the objects within the collection
         for x in self:
@@ -2488,6 +2662,9 @@ class region:
     def script(self,live=False):
         """ script all objects in the region """
         s = self.pipescript().script()
+        if self.isspacefilled:
+            USERspacefilling =regiondata(**self.spacefilling)
+            s = LammpsSpacefilling(**USERspacefilling)+s
         if live:
             beadtypes = [ x[0] for x in self.count() ]
             USER = regiondata(**self.live)
@@ -2496,6 +2673,8 @@ class region:
             USER.pair_coeff = "$"
             # list beadtype and prepare  mass, pair_coeff
             beadtypes = [ x[0] for x in self.count() ]
+            if self.isspacefilled and self.spacefillingbeadtype not in beadtypes:
+                beadtypes = [self.spacefillingbeadtype]+beadtypes
             for b in beadtypes:
                 USER.mass += livetemplate["mass"] % b +"\n"
                 USER.pair_coeff += livetemplate["pair_coeff"] %(b,b) +"\n"

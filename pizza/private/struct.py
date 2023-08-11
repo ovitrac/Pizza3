@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.46"
+__version__ = "0.461"
 
 """
 Matlab-like Structure class
@@ -54,6 +54,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2023-01-19 add % as comment instead of # to enable replacement
 # 2023-01-27 param.eval() add % to freeze an interpretation (needed when a list is spanned as a string)
 # 2023-01-27 struct.format() will replace {var} by ${var} if var is not defined
+# 2023-08-11 display "" as <empty string> if evaluated
 
 
 # %% Dependencies
@@ -542,6 +543,8 @@ class struct():
                     if isinstance(value,(int,float,str,list,tuple,np.ndarray,np.generic)):
                         if isinstance(value,pstr):
                             print(fmt % key,'p"'+self.dispmax(value)+'"')
+                        if isinstance(value,str) and value=="":
+                            print(fmt % key,'""')
                         else:
                             print(fmt % key,self.dispmax(value))
                     elif isinstance(value,struct):
@@ -556,14 +559,20 @@ class struct():
                                 if isinstance(value,pstr):
                                     print(fmteval % "",'p"'+self.dispmax(tmp.getattr(key))+'"')
                                 elif isinstance(value,str):
-                                    print(fmteval % "",self.dispmax(tmp.getattr(key)))
+                                    if value == "":
+                                        print(fmteval % "",self.dispmax("<empty string>"))
+                                    else:
+                                        print(fmteval % "",self.dispmax(tmp.getattr(key)))
                             except Exception as err:
                                 print(fmteval % "",err.message, err.args)
                         else:
                             if isinstance(value,pstr):
                                 print(fmteval % "",'p"'+self.dispmax(tmp.getattr(key))+'"')
                             elif isinstance(value,str):
-                                print(fmteval % "",self.dispmax(tmp.getattr(key)))
+                                if value == "":
+                                    print(fmteval % "",self.dispmax("<empty string>"))
+                                else:
+                                    print(fmteval % "",self.dispmax(tmp.getattr(key)))
             print(line)
             return f"{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s"
 
