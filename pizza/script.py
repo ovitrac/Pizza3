@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.55"
+__version__ = "0.57"
 
 """
 
@@ -104,7 +104,7 @@ Created on Sat Feb 19 11:00:43 2022
 @author: olivi
 """
 
-# INRAE\Olivier Vitrac - rev. 2023-07-20
+# INRAE\Olivier Vitrac - rev. 2023-08-17
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -135,6 +135,7 @@ Created on Sat Feb 19 11:00:43 2022
 # 2023-07-14 add and implement persistentfile and peristenfolder in scripts
 # 2023-07-20 add header to script.tmpwrite()
 # 2023-07-20 add a persident script.preview.clean copy
+# 2023-08-17 fix span() when vector is "" or str
 
 # %% Dependencies
 import types
@@ -148,7 +149,8 @@ from pizza.forcefield import *
 from pizza.private.struct import param,struct
 
 # span vector into a single string
-def span(vector,sep=" ",left="",right=""): return left+sep.join(map(str,vector))+right
+def span(vector,sep=" ",left="",right=""):
+    return left + (vector if isinstance(vector, str) else sep.join(map(str, vector))) + right if vector is not None else ""
 
 # select elements from a list L based on indices as L(indices) in Matlab
 def picker(L,indices): return [L[i] for i in indices if (i>=0 and i<len(L))]
