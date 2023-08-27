@@ -1,0 +1,995 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+
+<style type='text/css'>html {overflow-x: initial !important;}:root { --bg-color:#ffffff; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; --title-bar-height:20px; }
+.mac-os-11 { --title-bar-height:28px; }
+html { font-size: 14px; background-color: var(--bg-color); color: var(--text-color); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, h5 { white-space: pre-wrap; }
+body { margin: 0px; padding: 0px; height: auto; inset: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
+iframe { margin: auto; }
+a.url { word-break: break-all; }
+a:active, a:hover { outline: 0px; }
+.in-text-selection, ::selection { text-shadow: none; background: var(--select-text-bg-color); color: var(--select-text-font-color); }
+#write { margin: 0px auto; height: auto; width: inherit; word-break: normal; overflow-wrap: break-word; position: relative; white-space: normal; overflow-x: visible; padding-top: 36px; }
+#write.first-line-indent p { text-indent: 2em; }
+#write.first-line-indent li p, #write.first-line-indent p * { text-indent: 0px; }
+#write.first-line-indent li { margin-left: 2em; }
+.for-image #write { padding-left: 8px; padding-right: 8px; }
+body.typora-export { padding-left: 30px; padding-right: 30px; }
+.typora-export .footnote-line, .typora-export li, .typora-export p { white-space: pre-wrap; }
+.typora-export .task-list-item input { pointer-events: none; }
+@media screen and (max-width: 500px) {
+  body.typora-export { padding-left: 0px; padding-right: 0px; }
+  #write { padding-left: 20px; padding-right: 20px; }
+}
+#write li > figure:last-child { margin-bottom: 0.5rem; }
+#write ol, #write ul { position: relative; }
+img { max-width: 100%; vertical-align: middle; image-orientation: from-image; }
+button, input, select, textarea { color: inherit; font: inherit; }
+input[type="checkbox"], input[type="radio"] { line-height: normal; padding: 0px; }
+*, ::after, ::before { box-sizing: border-box; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p, #write pre { width: inherit; }
+#write h1, #write h2, #write h3, #write h4, #write h5, #write h6, #write p { position: relative; }
+p { line-height: inherit; }
+h1, h2, h3, h4, h5, h6 { break-after: avoid-page; break-inside: avoid; orphans: 4; }
+p { orphans: 4; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.8rem; }
+h3 { font-size: 1.6rem; }
+h4 { font-size: 1.4rem; }
+h5 { font-size: 1.2rem; }
+h6 { font-size: 1rem; }
+.md-math-block, .md-rawblock, h1, h2, h3, h4, h5, h6, p { margin-top: 1rem; margin-bottom: 1rem; }
+.hidden { display: none; }
+.md-blockmeta { color: rgb(204, 204, 204); font-weight: 700; font-style: italic; }
+a { cursor: pointer; }
+sup.md-footnote { padding: 2px 4px; background-color: rgba(238, 238, 238, 0.7); color: rgb(85, 85, 85); border-radius: 4px; cursor: pointer; }
+sup.md-footnote a, sup.md-footnote a:hover { color: inherit; text-transform: inherit; text-decoration: inherit; }
+#write input[type="checkbox"] { cursor: pointer; width: inherit; height: inherit; }
+figure { overflow-x: auto; margin: 1.2em 0px; max-width: calc(100% + 16px); padding: 0px; }
+figure > table { margin: 0px; }
+thead, tr { break-inside: avoid; break-after: auto; }
+thead { display: table-header-group; }
+table { border-collapse: collapse; border-spacing: 0px; width: 100%; overflow: auto; break-inside: auto; text-align: left; }
+table.md-table td { min-width: 32px; }
+.CodeMirror-gutters { border-right: 0px; background-color: inherit; }
+.CodeMirror-linenumber { user-select: none; }
+.CodeMirror { text-align: left; }
+.CodeMirror-placeholder { opacity: 0.3; }
+.CodeMirror pre { padding: 0px 4px; }
+.CodeMirror-lines { padding: 0px; }
+div.hr:focus { cursor: none; }
+#write pre { white-space: pre-wrap; }
+#write.fences-no-line-wrapping pre { white-space: pre; }
+#write pre.ty-contain-cm { white-space: normal; }
+.CodeMirror-gutters { margin-right: 4px; }
+.md-fences { font-size: 0.9rem; display: block; break-inside: avoid; text-align: left; overflow: visible; white-space: pre; background: inherit; position: relative !important; }
+.md-fences-adv-panel { width: 100%; margin-top: 10px; text-align: center; padding-top: 0px; padding-bottom: 8px; overflow-x: auto; }
+#write .md-fences.mock-cm { white-space: pre-wrap; }
+.md-fences.md-fences-with-lineno { padding-left: 0px; }
+#write.fences-no-line-wrapping .md-fences.mock-cm { white-space: pre; overflow-x: auto; }
+.md-fences.mock-cm.md-fences-with-lineno { padding-left: 8px; }
+.CodeMirror-line, twitterwidget { break-inside: avoid; }
+svg { break-inside: avoid; }
+.footnotes { opacity: 0.8; font-size: 0.9rem; margin-top: 1em; margin-bottom: 1em; }
+.footnotes + .footnotes { margin-top: 0px; }
+.md-reset { margin: 0px; padding: 0px; border: 0px; outline: 0px; vertical-align: top; background: 0px 0px; text-decoration: none; text-shadow: none; float: none; position: static; width: auto; height: auto; white-space: nowrap; cursor: inherit; -webkit-tap-highlight-color: transparent; line-height: normal; font-weight: 400; text-align: left; box-sizing: content-box; direction: ltr; }
+li div { padding-top: 0px; }
+blockquote { margin: 1rem 0px; }
+li .mathjax-block, li p { margin: 0.5rem 0px; }
+li blockquote { margin: 1rem 0px; }
+li { margin: 0px; position: relative; }
+blockquote > :last-child { margin-bottom: 0px; }
+blockquote > :first-child, li > :first-child { margin-top: 0px; }
+.footnotes-area { color: rgb(136, 136, 136); margin-top: 0.714rem; padding-bottom: 0.143rem; white-space: normal; }
+#write .footnote-line { white-space: pre-wrap; }
+@media print {
+  body, html { border: 1px solid transparent; height: 99%; break-after: avoid; break-before: avoid; font-variant-ligatures: no-common-ligatures; }
+  #write { margin-top: 0px; border-color: transparent !important; padding-top: 0px !important; padding-bottom: 0px !important; }
+  .typora-export * { -webkit-print-color-adjust: exact; }
+  .typora-export #write { break-after: avoid; }
+  .typora-export #write::after { height: 0px; }
+  .is-mac table { break-inside: avoid; }
+  #write > p:nth-child(1) { margin-top: 0px; }
+  .typora-export-show-outline .typora-export-sidebar { display: none; }
+  figure { overflow-x: visible; }
+}
+.footnote-line { margin-top: 0.714em; font-size: 0.7em; }
+a img, img a { cursor: pointer; }
+pre.md-meta-block { font-size: 0.8rem; min-height: 0.8rem; white-space: pre-wrap; background: rgb(204, 204, 204); display: block; overflow-x: hidden; }
+p > .md-image:only-child:not(.md-img-error) img, p > img:only-child { display: block; margin: auto; }
+#write.first-line-indent p > .md-image:only-child:not(.md-img-error) img { left: -2em; position: relative; }
+p > .md-image:only-child { display: inline-block; width: 100%; }
+#write .MathJax_Display { margin: 0.8em 0px 0px; }
+.md-math-block { width: 100%; }
+.md-math-block:not(:empty)::after { display: none; }
+.MathJax_ref { fill: currentcolor; }
+[contenteditable="true"]:active, [contenteditable="true"]:focus, [contenteditable="false"]:active, [contenteditable="false"]:focus { outline: 0px; box-shadow: none; }
+.md-task-list-item { position: relative; list-style-type: none; }
+.task-list-item.md-task-list-item { padding-left: 0px; }
+.md-task-list-item > input { position: absolute; top: 0px; left: 0px; margin-left: -1.2em; margin-top: calc(1em - 10px); border: none; }
+.math { font-size: 1rem; }
+.md-toc { min-height: 3.58rem; position: relative; font-size: 0.9rem; border-radius: 10px; }
+.md-toc-content { position: relative; margin-left: 0px; }
+.md-toc-content::after, .md-toc::after { display: none; }
+.md-toc-item { display: block; color: rgb(65, 131, 196); }
+.md-toc-item a { text-decoration: none; }
+.md-toc-inner:hover { text-decoration: underline; }
+.md-toc-inner { display: inline-block; cursor: pointer; }
+.md-toc-h1 .md-toc-inner { margin-left: 0px; font-weight: 700; }
+.md-toc-h2 .md-toc-inner { margin-left: 2em; }
+.md-toc-h3 .md-toc-inner { margin-left: 4em; }
+.md-toc-h4 .md-toc-inner { margin-left: 6em; }
+.md-toc-h5 .md-toc-inner { margin-left: 8em; }
+.md-toc-h6 .md-toc-inner { margin-left: 10em; }
+@media screen and (max-width: 48em) {
+  .md-toc-h3 .md-toc-inner { margin-left: 3.5em; }
+  .md-toc-h4 .md-toc-inner { margin-left: 5em; }
+  .md-toc-h5 .md-toc-inner { margin-left: 6.5em; }
+  .md-toc-h6 .md-toc-inner { margin-left: 8em; }
+}
+a.md-toc-inner { font-size: inherit; font-style: inherit; font-weight: inherit; line-height: inherit; }
+.footnote-line a:not(.reversefootnote) { color: inherit; }
+.reversefootnote { font-family: ui-monospace, sans-serif; }
+.md-attr { display: none; }
+.md-fn-count::after { content: "."; }
+code, pre, samp, tt { font-family: var(--monospace); }
+kbd { margin: 0px 0.1em; padding: 0.1em 0.6em; font-size: 0.8em; color: rgb(36, 39, 41); background: rgb(255, 255, 255); border: 1px solid rgb(173, 179, 185); border-radius: 3px; box-shadow: rgba(12, 13, 14, 0.2) 0px 1px 0px, rgb(255, 255, 255) 0px 0px 0px 2px inset; white-space: nowrap; vertical-align: middle; }
+.md-comment { color: rgb(162, 127, 3); opacity: 0.6; font-family: var(--monospace); }
+code { text-align: left; vertical-align: initial; }
+a.md-print-anchor { white-space: pre !important; border-width: initial !important; border-style: none !important; border-color: initial !important; display: inline-block !important; position: absolute !important; width: 1px !important; right: 0px !important; outline: 0px !important; background: 0px 0px !important; text-decoration: initial !important; text-shadow: initial !important; }
+.os-windows.monocolor-emoji .md-emoji { font-family: "Segoe UI Symbol", sans-serif; }
+.md-diagram-panel > svg { max-width: 100%; }
+[lang="flow"] svg, [lang="mermaid"] svg { max-width: 100%; height: auto; }
+[lang="mermaid"] .node text { font-size: 1rem; }
+table tr th { border-bottom: 0px; }
+video { max-width: 100%; display: block; margin: 0px auto; }
+iframe { max-width: 100%; width: 100%; border: none; }
+.highlight td, .highlight tr { border: 0px; }
+mark { background: rgb(255, 255, 0); color: rgb(0, 0, 0); }
+.md-html-inline .md-plain, .md-html-inline strong, mark .md-inline-math, mark strong { color: inherit; }
+.md-expand mark .md-meta { opacity: 0.3 !important; }
+mark .md-meta { color: rgb(0, 0, 0); }
+@media print {
+  .typora-export h1, .typora-export h2, .typora-export h3, .typora-export h4, .typora-export h5, .typora-export h6 { break-inside: avoid; }
+}
+.md-diagram-panel .messageText { stroke: none !important; }
+.md-diagram-panel .start-state { fill: var(--node-fill); }
+.md-diagram-panel .edgeLabel rect { opacity: 1 !important; }
+.md-fences.md-fences-math { font-size: 1em; }
+.md-fences-advanced:not(.md-focus) { padding: 0px; white-space: nowrap; border: 0px; }
+.md-fences-advanced:not(.md-focus) { background: inherit; }
+.typora-export-show-outline .typora-export-content { max-width: 1440px; margin: auto; display: flex; flex-direction: row; }
+.typora-export-sidebar { width: 300px; font-size: 0.8rem; margin-top: 80px; margin-right: 18px; }
+.typora-export-show-outline #write { --webkit-flex:2; flex: 2 1 0%; }
+.typora-export-sidebar .outline-content { position: fixed; top: 0px; max-height: 100%; overflow: hidden auto; padding-bottom: 30px; padding-top: 60px; width: 300px; }
+@media screen and (max-width: 1024px) {
+  .typora-export-sidebar, .typora-export-sidebar .outline-content { width: 240px; }
+}
+@media screen and (max-width: 800px) {
+  .typora-export-sidebar { display: none; }
+}
+.outline-content li, .outline-content ul { margin-left: 0px; margin-right: 0px; padding-left: 0px; padding-right: 0px; list-style: none; overflow-wrap: anywhere; }
+.outline-content ul { margin-top: 0px; margin-bottom: 0px; }
+.outline-content strong { font-weight: 400; }
+.outline-expander { width: 1rem; height: 1.42857rem; position: relative; display: table-cell; vertical-align: middle; cursor: pointer; padding-left: 4px; }
+.outline-expander::before { content: ""; position: relative; font-family: Ionicons; display: inline-block; font-size: 8px; vertical-align: middle; }
+.outline-item { padding-top: 3px; padding-bottom: 3px; cursor: pointer; }
+.outline-expander:hover::before { content: ""; }
+.outline-h1 > .outline-item { padding-left: 0px; }
+.outline-h2 > .outline-item { padding-left: 1em; }
+.outline-h3 > .outline-item { padding-left: 2em; }
+.outline-h4 > .outline-item { padding-left: 3em; }
+.outline-h5 > .outline-item { padding-left: 4em; }
+.outline-h6 > .outline-item { padding-left: 5em; }
+.outline-label { cursor: pointer; display: table-cell; vertical-align: middle; text-decoration: none; color: inherit; }
+.outline-label:hover { text-decoration: underline; }
+.outline-item:hover { border-color: rgb(245, 245, 245); background-color: var(--item-hover-bg-color); }
+.outline-item:hover { margin-left: -28px; margin-right: -28px; border-left: 28px solid transparent; border-right: 28px solid transparent; }
+.outline-item-single .outline-expander::before, .outline-item-single .outline-expander:hover::before { display: none; }
+.outline-item-open > .outline-item > .outline-expander::before { content: ""; }
+.outline-children { display: none; }
+.info-panel-tab-wrapper { display: none; }
+.outline-item-open > .outline-children { display: block; }
+.typora-export .outline-item { padding-top: 1px; padding-bottom: 1px; }
+.typora-export .outline-item:hover { margin-right: -8px; border-right: 8px solid transparent; }
+.typora-export .outline-expander::before { content: "+"; font-family: inherit; top: -1px; }
+.typora-export .outline-expander:hover::before, .typora-export .outline-item-open > .outline-item > .outline-expander::before { content: "−"; }
+.typora-export-collapse-outline .outline-children { display: none; }
+.typora-export-collapse-outline .outline-item-open > .outline-children, .typora-export-no-collapse-outline .outline-children { display: block; }
+.typora-export-no-collapse-outline .outline-expander::before { content: "" !important; }
+.typora-export-show-outline .outline-item-active > .outline-item .outline-label { font-weight: 700; }
+.md-inline-math-container mjx-container { zoom: 0.95; }
+mjx-container { break-inside: avoid; }
+
+
+.CodeMirror { height: auto; }
+.CodeMirror.cm-s-inner { background: inherit; }
+.CodeMirror-scroll { overflow: auto hidden; z-index: 3; }
+.CodeMirror-gutter-filler, .CodeMirror-scrollbar-filler { background-color: rgb(255, 255, 255); }
+.CodeMirror-gutters { border-right: 1px solid rgb(221, 221, 221); background: inherit; white-space: nowrap; }
+.CodeMirror-linenumber { padding: 0px 3px 0px 5px; text-align: right; color: rgb(153, 153, 153); }
+.cm-s-inner .cm-keyword { color: rgb(119, 0, 136); }
+.cm-s-inner .cm-atom, .cm-s-inner.cm-atom { color: rgb(34, 17, 153); }
+.cm-s-inner .cm-number { color: rgb(17, 102, 68); }
+.cm-s-inner .cm-def { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-variable { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-variable-2 { color: rgb(0, 85, 170); }
+.cm-s-inner .cm-variable-3 { color: rgb(0, 136, 85); }
+.cm-s-inner .cm-string { color: rgb(170, 17, 17); }
+.cm-s-inner .cm-property { color: rgb(0, 0, 0); }
+.cm-s-inner .cm-operator { color: rgb(152, 26, 26); }
+.cm-s-inner .cm-comment, .cm-s-inner.cm-comment { color: rgb(170, 85, 0); }
+.cm-s-inner .cm-string-2 { color: rgb(255, 85, 0); }
+.cm-s-inner .cm-meta { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-qualifier { color: rgb(85, 85, 85); }
+.cm-s-inner .cm-builtin { color: rgb(51, 0, 170); }
+.cm-s-inner .cm-bracket { color: rgb(153, 153, 119); }
+.cm-s-inner .cm-tag { color: rgb(17, 119, 0); }
+.cm-s-inner .cm-attribute { color: rgb(0, 0, 204); }
+.cm-s-inner .cm-header, .cm-s-inner.cm-header { color: rgb(0, 0, 255); }
+.cm-s-inner .cm-quote, .cm-s-inner.cm-quote { color: rgb(0, 153, 0); }
+.cm-s-inner .cm-hr, .cm-s-inner.cm-hr { color: rgb(153, 153, 153); }
+.cm-s-inner .cm-link, .cm-s-inner.cm-link { color: rgb(0, 0, 204); }
+.cm-negative { color: rgb(221, 68, 68); }
+.cm-positive { color: rgb(34, 153, 34); }
+.cm-header, .cm-strong { font-weight: 700; }
+.cm-del { text-decoration: line-through; }
+.cm-em { font-style: italic; }
+.cm-link { text-decoration: underline; }
+.cm-error { color: red; }
+.cm-invalidchar { color: red; }
+.cm-constant { color: rgb(38, 139, 210); }
+.cm-defined { color: rgb(181, 137, 0); }
+div.CodeMirror span.CodeMirror-matchingbracket { color: rgb(0, 255, 0); }
+div.CodeMirror span.CodeMirror-nonmatchingbracket { color: rgb(255, 34, 34); }
+.cm-s-inner .CodeMirror-activeline-background { background: inherit; }
+.CodeMirror { position: relative; overflow: hidden; }
+.CodeMirror-scroll { height: 100%; outline: 0px; position: relative; box-sizing: content-box; background: inherit; }
+.CodeMirror-sizer { position: relative; }
+.CodeMirror-gutter-filler, .CodeMirror-hscrollbar, .CodeMirror-scrollbar-filler, .CodeMirror-vscrollbar { position: absolute; z-index: 6; display: none; outline: 0px; }
+.CodeMirror-vscrollbar { right: 0px; top: 0px; overflow: hidden; }
+.CodeMirror-hscrollbar { bottom: 0px; left: 0px; overflow: auto hidden; }
+.CodeMirror-scrollbar-filler { right: 0px; bottom: 0px; }
+.CodeMirror-gutter-filler { left: 0px; bottom: 0px; }
+.CodeMirror-gutters { position: absolute; left: 0px; top: 0px; padding-bottom: 10px; z-index: 3; overflow-y: hidden; }
+.CodeMirror-gutter { white-space: normal; height: 100%; box-sizing: content-box; padding-bottom: 30px; margin-bottom: -32px; display: inline-block; }
+.CodeMirror-gutter-wrapper { position: absolute; z-index: 4; background: 0px 0px !important; border: none !important; }
+.CodeMirror-gutter-background { position: absolute; top: 0px; bottom: 0px; z-index: 4; }
+.CodeMirror-gutter-elt { position: absolute; cursor: default; z-index: 4; }
+.CodeMirror-lines { cursor: text; }
+.CodeMirror pre { border-radius: 0px; border-width: 0px; background: 0px 0px; font-family: inherit; font-size: inherit; margin: 0px; white-space: pre; overflow-wrap: normal; color: inherit; z-index: 2; position: relative; overflow: visible; }
+.CodeMirror-wrap pre { overflow-wrap: break-word; white-space: pre-wrap; word-break: normal; }
+.CodeMirror-code pre { border-right: 30px solid transparent; width: fit-content; }
+.CodeMirror-wrap .CodeMirror-code pre { border-right: none; width: auto; }
+.CodeMirror-linebackground { position: absolute; inset: 0px; z-index: 0; }
+.CodeMirror-linewidget { position: relative; z-index: 2; overflow: auto; }
+.CodeMirror-wrap .CodeMirror-scroll { overflow-x: hidden; }
+.CodeMirror-measure { position: absolute; width: 100%; height: 0px; overflow: hidden; visibility: hidden; }
+.CodeMirror-measure pre { position: static; }
+.CodeMirror div.CodeMirror-cursor { position: absolute; visibility: hidden; border-right: none; width: 0px; }
+.CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+.CodeMirror-focused div.CodeMirror-cursor { visibility: inherit; }
+.cm-searching { background: rgba(255, 255, 0, 0.4); }
+span.cm-underlined { text-decoration: underline; }
+span.cm-strikethrough { text-decoration: line-through; }
+.cm-tw-syntaxerror { color: rgb(255, 255, 255); background-color: rgb(153, 0, 0); }
+.cm-tw-deleted { text-decoration: line-through; }
+.cm-tw-header5 { font-weight: 700; }
+.cm-tw-listitem:first-child { padding-left: 10px; }
+.cm-tw-box { border-style: solid; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-color: inherit; border-top-width: 0px !important; }
+.cm-tw-underline { text-decoration: underline; }
+@media print {
+  .CodeMirror div.CodeMirror-cursor { visibility: hidden; }
+}
+
+
+:root {
+    --side-bar-bg-color: #fff;
+    --control-text-color: #777;
+}
+
+/* cyrillic-ext */
+/* cyrillic */
+/* greek-ext */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+/* cyrillic-ext */
+/* cyrillic */
+/* greek-ext */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+/* cyrillic-ext */
+/* cyrillic */
+/* greek-ext */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+/* cyrillic-ext */
+/* cyrillic */
+/* greek-ext */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+html {
+    font-size: 16px;
+}
+
+body {
+    font-family: Source Sans Pro, Helvetica Neue, Arial, sans-serif !important;
+    color: #322289;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6rem;
+    letter-spacing: 0;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+#write {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 30px 40px 30px;
+    padding-top: 20px;
+    padding-bottom: 100px;
+}
+
+#write p {
+    /* text-indent: 2rem; */
+    line-height: 1.6rem;
+    word-spacing: .05rem;
+}
+
+#write ol li {
+    padding-left: 0.5rem;
+}
+
+#write > ul:first-child,
+#write > ol:first-child {
+    margin-top: 30px;
+}
+
+body > *:first-child {
+    margin-top: 0 !important;
+}
+
+body > *:last-child {
+    margin-bottom: 0 !important;
+}
+
+a {
+    color: #c6392e;
+    font-weight: 600;
+    padding: 0px 2px;
+    text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    line-height: 1.4;
+    cursor: text;
+}
+
+h1:hover a.anchor,
+h2:hover a.anchor,
+h3:hover a.anchor,
+h4:hover a.anchor,
+h5:hover a.anchor,
+h6:hover a.anchor {
+    text-decoration: none;
+}
+
+h1 tt,
+h1 code {
+    font-size: inherit;
+}
+
+h2 tt,
+h2 code {
+    font-size: inherit;
+}
+
+h3 tt,
+h3 code {
+    font-size: inherit;
+}
+
+h4 tt,
+h4 code {
+    font-size: inherit;
+}
+
+h5 tt,
+h5 code {
+    font-size: inherit;
+}
+
+h6 tt,
+h6 code {
+    font-size: inherit;
+}
+
+h2 a,
+h3 a {
+    color: #322289;
+}
+
+h3 a:before {
+    content: '#';
+    color: #c6392e;
+    position: absolute;;
+    left: -0.7em;
+    margin-top: -0.05em;
+    padding-right: 0.5em;
+    font-size: 1.2em;
+    line-height: 1;
+    font-weight: bold;
+}
+
+h1 {
+    padding-bottom: .4rem;
+    font-size: 2.2rem;
+    line-height: 1.3;
+}
+
+h2 {
+    font-size: 1.75rem;
+    line-height: 1.225;
+    margin: 35px 0px 15px 0px;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid #ddd;
+}
+
+h3 {
+    font-size: 1.4rem;
+    line-height: 1.43;
+    margin: 20px 0px 7px 0px;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+h5 {
+    font-size: 1rem;
+}
+
+h6 {
+    font-size: 1rem;
+    color: #777;
+}
+
+p,
+blockquote,
+ul,
+ol,
+dl,
+table {
+    margin: 0.8em 0;
+}
+
+li > ol,
+li > ul {
+    margin: 0 0;
+}
+
+hr {
+    height: 2px;
+    padding: 0;
+    margin: 16px 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+}
+
+body > h2:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h1:first-child + h2 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+body > h3:first-child,
+body > h4:first-child,
+body > h5:first-child,
+body > h6:first-child {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+a:first-child h1,
+a:first-child h2,
+a:first-child h3,
+a:first-child h4,
+a:first-child h5,
+a:first-child h6 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+h1 p,
+h2 p,
+h3 p,
+h4 p,
+h5 p,
+h6 p {
+    margin-top: 0;
+}
+
+li p.first {
+    display: inline-block;
+}
+
+ul,
+ol {
+    padding-left: 30px;
+}
+
+ul:first-child,
+ol:first-child {
+    margin-top: 0;
+}
+
+ul:last-child,
+ol:last-child {
+    margin-bottom: 0;
+}
+
+blockquote {
+    border-left: 4px solid #c6392e;
+    padding: 10px 0px 10px 15px;
+    color: #777;
+    background-color: rgba(207, 111, 28, .1);
+}
+
+table {
+    padding: 0;
+    word-break: initial;
+}
+
+table tr {
+    border-top: 1px solid #dfe2e5;
+    margin: 0;
+    padding: 0;
+}
+
+table tr:nth-child(2n),
+thead {
+    background-color: #fafafa;
+}
+
+table tr th {
+    font-weight: bold;
+    border: 1px solid #dfe2e5;
+    border-bottom: 0;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr td {
+    border: 1px solid #dfe2e5;
+    text-align: left;
+    margin: 0;
+    padding: 6px 13px;
+}
+
+table tr th:first-child,
+table tr td:first-child {
+    margin-top: 0;
+}
+
+table tr th:last-child,
+table tr td:last-child {
+    margin-bottom: 0;
+}
+
+#write strong {
+    padding: 0px 1px 0 1px;
+}
+
+#write em {
+    padding: 0px 5px 0 2px;
+}
+
+#write table thead th {
+    background-color: #f2f2f2;
+}
+
+#write .CodeMirror-gutters {
+    border-right: none;
+}
+
+#write .md-fences {
+    border: 1px solid #F4F4F4;
+    -webkit-font-smoothing: initial;
+    margin: 0.8rem 0 !important;
+    padding: 0.3rem 0rem !important;
+    line-height: 1.43rem;
+    background-color: #F8F8F8 !important;
+    border-radius: 2px;
+    font-family: Roboto Mono, Source Sans Pro, Monaco, courier, monospace !important;
+    font-size: 0.85rem;
+    word-wrap: normal;
+}
+
+#write .CodeMirror-wrap .CodeMirror-code pre {
+    padding-left: 12px;
+}
+
+#write code, tt {
+    margin: 0 2px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-family: Source Sans Pro, Roboto Mono, Monaco, courier, monospace !important;
+    font-size: 0.92rem;
+    color: #e96900;
+    background-color: #f8f8f8;
+}
+
+#write .md-footnote {
+    background-color: #f8f8f8;
+    color: #e96900;
+}
+
+/* heighlight. */
+#write mark {
+    background-color: #EBFFEB;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: 0 2px;
+    color: #222;
+    font-weight: 500;
+}
+
+#write del {
+    padding: 1px 2px;
+}
+
+.cm-s-inner .cm-link,
+.cm-s-inner.cm-link {
+    color: #22a2c9;
+}
+
+.cm-s-inner .cm-string {
+    color: #22a2c9;
+}
+
+.md-task-list-item > input {
+    margin-left: -1.3em;
+}
+
+@media screen and (min-width: 914px) {
+    /*body {
+        width: 854px;
+        margin: 0 auto;
+    }*/
+}
+
+@media print {
+    html {
+        font-size: 13px;
+    }
+
+    table,
+    pre {
+        page-break-inside: avoid;
+    }
+
+    pre {
+        word-wrap: break-word;
+    }
+}
+
+.md-fences {
+    background-color: #f8f8f8;
+}
+
+#write pre.md-meta-block {
+    padding: 1rem;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f7f7f7;
+    border: 0;
+    border-radius: 3px;
+    color: #777777;
+    margin-top: 0 !important;
+}
+
+.mathjax-block > .code-tooltip {
+    bottom: .375rem;
+}
+
+#write > h3.md-focus:before {
+    left: -1.5625rem;
+    top: .375rem;
+}
+
+#write > h4.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h5.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+#write > h6.md-focus:before {
+    left: -1.5625rem;
+    top: .285714286rem;
+}
+
+.md-image > .md-meta {
+    /*border: 1px solid #ddd;*/
+    border-radius: 3px;
+    font-family: Consolas, "Liberation Mono", Courier, monospace;
+    padding: 2px 0px 0px 4px;
+    font-size: 0.9em;
+    color: inherit;
+}
+
+.md-tag {
+    color: inherit;
+}
+
+.md-toc {
+    margin-top: 20px;
+    padding-bottom: 20px;
+}
+
+.sidebar-tabs {
+    border-bottom: none;
+}
+
+#typora-quick-open {
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+}
+
+#typora-quick-open-item {
+    background-color: #FAFAFA;
+    border-color: #FEFEFE #e5e5e5 #e5e5e5 #eee;
+    border-style: solid;
+    border-width: 1px;
+}
+
+#md-notification:before {
+    top: 10px;
+}
+
+/** focus mode */
+
+.on-focus-mode blockquote {
+    border-left-color: rgba(85, 85, 85, 0.12);
+}
+
+header,
+.context-menu,
+.megamenu-content,
+footer {
+    font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+.file-node-content:hover .file-node-icon,
+.file-node-content:hover .file-node-open-state {
+    visibility: visible;
+}
+
+.mac-seamless-mode #typora-sidebar {
+    background-color: #fafafa;
+    background-color: var(--side-bar-bg-color);
+}
+
+.md-lang {
+    color: #b4654d;
+}
+
+.html-for-mac .context-menu {
+    --item-hover-bg-color: #E6F0FE;
+}
+
+#write {
+  max-width: auto; /*adjust writing area position*/
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+#typora-source .CodeMirror-lines {
+  max-width: auto; /*or 1000px*/
+}
+
+mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+  min-height: 1px;
+  min-width: 1px;
+}
+
+mjx-container[jax="SVG"] > svg a {
+  fill: blue;
+  stroke: blue;
+}
+
+mjx-assistive-mml {
+  position: absolute !important;
+  top: 0px;
+  left: 0px;
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 1px 0px 0px 0px !important;
+  border: 0px !important;
+  display: block !important;
+  width: auto !important;
+  overflow: hidden !important;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+mjx-assistive-mml[display="block"] {
+  width: 100% !important;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][display="true"][width="full"] {
+  display: flex;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line], svg[data-table] > g > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame], svg[data-table] > g > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed, svg[data-table] > g > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted, svg[data-table] > g > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > g > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+mjx-container[jax="SVG2"] path[data-c], mjx-container[jax="SVG2"] use[data-c] {
+  stroke-width: 3;
+}
+
+g[data-mml-node="xypic"] path {
+  stroke-width: inherit;
+}
+
+.MathJax g[data-mml-node="xypic"] path {
+  stroke-width: inherit;
+}
+mjx-container[jax="SVG"] path[data-c], mjx-container[jax="SVG"] use[data-c] {
+							stroke-width: 0;
+						} .typora-export li, .typora-export p, .typora-export,  .footnote-line {white-space: normal;} h1,h2,h3,h4,h5 {white-space:pre-line}
+</style><title>lamdumpread2</title>
+</head>
+<body class='typora-export'><div class='typora-export-content'>
+<div id='write'  class=''><h1 id='lamdumpread2'><span>lamdumpread2()</span></h1><h1 id='synopsis'><span>Synopsis</span></h1><p><span>The command </span><code>dump</code><span> in LAMMPS is the basic tool to generate a snapshot of quantities of one or more files once every timesteps in one of several styles. Almost all the styles accept outputs per-atom data, i.e. one or more values per atom.  </span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="perl"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="perl"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre>x</pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-keyword">dump</span> <span class="cm-meta">ID</span> <span class="cm-meta">group</span><span class="cm-operator">-</span><span class="cm-meta">ID</span> <span class="cm-meta">style</span> <span class="cm-meta">N</span> <span class="cm-meta">file</span> <span class="cm-meta">attribute1</span> <span class="cm-meta">attribute2</span> <span class="cm-operator">...</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre><p><code>Lamdumpread2()</code><span> can load and manipulate most of the atom-style formats used by the command </span><code>dump</code><span>. Dump files contain specific information about the state of the simulated system at regular intervals during a simulation run including data such as atomic coordinates, velocities, forces, stress, or other computed quantities.</span></p><p><span>This Matlab function reads LAMMPS dump files on the fly with support for various formats including text, text gzipped, and binary and without the restriction of size. It&#39;s a work in progress to implement standards similar to those used in OVITO with more flexibility due to the Matlab environment.</span></p><p><span>To accommodate limited memory scenarios, large files may require pretreatment strategies. This function also offers various actions for controlling file reading and batching processes, such as </span><code>prefetch</code><span>, </span><code>split</code><span>,etc, which provides flexibility and control over the reading process.</span></p><blockquote><p><span>LAMDUMPRREAD2 is a fork of LAMDUMPREAD for </span><kbd><span>Pizza3</span></kbd><span>. LAMDUMPREAD was initially part of Molecular Studio 2.x developped by INRAE\Olivier Vitrac.</span></p><blockquote><p><span>The current documentation is less detailed than the information available by typing </span><code>doc lamdumpread2</code></p></blockquote></blockquote><p><span>Revision: </span><mjx-container class="MathJax" jax="SVG" style="position: relative;"><svg xmlns="http://www.w3.org/2000/svg" width="14.581ex" height="1.692ex" role="img" focusable="false" viewBox="0 -666 6444.9 748" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" style="vertical-align: -0.186ex;"><defs><path id="MJX-2-TEX-N-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path><path id="MJX-2-TEX-N-30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path id="MJX-2-TEX-N-33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path id="MJX-2-TEX-N-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path><path id="MJX-2-TEX-N-38" d="M70 417T70 494T124 618T248 666Q319 666 374 624T429 515Q429 485 418 459T392 417T361 389T335 371T324 363L338 354Q352 344 366 334T382 323Q457 264 457 174Q457 95 399 37T249 -22Q159 -22 101 29T43 155Q43 263 172 335L154 348Q133 361 127 368Q70 417 70 494ZM286 386L292 390Q298 394 301 396T311 403T323 413T334 425T345 438T355 454T364 471T369 491T371 513Q371 556 342 586T275 624Q268 625 242 625Q201 625 165 599T128 534Q128 511 141 492T167 463T217 431Q224 426 228 424L286 386ZM250 21Q308 21 350 55T392 137Q392 154 387 169T375 194T353 216T330 234T301 253T274 270Q260 279 244 289T218 306L210 311Q204 311 181 294T133 239T107 157Q107 98 150 60T250 21Z"></path></defs><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><use data-c="32" xlink:href="#MJX-2-TEX-N-32"></use><use data-c="30" xlink:href="#MJX-2-TEX-N-30" transform="translate(500,0)"></use><use data-c="32" xlink:href="#MJX-2-TEX-N-32" transform="translate(1000,0)"></use><use data-c="33" xlink:href="#MJX-2-TEX-N-33" transform="translate(1500,0)"></use></g><g data-mml-node="mo" transform="translate(2222.2,0)"><use data-c="2212" xlink:href="#MJX-2-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(3222.4,0)"><use data-c="30" xlink:href="#MJX-2-TEX-N-30"></use><use data-c="38" xlink:href="#MJX-2-TEX-N-38" transform="translate(500,0)"></use></g><g data-mml-node="mo" transform="translate(4444.7,0)"><use data-c="2212" xlink:href="#MJX-2-TEX-N-2212"></use></g><g data-mml-node="mn" transform="translate(5444.9,0)"><use data-c="32" xlink:href="#MJX-2-TEX-N-32"></use><use data-c="33" xlink:href="#MJX-2-TEX-N-33" transform="translate(500,0)"></use></g></g></g></svg><mjx-assistive-mml unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mn>2023</mn><mo>−</mo><mn>08</mn><mo>−</mo><mn>23</mn></math></mjx-assistive-mml></mjx-container><script type="math/tex">2023-08-23</script></p><p>&nbsp;</p><h2 id='content'><span>Content</span></h2><div class='md-toc' mdtype='toc'><p class="md-toc-content" role="list"><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n0"><a class="md-toc-inner" href="#lamdumpread2">lamdumpread2()</a></span><span role="listitem" class="md-toc-item md-toc-h1" data-ref="n2"><a class="md-toc-inner" href="#synopsis">Synopsis</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n9"><a class="md-toc-inner" href="#content">Content</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n12"><a class="md-toc-inner" href="#lammps-formats">LAMMPS Formats</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n31"><a class="md-toc-inner" href="#syntax-and-outputs">Syntax and Outputs</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n32"><a class="md-toc-inner" href="#basic-usage">Basic Usage:</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n43"><a class="md-toc-inner" href="#extended-usage">Extended Usage:</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n55"><a class="md-toc-inner" href="#options-for-all-formats">Options for All Formats</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n105"><a class="md-toc-inner" href="#options-for-text-and-gzipped-formats">Options for Text and Gzipped Formats</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n108"><a class="md-toc-inner" href="#output-example">Output Example</a></span><span role="listitem" class="md-toc-item md-toc-h2" data-ref="n186"><a class="md-toc-inner" href="#examples">EXAMPLES</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n187"><a class="md-toc-inner" href="#simple-example">Simple Example</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n190"><a class="md-toc-inner" href="#notes">Notes</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n202"><a class="md-toc-inner" href="#more-advanced-examples">More Advanced examples</a></span><span role="listitem" class="md-toc-item md-toc-h3" data-ref="n213"><a class="md-toc-inner" href="#examples-from-pizza3">Examples from Pizza3</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n215"><a class="md-toc-inner" href="#simple-2d-simulation">Simple 2D Simulation:</a></span><span role="listitem" class="md-toc-item md-toc-h4" data-ref="n221"><a class="md-toc-inner" href="#complex-3d-simulations">Complex 3D Simulations:</a></span></p></div><p>&nbsp;</p><h2 id='lammps-formats'><span>LAMMPS Formats</span></h2><figure class='table-figure'><table><thead><tr><th><span>Format</span></th><th style='text-align:center;' ><span>Loading Time</span></th><th style='text-align:center;' ><span>File Size</span></th></tr></thead><tbody><tr><td><strong><span>TEXT</span></strong><span>:</span><em><span>Editable, readable format (default in LAMMPS)</span></em></td><td style='text-align:center;' ><span>+++++</span></td><td style='text-align:center;' ><span>+++++++</span></td></tr><tr><td><strong><span>TEXT GZIPPED</span></strong><span>:</span><em><span>As TEXT but compressed (60% file size reduction; requires -DGZIP flag in LAMMPS)</span></em></td><td style='text-align:center;' ><span>++++++++++++++++</span></td><td style='text-align:center;' ><span>++++</span></td></tr><tr><td><strong><span>BINARY</span></strong><span>: </span><em><span>Proprietary format (largest files but fastest to open)</span></em></td><td style='text-align:center;' ><span>++</span></td><td style='text-align:center;' ><span>+++++++++++</span></td></tr></tbody></table></figure><p><span>   </span></p><h2 id='syntax-and-outputs'><span>Syntax and Outputs</span></h2><h3 id='basic-usage'><span>Basic Usage:</span></h3><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">X</span> = <span class="cm-variable">lamdumpread2</span>(<span class="cm-variable">dumpfilename</span>)</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre><ul><li><p><code>X.KEYWORD{i} = RECORD</code><span>: by default</span></p></li><li><p><code>X.KEYWORD(:,:,i) = RECORD</code><span>: when collect is used</span></p></li><li><p><span>KEYWORD refers to keywords like </span><code>TIMESTEP</code><span>, </span><code>NUMBEROFATOMS</code><span>, </span><code>BOXBOUNDS</code><span>, etc.</span></p></li><li><p><span>RECORD is an array</span></p></li></ul><h3 id='extended-usage'><span>Extended Usage:</span></h3><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">X</span> = <span class="cm-variable">lamdumpread2</span>(<span class="cm-variable">dumpfilename</span>, [<span class="cm-variable">action</span>, <span class="cm-variable">molecules</span>, <span class="cm-variable">itimes</span>, <span class="cm-variable">iatoms</span>])</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre><ul><li><p><code>action</code><span>: Keyword controlling file reading (e.g., </span><code>&#39;collect&#39;</code><span>, </span><code>&#39;count&#39;</code><span>, </span><code>&#39;robot&#39;</code><span>, </span><code>&#39;split&#39;</code><span>, </span><code>&#39;default&#39;</code><span>, </span><code>&#39;search&#39;</code><span>)</span></p></li><li><p><code>molecules</code><span>: Cell array to build molecules based on </span><code>X.ATOMS</code></p></li><li><p><code>itimes</code><span>: Requested timestep index</span></p></li><li><p><code>iatoms</code><span>: Requested atom index; when </span><code>molecules</code><span> is used, index of molecules instead</span></p><p>&nbsp;</p></li></ul><h3 id='options-for-all-formats'><span>Options for All Formats</span></h3><ul><li><p><span>Options like </span><code>&#39;collect&#39;</code><span>, </span><code>&#39;count&#39;</code><span>, </span><code>&#39;robot&#39;</code><span>, etc. control how the file is read, processed, or split</span></p></li><li><p><span>Actions like </span><code>&#39;default&#39;</code><span> or </span><code>&#39;search&#39;</code><span> provide details on dump files and prefetches</span></p></li></ul><figure class='table-figure'><table><thead><tr><th><span>Actions</span></th><th><span>Description</span></th></tr></thead><tbody><tr><td>&nbsp;</td><td><mark><strong><span>Actions controlling the way the file filename is read</span></strong></mark></td></tr><tr><td><code>collect</code></td><td><span>Array data are stored into a 3 dims-arrays instead of a cell array.</span></td></tr><tr><td><code>count</code></td><td><span>The size of each dataset is determined and not loaded.</span></td></tr><tr><td><em><span>For binary files</span></em></td><td><span>&#39;collect&#39; is always applied.</span></td></tr><tr><td>&nbsp;</td><td><mark><strong><span>Actions controlling batches</span></strong></mark></td></tr><tr><td><code>robot</code><span> or </span><code>prefetch</code></td><td><span>All files are read and a prefetch is created.</span></td></tr><tr><td><code>split</code></td><td><span>All files are split into small prefetch files.</span></td></tr><tr><td><code>usesplit</code></td><td><span>Split files have higher precedence than prefetch files.</span></td></tr><tr><td><code>forceprefetch</code></td><td><span>It forces the generation of prefetch files even if split files exist.</span></td></tr><tr><td><em><span>notes</span></em></td><td><span>- </span><code>lampdumpread()</code><span> generate all prefetch files (high memory footprint).</span><br/><span>- </span><code>lamdumpread2(&#39;dump.*&#39;,&#39;split&#39;)</code><span> force split even if prefetch files have been generated.</span><br/><span>- </span><code>lamdumpread(&#39;mydump&#39;,&#39;usesplit&#39;,[],[0 500])</code><span> load specifically frames 0 and 500 from split files.</span></td></tr><tr><td>&nbsp;</td><td><mark><strong><span>Actions giving details on dump files and their prefetches</span></strong></mark></td></tr><tr><td><code>default</code></td><td><span>X is a structure with fields: </span><code>prefetch.file</code><span> giving the prefetch file or anonymous function doing so for any filename </span><code>fn</code><span>, </span><code>prefetch.folder</code><span> idem for the prefetch folder, </span><code>prefetch.frame</code><span> is an anonymous function giving the filename of each split frame.</span></td></tr><tr><td><code>search</code></td><td><span>The dump file is looked for inside subfolders with the following precedence: splits, prefetch, and original files.</span></td></tr></tbody></table></figure><p>&nbsp;</p><h3 id='options-for-text-and-gzipped-formats'><span>Options for Text and Gzipped Formats</span></h3><p><span>These options mainly deal with reading specific time steps or atom indices.</span></p><p>&nbsp;</p><h3 id='output-example'><span>Output Example</span></h3><p><span>The output </span><code>X</code><span> has the typical fields:</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="perl"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="perl"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">TIME</span><span class="cm-operator">:</span> <span class="cm-number">0</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">TIMESTEP</span><span class="cm-operator">:</span> <span class="cm-number">0</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span class="cm-meta">NUMBER</span><span class="cm-operator">:</span> <span class="cm-number">313344</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">BOX</span><span class="cm-operator">:</span> [<span class="cm-number">3</span>×<span class="cm-number">2</span> <span class="cm-meta">single</span>]</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">ATOMS</span><span class="cm-operator">:</span> [<span class="cm-number">313344</span>×<span class="cm-number">38</span> <span class="cm-meta">table</span>]</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp;<span class="cm-meta">description</span><span class="cm-operator">:</span> [<span class="cm-number">1</span>×<span class="cm-number">1</span> <span class="cm-meta">struct</span>]</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">nfo</span><span class="cm-operator">:</span> [<span class="cm-number">1</span>×<span class="cm-number">1</span> <span class="cm-meta">struct</span>]</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-meta">TIMESTEPS</span><span class="cm-operator">:</span> [<span class="cm-number">0</span> <span class="cm-number">50000</span> <span class="cm-number">100000</span> <span class="cm-number">150000</span> <span class="cm-number">200000</span> <span class="cm-number">250000</span> <span class="cm-number">300000</span> <span class="cm-number">350000</span> <span class="cm-number">400000</span> <span class="cm-number">450000</span> <span class="cm-number">500000</span> <span class="cm-number">550000</span> <span class="cm-number">600000</span> <span class="cm-number">650000</span> <span class="cm-number">700000</span> <span class="cm-number">750000</span> <span class="cm-number">800000</span> <span class="cm-number">850000</span> <span class="cm-number">900000</span> … ]</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-meta">TIMESTEPfirst</span><span class="cm-operator">:</span> <span class="cm-number">0</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; <span class="cm-meta">TIMESTEPlast</span><span class="cm-operator">:</span> <span class="cm-number">8500000</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 252px;"></div><div class="CodeMirror-gutters" style="display: none; height: 252px;"></div></div></div></pre><p>&nbsp;</p><ol start='' ><li><p><strong><code>TIME</code></strong><span>:</span>
+<span>A scalar representing the current time value in the simulation. It may be related to the current </span><code>TIMESTEP</code><span>.</span></p></li><li><p><strong><code>TIMESTEP</code></strong><span>:</span>
+<span>A scalar representing the current timestep in the simulation. It shows the current iteration or computational cycle within the simulation.</span></p></li><li><p><strong><code>NUMBER</code></strong><span>:</span>
+<span>A scalar value representing the total number of atoms or particles within the system. This number remains constant throughout the simulation.</span></p></li><li><p><strong><code>BOX</code></strong><span>:</span>
+<span>A 3×2 matrix defining the boundaries of the simulated domain. It represents the spatial extents of the simulation box, likely providing the minimum and maximum values for each spatial dimension.</span></p></li><li><p><strong><code>ATOMS</code></strong><span>:</span>
+<span>A table containing detailed information about 313344 individual atoms or particles. It likely includes properties such as position, velocity, type, force, etc., for each atom.</span></p></li><li><p><strong><code>description</code></strong><span>:</span>
+<span>A structure containing descriptive metadata about the simulation. This could include details about the simulation setup, model used, parameters, etc.</span></p></li><li><p><strong><code>nfo</code></strong><span>:</span>
+<span>A structure containing additional information or parameters related to the simulation. The specific contents would depend on the context of the simulation.</span></p></li><li><p><strong><code>TIMESTEPS</code></strong><span>:</span>
+<span>An array of numerical values representing the progression of simulation steps throughout the entire simulation. It includes the timestep values for the entire simulation run.</span></p></li><li><p><strong><code>TIMESTEPfirst</code></strong><span>:</span>
+<span>A scalar value representing the first timestep of the simulation. In this example, it is 0, indicating the start of the simulation.</span></p></li><li><p><strong><code>TIMESTEPlast</code></strong><span>:</span>
+<span>A scalar value representing the last timestep of the simulation, which is 8500000 in this example.</span></p></li></ol><p>&nbsp;</p><p><span>The </span><code>ATOMS</code><span> field  represent a set of atoms in a simulation or analysis context. It includes detailed information about each atom, such as its position, mass, volume, and other properties. Below is an overview of the table columns available with </span><kbd><span>Pizza3</span></kbd><span>.</span></p><figure class='table-figure'><table><thead><tr><th><span>Column Name</span></th><th><span>Description</span></th></tr></thead><tbody><tr><td><span>TIMESTEP</span></td><td><span>Simulation timestep</span></td></tr><tr><td><span>id</span></td><td><span>Atom identifier</span></td></tr><tr><td><span>type</span></td><td><span>Atom type</span></td></tr><tr><td><span>x, y, z</span></td><td><span>Position coordinates</span></td></tr><tr><td><span>mol</span></td><td><span>Molecule identifier</span></td></tr><tr><td><span>mass</span></td><td><span>Atom mass</span></td></tr><tr><td><span>c_rho_smd, c_rho_sph</span></td><td><span>Density parameters</span></td></tr><tr><td><span>c_vol</span></td><td><span>Volume parameter</span></td></tr><tr><td><span>radius</span></td><td><span>Atom radius</span></td></tr><tr><td><span>c_contact_radius</span></td><td><span>Contact radius parameter</span></td></tr><tr><td><span>vx, vy, vz</span></td><td><span>Velocity components</span></td></tr><tr><td><span>fx, fy, fz</span></td><td><span>Force components</span></td></tr><tr><td><span>c_S[1] to c_S[7]</span></td><td><span>S-type parameters (specific meaning may vary)</span></td></tr><tr><td><span>c_E[1] to c_E[6]</span></td><td><span>E-type parameters (specific meaning may vary)</span></td></tr><tr><td><span>c_L[1] to c_L[6]</span></td><td><span>L-type parameters (specific meaning may vary)</span></td></tr></tbody></table></figure><p><span>This table is a snapshot of the state of a collection of atoms at a given moment or over a range of timesteps. The exact meanings of some columns might be domain-specific, requiring knowledge of the specific simulation or analysis being conducted.</span></p><p>&nbsp;</p><h2 id='examples'><span>EXAMPLES</span></h2><h3 id='simple-example'><span>Simple Example</span></h3><p><span>Based on in.LJ, the following example demonstrates how to use the function:</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">X</span> = <span class="cm-variable">lamdumpread2</span>(<span class="cm-string">'dump.atom'</span>)</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-comment">% Outputs include TIMESTEP, NUMBEROFATOMS, BOXBOUNDS, ATOMS, etc.</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">plot3</span>(<span class="cm-variable">X</span><span class="cm-error">.</span><span class="cm-variable">ATOMS</span>{<span class="cm-number">2</span>}(:,<span class="cm-number">3</span>),<span class="cm-variable">X</span><span class="cm-error">.</span><span class="cm-variable">ATOMS</span>{<span class="cm-number">2</span>}(:,<span class="cm-number">4</span>),<span class="cm-variable">X</span><span class="cm-error">.</span><span class="cm-variable">ATOMS</span>{<span class="cm-number">2</span>}(:,<span class="cm-number">5</span>),<span class="cm-string">'ro'</span>) <span class="cm-comment">% 3D plot</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 69px;"></div><div class="CodeMirror-gutters" style="display: none; height: 69px;"></div></div></div></pre><h4 id='notes'><span>Notes</span></h4><ul><li><p><code>lamdumpread2</code><span> is a fork of </span><code>lamdumpread</code><span> and is a part of an ongoing work</span></p></li><li><p><span>Compatibility with different file types might require specific LAMMPS compilation flags</span></p></li><li><p><span>Proper usage of the action keywords can allow for optimized file reading and manipulation</span></p></li></ul><p><span>This documentation provides a comprehensive overview of the function and can be used as a reference for those working with LAMMPS dump files.</span></p><p>&nbsp;</p><p><span>Certainly! Below are explanations for the examples you have shared, organized into three major sections: advanced examples, simple 2D simulation, and complex 3D simulations.</span></p><p>&nbsp;</p><h3 id='more-advanced-examples'><span>More Advanced examples</span></h3><ol start='' ><li><p><strong><span>Extracting Specific Molecular Coordinates for Specific Time Steps</span></strong><span>:</span>
+<span>This code extracts the coordinates of two specific molecules. The molecules consist of atoms with indices 1 to 1000 and 3001 to 4000. The coordinates are extracted for the time step indices 1 and 11.</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">X</span>=<span class="cm-variable">lamdumpread</span>(<span class="cm-string">'dump.atom.gz'</span>,<span class="cm-string">'collect'</span>,{<span class="cm-number">1</span>:<span class="cm-number">1000</span> <span class="cm-number">3001</span>:<span class="cm-number">4000</span>},[<span class="cm-number">1</span> <span class="cm-number">11</span>])</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre><p><span>The result is stored in </span><code>X</code><span>, and the molecular data is stored in a 2x1 cell with information related to these two molecules for the specified time steps.</span></p></li><li><p><strong><span>Extracting Coordinates for Specific Atom Groups Across All Time Steps</span></strong><span>:</span>
+<span>This code extracts the coordinates of a group of atoms (1:1000 and 3001:4000) across all time steps.</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">X</span>=<span class="cm-variable">lamdumpread</span>(<span class="cm-string">'dump.atom.gz'</span>,<span class="cm-string">'collect'</span>,{},[],[<span class="cm-number">1</span>:<span class="cm-number">1000</span> <span class="cm-number">3001</span>:<span class="cm-number">4000</span>])</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre><p><span>This will give you detailed data for the chosen atoms at every time step, storing the information in </span><code>X</code><span>.</span></p></li></ol><p>&nbsp;</p><h3 id='examples-from-pizza3'><span>Examples from </span><kbd><span>Pizza3</span></kbd></h3><p>&nbsp;</p><h4 id='simple-2d-simulation'><span>Simple 2D Simulation:</span></h4><ul><li><p><strong><span>Reading 2D Data</span></strong><span>: Reads the 2D simulation data from the file </span><code>&#39;dump.wall.2d&#39;</code><span> using the function </span><code>lamdumpread2</code><span>.</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">X</span> = <span class="cm-variable">lamdumpread2</span>(<span class="cm-variable">fullfile</span>(<span class="cm-string">'misc_dumpfiles'</span>,<span class="cm-string">'dump.wall.2d'</span>))</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre></li></ul><p>&nbsp;</p><h4 id='complex-3d-simulations'><span>Complex 3D Simulations:</span></h4><ul><li><p><strong><span>3D Simulation with Static and Moving Cylinders</span></strong><span>:</span>
+<span>This segment of the code deals with a complex 3D simulation where it differentiates between liquid atoms and wall atoms. It also categorizes the wall atoms into static and moving cylinders.</span></p><ul><li><p><span>The liquid atoms are identified by </span><code>type==1</code><span>, and the wall atoms are identified by </span><code>type==2</code><span>.</span></p></li><li><p><span>The </span><code>arrayfun</code><span> line calculates the mean displacement for identifying moving cylinders.</span></p></li><li><p><span>The plot function </span><code>plotback</code><span> plots the liquid atoms in blue, static cylinders in red, and moving cylinders in green for each time step, with a 3D view.</span></p><p>&nbsp;</p></li></ul><ol start='' ><li><p><strong><span>Reading 3D Back Extrusion Data (v3b version)</span></strong><span>:</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">X</span> = <span class="cm-variable">lamdumpread2</span>(<span class="cm-variable">fullfile</span>(<span class="cm-string">'misc_dumpfiles'</span>,<span class="cm-string">'dump.backextrusion_v3b'</span>));</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre></li><li><p><strong><span>Extracting Liquid and Walls from the Simulation</span></strong><span>:</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded md-focus" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 32.3164px; left: 330.241px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="" style="position: relative;"><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">A</span> = <span class="cm-variable">X</span><span class="cm-error">.</span><span class="cm-variable">ATOMS</span>(<span class="cm-variable">X</span><span class="cm-error">.</span><span class="cm-variable">ATOMS</span><span class="cm-error">.</span><span class="cm-variable">type</span><span class="cm-operator">==</span><span class="cm-number">1</span>,:); <span class="cm-comment">% liquid</span></span></pre></div><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">B</span> = <span class="cm-variable">X</span><span class="cm-error">.</span><span class="cm-variable">ATOMS</span>(<span class="cm-variable">X</span><span class="cm-error">.</span><span class="cm-variable">ATOMS</span><span class="cm-error">.</span><span class="cm-variable">type</span><span class="cm-operator">==</span><span class="cm-number">2</span>,:); <span class="cm-comment">% walls</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 46px;"></div><div class="CodeMirror-gutters" style="display: none; height: 46px;"></div></div></div></pre></li><li><p><strong><span>Mean Displacement Calculation for Walls and Separation into Static and Moving Cylinders</span></strong><span>:</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">zB</span> = <span class="cm-variable">B</span><span class="cm-error">.</span><span class="cm-variable">z</span>; <span class="cm-variable">idB</span> = <span class="cm-variable">B</span><span class="cm-error">.</span><span class="cm-variable">id</span>;</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">dzB</span> = <span class="cm-builtin">arrayfun</span>(<span class="cm-operator">@</span>(<span class="cm-variable">id</span>) <span class="cm-builtin">sqrt</span>(<span class="cm-builtin">mean</span>(<span class="cm-variable">diff</span>(<span class="cm-variable">zB</span>(<span class="cm-variable">idB</span><span class="cm-operator">==</span><span class="cm-variable">id</span>))<span class="cm-operator">.^</span><span class="cm-number">2</span>)),<span class="cm-variable">listidB</span>);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">B0</span> = <span class="cm-variable">B</span>(<span class="cm-builtin">ismember</span>(<span class="cm-variable">B</span><span class="cm-error">.</span><span class="cm-variable">id</span>,<span class="cm-variable">listidB</span>(<span class="cm-variable">dzB</span><span class="cm-operator">==</span><span class="cm-number">0</span>)),:); <span class="cm-comment">% static cylinder</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">B1</span> = <span class="cm-variable">B</span>(<span class="cm-builtin">ismember</span>(<span class="cm-variable">B</span><span class="cm-error">.</span><span class="cm-variable">id</span>,<span class="cm-variable">listidB</span>(<span class="cm-variable">dzB</span><span class="cm-operator">&gt;</span><span class="cm-number">0</span>)),:); &nbsp;<span class="cm-comment">% moving cylinder</span></span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre></li><li><p><strong><span>Plotting the Simulation</span></strong><span>:</span>
+<span>This code block plots the liquid, static cylinders, and moving cylinders at each time step:</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.24023px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">figure</span>, <span class="cm-variable">view</span>(<span class="cm-number">3</span>), <span class="cm-keyword">for</span> <span class="cm-variable">it</span>=<span class="cm-number">1</span>:<span class="cm-variable">length</span>(<span class="cm-variable">TIMESTEP</span>), <span class="cm-variable">cla</span>, <span class="cm-variable">hold</span> <span class="cm-variable">on</span>, <span class="cm-variable">plotback</span>(<span class="cm-variable">it</span>); <span class="cm-builtin">title</span>(<span class="cm-keyword">sprintf</span>(<span class="cm-string">'t= %4g'</span>,<span class="cm-variable">TIMESTEP</span>(<span class="cm-variable">it</span>))), <span class="cm-variable">drawnow</span>, <span class="cm-keyword">end</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 46px;"></div><div class="CodeMirror-gutters" style="display: none; height: 46px;"></div></div></div></pre><p>&nbsp;</p></li></ol></li><li><p><strong><span>Complex 3D Simulation with Profile Extraction</span></strong><span>:</span>
+<span>Another complex 3D simulation that involves extracting various profiles.</span></p><ul><li><p><strong><span>Bottom Position of B0</span></strong><span>: This extracts the z-position of the bottom of B1 and plots it against time.</span></p></li><li><p><strong><span>Center and Radius of B0</span></strong><span>: This part calculates the mean x and y coordinates and the radius of B0.</span></p></li><li><p><strong><span>Sample Positions and Velocity Profile</span></strong><span>: Here, the radial velocity profile is calculated at different radii, and the mean radial velocity is plotted against the radius. The color varies according to the time step.</span></p></li></ul></li></ul><p>&nbsp;</p><ol start='' ><li><p><strong><span>Complex 3D Simulation (v3a version)</span></strong><span>:</span>
+<span>Similar to the v3b version, but reads data from a different file:</span></p><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">X</span> = <span class="cm-variable">lamdumpread2</span>(<span class="cm-string">'/home/olivi/billy/lammps/sandbox/dump.backextrusion_v3a'</span>);</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 23px;"></div><div class="CodeMirror-gutters" style="display: none; height: 23px;"></div></div></div></pre></li><li><p><strong><span>Profile Extraction</span></strong><span>:</span></p><ul><li><p><strong><span>Bottom Position of B0</span></strong><span>: </span></p></li></ul><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;">[<span class="cm-operator">~</span>,<span class="cm-variable">ibottom</span>] = <span class="cm-builtin">min</span>(<span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">z</span>(<span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)));</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">zbottom</span> = <span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">z</span>(<span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">id</span><span class="cm-operator">==</span><span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">id</span>(<span class="cm-variable">ibottom</span>));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">figure</span>, <span class="cm-builtin">plot</span>(<span class="cm-variable">TIMESTEP</span>,<span class="cm-variable">zbottom</span>), <span class="cm-builtin">ylabel</span>(<span class="cm-string">'z'</span>), <span class="cm-builtin">xlabel</span>(<span class="cm-string">'t'</span>)</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 69px;"></div><div class="CodeMirror-gutters" style="display: none; height: 69px;"></div></div></div></pre><ul><li><p><strong><span>Center and Radius of B0</span></strong><span>:</span></p></li></ul><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation"><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">xmean</span> = <span class="cm-builtin">mean</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">x</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)));</span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">ymean</span> = <span class="cm-builtin">mean</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">y</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-variable">rB0</span> = <span class="cm-builtin">max</span>( <span class="cm-builtin">sqrt</span>( (<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">x</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)) <span class="cm-operator">-</span> <span class="cm-variable">xmean</span>)<span class="cm-operator">.^</span><span class="cm-number">2</span> <span class="cm-operator">+</span> (<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">y</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)) <span class="cm-operator">-</span> <span class="cm-variable">ymean</span>)<span class="cm-operator">.^</span><span class="cm-number">2</span> ) );</span></pre></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 92px;"></div><div class="CodeMirror-gutters" style="display: none; height: 92px;"></div></div></div></pre><ul><li><p><strong><span>Velocity Profile Extraction</span></strong><span>:</span></p></li></ul><pre class="md-fences md-end-block ty-contain-cm modeLoaded" spellcheck="false" lang="matlab" style="break-inside: unset;"><div class="CodeMirror cm-s-inner cm-s-null-scroll CodeMirror-wrap" lang="matlab"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 9.4388px; left: 11.9987px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 0px; margin-bottom: 0px; border-right-width: 0px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code" role="presentation" style=""><div class="CodeMirror-activeline" style="position: relative;"><div class="CodeMirror-activeline-background CodeMirror-linebackground"></div><div class="CodeMirror-gutter-background CodeMirror-activeline-gutter" style="left: 0px; width: 0px;"></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; <span class="cm-comment">% bottom position of B0</span></span></pre></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp;  [<span class="cm-operator">~</span>,<span class="cm-variable">ibottom</span>] = <span class="cm-builtin">min</span>(<span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">z</span>(<span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">zbottom</span> = <span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">z</span>(<span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">id</span><span class="cm-operator">==</span><span class="cm-variable">B1</span><span class="cm-error">.</span><span class="cm-variable">id</span>(<span class="cm-variable">ibottom</span>));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">figure</span>, <span class="cm-builtin">plot</span>(<span class="cm-variable">TIMESTEP</span>,<span class="cm-variable">zbottom</span>), <span class="cm-builtin">ylabel</span>(<span class="cm-string">'z'</span>), <span class="cm-builtin">xlabel</span>(<span class="cm-string">'t'</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment">% center and radius of B0</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">xmean</span> = <span class="cm-builtin">mean</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">x</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">ymean</span> = <span class="cm-builtin">mean</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">y</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">rB0</span> = <span class="cm-builtin">max</span>( <span class="cm-builtin">sqrt</span>( (<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">x</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)) <span class="cm-operator">-</span> <span class="cm-variable">xmean</span>)<span class="cm-operator">.^</span><span class="cm-number">2</span> <span class="cm-operator">+</span> (<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">y</span>(<span class="cm-variable">B0</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-number">1</span>)) <span class="cm-operator">-</span> <span class="cm-variable">ymean</span>)<span class="cm-operator">.^</span><span class="cm-number">2</span> ) );</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-comment">% sample positions</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">nr</span> = <span class="cm-number">200</span>; <span class="cm-variable">r</span> = <span class="cm-builtin">linspace</span>(<span class="cm-number">0</span>,<span class="cm-variable">rB0</span>,<span class="cm-variable">nr</span><span class="cm-number">+1</span>);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">rA</span> = <span class="cm-builtin">sqrt</span>( (<span class="cm-variable">A</span><span class="cm-error">.</span><span class="cm-variable">x</span> <span class="cm-operator">-</span> <span class="cm-variable">xmean</span>)<span class="cm-operator">.^</span><span class="cm-number">2</span> <span class="cm-operator">+</span> (<span class="cm-variable">A</span><span class="cm-error">.</span><span class="cm-variable">y</span> <span class="cm-operator">-</span> <span class="cm-variable">ymean</span>)<span class="cm-operator">.^</span><span class="cm-number">2</span> );</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span class="cm-tab" role="presentation" cm-text="	">    </span><span class="cm-variable">nt</span> = <span class="cm-variable">length</span>(<span class="cm-variable">TIMESTEP</span>);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">vz</span> = <span class="cm-builtin">zeros</span>(<span class="cm-variable">nt</span>,<span class="cm-variable">nr</span>);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-keyword">for</span> <span class="cm-variable">it</span>=<span class="cm-number">1</span>:<span class="cm-variable">nt</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">okt</span>  = (<span class="cm-variable">A</span><span class="cm-error">.</span><span class="cm-variable">TIMESTEP</span><span class="cm-operator">==</span><span class="cm-variable">TIMESTEP</span>(<span class="cm-variable">it</span>)) <span class="cm-operator">&amp;</span> (<span class="cm-variable">A</span><span class="cm-error">.</span><span class="cm-variable">z</span><span class="cm-operator">&gt;</span><span class="cm-variable">zbottom</span>(<span class="cm-variable">it</span>));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-keyword">if</span> <span class="cm-variable">any</span>(<span class="cm-variable">okt</span>)</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">vzt</span>  = <span class="cm-variable">A</span><span class="cm-error">.</span><span class="cm-variable">vz</span>(<span class="cm-variable">okt</span>);</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">rAt</span> = <span class="cm-variable">rA</span>(<span class="cm-variable">okt</span>); </span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-keyword">for</span> <span class="cm-variable">ir</span> = <span class="cm-number">1</span>:<span class="cm-variable">nr</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">ind</span> = (<span class="cm-variable">rAt</span><span class="cm-operator">&gt;</span>=<span class="cm-variable">r</span>(<span class="cm-variable">ir</span>)) <span class="cm-operator">&amp;</span> (<span class="cm-variable">rAt</span><span class="cm-operator">&lt;</span><span class="cm-variable">r</span>(<span class="cm-variable">ir</span><span class="cm-number">+1</span>));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-variable">vz</span>(<span class="cm-variable">it</span>,<span class="cm-variable">ir</span>) = <span class="cm-builtin">max</span>(<span class="cm-number">0</span>,<span class="cm-builtin">mean</span>(<span class="cm-variable">vzt</span>(<span class="cm-variable">ind</span>)));</span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-keyword">end</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp; &nbsp; &nbsp;<span class="cm-keyword">end</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-keyword">end</span></span></pre><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">itplot</span> = <span class="cm-variable">find</span>(<span class="cm-variable">any</span>(<span class="cm-builtin">abs</span>(<span class="cm-variable">vz</span>)<span class="cm-operator">&gt;</span><span class="cm-number">0</span>,<span class="cm-number">1</span>),<span class="cm-number">1</span>,<span class="cm-string">'first'</span>):<span class="cm-variable">nt</span>; <span class="cm-variable">nitplot</span> = <span class="cm-variable">length</span>(<span class="cm-variable">itplot</span>);</span></pre><div class="" style="position: relative;"><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"> &nbsp; &nbsp;<span class="cm-variable">figure</span>, <span class="cm-variable">colororder</span>(<span class="cm-variable">jet</span>(<span class="cm-variable">nitplot</span>)); <span class="cm-builtin">plot</span>(<span class="cm-variable">r</span>(<span class="cm-number">1</span>:<span class="cm-keyword">end</span><span class="cm-number">-1</span>),<span class="cm-variable">vz</span>(<span class="cm-variable">itplot</span>,:),<span class="cm-string">'-'</span>,<span class="cm-string">'linewidth'</span>,<span class="cm-number">2</span>), <span class="cm-builtin">xlabel</span>(<span class="cm-string">'r'</span>), <span class="cm-builtin">ylabel</span>(<span class="cm-string">'vz'</span>)</span></pre></div></div></div></div></div></div><div style="position: absolute; height: 0px; width: 1px; border-bottom: 0px solid transparent; top: 642px;"></div><div class="CodeMirror-gutters" style="display: none; height: 642px;"></div></div></div></pre></li></ol><p>&nbsp;</p><blockquote><p><span>Overall, these examples reflect advanced applications involving the reading, extraction, and plotting of specific molecular or atomic information from complex simulation data. They include functionalities like identifying specific molecule/atom groups, managing time steps, handling 2D/3D data, and complex visualization.</span></p></blockquote><p>&nbsp;</p><p>&nbsp;</p></div></div>
+</body>
+</html>
