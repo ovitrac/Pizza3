@@ -46,8 +46,8 @@ if nargin<1, X = []; end
 if nargin<2, vX = []; end
 if isempty(X), error('one table is at least required with ''x'',''y'',''z'',''vx'',''vy'',vz'' columns'), end
 if istable(X)
-    if isempty(vX), vX = table2array(X(:,{'vx','vy','vz'})); end
-    X = table2array(X(:,{'x','y','z'}));
+    if isempty(vX), vX = X{:,{'vx','vy','vz'}}; end
+    X = X{:,{'x','y','z'}};
 end
 if isempty(vX), error('2 inputs are required: [F,n] = forceHertz(X,vX)'), end
 if nargin<3, V = []; end

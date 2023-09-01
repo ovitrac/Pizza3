@@ -1,7 +1,7 @@
 function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors)
 %BUILDVERLETLIST build the Verlet list of X
 %
-%   USAGE: verletList = buildVerletList(X [, cutoff, sorton, nblocks, verbose])
+%   USAGE: verletList = buildVerletList(X [, cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors])
 %           [verletList,cutoff,dmin,config,distances] = buildVerletList(...)
 %           verletList =  buildVerletList(X,config)
 %
@@ -20,7 +20,7 @@ function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cuto
 %              nblocks: number of blocks to reduce the amount memory required (typically max 8 GB)
 %              verbose: set it to false to remove messages
 %   excludedfromsearch: nx1 logical array (true if the coordinate does not need to be included in the search).
-%    excludedneighbors: nx1 logical array (true if the coordinate is not a possible neihgborà
+%    excludedneighbors: nx1 logical array (true if the coordinate is not a possible neihgbor)
 %
 %   Outputs:
 %           verletList: n x 1 cell coding for the Verlet list
@@ -35,7 +35,7 @@ function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cuto
 %   See also: updateVerletList, partitionVerletList, selfVerletList, interp3SPHVerlet
 
 
-% MS 3.0 | 2023-03-25 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2023-05-17
+% MS 3.0 | 2023-03-25 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2023-08-31
 
 
 % Revision history
@@ -44,6 +44,7 @@ function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cuto
 % 2023-04-01 return and accept config, accept X as a table
 % 2023-05-16 accept {Xgrid X} as input #1 to list neigbors X around a grid (Xgrid)
 % 2023-05-17 updated help
+% 2023-08-31 fix time counter
 
 %% Constants
 targetedNumberOfNeighbors = 100; % number of maximum neighbors expected (it is a maximum guess to be used to estimate a cutoff)
@@ -115,6 +116,7 @@ if hasgrid
     if nargout>4, distout = distout_; end
     return
 else
+    ngrid = 1;
     if isempty(excludedfromsearch), excludedfromsearch = false(n,1); end
     if isempty(excludedneighbors), excludedneighbors = false(n,1); end
     hasexclusions = any(excludedfromsearch) || any(excludedneighbors);
@@ -184,8 +186,9 @@ if (nblocks > 1) && (d == 3) % block splitting limited to 3D
         if verbose
             done = iBall/nBall; currenttime = clock; dt = etime(currenttime,t_);
             if (dt>0.5) || wasempty
-                screen = dispb(screen,'[BLOCK %d/%d] %d particles with %d neighbors (%0.1f %% of total considered) | min dist l:%0.3g g:%0.3g | elapsed %0.1f s | done %0.1f %% | remaining %0.1f s',...
-                    iBall,nBall,narein,nneighborsforthosein,nind/n*100,dmintmp,dmin,dt,100*done,(1/done-1)*dt);
+                dt_ = etime(currenttime,t__);
+                screen = dispb(screen,'[BLOCK %d/%d] %d particles with %d neighbors (%0.1f %% total) | min dist loc:%0.3g glob:%0.3g | elapsed %0.1f of %0.1f s | done %0.1f %% | remaining %0.1f s',...
+                    iBall,nBall,narein,nneighborsforthosein,nind/n*100,dmintmp,dmin,dt,dt_,100*done,(1/done-1)*dt_);
                 wasempty = (nneighborsforthosein==0); t_ = currenttime;
             end
         end
