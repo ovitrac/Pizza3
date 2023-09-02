@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.60"
+__version__ = "0.61"
 
 
 """
@@ -191,6 +191,33 @@ This short manual includes method descriptions, expected parameters, and example
 - The `group` class is designed to be a Pythonic interface to LAMMPS group functionalities.
 - The actual implementation needs to communicate with a running LAMMPS simulation, which may require additional code and setup via pizza.
 
+
+## Comment on Sept 2nd, 2023
+
+On September 2nd, a re-evaluation of the `pizza.group.GroupOperation()` and `pizza.group.Operation()` classes was initiated to simplify their complexities. The existing architecture mandated a convoluted process for collapsing operations, making it cumbersome to manage. To address this, the concept of finalized and non-finalized operations was introduced.
+
+Finalized operations are those explicitly invoked, like union, intersection, identification, and region, executed directly via the `pizza.group` methods. Non-finalized operations, in contrast, are intermediary steps that are automatically generated when evaluating expressions that use overloaded operators such as `+`, `-`, and `*`. For instance, in an expression like `o1 + o2 + o3 - (o4 + o5) + (o6 * o7)`, the operations formed between the operands are non-finalized.
+
+This refactoring streamlines the handling of both types of operations, thus eliminating the need for an intricate collapse mechanism. It offers a more intuitive and efficient way to manage operations within the `pizza.group` framework.
+
+Here the output for o1 + o2 + o3 - (o4 + o5) + (o6 * o7)
+
+| Idx |     Name    | Operator  |           Operands           |
+|-----|-------------|-----------|------------------------------|
+|  0  |          o1 |    create |                              |
+|  1  |          o2 |    create |                              |
+|  2  |          o3 |    create |                              |
+|  3  |          o4 |    create |                              |
+|  4  |          o5 |    create |                              |
+|  5  |          o6 |    create |                              |
+|  6  |          o7 |    create |                              |
+|  7  |   addae928c |     union |        ('o1', 'o2', 'o3')    |
+|  8  |   add22d686 |     union |           ('o4', 'o5')       |
+|  9  |   subb3d152 |  subtract | ('addae928c', 'add22d686')   |
+| 10  |   mul48e45f | intersect |           ('o6', 'o7')       |
+| 11  |      debug  |     union | ('subb3d152', 'mul48e45f')   |
+
+
 ---
 
 
@@ -201,8 +228,9 @@ Created on Wed Aug 16 16:25:19 2023
 """
 
 # Revision history
-# 17/08/2023 RC with documentation, the script method is not implemented yet (to be done via G.code())
-# 18/08/2023 consolidation of the GroupOperation mechanism (please still alpha version)
+# 2023-08-17 RC with documentation, the script method is not implemented yet (to be done via G.code())
+# 2023-08-18 consolidation of the GroupOperation mechanism (please still alpha version)
+# 2023-09-01 the class GroupOperation has been removed and the collapse is carried within Operation to avoid unecessary complications [major release]
 
 # %% Dependencies
 # pizza.group is independent of region and can performs only static operations.
@@ -211,147 +239,6 @@ import hashlib
 from pizza.script import script, span
 
 # %% Private classes
-
-# class for multiple heterogenerous operations
-class GroupOperation:
-    """
-        class to represent a sequence of operations combined using a specific operator.
-
-        Attributes
-        ----------
-            operations : list of Operation or GroupOperation
-                The list of operations involved in this GroupOperation.
-            operators : list of str
-                The list of operators used to combine the operations.
-                Operators are represented as strings, e.g., '+', '-', '*'.
-
-        Methods
-        -------
-            __init__(operation1, operation2, operator):
-                Initialize a GroupOperation instance with two Operation or GroupOperation instances and an operator.
-            __add__(other):
-                Overloads the '+' operator to support adding two GroupOperation or Operation instances.
-            __sub__(other):
-                Overloads the '-' operator to support subtracting two GroupOperation or Operation instances.
-            __mul__(other):
-                Overloads the '*' operator to support multiplying two GroupOperation or Operation instances.
-
-    """
-
-    def __init__(self, operation1, operation2, operator,name=""):
-        # error check
-        if not isinstance(operation1, (Operation, GroupOperation)) or not isinstance(operation2, (Operation, GroupOperation)):
-            raise TypeError("Expected instances of Operation or GroupOperation.")
-        # Check whether operation1 needs to be collapsed
-        if isinstance(operation1, GroupOperation):
-            if operation1.operator != operator:
-                operation1 = self.collapse(operation1)
-
-        # Check whether operation2 needs to be collapsed
-        if isinstance(operation2, GroupOperation):
-            if operation2.operator != operator:
-                operation2 = self.collapse(operation2)
-        # Store the (potentially collapsed) operations
-        self.operations = [operation1, operation2]
-        self.operator = operator if operator is not None else ""
-        self.name = name if name else self.generate_hashname()
-        self.flatten()
-
-    def generate_hashname(self):
-        """
-            Generate a hash name by concatenating the names of all operations inside
-            and hashing the result, keeping only the first 10 characters.
-        """
-        concatenated_names = self.operator.join(op.name for op in self.operations)
-        return "GRP"+hashlib.sha256(concatenated_names.encode()).hexdigest()[:6]
-
-    @staticmethod
-    def collapse(group_operation):
-        """
-            Collapse a group of operations of the same kind
-        """
-        collapsed_name = group_operation.generate_hashname()
-        available_names = group_operation.flatten_names()
-        if group_operation.operator == '+':
-            group.union(collapsed_name, available_names[0],*available_names[1:])
-        elif group_operation.operator == '-':
-            group.subtract(collapsed_name, available_names[0],*available_names[1:])
-        elif group_operation.operator == '*':
-            group.intersect(collapsed_name, available_names[0],*available_names[1:])
-        return group._operations[-1]
-
-    def flatten(self):
-        """
-        Recursively flattens this GroupOperation to reduce unnecessary nesting.
-        """
-        flat_operations = []
-        for operation in self.operations:
-            if isinstance(operation, GroupOperation):
-                if operation.operator == self.operator:
-                    flat_operations.extend(operation.operations)
-                else:
-                    flat_operations.append(operation)
-            else:
-                flat_operations.append(operation)
-        return flat_operations
-
-    def __add__(self, other):
-        return GroupOperation(self, other, '+')
-
-    def __sub__(self, other):
-        return GroupOperation(self, other, '-')
-
-    def __mul__(self, other):
-        return GroupOperation(self, other, '*')
-
-    def __repr__(self):
-         return f' {self.operator} '.join(map(str, self.operations))
-
-
-    def flatten_names(self):
-        """
-        Recursively collect the names of all Operation instances inside
-        this GroupOperation, including any nested GroupOperation instances.
-        """
-        names = []
-        for op in self.operations:
-            if isinstance(op, GroupOperation):
-                names.extend(op.flatten_names())
-            else:
-                names.append(op.name)
-        return names
-
-
-    def extend(self, new_operator, new_operation, force_collapse=False):
-        """
-        Extend the current GroupOperation with a new operation.
-        If the new operator is different from the current operator,
-        it merges the current operations into a single operation
-        using the method corresponding to the current operator.
-
-        Parameters:
-        -----------
-        new_operator : str
-            The new operator to be applied. It can be '+' (union), '-' (subtract), or '*' (intersect).
-        new_operation : Operation
-            The new operation object to be added to this GroupOperation.
-        force_collapse : bool
-            Whether to force a collapse of the current operations into a single operation
-            using the current operator, without adding a new operation.
-        """
-        if new_operator == self.operator:
-            # If the new operator is the same, just add the new operation to this GroupOperation
-            if isinstance(new_operation, GroupOperation) and new_operation.operator == self.operator:
-                self.operations.extend(new_operation.operations)
-            else:
-                self.operations.append(new_operation)
-        else:
-            # If the new operator is different, start a new GroupOperation
-            return GroupOperation(self, new_operation, new_operator)
-
-
-
-
 # Class for binary and unary operators
 class Operation:
     """
@@ -359,76 +246,255 @@ class Operation:
 
         Attributes
         ----------
-            operator (str): The operator for this operation
-                (e.g., 'variable','region','type','id','create','clear','empty','union','intersect','subtact','eval')
-                (oveloaded operators: 'add', 'sub', 'mul').
-            operand1 (any): The first operand for this operation.
-            operand2 (any): The second operand for this operation.
-            name (str): The name of this operation, which can be manually set or auto-generated.
-            code (str): The LAMMPS code that this operation represents.
+        operator (str): The operator applied to the operands.
+                        It can be a finalized operator 'variable','region','type','id',
+                        'create','clear','empty','union','intersect','subtact','eval'
+                        It Can be '+', '-', '*' or empty.
+
+        operands (list): A list of operands for the operation.
+
+        name (str): The name of this operation, which can be manually set or auto-generated.
+
+        code (str): The LAMMPS code that this operation represents.
+
 
         Methods
         -------
-            generate_hashname():
-                Generate a hash name for the operation.
-            __add__(other):
-                Overloads the '+' operator to support adding two Operation instances.
-            __sub__(other):
-                Overloads the '-' operator to support subtracting two Operation instances.
-            __mul__(other):
-                Overloads the '*' operator to support multiplying two Operation instances.
+        __init__(self, operator, operands, name="", code="")
+            Initializes a new Operation instance.
+        append(self, operand)
+            Appends a single operand to the operands list.
+        extend(self, operands)
+            Extends the operands list with multiple operands.
+        is_unary(self)
+            Checks if the Operation instance has exactly one operand.
+        is_empty(self)
+            Checks if the Operation instance has no operands.
+        generateID(self)
+            Generates an ID for the instance based on its operands or name.
+        generate_hashname(self, prefix="grp", ID=None)
+            Generates a hash-based name for the instance.
+        _operate(self, other, operator)
+            Combines the operation with another Operation instance
+            using the specified operator.
+        _eval(self, group_name)
+            Evaluates the operation and stores it in the Group.
+        isfinalized(self)
+            Checks if the operation has been finalized.
+        __add__(other):
+            Overloads the '+' operator to support adding two Operation instances.
+        __sub__(other):
+            Overloads the '-' operator to support subtracting two Operation instances.
+        __mul__(other):
+            Overloads the '*' operator to support multiplying two Operation instances.
     """
 
-    def __init__(self, operator, operand1, operand2, name="",code=""):
+    def __init__(self, operator, operands, name="",code=""):
+        """Initializes a new Operation instance with given parameters."""
         self.operator = operator
-        self.operand1 = operand1
-        self.operand2 = operand2
+        self.operands = operands if isinstance(operands, list) else [operands]
         if (name == "") or name is None:
             self.name = self.generate_hashname()
         else:
             self.name = name
         self.code = code
 
-    def generate_hashname(self):
-        s = str(self.operand1) + self.operator + str(self.operand2)
-        return "grp"+hashlib.sha256(s.encode()).hexdigest()[:6]
+    def append(self, operand):
+        """Appends a single operand to the operands list of the Operation instance."""
+        self.operands.append(operand)
+
+    def extend(self, operands):
+        """Extends the operands list of the Operation instance with multiple operands."""
+        self.operands.extend(operands)
+
+    def is_unary(self):
+        """Checks if the Operation instance has exactly one operand."""
+        return len(self.operands) == 1
+
+    def is_empty(self):
+        """Checks if the Operation instance has no operands."""
+        return len(self.operands) == 0
+
+    def generateID(self):
+        """Generates an ID for the Operation instance based on its operands or name."""
+        if self.operands:
+            return "".join([str(op) for op in self.operands])
+        else:
+            return self.name
+
+    def generate_hashname(self,prefix="grp",ID=None):
+        """Generates an ID for the Operation instance based on its operands or name."""
+        if ID is None: ID = self.generateID()
+        s = self.operator+ID
+        return prefix+hashlib.sha256(s.encode()).hexdigest()[:6]
 
     def __repr__(self):
-        print(
+        """ detailed representation """
+        operand_str = ', '.join(str(op) for op in self.operands)
+        return (
             f"Operation Details:\n"
             f"  - Name: {self.name}\n"
             f"  - Operator: {self.operator}\n"
-            f"  - Operand1: {self.operand1}\n"
-            f"  - Operand2: {self.operand2}\n"
+            f"  - Operands: {operand_str}\n"
             f"  - LAMMPS Code: {self.code}"
         )
-        return str(self)
 
     def __str__(self):
-        x = self.operand1 if self.operand1 is  not None else ""
-        y = self.operand2 if self.operand2 is  not None else ""
-        empty = (x=="") and (y=="")
-        unary = ((x=="") or (y=="")) and not empty
-        if empty:
+        """ string representation """
+        operands = [str(op) for op in self.operands]
+        operand_str = ', '.join(operands)
+        if self.is_empty():
             return f"<{self.operator} {self.name}>"
-        elif unary:
-            arg = x if y=="" else y
-            return f"<{self.name}={self.operator}({arg})>"
-        elif self.operator in ["union","subtract","intersect"]:
-            operator_symbol = {'union': '+','intersect': '*','subtract': '-'}.get(self.operator, self.operator)
-            return f"<{self.name}=[{x}]{operator_symbol}[{y}]>"
-        else:
-            return f"<{self.name}={self.operator}([{x}],[{y}])>"
 
+        elif self.is_unary():
+            return f"<{self.name}={self.operator}({operand_str})>"
+        else:  # Polynary
+            operator_symbol_mapping = {
+                'union': '+',
+                'intersect': '*',
+                'subtract': '-'
+            }
+            operator_symbol = operator_symbol_mapping.get(self.operator, self.operator)
+            formatted_operands = operator_symbol.join(operands)
+            return f"<{self.name}=[{formatted_operands}]>"
+
+    def isfinalized(self):
+        """
+        Checks whether the Operation instance is finalized.
+        Returns:
+        - bool: True if the Operation is finalized, otherwise False.
+        Functionality:
+        - An Operation is considered finalized if its operator is not
+         one of the algebraic operators '+', '-', '*'.
+        """
+        return self.operator not in ['+', '-', '*']
+
+    def eval(self, group_name):
+        """
+        Evaluates and finalizes the Operation, updating it with a new state.
+
+        Parameters:
+        - group_name (str): The name of the group in which to store the final operation.
+
+        Functionality:
+        - Executes the operation based on the current algebraic operator and
+          updates the attributes accordingly.
+        - If the operation is already finalized, a ValueError is raised.
+        - Uses group (assumed to be an instance of Group) to perform union,
+          subtraction, or intersection, depending on the operator.
+
+        Exception Handling:
+        - Raises a ValueError if the operation is already finalized or if
+          an unknown operator is used.
+        """
+        if not self.isfinalized():
+            if self.operator == '+':
+                group.union(group_name, *self.operands)
+            elif self.operator == '-':
+                group.subtract(group_name, *self.operands)
+            elif self.operator == '*':
+                group.intersect(group_name, *self.operands)
+            else:
+                raise ValueError(f"Unknown operator: {self.operator}")
+            # Retrieve the newly created operation from Group
+            new_op = group.get_by_name(group_name)
+            # Update the current instance with attributes of the new operation
+            self.__dict__.update(new_op.__dict__)
+            # At this point, self should be considered finalized
+        else:
+            raise ValueError("Operation is already finalized.")
 
     def __add__(self, other):
-        return GroupOperation(self, other, '+')
+        """ overload + as union """
+        return self._operate(other,'+')
 
     def __sub__(self, other):
-        return GroupOperation(self, other, '-')
+        """ overload - as subtract """
+        return self._operate(other,'-')
 
     def __mul__(self, other):
-        return GroupOperation(self, other, '*')
+        """ overload * as intersect """
+        return self._operate(other,'*')
+
+    def get_proper_operand(self):
+        """
+        Returns the proper operand depending on whether the operation is finalized.
+        """
+        return span(self.operands) if not self.isfinalized() else self.name
+
+    def _operate(self, other, operator):
+        """
+        Implements algebraic operations between self and other Operation instances.
+
+        Parameters:
+        - other (Operation): The other Operation instance to be operated with.
+        - operator (str): The operation to be performed. Supported values are '+', '-', '*'.
+
+        Returns:
+        - Operation: A new or modified Operation instance reflecting the result of the operation.
+
+        Functionality:
+        - Verifies that the 'other' parameter is an instance of the Operation class.
+        - Utilizes a map to link algebraic symbols ('+', '-', '*') to their respective
+          operation types ('add', 'sub', 'mul').
+        - Adheres to four specific cases to handle different combinations of operators:
+
+          Case A: When neither self nor other have operators.
+          - Generates a new Operation that contains both as operands.
+
+          Case B: When either self or other (or both) have the same operator as the
+          current operation or no operators.
+          - Extends the operands of the Operation instance that has a matching operator.
+          - If one of the instances has no operator, it becomes an operand of the other.
+
+          Case C: When both self and other have the same operator.
+          - Extends the operands of self with the operands of other.
+
+          Default Case: When no cases match.
+          - Finalizes the existing Operations if they are not yet finalized.
+          - Creates a new intermediate Operation combining both.
+
+        Exception Handling:
+        - Raises a TypeError if 'other' is not an instance of Operation.
+        """
+
+        # Ensure other is also an instance of Operation
+        if not isinstance(other, Operation):
+            raise TypeError(f"Unsupported type: {type(other)}")
+        prefix_map = {'+': 'add', '-': 'sub', '*': 'mul'}
+        # Case A
+        if (self.operator in ["", None]) and (other.operator in ["", None]):
+            name = self.generate_hashname(prefix=prefix_map[operator])
+            new_op = Operation(operator, [self.get_proper_operand(), other.get_proper_operand()], name=name)
+            return new_op
+        # Case B (Revised #1)
+        if (self.operator in [operator, "", None]) or (other.operator in [operator, "", None]):
+            if self.operator == operator:
+                self.operands.append(other.get_proper_operand())
+                return self
+            elif other.operator == operator:
+                other.operands.append(self.get_proper_operand())
+                return other
+            else:
+                # Whichever has an empty operator becomes part of the other operation
+                if self.operator in ["", None]:
+                    other.operands.append(self.get_proper_operand())
+                    return other
+                else:
+                    self.operands.append(other.get_proper_operand())
+                    return self
+        # Case C
+        if self.operator == operator and other.operator == operator:
+            self.operands.extend(other.operands)
+            return self
+        # Default case: finalize existing operations and create a new intermediate one
+        else:
+            self.eval(self.name) if not self.isfinalized() else None
+            other.eval(other.name) if not other.isfinalized() else None
+            name = self.generate_hashname(prefix=prefix_map[operator],ID=self.generateID()+other.generateID())
+            new_op = Operation(operator, [self.get_proper_operand(), other.get_proper_operand()], name=name)
+            return new_op
+
 
 
 # %% Main class group
@@ -449,12 +515,12 @@ class group:
 
     def __repr__(self):
         max_width_guess = 20
-        idx_width = len(str(len(group._operations) - 1))
-        headers = ["Idx", "Name", "Operation", "Operand 1", "Operand 2"]
+        idx_width = len(str(len(self._operations) - 1))
+        headers = ["Idx", "Name", "Operator", "Operands"]
         column_widths = [max(len(headers[0]), idx_width)] + [len(header) for header in headers[1:]]
 
-        for op in group._operations:
-            cells = [op.name, op.operator, op.operand1, op.operand2]
+        for op in self._operations:
+            cells = [op.name, op.operator, span(op.operands)]
             for i, cell_content in enumerate(cells):
                 cell_width = len(str(cell_content)) if cell_content is not None else 0
                 column_widths[i + 1] = min(max(column_widths[i + 1], cell_width), max_width_guess)
@@ -463,23 +529,21 @@ class group:
         for header, width in zip(headers, column_widths):
             table += f"{header:^{width}} | "
         table += "\n|"
-
         # Adapting horizontal separators to match the size of the columns
         for width in column_widths:
             table += "-" * (width + 2) + "|"
         table += "\n"
-
-        for idx, op in enumerate(group._operations):
+        for idx, op in enumerate(self._operations):
             formatted_idx = str(idx).rjust(idx_width)
-            formatted_name = self.format_cell_content(op.name, column_widths[1])
-            formatted_operator = self.format_cell_content(op.operator, column_widths[2])
-            formatted_operand1 = self.format_cell_content(span(op.operand1), column_widths[3])
-            formatted_operand2 = self.format_cell_content(span(op.operand2), column_widths[4])
-
+            formatted_name = str(op.name).rjust(column_widths[1])
+            formatted_operator = str(op.operator).rjust(column_widths[2])
+            formatted_operands = str(span(op.operands)).rjust(column_widths[3])
             table += f"| {formatted_idx:^{column_widths[0]}} | {formatted_name:^{column_widths[1]}} | "
             table += f"{formatted_operator:^{column_widths[2]}} | "
-            table += f"{formatted_operand1:^{column_widths[3]}} | {formatted_operand2:^{column_widths[4]}} |\n"
+            table += f"{formatted_operands:^{column_widths[3]}} |\n"
+
         return table
+
 
     def __len__(self):
         """ return the number of stored operations """
@@ -633,6 +697,26 @@ class group:
             raise AttributeError(f"Operation {operation_name} not found.")
 
     @staticmethod
+    def operation_exists(operation_name):
+        """
+            Returns true if "operation_name" exists
+            To be used by Operation, not by end-user, which should prefer find()
+        """
+        return any(op.name == operation_name for op in group._operations)
+
+    @staticmethod
+    def get_by_name(operation_name):
+        """
+            Returns the operation matching "operation_name"
+            Usage: group.get_by_name("operation_name")
+            To be used by Operation, not by end-user, which should prefer getattr()
+        """
+        for op in group._operations:
+            if op.name == operation_name:
+                return op
+        raise AttributeError(f"Operation with name {operation_name} not found.")
+
+    @staticmethod
     def add_operation(operation):
         """ add an operation """
         if operation.name in group.list():
@@ -650,7 +734,7 @@ class group:
             default style = "atom"
         """
         lammps_code = f"variable {variable} {style} \"{expression}\"\ngroup {group} variable {variable}"
-        op = Operation("variable", variable, expression, name=group, code=lammps_code)
+        op = Operation("variable", [variable, expression], name=group, code=lammps_code)
         self.add_operation(op)
 
     def region(self, group, regionID):
@@ -659,7 +743,7 @@ class group:
             G.region(group,regionID)
         """
         lammps_code = f"group {group} region {regionID}"
-        self.add_operation(Operation("region", regionID, None, name=group, code=lammps_code))
+        self.add_operation(Operation("region", [regionID], name=group, code=lammps_code))
 
     def type(self, group, typevalues):
         """
@@ -667,7 +751,7 @@ class group:
             G.type(group,typevalues)
         """
         lammps_code = f"group {group} type {span(typevalues)}"
-        self.add_operation(Operation("type", typevalues, None, name=group, code=lammps_code))
+        self.add_operation(Operation("type", [typevalues], name=group, code=lammps_code))
 
     def id(self, group, idvalues):
         """
@@ -675,7 +759,7 @@ class group:
             G.id(group,idvalues)
         """
         lammps_code = f"group {group} id {span(idvalues)}"
-        self.add_operation(Operation("id", idvalues, None, name=group, code=lammps_code))
+        self.add_operation(Operation("id", [idvalues], name=group, code=lammps_code))
 
     def create(self, group):
         """
@@ -683,7 +767,7 @@ class group:
             G.create(group)
         """
         lammps_code = f"# dummy creation of {group}"
-        self.add_operation(Operation("create", None, None, name=group, code=lammps_code))
+        self.add_operation(Operation("create", [], name=group, code=lammps_code))
 
     def clear(self, group):
         """
@@ -691,7 +775,7 @@ class group:
             G.clear(group)
         """
         lammps_code = f"group {group} clear"
-        self.add_operation(Operation("clear", None, None, name=group, code=lammps_code))
+        self.add_operation(Operation("clear", [], name=group, code=lammps_code))
 
     def empty(self, group):
         """
@@ -699,71 +783,58 @@ class group:
             G.empty(group)
         """
         lammps_code = f"group {group} empty"
-        self.add_operation(Operation("empty", None, None, name=group, code=lammps_code))
+        self.add_operation(Operation("empty", [], name=group, code=lammps_code))
 
     @staticmethod
-    def union(group_name, group1, *othergroups):
+    def union(group_name, *groups):
         """
         Union group1, group2, group3 and store the result in group_name.
         Example usage:
         group.union(group_name, group1, group2, group3,...)
         """
-        lammps_code = f"group {group_name} union {group1} " + span(othergroups)
-        group.add_operation(Operation("union", group1, othergroups, name=group_name, code=lammps_code))
+        lammps_code = f"group {group_name} union " + span(groups)
+        group.add_operation(Operation("union", groups, name=group_name, code=lammps_code))
 
     @staticmethod
-    def intersect(group_name, group1, *othergroups):
+    def intersect(group_name, *groups):
         """
         Intersect group1, group2, group3 and store the result in group_name.
         Example usage:
         group.intersect(group_name, group1, group2, group3,...)
         """
-        lammps_code = f"group {group_name} intersect {group1} " + span(othergroups)
-        group.add_operation(Operation("intersect", group1, othergroups, name=group_name, code=lammps_code))
+        lammps_code = f"group {group_name} intersect " + span(groups)
+        group.add_operation(Operation("intersect", groups, name=group_name, code=lammps_code))
 
     @staticmethod
-    def subtract(group_name, group1, *othergroups):
+    def subtract(group_name, *groups):
         """
         Subtract group2, group3 from group1 and store the result in group_name.
         Example usage:
         group.subtract(group_name, group1, group2, group3,...)
         """
-        lammps_code = f"group {group_name} subtract {group1} " + span(othergroups)
-        group.add_operation(Operation("subtract", group1, othergroups, name=group_name, code=lammps_code))
+        lammps_code = f"group {group_name} subtract " + span(groups)
+        group.add_operation(Operation("subtract", groups, name=group_name, code=lammps_code))
 
 
     def eval(self, groupname, group_op):
         """
-        Evaluates the expressions like o1+o2+o3-o4+o5+o6 and stores the result in a new group.
+        Evaluates the operation and stores the result in a new group.
+        Expressions could combine +, - and * like o1+o2+o3-o4+o5+o6
 
         Parameters:
         -----------
         groupname : str
             The name of the group that will store the result.
-        group_op : GroupOperation or Operation
-            The operation or group of operations to evaluate.
+        group_op : Operation
+            The operation to evaluate.
         """
-        if isinstance(group_op, Operation):
-            # For Operation, simply add it with the specified name
+        if not isinstance(group_op, Operation):
+            raise TypeError("Expected an instance of Operation.")
+        if groupname:
             group_op.name = groupname
-            self.add_operation(group_op)
-
-        elif isinstance(group_op, GroupOperation):
-            # Start with the first operation
-            result_group = group_op.operations[0].name
-
-            # Iterate through the remaining operations in this GroupOperation
-            for op in group_op.operations[1:]:
-                if group_op.operator == '+':
-                    self.union(groupname, result_group, op.name)
-                elif group_op.operator == '-':
-                    self.subtract(groupname, result_group, op.name)
-                elif group_op.operator == '*':
-                    self.intersect(groupname, result_group, op.name)
-                result_group = groupname
-
-        else:
-            raise TypeError("Expected an instance of GroupOperation or Operation.")
+        if not group_op.isfinalized():
+            group_op = group_op.eval(groupname)
+        return group_op
 
 
 
@@ -791,4 +862,6 @@ if __name__ == '__main__':
     G.create('o5')
     G.create('o6')
     G.create('o7')
-    #G.eval("debug",G.o1+G.o2+G.o3 -G.o4 +G.o5+G.o6+G.o7)
+    #G.eval("debug",G.o1+G.o2+G.o3 + G.o4 + (G.o5 +G.o6) + G.o7)
+    G.eval("debug",G.o1+G.o2+G.o3-(G.o4+G.o5)+(G.o6*G.o7))
+    print(repr(G))
