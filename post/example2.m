@@ -9,6 +9,9 @@
 
 %INRAE\Olivier Vitrac, Han Chen (rev. 2023-08-30,2023-08-31)
 
+% Revision history
+% 2023-09-04,05 implements grid interpolation
+
 %% Initialization and Preprocessing 
 % -------------------------------------------------
 % Turn preprocessing on or off based on `PREPROCESS_FLAG`. 
@@ -92,93 +95,96 @@ solidbox = [min(solidxyz);max(solidxyz)]';
 % note: the duration of the simulation enables the particles in the center (slowest part) to
 % cross only half of the cell.
 
-% Pick n particles randomly from the left inlet and included in the mask of the solid (initial frame)
-n = 300;
-tol = 0.5; % add 40% particles around
-selectionbox = NaN(3,2);
-selectionbox(iflow,:) = [X0.BOX(iflow,1), X0.BOX(iflow,1)+2*rbead];
-selectionbox(iothers,:) =  (1+tol)*(solidbox(iothers,2)-solidbox(iothers,1))*[-1 1]/2 ...
-    + (solidbox(iothers,1)+solidbox(iothers,2)) * [1 1]/2;
-ok = true(nfluidatoms,1);
-for c = 1:3
-    ok = ok & (fluidxyz(:,c)>=selectionbox(c,1)) & (fluidxyz(:,c)<=selectionbox(c,2));
-end
-icandidates = find(ok);
-iselected = icandidates(MDunidrnd(length(icandidates),n));
-selectedid = fluidid(iselected); % ID to be used
-% plot selected particles and other ones
-figure, hold on
-plot3D(fluidxyz,'b.')
-plot3D(fluidxyz(iselected,:),'ro','markerfacecolor','r')
-plot3D(solidxyz,'ks','markerfacecolor','k')
-view(3), axis equal
+PlotTrajectory = false; % set it to true to execute this section
 
-% Generate the trajectory for the selected particles (for all frames)
-% All data are loaded with Lamdumpread2() with a single call using 'usesplit'
-% each split is loaded individually and only atoms matching selectedid are stored
-% all atoms are sorted as selectedid (no need to sort them)
-Xselection = lamdumpread2(fullfile(datafolder,dumpfile),'usesplit',[],timesteps,selectedid);
-
-% Collect the trajectory of the solid particle for all frames
-Xsolid = lamdumpread2(fullfile(datafolder,dumpfile),'usesplit',[],timesteps,solidid);
-
-% Store the trajectories stored in a ntimesteps x 3 x n matrix
-% missing data will
-[seltraj,selveloc] = deal(NaN(ntimesteps,3,n,'single'));
-solidtraj = NaN(ntimesteps,3,nsolidatoms,'double');
-goodframes = true(ntimesteps,1);
-for it = 1:ntimesteps
-    % read fluid atoms
-    selframe = Xselection.ATOMS(Xselection.ATOMS{:,'TIMESTEP'} == timesteps(it),:);
-    nfoundatoms = size(selframe,1);
-    if nfoundatoms<n % incomplete dumped frame (it may happen in LAMMPS)
-        dispf('incomplete frame %d/%d (t=%0.4g): %d of %d fluid atoms missing',it,ntimesteps,timesteps(it),n-nfoundatoms,n)
-        [~,iatoms,jatoms] = intersect(selectedid,selframe.id,'stable');
-        seltraj(it,:,iatoms) = permute(selframe{jatoms,{'x','y','z'}},[3 2 1]);
-        goodframes(it) = false;
-    else
-        seltraj(it,:,:) = permute(selframe{:,{'x','y','z'}},[3 2 1]);
-        selveloc(it,:,:) = permute(selframe{:,{'vx','vy','vz'}},[3 2 1]);
+if PlotTrajectory
+    % Pick n particles randomly from the left inlet and included in the mask of the solid (initial frame)
+    n = 300;
+    tol = 0.5; % add 40% particles around
+    selectionbox = NaN(3,2);
+    selectionbox(iflow,:) = [X0.BOX(iflow,1), X0.BOX(iflow,1)+2*rbead];
+    selectionbox(iothers,:) =  (1+tol)*(solidbox(iothers,2)-solidbox(iothers,1))*[-1 1]/2 ...
+        + (solidbox(iothers,1)+solidbox(iothers,2)) * [1 1]/2;
+    ok = true(nfluidatoms,1);
+    for c = 1:3
+        ok = ok & (fluidxyz(:,c)>=selectionbox(c,1)) & (fluidxyz(:,c)<=selectionbox(c,2));
     end
-    % read solid atoms
-    solidframe = Xsolid.ATOMS(Xsolid.ATOMS{:,'TIMESTEP'} == timesteps(it),:);
-    nfoundatoms = size(solidframe,1);
-    if nfoundatoms<nsolidatoms % incomplete dumped frame (it may happen in LAMMPS)
-        dispf('incomplete frame %d/%d (t=%0.4g): %d of %d solid atoms missing',it,ntimesteps,timesteps(it),nsolidatoms-nfoundatoms,nsolidatoms)
-        [~,iatoms,jatoms] = intersect(solidid,solidframe.id,'stable');
-        solidtraj(it,:,iatoms) = permute(solidframe{jatoms,{'x','y','z'}},[3 2 1]);
-        goodframes(it) = false;
-    else
-        solidtraj(it,:,:) = permute(solidframe{:,{'x','y','z'}},[3 2 1]);
-    end
-end
-% velocity magnitude for the fluid particles
-selveloc_magnitude = squeeze(sqrt(sum(selveloc.^2, 2)));
+    icandidates = find(ok);
+    iselected = icandidates(MDunidrnd(length(icandidates),n));
+    selectedid = fluidid(iselected); % ID to be used
+    % plot selected particles and other ones
+    figure, hold on
+    plot3D(fluidxyz,'b.')
+    plot3D(fluidxyz(iselected,:),'ro','markerfacecolor','r')
+    plot3D(solidxyz,'ks','markerfacecolor','k')
+    view(3), axis equal
 
-% Trajectory Visualization
-% -------------------------------------------------
-% streamlines with color representing velocity magnitude
-figure, hold on
-col = parula(n);
-for i=1:n
-    jumps = [1;ntimesteps+1];
-    for d=1:3
-        jumps = unique([jumps;find(abs(diff(seltraj(:,d,i)))>boxdims(d)/2)+1]);
-    end
-    for j=1:length(jumps)-1
-        u = jumps(j):jumps(j+1)-1;
-        streamline = seltraj(u, :, i);
-        color_line3(streamline(:, 1), streamline(:, 2), streamline(:, 3), selveloc_magnitude(u, i), 'linewidth', 3);
-        % faster method but without streamline
-        %plot3(traj(u,1,i),traj(u,2,i),traj(u,3,i),'-','linewidth',3,'color',col(i,:))
-    end
-end
-plot3D(solidxyz,'ko','markerfacecolor','k','markersize',5)
-view(3), axis equal
-title({'\rm{' strrep(dumpfile, '_', '\_') '}:' '\bf{Velocity of Selected Particles Along Streamlines}'}, 'Interpreter', 'tex')
-xlabel('x (m)'), ylabel('Y (m)'), zlabel('z (m)')
-hc = colorbar; hc.Label.String = 'velocity (m/s)';
+    % Generate the trajectory for the selected particles (for all frames)
+    % All data are loaded with Lamdumpread2() with a single call using 'usesplit'
+    % each split is loaded individually and only atoms matching selectedid are stored
+    % all atoms are sorted as selectedid (no need to sort them)
+    Xselection = lamdumpread2(fullfile(datafolder,dumpfile),'usesplit',[],timesteps,selectedid);
 
+    % Collect the trajectory of the solid particle for all frames
+    Xsolid = lamdumpread2(fullfile(datafolder,dumpfile),'usesplit',[],timesteps,solidid);
+
+    % Store the trajectories stored in a ntimesteps x 3 x n matrix
+    % missing data will
+    [seltraj,selveloc] = deal(NaN(ntimesteps,3,n,'single'));
+    solidtraj = NaN(ntimesteps,3,nsolidatoms,'double');
+    goodframes = true(ntimesteps,1);
+    for it = 1:ntimesteps
+        % read fluid atoms
+        selframe = Xselection.ATOMS(Xselection.ATOMS{:,'TIMESTEP'} == timesteps(it),:);
+        nfoundatoms = size(selframe,1);
+        if nfoundatoms<n % incomplete dumped frame (it may happen in LAMMPS)
+            dispf('incomplete frame %d/%d (t=%0.4g): %d of %d fluid atoms missing',it,ntimesteps,timesteps(it),n-nfoundatoms,n)
+            [~,iatoms,jatoms] = intersect(selectedid,selframe.id,'stable');
+            seltraj(it,:,iatoms) = permute(selframe{jatoms,{'x','y','z'}},[3 2 1]);
+            goodframes(it) = false;
+        else
+            seltraj(it,:,:) = permute(selframe{:,{'x','y','z'}},[3 2 1]);
+            selveloc(it,:,:) = permute(selframe{:,{'vx','vy','vz'}},[3 2 1]);
+        end
+        % read solid atoms
+        solidframe = Xsolid.ATOMS(Xsolid.ATOMS{:,'TIMESTEP'} == timesteps(it),:);
+        nfoundatoms = size(solidframe,1);
+        if nfoundatoms<nsolidatoms % incomplete dumped frame (it may happen in LAMMPS)
+            dispf('incomplete frame %d/%d (t=%0.4g): %d of %d solid atoms missing',it,ntimesteps,timesteps(it),nsolidatoms-nfoundatoms,nsolidatoms)
+            [~,iatoms,jatoms] = intersect(solidid,solidframe.id,'stable');
+            solidtraj(it,:,iatoms) = permute(solidframe{jatoms,{'x','y','z'}},[3 2 1]);
+            goodframes(it) = false;
+        else
+            solidtraj(it,:,:) = permute(solidframe{:,{'x','y','z'}},[3 2 1]);
+        end
+    end
+    % velocity magnitude for the fluid particles
+    selveloc_magnitude = squeeze(sqrt(sum(selveloc.^2, 2)));
+
+    % Trajectory Visualization
+    % -------------------------------------------------
+    % streamlines with color representing velocity magnitude
+    figure, hold on
+    col = parula(n);
+    for i=1:n
+        jumps = [1;ntimesteps+1];
+        for d=1:3
+            jumps = unique([jumps;find(abs(diff(seltraj(:,d,i)))>boxdims(d)/2)+1]);
+        end
+        for j=1:length(jumps)-1
+            u = jumps(j):jumps(j+1)-1;
+            streamline = seltraj(u, :, i);
+            color_line3(streamline(:, 1), streamline(:, 2), streamline(:, 3), selveloc_magnitude(u, i), 'linewidth', 3);
+            % faster method but without streamline
+            %plot3(traj(u,1,i),traj(u,2,i),traj(u,3,i),'-','linewidth',3,'color',col(i,:))
+        end
+    end
+    plot3D(solidxyz,'ko','markerfacecolor','k','markersize',5)
+    view(3), axis equal
+    title({'\rm{' strrep(dumpfile, '_', '\_') '}:' '\bf{Velocity of Selected Particles Along Streamlines}'}, 'Interpreter', 'tex')
+    xlabel('x (m)'), ylabel('Y (m)'), zlabel('z (m)')
+    hc = colorbar; hc.Label.String = 'velocity (m/s)';
+end % if PlotTrajectory
 
 %% Stress Analysis in Reference Frame (PART 2)
 % -------------------------------------------------
@@ -203,13 +209,18 @@ postdata = repmat(struct('type','Landshoff|Hertz','timestep',NaN,'Xfluid',[],'Xs
 % Selects a time step that is presumably closer to the steady-state to perform stress analysis.
 list_timestepforstess = unique(timesteps(ceil((0.1:0.1:0.9)*ntimesteps)));
 nlist_timestepforstess = length(list_timestepforstess);
+consideredtimesteps = 1:nlist_timestepforstess;
+consideredtimesteps = nlist_timestepforstess;
 
-% Loop on all selected time steps
+
+% === Loop on all selected time steps ===
 altxt = {'no plot','plot'};
-for i_timestepforstess = 1:nlist_timestepforstess
+DOINTENSIVECALC = true; % set it to false, to prevent intensive calculations
+
+for i_timestepforstess = consideredtimesteps
 
 
-    % current frame
+    % Current Frame
     timestepforstress = list_timestepforstess(i_timestepforstess);
     Xstress = lamdumpread2(fullfile(datafolder,dumpfile),'usesplit',[],timestepforstress); % middle frame
     doplot = ismember(timestepforstress,list_timestepforstess([1 end]));
@@ -264,7 +275,7 @@ for i_timestepforstess = 1:nlist_timestepforstess
     [~,~,ind_withoutneighbors] = intersect(ifluidcontact,ifluidcontact_withneighbors,'stable');
     notneighboringcontacts = setdiff(ifluidcontact_withneighbors,ifluidcontact_withneighbors(ind_withoutneighbors));
 
-    % Visualization for some frames
+    % Control Visualization for some Frames (default behavior: first and last)
     % filled red: solid "atoms" in contact with the fluid
     % filled blue: fluid "atoms" in contact with the solid (crown/shell)
     % empty blue: fluid "atoms" neighbor of previous ones but not contact
@@ -279,7 +290,114 @@ for i_timestepforstess = 1:nlist_timestepforstess
         dispf('\tnumber of solid atoms in contact with fluid %d (neighbors %d)', length(isolidcontact),length(notneighboringcontacts))
     end
 
-    % Landshoff forces in the fluid
+    %% === 3D view of the fluid velocity around the solid ===
+
+    % Definition of the Viewbox (for all grid-based visualizations)
+    coords = {'x','y','z'}; % Cartesian coordinates
+    vcoords = cellfun(@(c) ['v',c],coords,'UniformOutput',false); % vx, vy, vz
+    % Extract the box around solid atoms and include fluid ones
+    fluidbox = [ min(Xstress.ATOMS{Xstress.ATOMS.isfluid,coords})
+        max(Xstress.ATOMS{Xstress.ATOMS.isfluid,coords}) ]';
+    solidbox = [ min(Xstress.ATOMS{Xstress.ATOMS.issolid,coords})
+        max(Xstress.ATOMS{Xstress.ATOMS.issolid,coords}) ]';
+    [~,iflow] = max(max(Xstress.ATOMS{Xstress.ATOMS.isfluid,vcoords})); % direction of the flow
+    viewbox = fluidbox; viewbox(iflow,:) = solidbox(iflow,:);
+    
+    if DOINTENSIVECALC % THIS SECTION IS VERY INTENSIVE (more than 5 mins)
+        % 3D Cartesian Grid from the widow xw, yw, zw
+        nresolution = [300 300 30]; resolutionmax = max(nresolution);
+        for icoord = 1:3
+            viewbox(icoord,:) = mean(viewbox(icoord,:)) + [-1.2 1.2]*diff(viewbox(icoord,:))/2*nresolution(icoord)/resolutionmax;
+            viewbox(icoord,1) = max(viewbox(icoord,1),fluidbox(icoord,1));
+            viewbox(icoord,2) = min(viewbox(icoord,2),fluidbox(icoord,2));
+        end
+        hLandshoff = 5*rbead; %1.25e-5; % m
+        xw = linspace(viewbox(1,1),viewbox(1,2),nresolution(1));
+        yw = linspace(viewbox(2,1),viewbox(2,2),nresolution(2));
+        zw = linspace(viewbox(3,1),viewbox(3,2),nresolution(3));
+        insidewindow = Xstress.ATOMS.isfluid;
+        for icoord = 1:3
+            insidewindow = insidewindow ...
+                & Xstress.ATOMS{:,coords{icoord}}>=viewbox(icoord,1) ...
+                & Xstress.ATOMS{:,coords{icoord}}<=viewbox(icoord,2);
+        end
+        dispf('%d fluid atoms have be found in the cross section around the solid',length(find(insidewindow)));
+        [Xw,Yw,Zw] = meshgrid(xw,yw,zw);
+        XYZgrid = [Xw(:),Yw(:),Zw(:)];
+
+        % Verlet Grid List: lists the beads close to a grid node/vertex
+        XYZ = Xstress.ATOMS{insidewindow,coords}; % kernel centers
+        VXYZ = buildVerletList({XYZgrid XYZ},1.2*hLandshoff); % special grid syntax
+        
+        % Interpolation of all velocity components (vx, vy, vz)
+        % v3XYZgrid is the interpolated vectorial field
+        % vxXYZgrid, vyXYZgrid, vzXYZgrid are the components
+        % vXYZgrid is the magnitude
+        % note: For interpolating the density only: interpolates ones(size(XYZ,1),1,'single')
+        W = kernelSPH(hLandshoff,'lucy',3); % kernel expression
+        vXYZ = Xstress.ATOMS{insidewindow,vcoords}; % kernel centers
+        vXYZmag = sqrt(sum(vXYZ.^2,2)); % velocity magnitude
+        mbead = 9.04e-12;
+        Vbead = mbead/1000;
+        v3XYZgrid = interp3SPHVerlet(XYZ,vXYZ,XYZgrid,VXYZ,W,Vbead);
+        vxXYZgrid = reshape(v3XYZgrid(:,1),size(Xw)); vxXYZgrid(isnan(vxXYZgrid)) = 0;
+        vyXYZgrid = reshape(v3XYZgrid(:,2),size(Xw)); vyXYZgrid(isnan(vyXYZgrid)) = 0;
+        vzXYZgrid = reshape(v3XYZgrid(:,3),size(Xw)); vzXYZgrid(isnan(vzXYZgrid)) = 0;
+        vXYZgrid  = reshape(sqrt(sum(v3XYZgrid.^2,2)),size(Xw));
+
+        % 3D Figure (for control only, we plot one iso-velocity surface)
+        % we add the solid phase as a meshed solid
+        figure, hold on
+        visocontour = max(vXYZmag)/10;
+        isosurface(Xw,Yw,Zw,vXYZgrid,visocontour)
+        DT = delaunayTriangulation(double(Xstress.ATOMS{isolidcontact,{'x','y','z'}}));
+        K = convexHull(DT);
+        trisurf(K, DT.Points(:,1), DT.Points(:,2), DT.Points(:,3), 'FaceColor', 'w','Edgecolor','k','FaceAlpha',0.6);
+        lighting gouraud, camlight left, axis equal, view(3) % shading interp
+
+        %% cuts and slices (caps are put on the smallest contour)
+        figure, hold on
+        vXYZcut = vXYZgrid;
+        boxcenter = (fluidbox(:,1)+fluidbox(:,2))/2; % boxcenter = (solidbox(:,1)+solidbox(:,2))/2;
+        [Xwcut,Ywcut,Zwcut] = deal(Xw,Yw,Zw);
+        vXYZcut(:,yw>boxcenter(2),:) = [];
+        Xwcut(:,yw>boxcenter(2),:) = [];
+        Ywcut(:,yw>boxcenter(2),:) = [];
+        Zwcut(:,yw>boxcenter(2),:) = [];
+        % vXYZcut(:,:,zw>boxcenter(3),:) = [];
+        % Xwcut(:,:,zw>boxcenter(3),:) = [];
+        % Ywcut(:,:,zw>boxcenter(3),:) = [];
+        % Zwcut(:,:,zw>boxcenter(3),:) = [];
+        % iso-surface val
+        colors = parula(256);
+        visomax = max(vXYZmag);
+        visocontour = visomax * [1/20,1/10,1/5, 1/4, 1/3, 1/2];
+        visocolors = interp1(linspace(0,visomax,size(colors,1)),colors,visocontour);
+        for icontour = 1:length(visocontour)
+            patch(isosurface(Xwcut,Ywcut,Zwcut,vXYZcut, visocontour(icontour)),...
+                'FaceColor',visocolors(icontour,:),'EdgeColor','none','FaceAlpha',0.6);
+        end
+        p2 = patch(isocaps(Xwcut,Ywcut,Zwcut,vXYZcut, visocontour(1)),'FaceColor','interp','EdgeColor','none','FaceAlpha',0.6);
+        colormap(colors), camlight('right'), lighting gouraud, view(3), axis equal
+        trisurf(K, DT.Points(:,1), DT.Points(:,2), DT.Points(:,3), 'FaceColor', 'w','Edgecolor','k','FaceAlpha',0.6);
+        hs= slice(Xw,Yw,Zw,vXYZgrid,boxcenter(1), ...
+            [solidbox(2,1) boxcenter(2) solidbox(2,2)], ...
+            [viewbox(3,1) boxcenter(3)]); 
+        set(hs,'edgecolor','none','facealpha',0.5)
+        view(115,34)
+        % add quiver plot
+        quiver3(Xw(1:20:end,1:20:end,1:3:end),Yw(1:20:end,1:20:end,1:3:end),Zw(1:20:end,1:20:end,1:3:end), ...
+            vxXYZgrid(1:20:end,1:20:end,1:3:end),vyXYZgrid(1:20:end,1:20:end,1:3:end),vzXYZgrid(1:20:end,1:20:end,1:3:end), ...
+            'color','k','LineWidth',1)
+        % add streamlines (note that all arguments required to be double)
+        [startX,startY,startZ] = meshgrid(double(xw(1)),double(yw(10:10:end-10)),double(zw(1:2:end)));
+        vstart = interp3(Xw,Yw,Zw,vxXYZgrid,startX,startY,startZ); startX(vstart<0) = double(xw(end));
+        hsl = streamline(double(Xw),double(Yw),double(Zw),vxXYZgrid,vyXYZgrid,vzXYZgrid,startX,startY,startZ);
+        set(hsl,'linewidth',2,'color',[0.4375    0.5000    0.5625])
+        plot3(startX(:),startY(:),startZ(:),'ro','markerfacecolor',[0.4375    0.5000    0.5625])
+    end
+
+    %% Landshoff forces in the fluid
     %
     % This section is dedicated to the calculation of Landshoff forces in the fluid medium.
     % The computation is confined to a shell or "crown" around the solid particles.
@@ -310,9 +428,11 @@ for i_timestepforstess = 1:nlist_timestepforstess
         'h', hLandshoff,...smoothing length (m)
         'c0',0.32,...speed of the sound (m/s)
         'q1',30,... viscosity coefficient (-)
-        'rho', 1000 ...density
+        'rho', 1000, ...density
+        'm', 9.04e-12 ...
         );
     Flandshoff = forceLandshoff(Xfluidcontact_withneighbors,[],Vfluidcontact_withneighbors,configLandshoff);
+    Flandshoff_all = Flandshoff;
 
     % Restrict to the Crown/Shell Around the Solid
     % Filters out the Landshoff forces, focusing only on the "crown" or shell around the solid atoms.
@@ -355,6 +475,11 @@ end % next i_timestepforstess
 %% Visualization (bead-based) of Landshoff forces
 % Creates a 3D visualization featuring both the solid structure and the fluid atoms under consideration.
 % The Landshoff forces are represented as arrows originating from the fluid atoms.
+%
+%   Two approaches are proposed:
+%       a rough one based on the forces acting on the beads, which will be subsequently projected on the particle
+%       a more accurate one based on an interpolation of the forces on a regular grid
+
 
 % Tesselated Solid Visualization
 % Utilizes Delaunay triangulation to represent the solid structure.
@@ -364,7 +489,7 @@ figure, hold on
 trisurf(K, DT.Points(:,1), DT.Points(:,2), DT.Points(:,3), 'FaceColor', 'w','Edgecolor','k','FaceAlpha',0.6);
 axis equal; view(3)
 
-% Visualization of Fluid Atoms and Landshoff Forces
+%% Basic Visualization of Fluid Atoms and Landshoff Forces
 % Landshoff forces are scaled and then visualized as arrows.
 % fluid around
 % scatter3D(Xfluidcontact_withneighbors{ind_withoutneighbors,{'x','y','z'}},f);
@@ -375,12 +500,41 @@ start = Xfluidcontact_withneighbors{ind_withoutneighbors,{'x','y','z'}};
 stop = start + Flandshoff * fscale;
 start(flandshoff<fmin,:) = []; % non-significant forces are removed
 stop(flandshoff<fmin,:) = [];
-ha = arrow(start,stop,'length',4,'BaseAngle',60,'color','r');
+%ha = arrow(start,stop,'length',4,'BaseAngle',60,'color','r');
 axis equal, view(3)
 title('Landshoff Forces around the Tessellated Surface');
 xlabel('X'); ylabel('Y'); zlabel('Z')
 
-% Similar Visualization for Hertz Contacts
+%% Advanced LandShoff Visualization based on Grid Interpolation
+coords = {'x','y','z'};
+landshofbox = [ min(Xfluidcontact_withneighbors{:,coords})
+                max(Xfluidcontact_withneighbors{:,coords}) ]';
+xlw = linspace(viewbox(1,1),viewbox(1,2),50);
+ylw = linspace(viewbox(2,1),viewbox(2,2),50);
+zlw = linspace(viewbox(3,1),viewbox(3,2),50);
+[Xlw,Ylw,Zlw] = meshgrid(xlw,ylw,zlw);
+XYZlgrid = [Xlw(:),Ylw(:),Zlw(:)];
+XYZl = Xfluidcontact_withneighbors{:,coords}; % kernel centers
+% Interpolation at Grid Points of Flandshoff_all
+VXYZl = buildVerletList({XYZlgrid XYZl},1.2*hLandshoff); % special grid syntax
+W = kernelSPH(hLandshoff,'lucy',3); % kernel expression
+mbead = 9.04e-12;
+Vbead = mbead/1000;
+FXYZgrid = interp3SPHVerlet(XYZl,Flandshoff_all,XYZlgrid,VXYZl,W,Vbead);
+FXYZgridx = reshape(FXYZgrid(:,1),size(Xlw));
+FXYZgridy = reshape(FXYZgrid(:,2),size(Ylw));
+FXYZgridz = reshape(FXYZgrid(:,3),size(Zlw));
+% Quiver plot to show the forces with an adjusted step
+quiver3(...
+    Xlw(1:2:end,1:2:end,1:2:end), ...
+    Ylw(1:2:end,1:2:end,1:2:end), ...
+    Zlw(1:2:end,1:2:end,1:2:end), ...
+    FXYZgridx(1:2:end,1:2:end,1:2:end), ...
+    FXYZgridy(1:2:end,1:2:end,1:2:end), ...
+    FXYZgridz(1:2:end,1:2:end,1:2:end), ...
+    'color','k','LineWidth',1)
+
+%% Similar Visualization for Hertz Contacts
 warning off
 figure, hold on
 fmedian = median(fhertzcontacts);
@@ -399,6 +553,118 @@ ha = arrow(start,stop,'length',4,'BaseAngle',60,'color','r');
 axis equal, view(3)
 title('Hertz Forces onto the Tessellated Surface');
 xlabel('X'); ylabel('Y'); zlabel('Z')
+
+%% Grid Visualization of Hertz Contacts
+% === STEP 1/5 === Original Delaunay triangulation and the convex hull
+DT = delaunayTriangulation(double(Xstress.ATOMS{isolidcontact, {'x', 'y', 'z'}}));
+K = convexHull(DT);
+% === STEP 2/5 === refine the initial mesh by adding midpoints
+% Extract the convex hull points and faces
+hullPoints = DT.Points;
+hullFaces = DT.ConnectivityList(K, :);
+% Initialize a set to keep track of midpoints to ensure they are unique
+midpointSet = zeros(0, 3);
+% Calculate midpoints for each edge in each triangle and add to the point list
+for faceIdx = 1:size(hullFaces, 1)
+    face = hullFaces(faceIdx, :);
+    for i = 1:3
+        for j = i+1:3
+            p1 = hullPoints(face(i), :);
+            p2 = hullPoints(face(j), :);
+            midpoint = (p1 + p2) / 2;        
+            % Store the midpoint if unique
+            if isempty(midpointSet) || ~ismember(midpoint, midpointSet, 'rows')
+                midpointSet = [midpointSet; midpoint]; %#ok<AGROW>
+            end
+        end
+    end
+end
+% Merge the original points and the new midpoints
+newPoints = [hullPoints; midpointSet];
+% Re-calculate the Delaunay triangulation and convex hull)
+newDT = delaunayTriangulation(newPoints);
+newK = convexHull(newDT);
+% === STEP 3/5 ===  Laplacian Smoothing
+points = newDT.Points;         % === Extract points and faces
+faces = newDT.ConnectivityList(newK, :);
+n = size(points, 1);           % === Initialize new points
+newPoints = zeros(size(points)); 
+neighbors = cell(n, 1);        % List of neighbors
+for faceIdx = 1:size(faces, 1) % === Find the neighbors of each vertex
+    face = faces(faceIdx, :);
+    for i = 1:3
+        vertex = face(i);
+        vertex_neighbors = face(face ~= vertex);
+        neighbors{vertex} = unique([neighbors{vertex}; vertex_neighbors(:)]);
+    end
+end
+for i = 1:n                   % === Laplacian smoothing
+    neighbor_indices = neighbors{i};
+    if isempty(neighbor_indices) % Keep the point as is if it has no neighbors
+        newPoints(i, :) = points(i, :); 
+    else % Move the point to the centroid of its neighbors
+        newPoints(i, :) = mean(points(neighbor_indices, :), 1);
+    end
+end
+% Update the Delaunay triangulation with the smoothed points
+newDT = delaunayTriangulation(newPoints);
+newK = convexHull(newDT);
+% === STEP 4/5 === Interpolate the Hertz forces on the triangular mesh
+coords = {'x','y','z'};
+XYZhtri = newDT.Points;
+XYZh = Xcontactregion{:,coords}; % kernel centers
+VXYZh = buildVerletList({XYZhtri XYZh},1.2*hLandshoff); % special grid syntax
+W = kernelSPH(hLandshoff,'lucy',3); % kernel expression
+mbead = 9.04e-12;
+Vbead = mbead/1000;
+FXYZtri = interp3SPHVerlet(XYZh,FHertz,XYZhtri,VXYZh,W,Vbead);
+% FXYZtrix = reshape(FXYZgrid(:,1),size(Xlw)); not used OV 2023-09-09
+% FXYZtriy = reshape(FXYZgrid(:,2),size(Ylw));
+% FXYZtriz = reshape(FXYZgrid(:,3),size(Zlw));
+% === STEP 5/5 === Extract tagential forces
+% Calculate face normals and centroids
+points = newDT.Points;
+faces = newK;
+v1 = points(faces(:, 1), :) - points(faces(:, 2), :);
+v2 = points(faces(:, 1), :) - points(faces(:, 3), :);
+faceNormals = cross(v1, v2, 2);
+faceNormals = faceNormals ./ sqrt(sum(faceNormals.^2, 2));
+centroids = mean(reshape(points(faces, :), size(faces, 1), 3, 3), 3);
+% Interpolate force at each centroid using scatteredInterpolant for each component
+FInterp_x = scatteredInterpolant(XYZhtri, double(FXYZtri(:,1)), 'linear', 'nearest');
+FInterp_y = scatteredInterpolant(XYZhtri, double(FXYZtri(:,2)), 'linear', 'nearest');
+FInterp_z = scatteredInterpolant(XYZhtri, double(FXYZtri(:,3)), 'linear', 'nearest');
+FXYZtri_at_centroids = [FInterp_x(centroids), FInterp_y(centroids), FInterp_z(centroids)];
+% Calculate normal and tangential components of the force at each face centroid
+normalComponent = dot(FXYZtri_at_centroids, faceNormals, 2);
+normalForce = repmat(normalComponent, 1, 3) .* faceNormals;
+tangentialForce = FXYZtri_at_centroids - normalForce;
+% Calculate the magnitude of the tangential force
+tangentialMagnitude = sqrt(sum(tangentialForce.^2, 2));
+
+
+% === FINAL PLOTS ===
+figure, hold on
+trisurfHandle = trisurf(newK, newDT.Points(:, 1), newDT.Points(:, 2), newDT.Points(:, 3), 'Edgecolor', 'k', 'FaceAlpha', 0.6);
+set(trisurfHandle, 'FaceVertexCData', tangentialMagnitude, 'FaceColor', 'flat');
+colorbar;
+% Quiver plot to show the forces with an adjusted step
+quiver3(...
+    XYZhtri(:,1), ...
+    XYZhtri(:,2), ...
+    XYZhtri(:,3), ...
+    -FXYZtri(:,1), ...
+    -FXYZtri(:,2), ...
+    -FXYZtri(:,3), ...
+    2, ...scale
+    'color','k','LineWidth',3)
+axis equal; view(3), camlight('headlight'); camlight('left'); lighting phong; colorbar;
+title('Hertz Forces onto the Tessellated Surface');
+xlabel('X'); ylabel('Y'); zlabel('Z')
+
+
+
+
 
 %% Project Landshoff Forces onto the Tessellated Surface
 % Allocate space for the projected forces.

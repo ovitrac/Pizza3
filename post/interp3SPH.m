@@ -7,7 +7,7 @@ function Vq = interp3SPH(centers,y,Xq,Yq,Zq,W,V,forcesilent)
 %   Inputs:
 %     centers : kx3 coordinates of the kernel centers
 %           y : kxny values at X (m is the number of values associated with the same center)
-%               [] (empty matrix) forces a uniform density calculatoin
+%               [] (empty matrix) forces a uniform density calculation
 %          Xq : array or matrix coordinates along X
 %          Yq : array or matrix coordinates along Y
 %          Zq : array or matrix coordinates along Z
@@ -18,7 +18,7 @@ function Vq = interp3SPH(centers,y,Xq,Yq,Zq,W,V,forcesilent)
 %   Output:
 %          Vq : same size as Xq, with an additional dimension if y was an array
 %
-%   See also: interp3SPHVerlet, interp2SPH, kernelSPH, packSPH
+%   See also: interp3SPHVerlet, interp2SPH, kernelSPH, packSPH, virialStress
 %
 %   Example : interpolate the field x+2*y-3*z
 %{

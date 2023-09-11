@@ -1,4 +1,4 @@
-function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors)
+function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors,entity)
 %BUILDVERLETLIST build the Verlet list of X
 %
 %   USAGE: verletList = buildVerletList(X [, cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors])
@@ -22,6 +22,9 @@ function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cuto
 %   excludedfromsearch: nx1 logical array (true if the coordinate does not need to be included in the search).
 %    excludedneighbors: nx1 logical array (true if the coordinate is not a possible neihgbor)
 %
+%   Additional inputs (internal use)
+%               entity: 'atom' (default) or 'grid point'
+%
 %   Outputs:
 %           verletList: n x 1 cell coding for the Verlet list
 %                       verletList{i} list all indices j wihtin the cutoff distance
@@ -35,7 +38,7 @@ function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cuto
 %   See also: updateVerletList, partitionVerletList, selfVerletList, interp3SPHVerlet
 
 
-% MS 3.0 | 2023-03-25 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2023-08-31
+% MS 3.0 | 2023-03-25 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2023-09-09
 
 
 % Revision history
@@ -45,6 +48,7 @@ function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cuto
 % 2023-05-16 accept {Xgrid X} as input #1 to list neigbors X around a grid (Xgrid)
 % 2023-05-17 updated help
 % 2023-08-31 fix time counter
+% 2023-09-09 add entity
 
 %% Constants
 targetedNumberOfNeighbors = 100; % number of maximum neighbors expected (it is a maximum guess to be used to estimate a cutoff)
@@ -77,6 +81,7 @@ if nargin<4, nblocks  = []; end
 if nargin<5, verbose  = []; end
 if nargin<6, excludedfromsearch = []; end
 if nargin<7, excludedneighbors = []; end
+if nargin<8, entity = ''; end
 % reuse a previous configuration
 if isstruct(cutoff)
     config = cutoff;
@@ -99,6 +104,7 @@ if isempty(cutoff) || cutoff<=0, cutoff = NaN; end
 if isempty(sorton), sorton = sorton_default; end
 if isempty(verbose), verbose = verbose_default; end
 if isempty(nblocks), nblocks = ceil((bytes.(typ) * d * n).^2 / (memoryloadGB*1e9)); end
+if isempty(entity), entity = "atom"; end
 
 %% Grid management (look for neighbors around grid points)
 if hasgrid
@@ -107,7 +113,7 @@ if hasgrid
     excludedfromsearch(1:n) = true;
     excludedneighbors(n+1:end) = true;
     [verletList,cutoffout_,dminout_,config_,distout_] = ...
-        buildVerletList([X;Xgrid], cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors);
+        buildVerletList([X;Xgrid], cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors,'grid point');
     verletList = verletList(n+1:end);
     distout_ = distout_(n+1:end);
     if nargout>1, cutoffout = cutoffout_; end
@@ -333,7 +339,7 @@ timerq = etime(clock,t__);
 if nargout>1, cutoffout = cutoff; end
 
 % Return dmin if requested
-if nargout>2, dminout = dmin; end
+if nargout>2, if isempty(dmin), dminout = NaN; else dminout = dmin; end, end
 
 if nargout>3
     config = struct( ...
@@ -354,4 +360,6 @@ end
 if nargout>4, distout = dist; end
 
 % final display
-if verbose, dispf('buildVerletList: all done in %0.3g s for %d atoms',timerq,n), end
+if verbose
+    dispf('buildVerletList: all done in %0.3g s for %d %ss',timerq,n,entity)
+end
