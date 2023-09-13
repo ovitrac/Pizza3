@@ -26,7 +26,7 @@ function [F,Wout,nout] = forceHertz(X,V,config,verbose)
 %       W: nX x 9 virial stress tensor (use reshape(W(i),3,3) to recover the matrix)
 %       n: nX x 3 normal vectors
 
-% MS 3.0 | 2023-04-02 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2023-09-07 
+% MS 3.0 | 2023-04-02 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2023-09-13
 
 % Revision history
 % 2023-04-02 rename forceHertz into forceHertzAB, to avoid the confusion with the new forceHertz
@@ -35,6 +35,7 @@ function [F,Wout,nout] = forceHertz(X,V,config,verbose)
 % 2023-04-03 WJ. add an additional delta calculation step
 % 2023-09-07 add W (virial stress)
 % 2023-09-09 local virial stress fixed to match https://doi.org/10.1016/j.cplett.2019.07.008
+% 2023-09-13 update to match new rules and fixes from forceLandshoff 
 
 
 %% Check arguments
@@ -43,11 +44,15 @@ if nargin<2, V = []; end
 if isempty(X), error('one table is at least required with ''x'',''y'',''z'',''type'' columns'), end
 if istable(X)
     typ = X.type;
-    X = table2array(X(:,{'x','y','z'}));
     if isempty(V)
         V =  partitionVerletList(buildVerletList(X),typ);
     end
+    vol = X.c_vol;
+    X = table2array(X(:,{'x','y','z'}));
+else
+    vol = [];
 end
+classX = class(X);
 if nargin<3, config = []; end
 if nargin<4, verbose = []; end
 if isnumeric(V) && ~isnan(V) && length(V)==1
@@ -65,21 +70,30 @@ if isempty(verbose), verbose = verbosedefault; end
 askvirialstress = (nargout==2);
 
 if askvirialstress
-    if ~isfield(config,'rho'), error('the field rho is missing'), end
-    if ~isfield(config,'m'), error('the field m is missing'), end
-    if ~isfield(config,'h'), error('the field h is missing'), end
-    volmin = mean([config.m],'omitnan')/mean([config.rho],'omitnan');
-    hmean = mean([config.h],'omitnan');
-    vol = 4/3 * pi * hmean^3;
-    if vol<volmin
-        error('the value of h (%0.4g) leads to a volume smaller than atoms (%0.4g)',hmean,volmin)
+    %if ~isfield(config,'rho'), error('the field rho is missing'), end
+    %if ~isfield(config,'m'), error('the field m is missing'), end
+    %if ~isfield(config,'h'), error('the field h is missing'), end
+    %volmin = mean([config.m],'omitnan')/mean([config.rho],'omitnan');
+    %hmean = mean([config.h],'omitnan');
+    %vol = 4/3 * pi * hmean^3;
+    %if vol<volmin, error('the value of h (%0.4g) leads to a volume smaller than atoms (%0.4g)',hmean,volmin), end
+    if isempty(vol)
+        if ~isfield(config,'vol'), error('the field vol is missing'), end
+        vol = mean([config.vol],'omitnan');
     end
+    if numel(vol)==1, vol = vol * ones(nX,1,classX); end
 end
 
 %% verbosity
 if verbose
-    t0 = clock; %#ok<CLOCK> 
-    dispf('Calculate Hertz contact forces between [%d x %d] atoms...',nX,dX)
+    t0_ = clock; %#ok<CLOCK> 
+    t1_ = t0_;
+    screen = '';
+    if askvirialstress
+        dispf('Calculate Hertz contact forces + virial stress between [%d x %d] ATOMS...',nX,dX)
+    else
+        dispf('Calculate Hertz contact forces between [%d x %d] ATOMS...',nX,dX)
+    end
 end
 
 %% Evaluate forces
@@ -89,7 +103,6 @@ E = sqrt(config(1).E*config(2).E); % Bertholet formula
 rcut = config(1).R + config(2).R; 
 
 % allocate
-classX = class(X);
 F = zeros(nX,1,classX);
 n = zeros(nX,dX,classX);
 
@@ -104,6 +117,7 @@ stresstensor = zeros(dX,dX,classX);
 
 % for all atoms
 for i=1:nX
+    
     j = V{i}; % neighbors of i
     if any(j) % if any neighbor of other type
         rij = X(i,:) - X(j,:);    % position vector j->i
@@ -126,14 +140,22 @@ for i=1:nX
                 stresstensor(:) = 0;
                 for ineigh = 1:length(find(iscontact))
                     % -rij' * Fij is the outerproduct (source: doi:10.1016/j.ijsolstr.2008.03.016)
-                    stresstensor = stresstensor - ( rij(ineigh,:)' * Fij(ineigh,:) ) /vol;
+                    stresstensor = stresstensor -rij(ineigh,:)' * Fij(ineigh,:);
                 end
-                W(i,:) = stresstensor(:)';
+                W(i,:) = stresstensor(:)'/ (2*vol(i)); % origin of 2 ?? in this case (since j-->i not considered);
             end
         else
             n(i,:) = sum(rij_n,1);
         end
     end % if any neighbor of other type
+
+    % verbosity
+    t_ = clock; %#ok<CLOCK>
+    if verbose && (mod(i,1000)==0 || (etime(t_,t1_)>0.5))  %#ok<*DETIM>
+        t1_=t_; dt_ = etime(t_,t0_); done_ = i/nX;
+        screen = dispb(screen,'[atom %d:%d] FORCE Hertz Contacts | elapsed %0.1f s | done %0.1f %% | remaining %0.1f s', ...
+            i,nX,dt_,100*done_,(1/done_-1)*dt_);
+    end
 end
 
 
@@ -149,8 +171,8 @@ end
 %% verbosity
 if verbose
     if askvirialstress
-        dispf('\t ... done with virial stress in %0.3g s',etime(clock,t0)) %#ok<DETIM,CLOCK>
+         dispb('\t ... done with virial stress in %0.3g s for %d ATOMS',etime(clock,t0_),nX); %#ok<CLOCK>
     else
-        dispf('\t ... done in %0.3g s',etime(clock,t0)) %#ok<DETIM,CLOCK>
+        dispb('\t ... done in %0.3g s for %d ATOMS',etime(clock,t0_),nX); %#ok<CLOCK>
     end
 end

@@ -12,6 +12,7 @@
 % Revision history
 % 2023-09-09 major increment
 % 2023-09-10 finalization and copy to notebook/
+% 2023-09-13 update for new Landshoff and Hertz virial calculations (fixes)
 
 %% Definitions
 % We assume that the dump file has been preprocessed (see example1.m and example2.m)
@@ -42,6 +43,7 @@ nsolidatoms = natomspertype(solidtype);
 [~,iflow] = max(boxdims);
 iothers = setdiff(1:size(X0.BOX,1),iflow);
 % === GUESS BEAD SIZE ===
+% not needed anymore since the mass, vol and rho are taken from the dump file
 Vbead_guess = prod(boxdims)/natoms;
 rbead_guess = (3/(4*pi)*Vbead_guess)^(1/3);
 cutoff = 3*rbead_guess;
@@ -56,7 +58,7 @@ Xstress = lamdumpread2(fullfile(datafolder,dumpfile),'usesplit',[],timestepforst
 Xstress.ATOMS.isfluid = Xstress.ATOMS.type==fluidtype;
 Xstress.ATOMS.issolid = Xstress.ATOMS.type==solidtype;
 Xstress.ATOMS.iswall  = ismember(Xstress.ATOMS.type,walltypes);
-% == control ==
+% == control (not used) ==
 % average bead volume and bead radius (control, min separation distance was used in the previous section)
 fluidbox = [min(Xstress.ATOMS{Xstress.ATOMS.isfluid,coords});max(Xstress.ATOMS{Xstress.ATOMS.isfluid,coords})]';
 vbead_est = prod(diff(fluidbox,1,2))/(length(find(Xstress.ATOMS.isfluid))+length(Xstress.ATOMS.issolid));
@@ -156,11 +158,12 @@ configLandshoff = struct( ...
     'gradkernel', kernelSPH(hLandshoff,'lucyder',3),...kernel gradient
     'h', hLandshoff,...smoothing length (m)
     'c0',0.32,...speed of the sound (m/s)
-    'q1',30,... viscosity coefficient (-)
-    'rho', 1000, ...density
-    'm', 9.04e-12 ...
+    'q1',30 ... viscosity coefficient (-)
     );
-mu = configLandshoff.q1*configLandshoff.c0*configLandshoff.h/10; % viscosity estimate
+rhofluid = mean(Xfluid.c_rho_smd);
+mbead = mean(Xfluid.mass);
+Vbead = mean(Xfluid.c_vol);
+mu = rhofluid*configLandshoff.q1*configLandshoff.c0*configLandshoff.h/10; % viscosity estimate
 dispf('Atificial viscosity: %0.4g Pa.s',mu)
 
 % Landshoff forces and local virial stress
@@ -179,8 +182,6 @@ zw = linspace(fluidbox(3,1),fluidbox(3,2),resolution(3));
 [Xw,Yw,Zw] = meshgrid(xw,yw,zw);
 XYZgrid = [Xw(:),Yw(:),Zw(:)];
 hLandshoff = 5*rbead; %1.25e-5; % m
-mbead = 9.04e-12; % repported by Billy
-Vbead = mbead_est/1000; % use estimated value instead (less dicrepancy)
 
 % Build the Grid Verlet list
 VXYZ = buildVerletList({XYZgrid Xfluid{:,coords}},1.001*hLandshoff); % special grid syntax
@@ -235,7 +236,7 @@ hsl = streamline(double(Xw),double(Yw),double(Zw),vXYZgridx,vXYZgridy,vXYZgridz,
 set(hsl,'linewidth',2,'color',[0.4375    0.5000    0.5625])
 plot3(startX(:),startY(:),startZ(:),'ro','markerfacecolor',[0.4375    0.5000    0.5625])
 % fix the view
-view(-90,90), clim([-1e-6 1e-6])
+view(-90,90), clim([-1e-1 1e-1])
 
 % === Plot Estimated shear stress from Cauchy Tensor
 figure, hold on
@@ -321,7 +322,7 @@ Rsolid = 1.56e-5; % m
 Rfluid = Rsolid;
 hhertz = 2*Rsolid;
 [Vcontactsolid,~,dmincontact] = buildVerletList(XFluidSolid,hhertz,[],[],[],XFluidSolid.isfluid,XFluidSolid.issolid);
-configHertz = struct('R',{Rsolid Rfluid},'E',2000,'rho',1000,'m',9.04e-12,'h',hhertz);
+configHertz = struct('R',{Rsolid Rfluid},'E',2000);
 [FHertzSolid,WHertzSolid] = forceHertz(XFluidSolid,Vcontactsolid,configHertz);
 fhertz = sqrt(sum(FHertzSolid.^2,2));
 statvec(fhertz(fhertz>0),'Hertz',sprintf('<-- TIMESTEP: %d\n\tsubjected to Rsolid=[%0.4g %0.4g] dmin/2=%0.4g',timestepforstress,configHertz(1).R,configHertz(2).R,dmincontact/2))
@@ -481,7 +482,7 @@ configHertz = struct('R',{Rsolid Rfluid},'E',2000,'rho',1000,'m',9.04e-12,'h',hh
 [FHertzWall,WHertzWall] = forceHertz(XFluidWall,Vcontactwall,configHertz);
 fhertz = sqrt(sum(FHertzWall.^2,2));
 statvec(fhertz(fhertz>0),'Hertz',sprintf('<-- TIMESTEP: %d\n\tsubjected to Rsolid=[%0.4g %0.4g] dmin/2=%0.4g',timestepforstress,configHertz(1).R,configHertz(2).R,dmincontact/2))
-figure, stem3(XFluidWall{:,'x'},XFluidWall{:,'y'},FHertzWall(:,1),'k.')
+figure, stem3(XFluidWall.x,XFluidWall.y,FHertzWall(:,1),'k.')
 
 % project Hertz contact on accurate grid (Cartesian)
 [wallbox1,wallbox2] = deal(fluidbox);

@@ -1,0 +1,322 @@
+# Automatic LAMMPS script (version 0.4)
+# o042199@ip-10-6-18-234:/fsx/data/MaterialScience/Midas/inrae/Viscosimeter_SMJ_V6/Production
+# Sat Jul 15 08:36:09 2023
+
+ 
+
+
+
+
+
+# INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr
+# INRAE\SAYFOOD\william.jenkinson@agroparistech.fr
+
+
+
+#   Scheme initialization
+units       si
+dimension	3        # 2 or 3 dimensions
+boundary    p f p         # f = fixed, p = periodic
+comm_modify vel yes      
+comm_style  tiled       # brick or tiled (docs.lammps.org/comm_style.html)
+atom_modify map array
+newton      off
+neighbor	4.1666666666666665e-05 bin         # search radius for neighbor list (=kernel radius)
+neigh_modify    every 5 delay 0 check yes
+
+atom_style	hybrid smd sph
+ 
+
+#   Create geometrys
+region  boxreg block 0 0.002 -0.00020833333333333332 0.0012083333333333334 0 0.001 units box
+#   Create box
+region simulationbox block 0 0.002 -0.00020833333333333332 0.0012083333333333334 0 0.001 units box
+create_box 5 simulationbox
+lattice sc 2.0833333333333333e-05
+create_atoms 1 region boxreg units box
+group box region boxreg
+set group box type 1
+mass 1 9.04224537037037e-12
+set group box mol 1
+set group box volume 9.04224537037037e-15
+set group box mass 9.04224537037037e-12
+set group box diameter 4.1666666666666665e-05
+set group box smd/contact/radius 1.0416666666666666e-05
+set group box sph/rho 1000
+set group box sph/e 0.0
+set group box sph/cv 0.0
+
+#   Create geometrys
+region  topwallreg block 0 0.002 0.001 0.0012083333333333334 0 0.001 units box
+group top_wall region topwallreg
+set group top_wall type 2
+mass 2 9.04224537037037e-12
+set group top_wall mol 1
+set group top_wall volume 9.04224537037037e-15
+set group top_wall mass 9.04224537037037e-12
+set group top_wall diameter 4.1666666666666665e-05
+set group top_wall smd/contact/radius 1.0416666666666666e-05
+set group top_wall sph/rho 1000
+set group top_wall sph/e 0.0
+set group top_wall sph/cv 0.0
+
+#   Create geometrys
+region  bottomwallreg block 0 0.002 -0.00020833333333333332 0 0 0.001 units box
+group bottom_wall region bottomwallreg
+set group bottom_wall type 3
+mass 3 9.04224537037037e-12
+set group bottom_wall mol 1
+set group bottom_wall volume 9.04224537037037e-15
+set group bottom_wall mass 9.04224537037037e-12
+set group bottom_wall diameter 4.1666666666666665e-05
+set group bottom_wall smd/contact/radius 1.0416666666666666e-05
+set group bottom_wall sph/rho 1000
+set group bottom_wall sph/e 0.0
+set group bottom_wall sph/cv 0.0
+
+#   Create geometrys
+region  particlereg sphere 0.001 0.0005 0.0005 0.00015 units box
+group neoHook_particle region particlereg
+set group neoHook_particle type 4
+mass 4 9.04224537037037e-12
+set group neoHook_particle mol 1
+set group neoHook_particle volume 9.04224537037037e-15
+set group neoHook_particle mass 9.04224537037037e-12
+set group neoHook_particle diameter 4.1666666666666665e-05
+set group neoHook_particle smd/contact/radius 1.8229166666666665e-05
+set group neoHook_particle sph/rho 1000
+set group neoHook_particle sph/e 0.0
+set group neoHook_particle sph/cv 0.0
+
+# ===== [ BEGIN GROUP SECTION ] =====================================================================================
+
+	#	Definition of group 1:ulsph
+	#	=substance
+	#	Similar groups: ulsph, substance
+	group 	 ulsph 	type 	 1
+
+	#	Definition of group 2:substance
+	#	=substance
+	#	Similar groups: ulsph, substance
+	group 	 substance 	type 	 1
+
+	#	Definition of group 3:tlsph
+	#	=top_wall, bottom_wall, neoHook_particle
+	#	Similar groups: tlsph, top_wall, bottom_wall, neoHook_particle
+	group 	 tlsph 	type 	 2 3 4
+
+	#	Definition of group 4:top_wall
+	#	=top_wall
+	#	Similar groups: tlsph, top_wall
+	group 	 top_wall 	type 	 2
+
+	#	Definition of group 5:bottom_wall
+	#	=bottom_wall
+	#	Similar groups: tlsph, bottom_wall
+	group 	 bottom_wall 	type 	 3
+
+	#	Definition of group 6:neoHook_particle
+	#	=neoHook_particle
+	#	Similar groups: tlsph, neoHook_particle
+	group 	 neoHook_particle 	type 	 4
+
+	#	Definition of group 7:null
+	#	=null
+	#	Similar groups: null
+	group 	 null 	type 	 5
+
+# ===== [ END GROUP SECTION ] =======================================================================================
+
+
+# ===== [ BEGIN FORCEFIELD SECTION ] ================================================================================
+    # [1:substance] PAIR STYLE SMD
+    pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
+                                   smd/tlsph smd/hertz 1.0
+    
+    # [1:substance x 1:substance] Pair diagonal coefficient ulsph
+    pair_coeff      1 1 smd/ulsph *COMMON 900 0.32 30.000000000000004 1.0 0 &
+                    *EOS_TAIT 7 &
+                    *END
+    
+    # [2:top_wall x 2:top_wall] Diagonal pair coefficient tlsph
+    pair_coeff      2 2 smd/tlsph *COMMON 900 10 0.49 30.000000000000004 0.0 50 1.0 &
+                    *STRENGTH_LINEAR_PLASTIC 1000.0 0 &
+                    *EOS_LINEAR &
+                    *END
+    
+    # [3:bottom_wall x 3:bottom_wall] Diagonal pair coefficient tlsph
+    pair_coeff      3 3 smd/tlsph *COMMON 900 10 0.49 30.000000000000004 0.0 50 1.0 &
+                    *STRENGTH_LINEAR_PLASTIC 1000.0 0 &
+                    *EOS_LINEAR &
+                    *END
+    
+    # [4:neoHook_particle x 4:neoHook_particle] Diagonal pair coefficient tlsph
+    pair_coeff      4 4 smd/tlsph *COMMON 900 10 0.49 30.000000000000004 0.0 50 1.0 &
+                    *STRENGTH_LINEAR_PLASTIC 1000.0 0 &
+                    *EOS_LINEAR &
+                    *END
+    
+    # [5:null x 5:null] Diagonal pair coefficient tlsph
+    pair_coeff      5 5 smd/tlsph *COMMON 900 10 0.49 30.000000000000004 0.0 50 1.0 &
+                    *STRENGTH_LINEAR_PLASTIC 1000.0 0 &
+                    *EOS_LINEAR &
+                    *END
+    
+    # [1:substance x 2:top_wall] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 2 smd/hertz 2000
+    
+    # [1:substance x 3:bottom_wall] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 3 smd/hertz 2000
+    
+    # [2:top_wall x 3:bottom_wall] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 3 smd/hertz 2000
+    
+    # [1:substance x 4:neoHook_particle] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 4 smd/hertz 2000
+    
+    # [2:top_wall x 4:neoHook_particle] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 4 smd/hertz 2000
+    
+    # [3:bottom_wall x 4:neoHook_particle] Off-diagonal pair coefficient (generic)
+    pair_coeff      3 4 smd/hertz 2000
+    
+    # [1:substance x 5:null] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 5 smd/hertz 2000
+    
+    # [2:top_wall x 5:null] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 5 smd/hertz 2000
+    
+    # [3:bottom_wall x 5:null] Off-diagonal pair coefficient (generic)
+    pair_coeff      3 5 smd/hertz 2000
+    
+    # [4:neoHook_particle x 5:null] Off-diagonal pair coefficient (generic)
+    pair_coeff      4 5 smd/hertz 2000
+    
+# ===== [ END FORCEFIELD SECTION ] ==================================================================================
+
+
+#   Prototype section
+pair_coeff      4 4 smd/hertz 1000000.0
+
+#   Gravity
+fix             gfix all gravity 0 vector 0 1 0 # apply gravitational force
+
+#   balancing
+fix             balance_fix all balance 500 0.9 rcb
+    #   A user-speficied timestep is applied
+timestep        5e-07 #   Time integration conditions
+            fix             integration_fix_tlsph tlsph smd/integrate_tlsph#   Time integration conditions
+            fix             integration_fix_ulsph ulsph smd/integrate_ulsph adjust_radius 1.0 10 15
+
+#   thermodynamic information
+thermo		   100       # print TD information every N steps    
+thermo_modify  lost ignore # set options for how TD info is computed and printed
+thermo_style   custom step dt  # specify what TD info is printed (default [N dt])
+
+
+#   Additional computed values
+        
+#   Compute supp particle data
+compute         contact_radius all smd/contact/radius # compute contact radius
+compute         vol all smd/vol # compute local volume
+compute         rho_smd all smd/rho # compute local density
+compute         rho_sph all sph/rho/atom # compute local density
+
+#   Compute mechanical data
+compute         S tlsph smd/tlsph/stress # computed Cauchy stress tensor terms and Von Mises eqv; xx yy zz xy xz yz vm
+compute         E tlsph smd/tlsph/strain # computed strain tensor terms; xx yy zz xy xz yz
+compute         L tlsph smd/tlsph/strain/rate # computed strain rate tensor terms; xx yy zz xy xz yz
+#compute         P ulsph smd/ulsph/stress # computed Cauchy stress tensor (currently a non-feature in SMD package)
+#compute         P ulsph stress/atom NULL  #Virial stress tensor to approximate stress in units pressure*volume (https://docs.lammps.org/compute_stress_atom.html)
+
+
+#   dump command
+dump            dump_all all custom 1000 dump.ulsphBulk_hertzBoundary_referenceParameterExponent+1_with1SuspendedParticle &
+id type x y z mol mass c_rho_smd c_rho_sph c_vol radius c_contact_radius &
+vx vy vz fx fy fz &
+c_S[1] c_S[2] c_S[3] c_S[4] c_S[5] c_S[6] c_S[7] c_E[1] c_E[2] c_E[3] c_E[4] c_E[5] c_E[6] c_L[1] c_L[2] c_L[3] c_L[4] c_L[5] c_L[6] &
+
+dump_modify     dump_all first yes time yes
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             translatebottomwall bottom_wall smd/setvel 0.01 v_vel_y -0.01  # set velocities to {group}
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             translatetopwall top_wall smd/setvel 0.01 v_vel_y -0.01  # set velocities to {group}
+
+
+#   run section
+run 3000
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             translatebottomwall bottom_wall smd/setvel NULL NULL NULL  # set velocities to {group}
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             translatetopwall top_wall smd/setvel NULL NULL NULL  # set velocities to {group}
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             fix_top top_wall smd/setvel v_vel_x v_vel_y v_vel_z  # set velocities to {group}
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             fix_bottom bottom_wall smd/setvel v_vel_x v_vel_y v_vel_z  # set velocities to {group}
+
+
+#   run section
+run 10000
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             fix_top top_wall smd/setvel NULL NULL NULL  # set velocities to {group}
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             fix_bottom bottom_wall smd/setvel NULL NULL NULL  # set velocities to {group}
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             translatebottomwall bottom_wall smd/setvel -0.005 v_vel_y v_vel_z  # set velocities to {group}
+
+
+#   Translation
+variable        vel_x equal 0 # variable defined in x-direction
+variable        vel_y equal 0 # variable defined in y-direction
+variable        vel_z equal 0 # variable defined in z-direction
+fix             translatetopwall top_wall smd/setvel 0.005 v_vel_y v_vel_z  # set velocities to {group}
+
+
+#   run section
+run 1000000
+

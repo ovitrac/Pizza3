@@ -52,13 +52,13 @@ if kv~=k, error('the number of V values (%d) does not match the number of kernel
 fmtsize = @(array) sprintf([repmat('%d x ', 1, ndims(array)-1), '%d'], size(array));
 
 % main
-t0_ = clock; t1_=t0_; screen='';
+t0_ = clock; t1_=t0_; screen=''; %#ok<CLOCK>
 Vq = NaN(kg,ny,class(y));
 sizVerlet = cellfun(@length,GridVerletList);
 dispf('INTERP3SPHVERLET interpolates %s grid points with a Verlet list including from %d to %d neighbors...',...
     fmtsize(XYZgrid),min(sizVerlet),max(sizVerlet))
 for i=1:kg
-    t_ = clock;
+    t_ = clock; %#ok<CLOCK>
     if mod(i,200)==0 || (etime(t_,t1_)>0.5) %#ok<*DETIM> 
         t1_=t_; dt_ = etime(t_,t0_); done_ = i/kg;
         screen = dispb(screen,'[GridPoint %d:%d] INTERP3SPHVerlet | elapsed %0.1f s | done %0.1f %% | remaining %0.1f s', ...
@@ -78,4 +78,4 @@ for i=1:kg
     end
 end
 dispb(screen,'...done in %0.4g s. INTERP3SPHVerlet completed the interpolation of %d points with %d kernels', ...
-                               etime(clock,t0_),kg,k);
+                               etime(clock,t0_),kg,k); %#ok<CLOCK>
