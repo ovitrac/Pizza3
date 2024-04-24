@@ -14,6 +14,7 @@ function Vq = interp3SPH(centers,y,Xq,Yq,Zq,W,V,forcesilent)
 %           W : kernel function @(r) <-- use kernelSPH() to supply a vectorized kernel
 %           v : kx1 volume of the kernels (default=1)
 %               [] (empty matrix) or scalar value forces uniform volumes (default =1)
+%  forcesilent: flag to force silence mode (default = false)
 %
 %   Output:
 %          Vq : same size as Xq, with an additional dimension if y was an array
@@ -58,12 +59,13 @@ function Vq = interp3SPH(centers,y,Xq,Yq,Zq,W,V,forcesilent)
     figure, plot(curvilinear,Vg), xlabel('distance to the central bead'), ylabel('density')
 %}
 
-% 2023-02-20 | INRAE\Olivier Vitrac | rev. 2023-05-17
+% 2023-02-20 | INRAE\Olivier Vitrac | rev. 2023-10-26
 
 % Revision history
 % 2023-05-16 - improve verbosity
 % 2023-05-17 - add forcesilent 
 % 2023-05-18 - improve verbosity (fmtsize)
+% 2023-10-26 - improve help
 
 
 
@@ -94,7 +96,7 @@ fmtsize = @(array) sprintf([repmat('%d x ', 1, ndims(array)-1), '%d'], size(arra
 sumW = cell(1,ny);
 verbosity = (numel(Xq)>1e4) && ~forcesilent;
 largek = k>200;
-t0_ = clock; t1_=t0_; screen='';
+t0_ = clock; t1_=t0_; screen=''; %#ok<CLOCK>
 
 if verbosity, dispf('INTPER3SPH is summing %s grid values over %d kernels (K)...',fmtsize(Xq),k), end
 for i=1:k

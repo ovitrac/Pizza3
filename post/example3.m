@@ -94,7 +94,7 @@ ylabel('Landshoff force','fontsize',20)
 title(sprintf('\\bf%s\\rm',packingmode),'FontSize',18)
 
 %% Static configuration
-XYZ = packSPH(10,rbead,'HCP'); nbeads = size(XYZ,1);
+XYZ = packSPH(10,rbead,'FCC'); nbeads = size(XYZ,1);
 fluidbox = [min(XYZ);max(XYZ)]';
 XYZ = XYZ + [0 rbead 0];
 fluidbox(2,2) = fluidbox(2,2) + 2*rbead;

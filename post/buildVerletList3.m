@@ -1,18 +1,17 @@
-function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors,entity)
-%BUILDVERLETLIST build the Verlet list of X
+function [verletList,cutoffout,dminout,config,distout] = buildVerletList3(X, cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors,entity)
+%BUILDVERLETLIST3 build the Verlet list of X when X is a nx3 vector, for arbitrary 2D or 3D X, use BUILDVERLIST for 2D datasets
 %
-%   USAGE: verletList = buildVerletList(X [, cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors])
-%           [verletList,cutoff,dmin,config,distances] = buildVerletList(...)
-%           verletList =  buildVerletList(X,config)
+%   USAGE: verletList = buildVerletList3(X [, cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors])
+%           [verletList,cutoff,dmin,config,distances] = buildVerletList3(...)
+%           verletList =  buildVerletList3(X,config)
 %
 %   WARNING use selfVerletList to add self in the list
-%           verletList =  selfVerletlist(buildVerletList(...))
+%           verletList =  selfVerletlist(buildVerletList3(...))
 %
 %
 %    Inputs:
-%                    X: n x 3 or n x 2  matrix containing the coordinates of particles
+%                    X: n x 3 matrix containing the coordinates of particles
 %                       a table with columns 'x' 'y' 'z'
-%                       a table with columns 'x' 'y'
 %                       a cell {Xgrid X} to search the neighbors X around Xgrid
 %               cutoff: the cutoff distance for building the Verlet list
 %                       by default: cutoff = distribution mode (1000 classes)
@@ -38,32 +37,8 @@ function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cuto
 %
 %   See also: updateVerletList, partitionVerletList, selfVerletList, interp3SPHVerlet
 
-% Example
-%{ 
-    n = 3e4; %number of particles
-    % 3D example
-    X = rand(n, 3)*100;
-    cutoff = 10;
-    % 3D neighbors within cutoff distance
-    v = buildVerletList(X,cutoff);
-    figure, hold on
-    nsamples = 10;
-    samples = round(rand(nsamples,1)*n);
-    colors = parula(nsamples);
-    for i = 1:nsamples
-        plot3D(X(samples(i),:),'o','MarkerFaceColor',colors(i,:),'MarkerEdgeColor',colors(i,:))
-        plot3D(X(v{samples(i)},:),'o','MarkerFaceColor','none','MarkerEdgeColor',colors(i,:))
-    end
-    % 2D neighbors within cutoff distance
-    v2 = buildVerletList(X(:,1:2),cutoff);
-    for i = 1:nsamples
-        plot(X(samples(i),1),X(samples(i),2),'o','MarkerFaceColor',colors(i,:),'MarkerEdgeColor',colors(i,:))
-        plot(X(v2{samples(i)},1),X(v2{samples(i)},2),'o','MarkerFaceColor','none','MarkerEdgeColor',colors(i,:))
-    end
-    view(3), axis equal
-%}
 
-% MS 3.0 | 2023-03-25 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2024-03-04
+% MS 3.0 | 2023-03-25 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2023-09-09
 
 
 % Revision history
@@ -74,9 +49,7 @@ function [verletList,cutoffout,dminout,config,distout] = buildVerletList(X, cuto
 % 2023-05-17 updated help
 % 2023-08-31 fix time counter
 % 2023-09-09 add entity
-% 2024-02-22 manage 2D data and tables also with blocks
-% 2024-02-23 reduce memoryloadGB in 2D
-% 2024-03-04 update the block decomposition to fit a perfect square if needed in 2D (nB)
+% 2024-02-22 original preserved 3D version, intended to be replaced by buildverletlist()
 
 %% Constants
 targetedNumberOfNeighbors = 100; % number of maximum neighbors expected (it is a maximum guess to be used to estimate a cutoff)
@@ -85,18 +58,13 @@ DEBUGON = false; % set it to true to activate the debugging mode
 tolerance = 0.1; % to be used by updateVerletList
 
 %% Default
-sorton_default = true;     % default sorton value
-verbose_default = true;    % default verbosity
-maxmemoryloadGB = 8;       % maximum load memeory for pair distance (8 GB)
-memoryloadGB = [NaN 1/(2*3)^2 1] * maxmemoryloadGB;  % maximum GB to be used (memoryloadGB(3) for 3D and memoryloadGB(2) for 2D)
+sorton_default = true; % default sorton value
+verbose_default = true; % default verbosity
+memoryloadGB = 8;      % maximum GB to be used
 
 %% Check arguments
 if nargin<1, error('one argument is required'); end
-if istable(X)
-    coords = {'x','y','z'}; % the coordinates are selected in this order based on their availability (e.g. 'x' and 'y' in 2D)
-    availablecoords = coords(ismember(coords,X.Properties.VariableNames));
-    X = table2array(X(:,availablecoords));
-end % table2array used for safety
+if istable(X), X = table2array(X(:,{'x','y','z'})); end % table2array used for safety
 if iscell(X)
     if length(X)~=2, error('the first argument should be {Xgrid Xpart}'), end
     Xgrid = X{1};
@@ -136,10 +104,7 @@ end
 if isempty(cutoff) || cutoff<=0, cutoff = NaN; end
 if isempty(sorton), sorton = sorton_default; end
 if isempty(verbose), verbose = verbose_default; end
-if isempty(nblocks)
-    nblocks = ceil((bytes.(typ) * d * n).^2 / (memoryloadGB(d)*1e9));
-    if d==2, nblocks = max(nblocks,nextpow2(n)); end % implement 2^nblocks rule for the number of classes
-end
+if isempty(nblocks), nblocks = ceil((bytes.(typ) * d * n).^2 / (memoryloadGB*1e9)); end
 if isempty(entity), entity = "atom"; end
 
 %% Grid management (look for neighbors around grid points)
@@ -149,7 +114,7 @@ if hasgrid
     excludedfromsearch(1:n) = true;
     excludedneighbors(n+1:end) = true;
     [verletList,cutoffout_,dminout_,config_,distout_] = ...
-        buildVerletList([X;Xgrid], cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors,'grid point');
+        buildVerletList3([X;Xgrid], cutoff, sorton, nblocks, verbose, excludedfromsearch, excludedneighbors,'grid point');
     verletList = verletList(n+1:end);
     distout_ = distout_(n+1:end);
     if nargout>1, cutoffout = cutoffout_; end
@@ -177,38 +142,24 @@ verletList = cell(n, 1); % pre-allocate the Verlet list
 t__ = clock; t_ = t__;
 
 % Pseudo recursion if nblocks > 1
-if (nblocks > 1) && ismember(d,[2,3]) % block splitting limited to 3D and 2D
+if (nblocks > 1) && (d == 3) % block splitting limited to 3D
 
     range = [min(X,[],1); max(X,[],1)]; % [mins;maxs]
     drange = diff(range, 1, 1);
     nBmax = max(2, floor(drange / (2 * cutoff)));
     [~, is] = sort(drange, 'ascend');
-    nB = zeros(1, 3); %zeros(1, d) (NB(3) is a singleton if d == 2)
-    nB(is(1)) = max(1,min(nBmax(is(1)), floor(nblocks^(1/d))));               % number of blocks along the smallest dimension
-    nB(is(2)) = max(1,min(nBmax(is(2)), floor((nblocks / nB(is(1))^(d-1))))); % idem along the intermediate dimension
-    if d==3
-        nB(is(3)) = max(1,min(nBmax(is(3)), ceil(nblocks / (nB(is(1)) * nB(is(2)))))); % along the longest one
-    else
-        nB(3) = 1; % singleton in 2D but 2 limits to define one box
-    end
-    nB = nB + 1; % conversion into the number of separators
+    nB = zeros(1, d);
+    nB(is(1)) = 1 + min(nBmax(is(1)), floor(nblocks^(1/3))); % number of blocks along the smallest dimension
+    nB(is(2)) = 1 + min(nBmax(is(2)), floor(sqrt(nblocks / nB(is(1))))); % idem along the intermediate dimension
+    nB(is(3)) = 1 + min(nBmax(is(3)), ceil(nblocks / (nB(is(1)) * nB(is(2))))); % along the longest one
     xB = linspace(range(1, 1) - drange(1) / 20, range(2, 1) + drange(1) / 20, nB(1));
     yB = linspace(range(1, 2) - drange(2) / 20, range(2, 2) + drange(2) / 20, nB(2));
-    if d==3
-        zB = linspace(range(1, 3) - drange(3) / 20, range(2, 3) + drange(3) / 20, nB(3));
-    else
-        zB = 0; % singleton in 2D (default value 0)
-    end
+    zB = linspace(range(1, 3) - drange(3) / 20, range(2, 3) + drange(3) / 20, nB(3));
     
     % create meshgrid for block indices
     [ix, iy, iz] = meshgrid(1:nB(1)-1, 1:nB(2)-1, 1:nB(3)-1);
     ix = ix(:); iy = iy(:); iz = iz(:);
     nBall = numel(ix); dist = cell(n, 1); dmin = NaN; cutoffsafe = 1.1 * cutoff; screen = '';
-    if d==3
-        dispf('buildVerletList splits %d particles into a %d x %d x %d',n, nB(1)-1, nB(2)-1, nB(3)-1)
-    elseif d==2
-        dispf('buildVerletList splits %d particles into a %d x %d',n, nB(1)-1, nB(2)-1)
-    end
 
     % for each block
     wasempty = true;
@@ -216,23 +167,20 @@ if (nblocks > 1) && ismember(d,[2,3]) % block splitting limited to 3D and 2D
     for iBall = 1:nBall
         % points mask of considered entities/particles/beads
         okxyz = (X(:, 1) > (xB(ix(iBall)) - cutoffsafe)) & (X(:, 1) < (xB(ix(iBall)+1) + cutoffsafe)) & ...
-                (X(:, 2) > (yB(iy(iBall)) - cutoffsafe)) & (X(:, 2) < (yB(iy(iBall)+1) + cutoffsafe)); % box + margins
-        if d==3
-            okxyz = okxyz & (X(:, 3) > (zB(iz(iBall)) - cutoffsafe)) & (X(:, 3) < (zB(iz(iBall)+1) + cutoffsafe)); % box + margins
-        end
+                (X(:, 2) > (yB(iy(iBall)) - cutoffsafe)) & (X(:, 2) < (yB(iy(iBall)+1) + cutoffsafe)) & ...
+                (X(:, 3) > (zB(iz(iBall)) - cutoffsafe)) & (X(:, 3) < (zB(iz(iBall)+1) + cutoffsafe)); % box + margins
         ind = find(okxyz)';       % their indices (to be used for conversion)
         nind = numel(ind);        % number of entities
         narein = 0;               % default value (to be updated)
         nneighborsforthosein = 0; % counter for their neighbors
         if nind               % some neighbors found
-            okinxyz =   (X(ind, 1) >= xB(ix(iBall))) & (X(ind, 1) <= xB(ix(iBall)+1)) & ...
-                        (X(ind, 2) >= yB(iy(iBall))) & (X(ind, 2) <= yB(iy(iBall)+1));
-            if d==3
-                okinxyz = okinxyz & (X(ind, 3) >= zB(iz(iBall))) & (X(ind, 3) <= zB(iz(iBall)+1));
-            end
-            arein = find(okinxyz); % relative indices of those inside the box
+            arein = find(...  % relative indices of those inside the box
+                        (X(ind, 1) >= xB(ix(iBall))) & (X(ind, 1) <= xB(ix(iBall)+1)) & ...
+                        (X(ind, 2) >= yB(iy(iBall))) & (X(ind, 2) <= yB(iy(iBall)+1)) & ...
+                        (X(ind, 3) >= zB(iz(iBall))) & (X(ind, 3) <= zB(iz(iBall)+1)) ...
+                    );
             narein = length(arein);   % number of entities in the box
-            [verletListtmp, cutoff, dmintmp, ~, disttmp] = buildVerletList(X(ind, :), cutoff, false, 0, false, excludedfromsearch(ind), excludedneighbors(ind));
+            [verletListtmp, cutoff, dmintmp, ~, disttmp] = buildVerletList3(X(ind, :), cutoff, false, 0, false, excludedfromsearch(ind), excludedneighbors(ind));
             dmin = min(dmin,dmintmp);
             for eachin = 1:narein     % for all elements in the temporary Verlet list
                 ind_current   = ind(arein(eachin));                % scalar index if the current entity
@@ -241,15 +189,13 @@ if (nblocks > 1) && ismember(d,[2,3]) % block splitting limited to 3D and 2D
                 verletList{ind_current} = ind_neighbors;           % update the verlet list
                 dist{ind_current} = disttmp{arein(eachin)};        % update the distance matrix
             end % next eachin
-        else
-            dmintmp = NaN; 
         end % if nind
         if verbose
             done = iBall/nBall; currenttime = clock; dt = etime(currenttime,t_);
             if (dt>0.5) || wasempty
                 dt_ = etime(currenttime,t__);
-                screen = dispb(screen,'[BLOCK %d/%d] %d particles with %d neighbors/part. (%0.1f %% total) | min dist loc:%0.3g glob:%0.3g | elapsed %0.1f of %0.1f s | done %0.1f %% | remaining %0.1f s',...
-                    iBall,nBall,narein,round(nneighborsforthosein/narein),nind/n*100,dmintmp,dmin,dt,dt_,100*done,(1/done-1)*dt_);
+                screen = dispb(screen,'[BLOCK %d/%d] %d particles with %d neighbors (%0.1f %% total) | min dist loc:%0.3g glob:%0.3g | elapsed %0.1f of %0.1f s | done %0.1f %% | remaining %0.1f s',...
+                    iBall,nBall,narein,nneighborsforthosein,nind/n*100,dmintmp,dmin,dt,dt_,100*done,(1/done-1)*dt_);
                 wasempty = (nneighborsforthosein==0); t_ = currenttime;
             end
         end
@@ -261,7 +207,7 @@ if (nblocks > 1) && ismember(d,[2,3]) % block splitting limited to 3D and 2D
     % DEBUG MODE (comparison without blocks, for internal validation)
     if DEBUGON
         V = verletList; %#ok<UNRCH> 
-        V0 = buildVerletList(X, cutoff, sorton, 0, true);
+        V0 = buildVerletList3(X, cutoff, sorton, 0, true);
         figure, hold on
         [YB,ZB] = meshgrid(yB,zB); for x=xB, mesh(YB*0+x,YB,ZB,'facecolor','none','edgecolor','r'); end
         [XB,ZB] = meshgrid(xB,zB); for y=yB, mesh(XB,ZB*0+y,ZB,'facecolor','none','edgecolor','r'); end
@@ -394,15 +340,8 @@ timerq = etime(clock,t__);
 if nargout>1, cutoffout = cutoff; end
 
 % Return dmin if requested
-if nargout>2
-    if isempty(dmin)
-        dminout = NaN;
-    else
-        dminout = dmin;
-    end
-end
+if nargout>2, if isempty(dmin), dminout = NaN; else dminout = dmin; end, end
 
-% Return config
 if nargout>3
     config = struct( ...
             'engine','buildVerletList', ...

@@ -13,6 +13,7 @@
 % 2023-09-09 major increment
 % 2023-09-10 finalization and copy to notebook/
 % 2023-09-13 update for new Landshoff and Hertz virial calculations (fixes)
+% 2023-09-20 add vorticity
 
 %% Definitions
 % We assume that the dump file has been preprocessed (see example1.m and example2.m)
@@ -237,6 +238,39 @@ set(hsl,'linewidth',2,'color',[0.4375    0.5000    0.5625])
 plot3(startX(:),startY(:),startZ(:),'ro','markerfacecolor',[0.4375    0.5000    0.5625])
 % fix the view
 view(-90,90), clim([-1e-1 1e-1])
+
+% === Plot the vorticity
+% Calculate the gradients of the velocity components
+[dvxdx, dvxdy, dvxdz] = gradient(vXYZgridx,xw(2)-xw(1),yw(2)-yw(1),zw(2)-zw(1));
+[dvydx, dvydy, dvydz] = gradient(vXYZgridy,xw(2)-xw(1),yw(2)-yw(1),zw(2)-zw(1));
+[dvzdx, dvzdy, dvzdz] = gradient(vXYZgridz,xw(2)-xw(1),yw(2)-yw(1),zw(2)-zw(1));
+% Calculate vorticity components
+w_x = dvzdy - dvydz;
+w_y = dvxdz - dvzdx;
+w_z = dvydx - dvxdy;
+w_mag = sqrt(w_x.^2+w_y.^2+w_z.^2);
+% Plot the vorticity
+[stepx,stepy,stepz] = deal(3,3,3);
+[plotsx,plotsy,plotsz] = deal(stepx*(xw(2)-xw(1)),stepy*(yw(2)-yw(1)),stepz*(zw(2)-zw(1)));
+figure, hold on
+hs = slice(Xw,Yw,Zw,w_mag,[boxcenter(1) xw(end)-plotsx],...
+    [boxcenter(2) yw(end)-plotsy],...
+    [fluidbox(3,1)+plotsz boxcenter(3)]);
+set(hs,'edgecolor','none','facealpha',0.6)
+quiver3( ...
+    Xw(stepy:stepy:end-stepy,stepx:stepx:end-stepy,stepz:stepz:end-stepz),...
+    Yw(stepy:stepy:end-stepy,stepx:stepx:end-stepy,stepz:stepz:end-stepz),...
+    Zw(stepy:stepy:end-stepy,stepx:stepx:end-stepy,stepz:stepz:end-stepz),...
+    w_x(stepy:stepy:end-stepy,stepx:stepx:end-stepy,stepz:stepz:end-stepz),...
+    w_y(stepy:stepy:end-stepy,stepx:stepx:end-stepy,stepz:stepz:end-stepz),...
+    w_z(stepy:stepy:end-stepy,stepx:stepx:end-stepy,stepz:stepz:end-stepz),...
+    1,'color','r','LineWidth',2);
+title('Vorticity Field','fontsize',20)
+xlabel('X'), ylabel('Y'), zlabel('Z')
+hc = colorbar('AxisLocation','in','fontsize',14);
+hc.Label.String = 'Vorticity Magnitude';
+lighting gouraud; camlight('left');  axis equal;  view(-112,82); clim([0 20])
+
 
 % === Plot Estimated shear stress from Cauchy Tensor
 figure, hold on
@@ -531,3 +565,46 @@ quiver3( ...
     FXYZgridz(1:step(1):end,1:step(2):end,1:step(3):end) ...
     ,.5,'color','k','LineWidth',.1)
 caxis([-.1 .1]), view([-50,42])
+
+%% Internal Solid stress
+Xsolid = Xstress.ATOMS(isolid,:);
+hcauchystress = 3*rbead; %1.25e-5; % m
+Vsolid = buildVerletList(Xsolid,hcauchystress);
+solidbox = [ min(Xsolid{:,coords}); max(Xsolid{:,coords}) ]';
+boxcenter = mean(solidbox,2);
+Vbead = mean(Xsolid.c_vol);
+% interpolate the tensor stress
+W = kernelSPH(hcauchystress,'lucy',3); % kernel for interpolation (not gradkernel!)
+stresscomponents = arrayfun(@(i) sprintf('c_S[%d]',i),1:7,'UniformOutput',false);
+boxcenter = mean(solidbox,2);
+resolution = ceil(50 * diff(solidbox,[],2)'./max(diff(solidbox,[],2)));
+xw = linspace(solidbox(1,1)-hcauchystress,solidbox(1,2)+hcauchystress,resolution(1));
+yw = linspace(solidbox(2,1)-hcauchystress,solidbox(2,2)+hcauchystress,resolution(2));
+zw = linspace(solidbox(3,1)-hcauchystress,solidbox(3,2)+hcauchystress,resolution(3));
+[Xw,Yw,Zw] = meshgrid(xw,yw,zw);
+XYZgrid = [Xw(:),Yw(:),Zw(:)];
+VXYZ = buildVerletList({XYZgrid Xsolid{:,coords}},1.001*hcauchystress); % special grid syntax
+SXYZgrid = interp3SPHVerlet(Xsolid{:,coords},Xsolid{:,stresscomponents},XYZgrid,VXYZ,W,Vbead);
+
+%% Pressure, von Mises equivalent stress
+P = 1/3*reshape(sum(SXYZgrid(:,1:3),2),size(Xw));
+vMS = reshape(SXYZgrid(:,7),size(Xw));
+figure, hold on
+hs = slice(Xw,Yw,Zw,vMS,[boxcenter(1) xw(end)],...
+    [boxcenter(2) yw(end)],...
+    [solidbox(3,1) boxcenter(3)]);
+set(hs,'edgecolor','none','facealpha',0.6)
+lighting gouraud, camlight('left'), axis equal, view(3) % shading interp
+hc = colorbar('AxisLocation','in','fontsize',14); hc.Label.String = 'von Mises';
+title('von Mises Stress','fontsize',20)
+xlabel('X'), ylabel('Y'), zlabel('Z')
+
+figure, hold on
+hs = slice(Xw,Yw,Zw,P,[boxcenter(1) xw(end)],...
+    [boxcenter(2) yw(end)],...
+    [solidbox(3,1) boxcenter(3)]);
+set(hs,'edgecolor','none','facealpha',0.6)
+lighting gouraud, camlight('left'), axis equal, view(3) % shading interp
+hc = colorbar('AxisLocation','in','fontsize',14); hc.Label.String = 'P';
+title('Pressure','fontsize',20)
+xlabel('X'), ylabel('Y'), zlabel('Z')

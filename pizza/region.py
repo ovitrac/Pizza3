@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.58"
+__version__ = "0.60"
 
 """
     REGION provide tools to define native geometries in Python for LAMMPS
@@ -52,7 +52,7 @@ __version__ = "0.58"
 """
 
 
-# INRAE\Olivier Vitrac - rev. 2023-08-11
+# INRAE\Olivier Vitrac - rev. 2024-04-18
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -86,6 +86,7 @@ __version__ = "0.58"
 # 2023-07-29 symmetric design for coregeometry and collection objects with flag control, implementation in pipescript
 # 2023-07-29 fix for the class LammpsCollectionGroup() - previous bug resolved
 # 2023-08-11 full implementation of the space-filled model such as in pizza.raster
+# 2023-04-18 workshop compatible (i.e., implementation of region.scriptobject(), to be used along with region.do())
 
 # %% Imports and private library
 import os, sys
@@ -105,7 +106,8 @@ from webbrowser import open as livelammps
 
 # import struct, param, paramauto, span
 from pizza.private.struct import *
-from pizza.script import pipescript, script, scriptdata, span
+from pizza.script import pipescript, script, scriptdata, scriptobject, span
+from pizza.forcefield import *
 
 # protected properties in region
 protectedregionkeys = ('name', 'live', 'nbeads' 'volume', 'mass', 'radius', 'contactradius', 'velocities', \
@@ -548,6 +550,13 @@ class coregeometry:
         update() propagate USER to the three scripts
         script returns SECTIONS as a pipescript
         do() generate the script
+        
+        Parameters to be used along scriptobject()
+                 style
+            forcefield
+                 group
+        They are stored SCRIPTOBJECT_USER
+        
     """
 
     _version = "0.35"
@@ -555,7 +564,11 @@ class coregeometry:
 
 
     def __init__(self,USER=regiondata(),VARIABLES=regiondata(),
-                 hasgroup=False, hasmove=False, spacefilling=False):
+                 hasgroup=False, hasmove=False, spacefilling=False,
+                 style="smd",
+                 forcefield=rigidwall(),
+                 group=[]
+                 ):
         """
             constructor of the generic core geometry
                 USER: any definitions requires by the geometry
@@ -583,6 +596,13 @@ class coregeometry:
                  'move': hasmove
             }
         self.spacefilling = spacefilling
+        
+        # add comptaibility with scriptobjects
+        self.SCRIPTOBJECT_USER = {
+                 'style': style,
+            'forcefield': forcefield,
+                 'group': group
+            }
 
     def update(self):
         """ update the USER content for all three scripts """
@@ -632,6 +652,41 @@ class coregeometry:
     def removemove(self):
         """  force the fix move creation in script """
         self.FLAGSECTIONS["move"] = False
+
+    def scriptobject(self, beadtype=None, name=None, fullname=None, group=None, style=None, forcefield=None, USER = scriptdata()):
+        """
+        Method to return a scriptobject based on region instead of an input file
+        Syntax similar to script.scriptobject
+        OBJ = scriptobject(...)
+        Implemented properties:
+            beadtype=1,2,...
+            name="short name"
+            fullname = "comprehensive name"
+            style = "smd"
+            forcefield = any valid forcefield instance (default = rigidwall())
+        """
+        # Set defaults using instance attributes if parameters are None
+        if beadtype is None:
+            beadtype = self.beadtype
+        if name is None:
+            name = f"{self.name} bead"
+        if fullname is None:
+            fullname = f"beads of type {self.beadtype} | object {self.name} of kind region.{self.kind}"
+        if group is None:
+            group = self.SCRIPTOBJECT_USER["group"]
+        if style is None:
+            style = self.SCRIPTOBJECT_USER["style"]
+        if forcefield is None:
+            style = self.SCRIPTOBJECT_USER["forcefield"]
+        return scriptobject(
+            beadtype=beadtype,
+            name=name,
+            fullname=fullname,
+            style=style,
+            group=group,
+            filename=None,  # No need for a file
+            USER = USER
+        )
 
     @property
     def hasvariables(self):
@@ -2947,8 +3002,8 @@ if __name__ == '__main__':
     #outputfile = P.dolive()
 
     # EXAMPLE: gel compression
+    scale = 1
     name = ['top','food','tongue','bottom']
-    scale = 1 # tested up to scale = 10 to reach million of beads
     radius = [10,5,8,10]
     height = [1,4,3,1]
     spacer = 2 * scale
@@ -2975,23 +3030,31 @@ if __name__ == '__main__':
                     beadtype=beadtype[i])
     B.dolive()
 
+    # Draft for workshop
+    sB = B.do()
+    b1 = B[0].scriptobject()
+    b2 = B[1].scriptobject()
+    b3 = B[2].scriptobject()
+    b4 = B[3].scriptobject()
+    collection = b1 + b2 + b3 + b4;
 
-    # emulsion example
-    mag = 3
-    e = emulsion(xmin=-5*mag, ymin=-5*mag, zmin=-5*mag,xmax=5*mag, ymax=5*mag, zmax=5*mag)
-    e.insertion([2,2,2,1,1.6,1.2,1.4,1.3],beadtype=3)
-    e.insertion([0.6,0.3,2,1.5,1.5,1,2,1.2,1.1,1.3],beadtype=1)
-    e.insertion([3,1,2,2,4,1,1.2,2,2.5,1.2,1.4,1.6,1.7],beadtype=2)
-    e.insertion([3,1,2,2,4,1,5.2,2,4.5,1.2,1.4,1.6,1.7],beadtype=4)
+    # # emulsion example
+    # scale = 1 # tested up to scale = 10 to reach million of beads
+    # mag = 3
+    # e = emulsion(xmin=-5*mag, ymin=-5*mag, zmin=-5*mag,xmax=5*mag, ymax=5*mag, zmax=5*mag)
+    # e.insertion([2,2,2,1,1.6,1.2,1.4,1.3],beadtype=3)
+    # e.insertion([0.6,0.3,2,1.5,1.5,1,2,1.2,1.1,1.3],beadtype=1)
+    # e.insertion([3,1,2,2,4,1,1.2,2,2.5,1.2,1.4,1.6,1.7],beadtype=2)
+    # e.insertion([3,1,2,2,4,1,5.2,2,4.5,1.2,1.4,1.6,1.7],beadtype=4)
 
-    # b = region()
-    # a = region()
-    # a.sphere(1,1,1,1,name='sphere1')
-    # a.sphere(1,2,2,1,name='sphere2')
-    # b.collection(a, name='acollection')
+    # # b = region()
+    # # a = region()
+    # # a.sphere(1,1,1,1,name='sphere1')
+    # # a.sphere(1,2,2,1,name='sphere2')
+    # # b.collection(a, name='acollection')
 
-    C = region(name='cregion',width=11*mag,height=11*mag,depth=11*mag)
-    C.scatter(e)
-    C.script()
-    g = C.emulsion.group()
-    C.dolive()
+    # C = region(name='cregion',width=11*mag,height=11*mag,depth=11*mag)
+    # C.scatter(e)
+    # C.script()
+    # g = C.emulsion.group()
+    # C.dolive()

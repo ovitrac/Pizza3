@@ -105,7 +105,7 @@ Created on Sat Feb 19 11:00:43 2022
 @author: olivi
 """
 
-# INRAE\Olivier Vitrac - rev. 2023-08-17
+# INRAE\Olivier Vitrac - rev. 2024-04-18
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -137,6 +137,8 @@ Created on Sat Feb 19 11:00:43 2022
 # 2023-07-20 add header to script.tmpwrite()
 # 2023-07-20 add a persident script.preview.clean copy
 # 2023-08-17 fix span() when vector is "" or str
+# 2024-04-16 fix the method tmpwrite(self) on windows with proper error handling
+# 2024-04-18 fix scriptobjectgroup.script for empty and None filename
 
 # %% Dependencies
 import types
@@ -526,16 +528,19 @@ class scriptobjectgroup(struct):
         # load data when needed and comment which object
         TEMPFILES = ""
         isfirst = True
-        if self.filename !={}:
-            TEMPFILES = "\n# ===== [ BEGIN INPUT FILES SECTION ] "+"="*79 + "\n"
-            for fn,cfn in self.filename.items():
-                TEMPFILES += span(cfn,sep=", ",left="\n# load files for objects: ",right="\n")
-                if isfirst:
-                    isfirst = False
-                    TEMPFILES += f"\tread_data {fn}\n"
-                else:
-                    TEMPFILES += f"\tread_data {fn} add append\n"
-            TEMPFILES += "\n# ===== [ END INPUT FILES SECTION ] "+"="*81+"\n\n"
+        files_added = False 
+        if self.filename:
+            for fn, cfn in self.filename.items():
+                if fn and cfn:
+                    if not files_added:
+                        files_added = True
+                        TEMPFILES += "\n# ===== [ BEGIN INPUT FILES SECTION ] " + "=" * 79 + "\n"
+                    TEMPFILES += span(cfn, sep=", ", left="\n# load files for objects: ", right="\n")
+                    if isfirst:
+                        isfirst = False
+                        TEMPFILES += f"\tread_data {fn}\n"  # First file, no append
+                    else:
+                        TEMPFILES += f"\tread_data {fn} add append\n"  # Subsequent files, append
         # define groups
         TEMPGRP = "\n# ===== [ BEGIN GROUP SECTION ] "+"="*85 + "\n"
         for g in self.group:
@@ -908,15 +913,25 @@ class script():
     # tempfile
     def tmpwrite(self):
         """ write file """
-        ftmp = tempfile.NamedTemporaryFile(mode="w+b",prefix="script_",suffix=".txt")
-        header = f"# PIZZA.SCRIPT() TEMPORARY FILE\n # " + '-'*40 +'\n' + \
-                 f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
-                 f"# <-- {str(datetime.datetime.now())} -->\n"
-        content =  header + \
-                   "# This is a temporary file (it will be deleted automatically)" + \
-                   "\n"*2 + script.header() + "\n"*3 +self.do()
-        ftmp.write(BOM_UTF8+content.encode('utf-8'))
-        ftmp.seek(0)
+        try:
+            # Handle OS-specific behavior for temporary files
+            if os.name == 'nt':  # nt indicates Windows
+                ftmp = tempfile.NamedTemporaryFile(mode="w+b", prefix="script_", suffix=".txt", delete=False)
+            else:
+                ftmp = tempfile.NamedTemporaryFile(mode="w+b", prefix="script_", suffix=".txt")
+            header = f"# PIZZA.SCRIPT() TEMPORARY FILE\n # " + '-'*40 +'\n' + \
+                     f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
+                     f"# <-- {str(datetime.datetime.now())} -->\n"
+            content =  header + \
+                       "# This is a temporary file (it will be deleted automatically)" + \
+                       "\n"*2 + script.header() + "\n"*3 +self.do()
+            ftmp.write(BOM_UTF8+content.encode('utf-8'))
+            ftmp.seek(0)
+        except Exception as e:
+            ftmp.close()  # Ensure the file is closed in case of an error
+            os.remove(ftmp.name)  # Clean up the temporary file
+            error_msg = f"Failed to write to or handle the temporary file: {e}. Check file permissions and disk space."
+            raise Exception(error_msg) from None
         print("\n"*2,header,'\n',"A temporary file has been generated here:\n",ftmp.name)
         if self.persistentfile:
             # make a persistent copy in /tmp
@@ -935,7 +950,11 @@ class script():
             fcleanname = os.path.join(self.persistentfolder, "script.preview.clean." + ftmpname.rsplit('_', 1)[1])
             with open(fcleanname, 'w') as f: f.writelines(clean_lines)
             print("The clean copy has been created here:\n", fcleanname)
-        return ftmp
+            if os.name == 'nt':
+                ftmp.close()  # Close the file manually on Windows to avoid access issues
+                return None  # Return None on Windows since the file is closed
+            else:
+                return ftmp  # Return the open file handle on other systems
 
 # %% pipe script
 class pipescript():

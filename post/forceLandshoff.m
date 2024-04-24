@@ -28,7 +28,7 @@ function [F,Wout,nout] = forceLandshoff(X,vX,V,config,verbose)
 %       W: nX x 9 virial stress tensor (use reshape(W(i),3,3) to recover the matrix)
 %       n: nX x 3 normal vectors
 
-% MS 3.0 | 2023-03-31 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2023-09-13
+% MS 3.0 | 2023-03-31 | INRAE\Olivier.vitrac@agroparistech.fr | rev. 2024-03-30
 
 % Revision history
 % 2023-04-01 sum forces instead of individual ones,accept X as a table
@@ -40,10 +40,11 @@ function [F,Wout,nout] = forceLandshoff(X,vX,V,config,verbose)
 % 2023-09-11 prevent NaN if the norm is 0 
 % 2023-09-12 fix m^2 (ma*mb) instead of mb
 % 2023-09-13 upgrade rho, mass, vol from X as a table, adhere to scheme from SPH_virial_stress in Billy's thesis
+% 2024-03-30 small control comments by OV
 
 %% Default
 h_default = 60e-6; % rough guess (to be adjusted with common value)
-config_default = struct( ...real dynamic viscosity: q1 * h * c0 / 8 (2D) or 10 (3D)
+config_default = struct( ...real dynamic viscosity: q1 * h * c0 * rho / 8 (2D) or 10 (3D) see Eq. 8.8 Monaghan, J. J. (2005). Smoothed particle hydrodynamics. Reports on Progress in Physics, 68(8), 1703–1759. doi:10.1088/0034-4885/68/8/r01 
    'gradkernel', kernelSPH(h_default,'lucyder',3),...% kernel gradient (note that h is bound with the kernel)
             'h', h_default,...smoothing length
            'c0',10,...        speed of the sound
@@ -145,7 +146,7 @@ for i=1:nX
     ok = rij_d>dmin;          % added on 2023-09-13
     if config.repulsiononly, ok = ok & (rvij<0); end
     if any(ok)
-        % Reference Formulation - p1740 of Rep. Prog. Phys. 68 (2005) 1703–1759
+        % Reference Formulation - p1740 of Rep. Prog. Phys. 68 (2005) 1703–1759 (attention acceleration, not force)
         % http://dx.doi.org/10.1088/0034-4885/68/8/R01
         % before 2023-09-09
         %muij = config.h * rvij(ok) ./ ( rij2(ok) + 0.01*config.h^2 );
