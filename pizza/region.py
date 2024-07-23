@@ -8,17 +8,135 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.60"
+__version__ = "0.80"
 
 """
-    REGION provide tools to define native geometries in Python for LAMMPS
 
-    TODO LIST (updated 2023-01-22, completed 2023-02-06)
+================================================================================
+REGION Module Documentation
+================================================================================
 
-    Please add here a full help with examples
+Project: Pizza3
+Authors: Olivier Vitrac, Han Chen
+Copyright: 2023
+Credits: Olivier Vitrac, Han Chen
+License: GPLv3
+Maintainer: Olivier Vitrac
+Email: olivier.vitrac@agroparistech.fr
+Version: 0.80
 
-    Public features (i.e. to be used by the end-user)
+Overview
+--------
+The REGION module provides a suite of tools to define and manipulate native geometries in Python
+ for LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator). It is designed to facilitate
+ the creation, concatenation, and manipulation of geometric regions used in molecular dynamics simulations.
 
+Public Features
+---------------
+- Concatenation of Regions:
+  - `R1 + R2` concatenates two regions (objects of R2 are inherited in R1, higher precedence for R2).
+- Generation of Objects:
+  - `R.do()` generates the objects (similar functionality to `do()` in pizza.script).
+- Script Generation:
+  - `R.script` returns the script (similar functionality to `script()` in pizza.script).
+- Object Deletion:
+  - `R.o1 = []` deletes object `o1`.
+- Union of Objects:
+  - `R.union(o1, o2, name=...)` creates a union of `o1` and `o2` (in the LAMMPS sense, see region manual).
+
+Classes and Methods
+-------------------
+### Class: `region`
+#### Description:
+The `region` class is used to define and manipulate geometries for LAMMPS simulations. It includes
+ methods for creating different geometric shapes, combining regions, and generating corresponding LAMMPS scripts.
+
+#### Methods:
+- **`__init__(self, name='', width=0, height=0, depth=0, regionunits='lattice', separationdistance=0.0, lattice_scale=1.0)`**
+  - **Description**: Initializes a new region with specified dimensions and parameters.
+  - **Parameters**:
+    - `name` (str): The name of the region.
+    - `width` (float): Width of the region.
+    - `height` (float): Height of the region.
+    - `depth` (float): Depth of the region.
+    - `regionunits` (str): Units of the region dimensions ('lattice' or 'si').
+    - `separationdistance` (float): Separation distance between regions.
+    - `lattice_scale` (float): Scale of the lattice.
+
+- **`do(self)`**
+  - **Description**: Generates the objects within the region.
+  - **Returns**: None
+
+- **`script(self)`**
+  - **Description**: Returns the LAMMPS script for the region.
+  - **Returns**: str
+
+- **`union(self, o1, o2, name='')`**
+  - **Description**: Creates a union of two objects within the region.
+  - **Parameters**:
+    - `o1` (object): The first object.
+    - `o2` (object): The second object.
+    - `name` (str): The name of the union.
+  - **Returns**: None
+
+- **`cylinder(self, name, dim, c1, c2, radius, lo, hi, beadtype)`**
+  - **Description**: Adds a cylinder to the region.
+  - **Parameters**:
+    - `name` (str): The name of the cylinder.
+    - `dim` (str): Dimension along which the cylinder is oriented ('x', 'y', or 'z').
+    - `c1` (float): First coordinate of the center of the cylinder's base.
+    - `c2` (float): Second coordinate of the center of the cylinder's base.
+    - `radius` (float): Radius of the cylinder.
+    - `lo` (float): Lower bound of the cylinder along the specified dimension.
+    - `hi` (float): Upper bound of the cylinder along the specified dimension.
+    - `beadtype` (int): Type of beads to use for the cylinder.
+  - **Returns**: None
+
+- **`delete(self, name)`**
+  - **Description**: Deletes an object from the region.
+  - **Parameters**:
+    - `name` (str): The name of the object to delete.
+  - **Returns**: None
+
+Examples
+--------
+Below are some examples demonstrating how to use the REGION module:
+
+1. **Concatenating Two Regions**:
+    ```python
+    R1 = pizza.regions()
+    R2 = pizza.regions()
+    R = R1 + R2
+    ```
+
+2. **Generating Objects**:
+    ```python
+    R.do()
+    ```
+
+3. **Retrieving the Script**:
+    ```python
+    script_content = R.script()
+    ```
+
+4. **Deleting an Object**:
+    ```python
+    R.o1 = []
+    ```
+
+5. **Creating a Union of Objects**:
+    ```python
+    R.union(o1, o2, name='union_name')
+    ```
+
+6. **Adding a Cylinder**:
+    ```python
+    R.cylinder(name='cyl1', dim='z', c1=0, c2=0, radius=1.0, lo=0.0, hi=5.0, beadtype=1)
+    
+
+Advanced features
+-----------------    
+Public features (i.e. to be used by the end-user)
     	Let R1, R2 being pizza.regions()
     	R = R1 + R2 concatenates two regions (objects of R2 are inherited in R1, higher precedence for R2)
     	R.do()   generate the objects (do() should work as in pizza.script)
@@ -32,8 +150,7 @@ __version__ = "0.60"
     		expr any algebraic expression including +
     		o1+o2+...
 
-    Private features (i.e. to be used inside the code)
-
+Private features (i.e. to be used inside the code)
     	Overloading operators +, +=, | for any coregeometry object
    	Note that coregeometry have four main SECTIONS (scripts)
        SECTIONS["variables"]
@@ -47,12 +164,43 @@ __version__ = "0.60"
 	| pipe them
 
    Add other geometries: block, sphere, cylinder....
+    
+    ```
 
+Dependencies
+------------
+- Python 3.x
+- LAMMPS
+- pizza3.pizza
 
+Installation
+------------
+To use the REGION module, ensure that you have Python 3.x and LAMMPS installed. You can integrate the module into your project by placing the `region.py` file in your working directory or your Python path.
+
+License
+-------
+This project is licensed under the terms of the GPLv3 license.
+
+Contact
+-------
+For any queries or contributions, please contact the maintainer:
+- Olivier Vitrac, Han Chen
+- Email: olivier.vitrac@agroparistech.fr
 """
 
+__project__ = "Pizza3"
+__author__ = "Olivier Vitrac, Han Chen"
+__copyright__ = "Copyright 2023"
+__credits__ = ["Olivier Vitrac", "Han Chen"]
+__license__ = "GPLv3"
+__maintainer__ = "Olivier Vitrac"
+__email__ = "olivier.vitrac@agroparistech.fr"
+__version__ = "0.60"
 
-# INRAE\Olivier Vitrac - rev. 2024-04-18
+
+
+
+# INRAE\Olivier Vitrac - rev. 2024-07-05
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -86,10 +234,15 @@ __version__ = "0.60"
 # 2023-07-29 symmetric design for coregeometry and collection objects with flag control, implementation in pipescript
 # 2023-07-29 fix for the class LammpsCollectionGroup() - previous bug resolved
 # 2023-08-11 full implementation of the space-filled model such as in pizza.raster
-# 2023-04-18 workshop compatible (i.e., implementation of region.scriptobject(), to be used along with region.do())
+# 2024-04-18 workshop compatible (i.e., implementation of region.scriptobject(), to be used along with region.do())
+# 2024-06-14 add mass, density attributes to all region objects and region (overdefinitions are possible), natoms return the number of atoms
+# 2024-06-20 debug the calculation of volume of cylinder
+# 2024-07-03 full implementation of scaling in pizza.region()
+# 2024-07-04 implementation of scaling with formula (when variables are used), add live attributes to region along with an updated LammpsHeader
+# 2024-07-05 full implementation of natoms, geometry
 
 # %% Imports and private library
-import os, sys
+import os, sys, math
 from datetime import datetime
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate
@@ -112,7 +265,9 @@ from pizza.forcefield import *
 # protected properties in region
 protectedregionkeys = ('name', 'live', 'nbeads' 'volume', 'mass', 'radius', 'contactradius', 'velocities', \
                         'forces', 'filename', 'index', 'objects', 'nobjects', 'counter','_iter_',\
-                        'livelammps','copy', 'hasfixmove', 'spacefilling', 'isspacefilled', 'spacefillingbeadtype'
+                        'livelammps','copy', 'hasfixmove', 'spacefilling', 'isspacefilled', 'spacefillingbeadtype','mass','density',
+                        'units','boxcenter','separationdistance','lattice_scale','lattice_style','lattice_scale_siunits',
+                        'geometry', 'natoms'
                             )
 
 # livelammps
@@ -459,9 +614,9 @@ class LammpsHeader(LammpsGeneric):
     TEMPLATE = """
 # --------------[    INIT   ]--------------
 # assuming generic LJ units and style
-units           lj
-atom_style	    atomic
-lattice		    fcc 0.8442
+units           ${live_units}
+atom_style	    ${live_atom_style}
+lattice		    ${live_lattice_style} ${live_lattice_scale}
 # ------------------------------------------
 
 # --------------[    B O X   ]--------------
@@ -550,13 +705,13 @@ class coregeometry:
         update() propagate USER to the three scripts
         script returns SECTIONS as a pipescript
         do() generate the script
-        
+
         Parameters to be used along scriptobject()
                  style
             forcefield
                  group
         They are stored SCRIPTOBJECT_USER
-        
+
     """
 
     _version = "0.35"
@@ -567,8 +722,10 @@ class coregeometry:
                  hasgroup=False, hasmove=False, spacefilling=False,
                  style="smd",
                  forcefield=rigidwall(),
-                 group=[]
-                 ):
+                 group=[],
+                 mass=1, density=1,
+                 lattice_style="sc", lattice_scale=1, lattice_scale_siunits=1 # added on 2024-07-05
+                 ): 
         """
             constructor of the generic core geometry
                 USER: any definitions requires by the geometry
@@ -596,13 +753,19 @@ class coregeometry:
                  'move': hasmove
             }
         self.spacefilling = spacefilling
-        
+
         # add comptaibility with scriptobjects
         self.SCRIPTOBJECT_USER = {
                  'style': style,
             'forcefield': forcefield,
                  'group': group
             }
+        # collect information from parent region
+        self.mass = mass
+        self.density = density
+        self.lattice_style = lattice_style
+        self.lattice_scale = lattice_scale
+        self.lattice_scale_siunits = lattice_scale_siunits
 
     def update(self):
         """ update the USER content for all three scripts """
@@ -804,6 +967,7 @@ class coregeometry:
         if not haskeys: print(wrap("no keywords","<","from side|move|units|rotate|open",20,60,80))
         flags = self.flags
         if flags: print(f'defined scripts: {span(flags,sep=",")}',"\n")
+        print("\n"+self.geometry) # added 2024-07-05
         return "%s object: %s (beadtype=%d)" % (self.kind,self.name,self.beadtype)
 
 
@@ -1147,10 +1311,67 @@ class coregeometry:
             setattr(copie, k, deepduplicate(v, memo)) # replace duplicatedeep by deepduplicate (OV: 2023-07-28)
         return copie
 
+    # Return the number of atoms
+    @property
+    def natoms(self):
+        """Calculate the number of beads based on density, mass, and volume"""
+        if hasattr(self, 'volume'):
+            try:
+                volume_siunits = self.volume("si")
+                voxel_volume_siunits = self.lattice_scale**3
+                number_of_beads = volume_siunits / voxel_volume_siunits
+                packing_factors = {
+                    'sc': 1.0,
+                    'fcc': 4.0,
+                    'bcc': 2.0,
+                    'hcp': 6.0,  # Approximate value, requires specific volume calculation for accuracy
+                    'dia': 8.0,
+                    'bco': 2.0,  # Assuming orthorhombic lattice similar to bcc
+                    'fco': 4.0,  # Assuming orthorhombic lattice similar to fcc
+                }
+                packing_factor = packing_factors.get(self.lattice_style, 1.0)  # Default to simple cubic if unknown
+                number_of_beads *= packing_factor
+                return round(number_of_beads)
+            except Exception as e:
+                print(f"Error calculating number of beads: {e}")
+                return None
+        else:
+            print("Volume attribute is missing.")
+            return None
+    
+    # return parent region details
+    @property
+    def regiondetails(self):
+        return "\n".join((
+        f"\n--- | Region Details | ---",
+        f"Name: {self.name}",
+        f"Lattice Style: {self.lattice_style}",
+        f"Lattice Scale: {self.lattice_scale}",
+        f"Lattice Scale (SI units): {self.lattice_scale_siunits}",
+        f"Volume: {self.volume()}",
+        f"Volume (SI units): {self.volume('si')}",
+        f"Number of Atoms: {self.natoms}","\n"
+        ))
+        
+    
+    # return geometry details (2024-07-04)
+    @property
+    def geometry(self):
+        """Return the geometry details of the object."""
+        details = self.regiondetails
+        details += "\n--- | Geometry Details | ---\n"
+        if hasattr(self.USER, 'geometry'):
+            details += self.USER.geometry
+        else:
+            details = "No geometry available.\n"
+        return details
+
+
 class Block(coregeometry):
     """ Block class """
 
-    def __init__(self,counter,index=None,subindex=None,
+    def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
+                 lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
                  hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "block%03d" % counter[1]
         self.kind = "block"     # kind of object
@@ -1158,17 +1379,50 @@ class Block(coregeometry):
         self.beadtype = 1       # bead type
         self.index = counter[0] if index is None else index
         self.subindex = subindex
+        self.mass = mass
+        self.density = density
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$block"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling,
+                mass=mass, density=density,
+                lattice_style=lattice_style,
+                lattice_scale=lattice_scale,
+                lattice_scale_siunits=lattice_scale_siunits
                 )
+
+    def volume(self,units=None):
+        """Calculate the volume of the block based on USER.args"""
+        #args = [xlo, xhi, ylo, yhi, zlo, zhi]
+        try:
+            # Extract the arguments from USER.args
+            args = self.USER.args_siunits if units=="si" else self.USER.args
+            xlo = float(args[0])
+            xhi = float(args[1])
+            ylo = float(args[2])
+            yhi = float(args[3])
+            zlo = float(args[4])
+            zhi = float(args[5])
+
+            # Calculate the dimensions of the block
+            length = xhi - xlo
+            width = yhi - ylo
+            height = zhi - zlo
+
+            # Calculate the volume of the block
+            volume = length * width * height
+            return volume
+        except Exception as e:
+            print(f"Error calculating volume: {e}")
+            return None
+
 
 class Cone(coregeometry):
     """ Cone class """
 
-    def __init__(self,counter,index=None,subindex=None,
+    def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
+                 lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
                  hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "cone%03d" % counter[1]
         self.kind = "cone"     # kind of object
@@ -1176,17 +1430,46 @@ class Cone(coregeometry):
         self.beadtype = 1      # bead type
         self.index = counter[0] if index is None else index
         self.subindex = subindex
+        self.mass = mass
+        self.density = density
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$cone"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling,
+                mass=mass, density=density,
+                lattice_style=lattice_style,
+                lattice_scale=lattice_scale,
+                lattice_scale_siunits=lattice_scale_siunits
                 )
+
+    def volume(self,units=None):
+        """Calculate the volume of the cone based on USER.args"""
+        #args = [dim, c1, c2, radlo, radhi, lo, hi]
+        try:
+            # Extract the arguments from USER.args
+            args = self.USER.args_siunits if units=="si" else self.USER.args
+            radius_low = float(args[3])
+            radius_high = float(args[4])
+            lo = float(args[5])
+            hi = float(args[6])
+            # Calculate the height of the cone
+            height = hi - lo
+            # Calculate the volume of the cone (assuming a conical frustum if radii are different)
+            if radius_low == radius_high:
+                volume = (1/3) * 3.141592653589793 * (radius_low ** 2) * height
+            else:
+                volume = (1/3) * 3.141592653589793 * height * (radius_low ** 2 + radius_low * radius_high + radius_high ** 2)
+            return volume
+        except Exception as e:
+            print(f"Error calculating volume: {e}")
+            return None
+
 
 class Cylinder(coregeometry):
     """ Cylinder class """
-
-    def __init__(self,counter,index=None,subindex=None,
+    def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
+                 lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
                  hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "cylinder%03d" % counter[1]
         self.kind = "cylinder"     # kind of object
@@ -1194,17 +1477,42 @@ class Cylinder(coregeometry):
         self.beadtype = 1          # bead type
         self.index = counter[0] if index is None else index
         self.subindex = subindex
+        self.mass = mass
+        self.density = density
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$cylinder"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling,
+                mass=mass, density=density,
+                lattice_style=lattice_style,
+                lattice_scale=lattice_scale,
+                lattice_scale_siunits=lattice_scale_siunits
                 )
+        
+    def volume(self,units=None):
+        """Calculate the volume of the cylinder based on USER.args"""
+        # args = [dim,c1,c2,radius,lo,hi]
+        try:
+            # Extract the arguments from USER.args
+            args = self.USER.args_siunits if units=="si" else self.USER.args
+            radius = float(args[3])
+            lo = float(args[4])
+            hi = float(args[5])
+            # Calculate the height of the cylinder
+            height = hi - lo
+            # Calculate the volume of the cylinder
+            volume = 3.141592653589793 * (radius ** 2) * height
+            return volume
+        except Exception as e:
+            print(f"Error calculating volume: {e}")
+            return None
 
 class Ellipsoid(coregeometry):
     """ Ellipsoid class """
 
-    def __init__(self,counter,index=None,subindex=None,
+    def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
+                 lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
                  hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "ellipsoid%03d" % counter[1]
         self.kind = "ellipsoid"     # kind of object
@@ -1212,17 +1520,40 @@ class Ellipsoid(coregeometry):
         self.beadtype = 1           # bead type
         self.index = counter[0] if index is None else index
         self.subindex = subindex
+        self.mass = mass
+        self.density = density
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$ellipsoid"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling,
+                mass=mass, density=density,
+                lattice_style=lattice_style,
+                lattice_scale=lattice_scale,
+                lattice_scale_siunits=lattice_scale_siunits
                 )
+        
+    def volume(self,units=None):
+        #args = [x, y, z, a, b, c]
+        """Calculate the volume of the ellipsoid based on USER.args"""
+        try:
+            # Extract the arguments from USER.args
+            args = self.USER.args_siunits if units=="si" else self.USER.args
+            a = float(args[3])
+            b = float(args[4])
+            c = float(args[5])
+            # Calculate the volume of the ellipsoid
+            volume = (4/3) * 3.141592653589793 * a * b * c
+            return volume
+        except Exception as e:
+            print(f"Error calculating volume: {e}")
+            return None
 
 class Plane(coregeometry):
     """ Plane class """
 
-    def __init__(self,counter,index=None,subindex=None,
+    def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
+                 lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
                  hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "plane%03d" % counter[1]
         self.kind = "plane"      # kind of object
@@ -1230,6 +1561,8 @@ class Plane(coregeometry):
         self.beadtype = 1       # bead type
         self.index = counter[0] if index is None else index
         self.subindex = subindex
+        self.mass = mass
+        self.density = density
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$plane"),
@@ -1237,10 +1570,17 @@ class Plane(coregeometry):
                 hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
                 )
 
+    @property
+    def volume(self,units=None):
+        """Dummy method returning None for volume"""
+        #args = [px, py, pz, nx, ny, nz]
+        return None
+
 class Prism(coregeometry):
     """ Prism class """
 
-    def __init__(self,counter,index=None,subindex=None,
+    def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
+                 lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
                  hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "prism%03d" % counter[1]
         self.kind = "prism"      # kind of object
@@ -1248,17 +1588,47 @@ class Prism(coregeometry):
         self.beadtype = 1       # bead type
         self.index = counter[0] if index is None else index
         self.subindex = subindex
+        self.mass = mass
+        self.density = density
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$prism"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling,
+                mass=mass, density=density,
+                lattice_style=lattice_style,
+                lattice_scale=lattice_scale,
+                lattice_scale_siunits=lattice_scale_siunits
                 )
+
+    def volume(self,units=None):
+        """Calculate the volume of the prism based on USER.args"""
+        #args = [xlo, xhi, ylo, yhi, zlo, zhi, xy, xz, yz]
+        try:
+            # Extract the arguments from USER.args
+            args = self.USER.args_siunits if units=="si" else self.USER.args
+            xlo = float(args[0])
+            xhi = float(args[1])
+            ylo = float(args[2])
+            yhi = float(args[3])
+            zlo = float(args[4])
+            zhi = float(args[5])
+            # Calculate the dimensions of the prism
+            length = xhi - xlo
+            width = yhi - ylo
+            height = zhi - zlo
+            # Calculate the volume of the prism
+            volume = length * width * height
+            return volume
+        except Exception as e:
+            print(f"Error calculating volume: {e}")
+            return None
 
 class Sphere(coregeometry):
     """ Sphere class """
 
-    def __init__(self,counter,index=None,subindex=None,
+    def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
+                 lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
                  hasgroup=False,hasmove=False,spacefilling=False,**variables):
         self.name = "sphere%03d" % counter[1]
         self.kind = "sphere"      # kind of object
@@ -1266,12 +1636,32 @@ class Sphere(coregeometry):
         self.beadtype = 1       # bead type
         self.index = counter[0] if index is None else index
         self.subindex = subindex
+        self.mass = mass
+        self.density = density
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$sphere"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling,
+                mass=mass, density=density,
+                lattice_style=lattice_style,
+                lattice_scale=lattice_scale,
+                lattice_scale_siunits=lattice_scale_siunits
                 )
+
+    def volume(self,units=None):
+        """Calculate the volume of the sphere based on USER.args"""
+        #args = [x, y, z, radius]
+        try:
+            # Extract the arguments from USER.args
+            args = self.USER.args_siunits if units=="si" else self.USER.args
+            radius = float(args[3])
+            # Calculate the volume of the sphere
+            volume = (4/3) * 3.141592653589793 * (radius ** 3)
+            return volume
+        except Exception as e:
+            print(f"Error calculating volume: {e}")
+            return None
 
 class Union(coregeometry):
     """ Union class """
@@ -1516,6 +1906,23 @@ class region:
         fillingbeadtype : int, optional
             Type of bead used for space filling (default is 1).
 
+        Attributes controlling scaling: (added 2024-07-03)
+        -------------------------------
+        boxcenter : list, optional
+            center of the box, to scale the coordinates (default = [0,0,0]), the units are defined by region units
+        regionunits : str, optional
+            units used internally by region either "lattice" (default) or "si"
+            region use internally only lattice units (USER.args), for convenience USER.args_siunits are also provided
+            Note that units can be overdefined for each object created in the region (lattice|box)
+        lattice_scale : float, optional
+            Gives the scale of the lattice (used by create_atoms, same space filling approach as used in pizza.raster())
+        lattice_style : str, optional
+            Indicates the type of lattice to be used (default = 'fcc',)
+            any LAMMPS lattice model is accepted, use 'sc' if you want a simple cubic lattice
+        separationdistance : float, optional
+            Sets the distance between atoms in SPH simulations (units in SI)
+            For production, it is recommended to choose separatationdistance equals to lattice_scale for consistency.
+            However, separationdistance is not a property used directly by region and it could be defined at a later stage.
     """
     _version = "0.36"
     __custom_documentations__ = "pizza.region.region class"
@@ -1546,6 +1953,7 @@ class region:
                  # for data conversion (not implemented for now)
                  mass=1,
                  volume=1,
+                 density=1,
                  radius=1.5,
                  contactradius=0.5,
                  velocities=[0,0,0],
@@ -1565,23 +1973,43 @@ class region:
                      },
                  # spacefilling design (added on 2023-08-10)
                  spacefilling = False,
-                 fillingbeadtype = 1
+                 fillingbeadtype = 1,
+                 # lattice (added 2024-07-03)
+                 boxcenter = [0,0,0],       # center of the box for coordinates scaling
+                 regionunits = "lattice",   # units ("lattice" or "si")
+                 separationdistance = 5e-6, # SI units
+                 lattice_scale = 0.8442,    # LJ units (for visualization)
+                 lattice_style = "fcc" ,    # any valid lattice style accepted by LAMMPS (sc=simple cubic)
+                 live_units = "lj",         # units to be used ONLY with livelammps (https://andeplane.github.io/atomify/)
+                 live_atom_style = "atomic" # atom style to be used ONLY with livelammps (https://andeplane.github.io/atomify/)
                  ):
         """ constructor """
         self.name = name
-        # live data
+        # Validate regionunits (2024-07-04)
+        if regionunits not in ["lattice", "si"]:
+            raise ValueError("regionunits can only be 'lattice' or 'si'.")
+        lattice_scale_siunits = lattice_scale if regionunits == "si" else separationdistance
+        if lattice_scale_siunits is None: lattice_scale_siunits = separationdistance
+        # live data (updated 2024-07-04)
+        live_lattice_scale = lattice_scale/separationdistance if regionunits == "si" else lattice_scale
+        live_box_scale = 1/lattice_scale_siunits if regionunits == "si" else 1
         self.live = regiondata(nbeads=nbeads,
                                run=run,
-                               width=width,
-                               height=height,
-                               depth=depth)
+                               width=math.ceil(width*live_box_scale),    # live_box_scale force lattice units for live visualization
+                               height=math.ceil(height*live_box_scale),  # live_box_scale force lattice units for live visualization
+                               depth=math.ceil(depth*live_box_scale),    # live_box_scale force lattice units for live visualization
+                               live_units = "$"+live_units,
+                               live_atom_style = "$"+live_atom_style,
+                               live_lattice_style="$"+lattice_style,
+                               live_lattice_scale=live_lattice_scale)
         # generic SMD properties (to be rescaled)
         self.volume = volume
         self.mass = mass
+        self.density = density
         self.radius = radius
         self.contactradius = contactradius
         self.velocities = velocities
-        self.forces =forces
+        self.forces = forces
         if filename == "":
             self.filename = "region (%s)" % self.name
         else:
@@ -1615,15 +2043,47 @@ class region:
             }
         # space filling  added 2023-08-10
         self.spacefilling = {
-            "flag": spacefilling,
-    "fillingstyle": "$block",
- "fillingbeadtype": fillingbeadtype,
-    "fillingwidth": width,
-   "fillingheight": height,
-    "fillingdepth": depth,
-    "fillingunits": units
-         }
+                   "flag": spacefilling,
+           "fillingstyle": "$block",
+        "fillingbeadtype": fillingbeadtype,
+           "fillingwidth": width,
+          "fillingheight": height,
+           "fillingdepth": depth,
+           "fillingunits": units
+               }
+        # lattice
+        self.units = regionunits
+        self.boxcenter = boxcenter
+        self.separationdistance = separationdistance
+        self.lattice_scale = lattice_scale
+        self.lattice_scale_siunits = lattice_scale_siunits
+        self.lattice_style = lattice_style
 
+
+    # Method to for coordinate/length scaling and translation including with formula embedded strings (added 2024-07-03, fixed 2024-07-04)
+    # note that the translation is not fully required since the scaling applies also to full cordinates.
+    # However, an implementation is provided for arbitrary offset.
+    def scale_and_translate(self, value, offset=0):
+        """Scale and translate a value or encapsulate the formula within a string."""
+        if isinstance(value, str):
+            if offset:
+                translated = f"({value}) - {offset}"
+            else:
+                translated = f"{value}"
+            if self.units == "si":
+                return f"({translated}) / {self.lattice_scale} + {offset / self.lattice_scale}"
+            else:  # "lattice"
+                return f"({translated}) * {self.lattice_scale} + {offset * self.lattice_scale}"
+        else:
+            if offset:
+                translated = value - offset
+            else:
+                translated = value
+            if self.units == "si":
+                return translated / self.lattice_scale + (offset / self.lattice_scale)
+            else:  # "lattice"
+                return translated * self.lattice_scale + (offset * self.lattice_scale)
+        
 
     # space filling attributes (cannot be changed)
     @property
@@ -1633,6 +2093,35 @@ class region:
     @property
     def spacefillingbeadtype(self):
         return self.spacefilling["fillingbeadtype"]
+    
+    # total number of atoms in the region
+    @property
+    def natoms(self):
+        """Count the total number of atoms in all objects within the region."""
+        total_atoms = 0
+        for eachobj in self:
+            total_atoms += eachobj.natoms
+        return total_atoms
+    
+    # details if the geometry of the region
+    @property
+    def geometry(self):
+        """Display the dimensions and characteristics of the region and its objects."""
+        details = f"Region: {self.name}\n"
+        details += f"Total atoms: {self.natoms}\n"
+        details += f"Span: width={self.spacefilling['fillingwidth']}, height={self.spacefilling['fillingheight']}, depth={self.spacefilling['fillingdepth']}\n"
+        details += f"Box center: {self.boxcenter}\n"
+        details += "Objects in the region:\n\n"
+        for obj in self:
+            details += "\n\n"+"-"*32+"\n"
+            details += f"\nObject: {obj.name}\n"
+            details += f"Type: {type(obj).__name__}\n"
+            if hasattr(obj, 'geometry'):
+                details += "\n"+"-"*32+"\n"
+                details += obj.geometry
+            else:
+                details += "No geometry information available.\n"
+        print(details)
 
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
     #
@@ -1704,6 +2193,7 @@ class region:
     # xlo,xhi,ylo,yhi,zlo,zhi = bounds of block in all dimensions (distance units)
     def block(self,xlo=-5,xhi=5,ylo=-5,yhi=5,zlo=-5,zhi=5,
                   name=None,beadtype=None,fake=False,
+                  mass=None, density=None,
                   side=None,units=None,move=None,rotate=None,open=None,
                   index = None,subindex = None,
                   **variables
@@ -1738,16 +2228,49 @@ class region:
         kind = "block"
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
-        # create the object C with C for cone
+        # create the object B with B for block
+        obj_mass = mass if mass is not None else self.mass
+        obj_density = density if density is not None else self.density
         B = Block((self.counter["all"]+1,self.counter[kind]+1),
                       spacefilling=self.isspacefilled, # added on 2023-08-11
-                      index=index,subindex=subindex,**variables)
+                      mass=obj_mass, density=obj_density, # added on 2024-06-14
+                      index=index,subindex=subindex,
+                      lattice_style=self.lattice_style,
+                      lattice_scale=self.lattice_scale,
+                      lattice_scale_siunits=self.lattice_scale_siunits,
+                      **variables)
         # feed USER fields
         if name not in (None,""): B.name = name # object name (if not defined, default name will be used)
         if name in self.name: raise NameError('the name "%s" is already used' % name)
         if beadtype is not None: B.beadtype = beadtype # bead type (if not defined, default index will apply)
         B.USER.ID = "$"+B.name        # add $ to prevent its execution
-        B.USER.args = [xlo,xhi,ylo,yhi,zlo,zhi]   # args = [....] as defined in the class Block
+        # geometry args (2024-07-04)  -------------------------------------
+        args = [xlo, xhi, ylo, yhi, zlo, zhi]  # args = [....] as defined in the class Block
+        args_scaled = [
+            self.scale_and_translate(xlo, self.boxcenter[0]),
+            self.scale_and_translate(xhi, self.boxcenter[0]),
+            self.scale_and_translate(ylo, self.boxcenter[1]),
+            self.scale_and_translate(yhi, self.boxcenter[1]),
+            self.scale_and_translate(zlo, self.boxcenter[2]),
+            self.scale_and_translate(zhi, self.boxcenter[2])
+        ]
+        if self.units == "si":
+            B.USER.args = args_scaled
+            B.USER.args_siunits = args
+        else:  # "lattice"
+            B.USER.args = args
+            B.USER.args_siunits = args_scaled
+        # geometry
+        B.USER.geometry = (
+            f"Block Region: {B.name}\n"
+            "Coordinates: [xlo,xhi,ylo,yhi,zlo,zhi] = bounds of block in all dimensions"
+            f"Coordinates (scaled): {B.USER.args}\n"
+            f"Coordinates (SI units): {B.USER.args_siunits}\n"
+            f"\talong x: [{B.USER.args[0]}, {B.USER.args[1]}]\n"
+            f"\talong y: [{B.USER.args[2]}, {B.USER.args[3]}]\n"
+            f"\talong z: [{B.USER.args[4]}, {B.USER.args[5]}]"
+        )
+        # other attributes  -------------------------------------
         B.USER.beadtype = B.beadtype  # beadtype to be used for create_atoms
         B.USER.side = B.sidearg(side) # extra parameter side
         B.USER.move = B.movearg(move) # move arg
@@ -1772,6 +2295,7 @@ class region:
     # lo,hi = bounds of cone in dim (distance units)
     def cone(self,dim="z",c1=0,c2=0,radlo=2,radhi=5,lo=-10,hi=10,
                   name=None,beadtype=None,fake=False,
+                  mass=None, density=None,
                   side=None,units=None,move=None,rotate=None,open=None,
                   index = None,subindex = None,
                   **variables
@@ -1811,15 +2335,75 @@ class region:
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
         # create the object C with C for cone
+        obj_mass = mass if mass is not None else self.mass
+        obj_density = density if density is not None else self.density
         C = Cone((self.counter["all"]+1,self.counter[kind]+1),
                       spacefilling=self.isspacefilled, # added on 2023-08-11
-                      index=index,subindex=subindex,**variables)
+                      mass=obj_mass, density=obj_density, # added on 2024-06-14
+                      index=index,subindex=subindex,
+                      lattice_style=self.lattice_style,
+                      lattice_scale=self.lattice_scale,
+                      lattice_scale_siunits=self.lattice_scale_siunits,
+                      **variables)
         # feed USER fields
         if name not in (None,""): C.name = name # object name (if not defined, default name will be used)
         if name in self.name: raise NameError('the name "%s" is already used' % name)
         if beadtype is not None: C.beadtype = beadtype # bead type (if not defined, default index will apply)
         C.USER.ID = "$"+C.name        # add $ to prevent its execution
-        C.USER.args = [dim,c1,c2,radlo,radhi,lo,hi]   # args = [....] as defined in the class Cone
+        # geometry args (2024-07-04)  -------------------------------------
+        args = [dim, c1, c2, radlo, radhi, lo, hi]  # args = [....] as defined in the class Cone
+        if dim == "x":  # x-axis
+            args_scaled = [
+                dim,
+                self.scale_and_translate(c1, self.boxcenter[1]),
+                self.scale_and_translate(c2, self.boxcenter[2]),
+                self.scale_and_translate(radlo, 0),
+                self.scale_and_translate(radhi, 0),
+                self.scale_and_translate(lo, self.boxcenter[0]),
+                self.scale_and_translate(hi, self.boxcenter[0])
+            ]
+        elif dim == "y":  # y-axis
+            args_scaled = [
+                dim,
+                self.scale_and_translate(c1, self.boxcenter[0]),
+                self.scale_and_translate(c2, self.boxcenter[2]),
+                self.scale_and_translate(radlo, 0),
+                self.scale_and_translate(radhi, 0),
+                self.scale_and_translate(lo, self.boxcenter[1]),
+                self.scale_and_translate(hi, self.boxcenter[1])
+            ]
+        else:  # z-axis
+            args_scaled = [
+                dim,
+                self.scale_and_translate(c1, self.boxcenter[0]),
+                self.scale_and_translate(c2, self.boxcenter[1]),
+                self.scale_and_translate(radlo, 0),
+                self.scale_and_translate(radhi, 0),
+                self.scale_and_translate(lo, self.boxcenter[2]),
+                self.scale_and_translate(hi, self.boxcenter[2])
+            ]
+        
+        if self.units == "si":
+            C.USER.args = args_scaled
+            C.USER.args_siunits = args
+        else:  # "lattice"
+            C.USER.args = args
+            C.USER.args_siunits = args_scaled
+        # geometry
+        C.USER.geometry = (
+            f"Cone Region: {C.name}\n"
+            "Coordinates: [dim,c1,c2,radlo,radhi,lo,hi] = dimensions of cone\n"
+            f"Coordinates (scaled): {C.USER.args}\n"
+            f"Coordinates (SI units): {C.USER.args_siunits}\n"
+            f"\tdim: {C.USER.args[0]}\n"
+            f"\tc1: {C.USER.args[1]}\n"
+            f"\tc2: {C.USER.args[2]}\n"
+            f"\tradlo: {C.USER.args[3]}\n"
+            f"\tradhi: {C.USER.args[4]}\n"
+            f"\tlo: {C.USER.args[5]}\n"
+            f"\thi: {C.USER.args[6]}"
+        )
+        # other attributes  -------------------------------------
         C.USER.beadtype = C.beadtype  # beadtype to be used for create_atoms
         C.USER.side = C.sidearg(side) # extra parameter side
         C.USER.move = C.movearg(move) # move arg
@@ -1845,12 +2429,13 @@ class region:
     # lo,hi = bounds of cylinder in dim (distance units)
     def cylinder(self,dim="z",c1=0,c2=0,radius=4,lo=-10,hi=10,
                   name=None,beadtype=None,fake=False,
+                  mass=None, density=None,
                   side=None,units=None,move=None,rotate=None,open=None,
                   index = None,subindex = None,
                   **variables
                   ):
         """
-        creates a cone region
+        creates a cylinder region
               dim = x or y or z = axis of cylinder
               c1,c2 = coords of cylinder axis in other 2 dimensions (distance units)
               radius = cylinder radius (distance units)
@@ -1884,15 +2469,70 @@ class region:
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
         # create the object C with C for cylinder
+        obj_mass = mass if mass is not None else self.mass
+        obj_density = density if density is not None else self.density
         C = Cylinder((self.counter["all"]+1,self.counter[kind]+1),
                       spacefilling=self.isspacefilled, # added on 2023-08-11
-                      index=index,subindex=subindex,**variables)
+                      mass=obj_mass, density=obj_density,
+                      index=index,subindex=subindex,
+                      lattice_style=self.lattice_style,
+                      lattice_scale=self.lattice_scale,
+                      lattice_scale_siunits=self.lattice_scale_siunits,
+                      **variables)
         # feed USER fields
         if name not in (None,""): C.name = name # object name (if not defined, default name will be used)
         if name in self.name: raise NameError('the name "%s" is already used' % name)
         if beadtype is not None: C.beadtype = beadtype # bead type (if not defined, default index will apply)
         C.USER.ID = "$"+C.name        # add $ to prevent its execution
-        C.USER.args = [dim,c1,c2,radius,lo,hi]   # args = [....] as defined in the class Cylinder
+        # geometry args (2024-07-04)  -------------------------------------
+        args = [dim, c1, c2, radius, lo, hi]  # args = [....] as defined in the class Cylinder
+        if dim == "x":  # x-axis
+            args_scaled = [
+                dim,
+                self.scale_and_translate(c1, self.boxcenter[1]),
+                self.scale_and_translate(c2, self.boxcenter[2]),
+                self.scale_and_translate(radius, 0),
+                self.scale_and_translate(lo, self.boxcenter[0]),
+                self.scale_and_translate(hi, self.boxcenter[0])
+            ]
+        elif dim == "y":  # y-axis
+            args_scaled = [
+                dim,
+                self.scale_and_translate(c1, self.boxcenter[0]),
+                self.scale_and_translate(c2, self.boxcenter[2]),
+                self.scale_and_translate(radius, 0),
+                self.scale_and_translate(lo, self.boxcenter[1]),
+                self.scale_and_translate(hi, self.boxcenter[1])
+            ]
+        else:  # z-axis
+            args_scaled = [
+                dim,
+                self.scale_and_translate(c1, self.boxcenter[0]),
+                self.scale_and_translate(c2, self.boxcenter[1]),
+                self.scale_and_translate(radius, 0),
+                self.scale_and_translate(lo, self.boxcenter[2]),
+                self.scale_and_translate(hi, self.boxcenter[2])
+            ]        
+        if self.units == "si":
+            C.USER.args = args_scaled
+            C.USER.args_siunits = args
+        else:  # "lattice"
+            C.USER.args = args
+            C.USER.args_siunits = args_scaled
+        # geometry
+        C.USER.geometry = (
+            f"Cylinder Region: {C.name}\n"
+            "Coordinates: [dim,c1,c2,radius,lo,hi] = dimensions of cylinder\n"
+            f"Coordinates (scaled): {C.USER.args}\n"
+            f"Coordinates (SI units): {C.USER.args_siunits}\n"
+            f"\tdim: {C.USER.args[0]}\n"
+            f"\tc1: {C.USER.args[1]}\n"
+            f"\tc2: {C.USER.args[2]}\n"
+            f"\tradius: {C.USER.args[3]}\n"
+            f"\tlo: {C.USER.args[4]}\n"
+            f"\thi: {C.USER.args[5]}"
+        )
+        # other attributes  -------------------------------------
         C.USER.beadtype = C.beadtype  # beadtype to be used for create_atoms
         C.USER.side = C.sidearg(side) # extra parameter side
         C.USER.move = C.movearg(move) # move arg
@@ -1916,6 +2556,7 @@ class region:
     # x,y,z,a,b,c can be variables
     def ellipsoid(self,x=0,y=0,z=0,a=5,b=3,c=2,
                   name=None,beadtype=None,fake=False,
+                  mass=None, density=None,
                   side=None,units=None,move=None,rotate=None,open=None,
                   index = None,subindex = None,
                   **variables
@@ -1968,15 +2609,49 @@ class region:
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
         # create the object E with E for Ellipsoid
+        obj_mass = mass if mass is not None else self.mass
+        obj_density = density if density is not None else self.density
         E = Ellipsoid((self.counter["all"]+1,self.counter[kind]+1),
                       spacefilling=self.isspacefilled, # added on 2023-08-11
-                      index=index,subindex=subindex,**variables)
+                      mass=obj_mass, density=obj_density,
+                      index=index,subindex=subindex,
+                      lattice_style=self.lattice_style,
+                      lattice_scale=self.lattice_scale,
+                      lattice_scale_siunits=self.lattice_scale_siunits,
+                      **variables)
         # feed USER fields
         if name not in (None,""): E.name = name # object name (if not defined, default name will be used)
         if name in self.name: raise NameError('the name "%s" is already used' % name)
         if beadtype is not None: E.beadtype = beadtype # bead type (if not defined, default index will apply)
         E.USER.ID = "$"+E.name        # add $ to prevent its execution
-        E.USER.args = [x,y,z,a,b,c]   # args = [....] as defined in the class Ellipsoid
+        # geometry args (2024-07-04)  -------------------------------------
+        args = [x, y, z, a, b, c]  # args = [....] as defined in the class Ellipsoid
+        args_scaled = [
+            self.scale_and_translate(x, self.boxcenter[0]),
+            self.scale_and_translate(y, self.boxcenter[1]),
+            self.scale_and_translate(z, self.boxcenter[2]),
+            self.scale_and_translate(a, 0),
+            self.scale_and_translate(b, 0),
+            self.scale_and_translate(c, 0)
+        ]
+        if self.units == "si":
+            E.USER.args = args_scaled
+            E.USER.args_siunits = args
+        else:  # "lattice"
+            E.USER.args = args
+            E.USER.args_siunits = args_scaled
+        # geometry
+        E.USER.geometry = (
+            f"Ellipsoid Region: {E.name}\n"
+            "Coordinates: [x,y,z,a,b,c] = center and radii of ellipsoid\n"
+            f"Coordinates (scaled): {E.USER.args}\n"
+            f"Coordinates (SI units): {E.USER.args_siunits}\n"
+            f"\tcenter: [{E.USER.args[0]}, {E.USER.args[1]}, {E.USER.args[2]}]\n"
+            f"\ta: {E.USER.args[3]}\n"
+            f"\tb: {E.USER.args[4]}\n"
+            f"\tc: {E.USER.args[5]}"
+        )
+        # other attributes  -------------------------------------
         E.USER.beadtype = E.beadtype  # beadtype to be used for create_atoms
         E.USER.side = E.sidearg(side) # extra parameter side
         E.USER.move = E.movearg(move) # move arg
@@ -2037,13 +2712,43 @@ class region:
         # create the object P with P for plane
         P = Plane((self.counter["all"]+1,self.counter[kind]+1),
                       spacefilling=self.isspacefilled, # added on 2023-08-11
-                      index=index,subindex=subindex,**variables)
+                      mass=self.mass, density=self.density, # added on 2024-06-14
+                      index=index,subindex=subindex,
+                      lattice_style=self.lattice_style,
+                      lattice_scale=self.lattice_scale,
+                      lattice_scale_siunits=self.lattice_scale_siunits,
+                      **variables)
         # feed USER fields
         if name not in (None,""): P.name = name # object name (if not defined, default name will be used)
         if name in self.name: raise NameError('the name "%s" is already used' % name)
         if beadtype is not None: P.beadtype = beadtype # bead type (if not defined, default index will apply)
         P.USER.ID = "$"+P.name        # add $ to prevent its execution
-        P.USER.args = [px,py,pz,nx,ny,nz]   # args = [....] as defined in the class Plane
+        # geometry args (2024-07-04) ---------------------------
+        args = [px, py, pz, nx, ny, nz]  # args = [....] as defined in the class Plane
+        args_scaled = [
+            self.scale_and_translate(px, self.boxcenter[0]),
+            self.scale_and_translate(py, self.boxcenter[1]),
+            self.scale_and_translate(pz, self.boxcenter[2]),
+            self.scale_and_translate(nx, 0),
+            self.scale_and_translate(ny, 0),
+            self.scale_and_translate(nz, 0)
+        ]
+        if self.units == "si":
+            P.USER.args = args_scaled
+            P.USER.args_siunits = args
+        else:  # "lattice"
+            P.USER.args = args
+            P.USER.args_siunits = args_scaled
+        # geometry
+        P.USER.geometry = (
+            f"Plane Region: {P.name}\n"
+            "Coordinates: [px,py,pz,nx,ny,nz] = point and normal vector of plane\n"
+            f"Coordinates (scaled): {P.USER.args}\n"
+            f"Coordinates (SI units): {P.USER.args_siunits}\n"
+            f"\tpoint: [{P.USER.args[0]}, {P.USER.args[1]}, {P.USER.args[2]}]\n"
+            f"\tnormal: [{P.USER.args[3]}, {P.USER.args[4]}, {P.USER.args[5]}]"
+            )
+        # other attributes ---------------------------
         P.USER.beadtype = P.beadtype  # beadtype to be used for create_atoms
         P.USER.side = P.sidearg(side) # extra parameter side
         P.USER.move = P.movearg(move) # move arg
@@ -2068,6 +2773,7 @@ class region:
     # yz = distance to tilt z in y direction (distance units)
     def prism(self,xlo=-5,xhi=5,ylo=-5,yhi=5,zlo=-5,zhi=5,xy=1,xz=1,yz=1,
                   name=None,beadtype=None,fake=False,
+                  mass=None, density=None,
                   side=None,units=None,move=None,rotate=None,open=None,
                   index = None,subindex = None,
                   **variables
@@ -2106,15 +2812,50 @@ class region:
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
         # create the object P with P for prism
+        obj_mass = mass if mass is not None else self.mass
+        obj_density = density if density is not None else self.density
         P = Prism((self.counter["all"]+1,self.counter[kind]+1),
                       spacefilling=self.isspacefilled, # added on 2023-08-11
-                      index=index,subindex=subindex,**variables)
+                      mass=obj_mass, density=obj_density, # added on 2024-06-14
+                      index=index,subindex=subindex,
+                      lattice_style=self.lattice_style,
+                      lattice_scale=self.lattice_scale,
+                      lattice_scale_siunits=self.lattice_scale_siunits,
+                      **variables)
         # feed USER fields
         if name not in (None,""): P.name = name # object name (if not defined, default name will be used)
         if name in self.name: raise NameError('the name "%s" is already used' % name)
         if beadtype is not None: P.beadtype = beadtype # bead type (if not defined, default index will apply)
         P.USER.ID = "$"+P.name        # add $ to prevent its execution
-        P.USER.args = [xlo,xhi,ylo,yhi,zlo,zhi,xy,xz,yz]   # args = [....] as defined in the class Prism
+        # geometry args (2024-07-04) ---------------------------
+        args = [xlo, xhi, ylo, yhi, zlo, zhi, xy, xz, yz]  # args = [....] as defined in the class Prism
+        args_scaled = [
+            self.scale_and_translate(xlo, self.boxcenter[0]),
+            self.scale_and_translate(xhi, self.boxcenter[0]),
+            self.scale_and_translate(ylo, self.boxcenter[1]),
+            self.scale_and_translate(yhi, self.boxcenter[1]),
+            self.scale_and_translate(zlo, self.boxcenter[2]),
+            self.scale_and_translate(zhi, self.boxcenter[2]),
+            self.scale_and_translate(xy, 0),
+            self.scale_and_translate(xz, 0),
+            self.scale_and_translate(yz, 0)
+        ]
+        if self.units == "si":
+            P.USER.args = args_scaled
+            P.USER.args_siunits = args
+        else:  # "lattice"
+            P.USER.args = args
+            P.USER.args_siunits = args_scaled
+        # geometry
+        P.USER.geometry = (
+            f"Prism Region: {P.name}\n"
+            "Coordinates: [xlo,xhi,ylo,yhi,zlo,zhi,xy,xz,yz] = bounds and tilts of prism\n"
+            f"Coordinates (scaled): {P.USER.args}\n"
+            f"Coordinates (SI units): {P.USER.args_siunits}\n"
+            f"\tbounds: [{P.USER.args[0]}, {P.USER.args[1]}, {P.USER.args[2]}, {P.USER.args[3]}, {P.USER.args[4]}, {P.USER.args[5]}]\n"
+            f"\ttilts: [{P.USER.args[6]}, {P.USER.args[7]}, {P.USER.args[8]}]"
+        )
+        # other attributes ---------------------------
         P.USER.beadtype = P.beadtype  # beadtype to be used for create_atoms
         P.USER.side = P.sidearg(side) # extra parameter side
         P.USER.move = P.movearg(move) # move arg
@@ -2138,6 +2879,7 @@ class region:
     # x,y,z, and radius can be a variable (see below)
     def sphere(self,x=0,y=0,z=0,radius=3,
                   name=None,beadtype=None,fake=False,
+                  mass=None, density=None,
                   side=None,units=None,move=None,rotate=None,open=None,
                   index = None,subindex = None,
                   **variables
@@ -2175,15 +2917,45 @@ class region:
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
         # create the object S with S for sphere
+        obj_mass = mass if mass is not None else self.mass
+        obj_density = density if density is not None else self.density
         S = Sphere((self.counter["all"]+1,self.counter[kind]+1),
                       spacefilling=self.isspacefilled, # added on 2023-08-11
-                      index=index,subindex=subindex,**variables)
+                      mass=obj_mass, density=obj_density, # added on 2024-06-14
+                      index=index,subindex=subindex,
+                      lattice_style=self.lattice_style,
+                      lattice_scale=self.lattice_scale,
+                      lattice_scale_siunits=self.lattice_scale_siunits,
+                      **variables)
         # feed USER fields
         if name not in (None,""): S.name = name # object name (if not defined, default name will be used)
         if name in self.name: raise NameError('the name "%s" is already used' % name)
         if beadtype is not None: S.beadtype = beadtype # bead type (if not defined, default index will apply)
         S.USER.ID = "$"+S.name        # add $ to prevent its execution
-        S.USER.args = [x,y,z,radius]   # args = [....] as defined in the class Sphere
+        # geometry args (2024-07-04) ---------------------------
+        args = [x, y, z, radius]  # args = [....] as defined in the class Sphere
+        args_scaled = [
+            self.scale_and_translate(x, self.boxcenter[0]),
+            self.scale_and_translate(y, self.boxcenter[1]),
+            self.scale_and_translate(z, self.boxcenter[2]),
+            self.scale_and_translate(radius, 0)
+        ]
+        if self.units == "si":
+            S.USER.args = args_scaled
+            S.USER.args_siunits = args
+        else:  # "lattice"
+            S.USER.args = args
+            S.USER.args_siunits = args_scaled
+        # geometry
+        S.USER.geometry = (
+            f"Sphere Region: {S.name}\n"
+            "Coordinates: [x,y,z,radius] = center and radius of sphere\n"
+            f"Coordinates (scaled): {S.USER.args}\n"
+            f"Coordinates (SI units): {S.USER.args_siunits}\n"
+            f"\tcenter: [{S.USER.args[0]}, {S.USER.args[1]}, {S.USER.args[2]}]\n"
+            f"\tradius: {S.USER.args[3]}"
+        )
+        # other attributes ---------------------------
         S.USER.beadtype = S.beadtype  # beadtype to be used for create_atoms
         S.USER.side = S.sidearg(side) # extra parameter side
         S.USER.move = S.movearg(move) # move arg
@@ -2418,7 +3190,8 @@ class region:
         spacefillingstr = f"\n(space filled with beads of type {self.spacefillingbeadtype})" \
             if self.isspacefilled else ""
         print("-"*40)
-        print('REGION container "%s" with %d objects %s' % (self.name,self.nobjects,spacefillingstr))
+        print('REGION container "%s" with %d objects %s\n(units="%s", lattice="%s", scale=%0.4g [m])' \
+              % (self.name,self.nobjects,spacefillingstr,self.units,self.lattice_style,self.lattice_scale_siunits))
         if self.nobjects>0:
             names = self.names
             l = [len(n) for n in names]
@@ -2936,6 +3709,14 @@ class emulsion(scatter):
 # the code is called from here
 # ===================================================
 if __name__ == '__main__':
+
+    # example 2024 to show how to retrieve the number of atoms in an object
+    R = region(name="my region", mass=2, density=5)
+    # Create a Block object using the block method of the region container with specific dimensions
+    R.block(xlo=0, xhi=10, ylo=0, yhi=10, zlo=0, zhi=10, name="B1",mass=3)
+    # Access the natoms property of the Block object
+    print("Number of atoms in the block:", R.B1.natoms)
+
     # early example
     a=region(name="region A")
     b=region(name="region B")
@@ -3039,22 +3820,76 @@ if __name__ == '__main__':
     collection = b1 + b2 + b3 + b4;
 
     # # emulsion example
-    # scale = 1 # tested up to scale = 10 to reach million of beads
-    # mag = 3
-    # e = emulsion(xmin=-5*mag, ymin=-5*mag, zmin=-5*mag,xmax=5*mag, ymax=5*mag, zmax=5*mag)
-    # e.insertion([2,2,2,1,1.6,1.2,1.4,1.3],beadtype=3)
-    # e.insertion([0.6,0.3,2,1.5,1.5,1,2,1.2,1.1,1.3],beadtype=1)
-    # e.insertion([3,1,2,2,4,1,1.2,2,2.5,1.2,1.4,1.6,1.7],beadtype=2)
-    # e.insertion([3,1,2,2,4,1,5.2,2,4.5,1.2,1.4,1.6,1.7],beadtype=4)
+    scale = 1 # tested up to scale = 10 to reach million of beads
+    mag = 3
+    e = emulsion(xmin=-5*mag, ymin=-5*mag, zmin=-5*mag,xmax=5*mag, ymax=5*mag, zmax=5*mag)
+    e.insertion([2,2,2,1,1.6,1.2,1.4,1.3],beadtype=3)
+    e.insertion([0.6,0.3,2,1.5,1.5,1,2,1.2,1.1,1.3],beadtype=1)
+    e.insertion([3,1,2,2,4,1,1.2,2,2.5,1.2,1.4,1.6,1.7],beadtype=2)
+    e.insertion([3,1,2,2,4,1,5.2,2,4.5,1.2,1.4,1.6,1.7],beadtype=4)
 
-    # # b = region()
-    # # a = region()
-    # # a.sphere(1,1,1,1,name='sphere1')
-    # # a.sphere(1,2,2,1,name='sphere2')
-    # # b.collection(a, name='acollection')
+    # b = region()
+    # a = region()
+    # a.sphere(1,1,1,1,name='sphere1')
+    # a.sphere(1,2,2,1,name='sphere2')
+    # b.collection(a, name='acollection')
 
-    # C = region(name='cregion',width=11*mag,height=11*mag,depth=11*mag)
-    # C.scatter(e)
-    # C.script()
-    # g = C.emulsion.group()
-    # C.dolive()
+    C = region(name='cregion',width=11*mag,height=11*mag,depth=11*mag)
+    C.scatter(e)
+    C.script()
+    g = C.emulsion.group()
+    C.dolive()
+    
+    
+    # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    #             F O R   P R O D U C T I O N
+    # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    # History: 2024-07-04 (first version)
+    # EXAMPLE: gel compression with SI units
+    name = ['top', 'food', 'tongue', 'bottom']
+    radius = [10e-3, 5e-3, 8e-3, 10e-3]  # in m
+    height = [1e-3, 4e-3, 3e-3, 1e-3]  # in m
+    spacer = 2e-3  # in m
+    
+    # Calculate positions in SI units (meters)
+    position_original = [
+        spacer + height[1] + height[2] + height[3],
+        height[2] + height[3],
+        height[3],
+        0
+    ]
+    total_height = sum(height) + spacer * 1e-3  # converting spacer to meters
+    
+    # Center positions around the middle of the container
+    position = [x - total_height / 2 for x in position_original]
+    
+    beadtype = [1, 2, 3, 1]
+    
+    # Create the region container with SI units
+    B = region(
+        name='region container',
+        width=2 * max(radius),
+        height=total_height,
+        depth=2 * max(radius),
+        regionunits="si",
+        separationdistance=100e-6,  # 50 µm
+        lattice_scale=100e-6  # 50 µm
+    )
+    
+    # Add cylinders to the region
+    for i in range(len(name)):
+        B.cylinder(
+            name=name[i],
+            dim="z",  # Assuming z-axis as the dimension
+            c1=0,
+            c2=0,
+            radius=radius[i],
+            lo=position[i],
+            hi=position[i] + height[i],
+            beadtype=beadtype[i]
+        )
+    
+    # Execute the region setup
+    B.dolive()
+    B.geometry
+    

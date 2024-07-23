@@ -446,7 +446,7 @@ end
 if PLOTON % <<-<<-<<-<<-<<-<<-<<-<<-<<-<<-<<-<<-<<-<<-(saved in R1) **********
     figure, hold on
     imagesc(R0(1).xwPBC,R0(1).ywPBC,R0(1).vXYZPBC)
-    colors = jet(ngenerations);
+    colors = jet(R1(1).ngenerations);
     
     for igen = 1:R1(1).ngenerations
         for i=1:R1(1).nstreamlines
@@ -800,7 +800,7 @@ end
 
 % gradient of velocity (saved in R1)
 [gxx,gxy] = gradient(vxXYZgrid,Xw(1,2)-Xw(1,1));
-[gyx,gyy] = gradient(vyXYZgrid,Yw(2,1)-Xw(1,1));
+[gyx,gyy] = gradient(vyXYZgrid,Yw(2,1)-Yw(1,1));
 R1(1).gxx = gxx;
 R1(1).gxy = gxy;
 R1(1).gyx = gyx;
@@ -846,9 +846,9 @@ if PLOTON % <<-<<-<<-<<-<<-<<-<<-<<-<<-<<-<<-<<-<<-<<-(saved in R1 and R0) *****
 
     % Density mapped on beads
     hfig(end+1) = fighandle('d_bead_informed'); hold on, title(sprintf('[t=%0.3g s] density mapped to informed beads',tframe))
-    scatter(R1(1).XYinformed(:,1),R1(1).XYinformed(:,2),100*(R1(1).rbeadinformed/min(R1(1).rbeadinformed)).^2,rhobeadinformed,'filled'), colorbar
+    scatter(R1(1).XYinformed(:,1),R1(1).XYinformed(:,2),100*(R1(1).rbeadinformed/min(R1(1).rbeadinformed)).^2,R1(1).rhobeadinformed,'filled'), colorbar
     hfig(end+1) = fighandle('d_bead_reference'); hold on, title(sprintf('[t=%0.3g s] reference density mapped to informed beads',tframe))
-    scatter(R0(1).XYZeqinformed(:,1),R0(1).XYZeqinformed(:,2),100*(R1(1).rbeadinformed/min(R1(1).rbeadinformed)).^2,rhobeadXYZ2XYinformed,'filled'), colorbar
+    scatter(R0(1).XYZeqinformed(:,1),R0(1).XYZeqinformed(:,2),100*(R1(1).rbeadinformed/min(R1(1).rbeadinformed)).^2,R1(1).rhobeadXYZ2XYinformed,'filled'), colorbar
     hfig(end+1) = fighandle('d_bead_informed_vs_reference'); plot(R0(1).rhobeadXYZ2XYinformed(:),R1(1).rhobeadinformed(:),'ro'), xlabel('reference density (back mapped)'), ylabel('informed density')
     title(sprintf('[t=%0.3g s] informed vs. reference density',tframe))
 
