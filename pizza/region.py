@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.80"
+__version__ = "0.82"
 
 """
 
@@ -18,12 +18,12 @@ REGION Module Documentation
 
 Project: Pizza3
 Authors: Olivier Vitrac, Han Chen
-Copyright: 2023
+Copyright: 2024
 Credits: Olivier Vitrac, Han Chen
 License: GPLv3
 Maintainer: Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Version: 0.80
+Version: 0.82
 
 Overview
 --------
@@ -190,17 +190,17 @@ For any queries or contributions, please contact the maintainer:
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac, Han Chen"
-__copyright__ = "Copyright 2023"
+__copyright__ = "Copyright 2024"
 __credits__ = ["Olivier Vitrac", "Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.60"
+__version__ = "0.82"
 
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-07-05
+# INRAE\Olivier Vitrac - rev. 2024-07-29
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -240,6 +240,7 @@ __version__ = "0.60"
 # 2024-07-03 full implementation of scaling in pizza.region()
 # 2024-07-04 implementation of scaling with formula (when variables are used), add live attributes to region along with an updated LammpsHeader
 # 2024-07-05 full implementation of natoms, geometry
+# 2024-07-29 consolidation of the method scriptobject (note that a do() is required before calling scriptobject)
 
 # %% Imports and private library
 import os, sys, math
@@ -1372,7 +1373,8 @@ class Block(coregeometry):
 
     def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
                  lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
-                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,
+                 style=None, group=None, forcefield=None, **variables):
         self.name = "block%03d" % counter[1]
         self.kind = "block"     # kind of object
         self.alike = "block"    # similar object for plotting
@@ -1381,6 +1383,7 @@ class Block(coregeometry):
         self.subindex = subindex
         self.mass = mass
         self.density = density
+        
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$block"),
@@ -1389,7 +1392,8 @@ class Block(coregeometry):
                 mass=mass, density=density,
                 lattice_style=lattice_style,
                 lattice_scale=lattice_scale,
-                lattice_scale_siunits=lattice_scale_siunits
+                lattice_scale_siunits=lattice_scale_siunits,
+                style=style, group=group, forcefield=forcefield # script object properties
                 )
 
     def volume(self,units=None):
@@ -1423,7 +1427,8 @@ class Cone(coregeometry):
 
     def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
                  lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
-                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,
+                 style=None, group=None, forcefield=None, **variables):
         self.name = "cone%03d" % counter[1]
         self.kind = "cone"     # kind of object
         self.alike = "cone"    # similar object for plotting
@@ -1440,7 +1445,8 @@ class Cone(coregeometry):
                 mass=mass, density=density,
                 lattice_style=lattice_style,
                 lattice_scale=lattice_scale,
-                lattice_scale_siunits=lattice_scale_siunits
+                lattice_scale_siunits=lattice_scale_siunits,
+                style=style, group=group, forcefield=forcefield # script object properties
                 )
 
     def volume(self,units=None):
@@ -1470,7 +1476,8 @@ class Cylinder(coregeometry):
     """ Cylinder class """
     def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
                  lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
-                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,
+                 style=None, group=None, forcefield=None, **variables):
         self.name = "cylinder%03d" % counter[1]
         self.kind = "cylinder"     # kind of object
         self.alike = "cylinder"    # similar object for plotting
@@ -1487,7 +1494,8 @@ class Cylinder(coregeometry):
                 mass=mass, density=density,
                 lattice_style=lattice_style,
                 lattice_scale=lattice_scale,
-                lattice_scale_siunits=lattice_scale_siunits
+                lattice_scale_siunits=lattice_scale_siunits,
+                style=style, group=group, forcefield=forcefield # script object properties
                 )
         
     def volume(self,units=None):
@@ -1513,7 +1521,8 @@ class Ellipsoid(coregeometry):
 
     def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
                  lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
-                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,
+                 style=None, group=None, forcefield=None, **variables):
         self.name = "ellipsoid%03d" % counter[1]
         self.kind = "ellipsoid"     # kind of object
         self.alike = "ellipsoid"    # similar object for plotting
@@ -1530,7 +1539,8 @@ class Ellipsoid(coregeometry):
                 mass=mass, density=density,
                 lattice_style=lattice_style,
                 lattice_scale=lattice_scale,
-                lattice_scale_siunits=lattice_scale_siunits
+                lattice_scale_siunits=lattice_scale_siunits,
+                style=style, group=group, forcefield=forcefield # script object properties
                 )
         
     def volume(self,units=None):
@@ -1554,7 +1564,8 @@ class Plane(coregeometry):
 
     def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
                  lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
-                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,
+                 style=None, group=None, forcefield=None, **variables):
         self.name = "plane%03d" % counter[1]
         self.kind = "plane"      # kind of object
         self.alike = "plane"     # similar object for plotting
@@ -1567,7 +1578,8 @@ class Plane(coregeometry):
         super().__init__(
                 USER = regiondata(style="$plane"),
                 VARIABLES = regiondata(**variables),
-                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling
+                hasgroup=hasgroup,hasmove=hasmove,spacefilling=spacefilling,
+                style=style, group=group, forcefield=forcefield # script object properties
                 )
 
     @property
@@ -1581,7 +1593,8 @@ class Prism(coregeometry):
 
     def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
                  lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
-                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,
+                 style=None, group=None, forcefield=None, **variables):
         self.name = "prism%03d" % counter[1]
         self.kind = "prism"      # kind of object
         self.alike = "prism"     # similar object for plotting
@@ -1598,7 +1611,8 @@ class Prism(coregeometry):
                 mass=mass, density=density,
                 lattice_style=lattice_style,
                 lattice_scale=lattice_scale,
-                lattice_scale_siunits=lattice_scale_siunits
+                lattice_scale_siunits=lattice_scale_siunits,
+                style=style, group=group, forcefield=forcefield # script object properties
                 )
 
     def volume(self,units=None):
@@ -1629,7 +1643,8 @@ class Sphere(coregeometry):
 
     def __init__(self,counter,index=None,subindex=None, mass=1, density=1,
                  lattice_style="sc",lattice_scale=1,lattice_scale_siunits=1,
-                 hasgroup=False,hasmove=False,spacefilling=False,**variables):
+                 hasgroup=False,hasmove=False,spacefilling=False,
+                 style=None, group=None, forcefield=None, **variables):
         self.name = "sphere%03d" % counter[1]
         self.kind = "sphere"      # kind of object
         self.alike = "ellipsoid"     # similar object for plotting
@@ -1646,7 +1661,8 @@ class Sphere(coregeometry):
                 mass=mass, density=density,
                 lattice_style=lattice_style,
                 lattice_scale=lattice_scale,
-                lattice_scale_siunits=lattice_scale_siunits
+                lattice_scale_siunits=lattice_scale_siunits,
+                style=style, group=group, forcefield=forcefield # script object properties
                 )
 
     def volume(self,units=None):
@@ -3844,7 +3860,8 @@ if __name__ == '__main__':
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     #             F O R   P R O D U C T I O N
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    # History: 2024-07-04 (first version)
+    # History: 2024-07-04 (first version), 2024-07-29 (update)
+    
     # EXAMPLE: gel compression with SI units
     name = ['top', 'food', 'tongue', 'bottom']
     radius = [10e-3, 5e-3, 8e-3, 10e-3]  # in m
@@ -3863,10 +3880,13 @@ if __name__ == '__main__':
     # Center positions around the middle of the container
     position = [x - total_height / 2 for x in position_original]
     
-    beadtype = [1, 2, 3, 1]
+    # information for beads
+    beadtypes = [1, 2, 3, 1]
+    groups = [["rigid","wall1"],["food1","soft"],["food2","soft"],["rigid","wall2"]]
+    forcefields = [rigidwall(),solidfood(),solidfood(),rigidwall()]
     
     # Create the region container with SI units
-    B = region(
+    R = region(
         name='region container',
         width=2 * max(radius),
         height=total_height,
@@ -3876,9 +3896,12 @@ if __name__ == '__main__':
         lattice_scale=100e-6  # 50 µm
     )
     
-    # Add cylinders to the region
-    for i in range(len(name)):
-        B.cylinder(
+    # Add cylinders to the region R
+    # the objects are added "statically"
+    # since they contain variables a do() is required to make them a script
+    nobjects = len(name)
+    for i in range(nobjects):
+        R.cylinder(
             name=name[i],
             dim="z",  # Assuming z-axis as the dimension
             c1=0,
@@ -3886,10 +3909,35 @@ if __name__ == '__main__':
             radius=radius[i],
             lo=position[i],
             hi=position[i] + height[i],
-            beadtype=beadtype[i]
+            beadtype=beadtypes[i],
+            style="smd",      # the script oject properties
+            group=groups[i],  # can be defined in the geometry or 
+            forcefield=forcefields[i] # when scriptoject() is called
         )
+        
+    # Compile statically all objects
+    # sR contains the LAMMPS code to generate all region objects and their atoms
+    # sR is a string, all variables have been executed
+    sR = R.do() # this line force the execution of R
+        
+    # Generate information on beads from the scripted objects
+    # note that scriptobject is a method of script extended to region
+    # the region must have been preallably scripted, which has been done with "sR = R.do()"
+    b = []
+    for i in range(nobjects):
+        # style, group and forcefield can be overdefined if needed
+        b.append(R[i].scriptobject(style="smd"))
+    collection = b[0] + b[1] + b[2] + b[3]
     
-    # Execute the region setup
-    B.dolive()
-    B.geometry
+    # The script corresponding to the collection is given by:
+    # scollection is an object of the class script
+    # its final execution can be still affected by variables
+    scollection = collection.script
     
+    # Execute the region setup only for visualization (control only)
+    R.dolive()
+    
+    # The detail of the geometry with an estimation of the number of atoms (control only)
+    R.geometry
+
+    # to be continued as in the previous workshops
