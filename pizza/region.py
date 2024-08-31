@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.82"
+__version__ = "0.83"
 
 """
 
@@ -23,7 +23,7 @@ Credits: Olivier Vitrac, Han Chen
 License: GPLv3
 Maintainer: Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Version: 0.82
+Version: 0.83
 
 Overview
 --------
@@ -195,12 +195,12 @@ __credits__ = ["Olivier Vitrac", "Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.82"
+__version__ = "0.83"
 
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-07-29
+# INRAE\Olivier Vitrac - rev. 2024-08-31 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -241,6 +241,8 @@ __version__ = "0.82"
 # 2024-07-04 implementation of scaling with formula (when variables are used), add live attributes to region along with an updated LammpsHeader
 # 2024-07-05 full implementation of natoms, geometry
 # 2024-07-29 consolidation of the method scriptobject (note that a do() is required before calling scriptobject)
+# 2024-08-02 community implementation
+# 2024-08-31 add method R.beadtypes(), class headerbox(), method R.headerbox()
 
 # %% Imports and private library
 import os, sys, math
@@ -621,6 +623,38 @@ lattice		    ${live_lattice_style} ${live_lattice_scale}
 # ------------------------------------------
 
 # --------------[    B O X   ]--------------
+variable        halfwidth equal ${width}/2
+variable        halfheight equal ${height}/2
+variable        halfdepth equal ${depth}/2
+region box block -${halfwidth} ${halfwidth} -${halfheight} ${halfheight} -${halfdepth} ${halfdepth}
+create_box	${nbeads} box
+# ------------------------------------------
+"""
+
+class LammpsHeaderBox(LammpsGeneric):
+    """ Box header for pizza.region """
+    name = "LammpsHeaderBox"
+    SECTIONS = ["HEADER"]
+    position = 0
+    role = "header for live view"
+    description = "helper method"
+    userid = "headerbox"              # user name
+    version = 0.1                  # version
+    verbose = False
+
+    # DEFINITIONS USED IN TEMPLATE
+    DEFINITIONS = scriptdata(
+               regionname = "$no name",
+                    width = 10,
+                   height = 10,
+                    depth = 10,
+                    nbeads = 1,
+            hasvariables = False
+                    )
+
+    # Template
+    TEMPLATE = """
+% --------------[ Header  B O X  for  ${regionname}   ]--------------
 variable        halfwidth equal ${width}/2
 variable        halfheight equal ${height}/2
 variable        halfdepth equal ${depth}/2
@@ -3404,6 +3438,12 @@ class region:
         for t in utypes:
             c.append((t,typlist.count(t)))
         return c
+    
+    # BEADTYPES property
+    @property
+    def beadtypes(self):
+        """ list the beadtypes """
+        return [ x[0] for x in self.count() ]
 
     # DELETE method
     def delete(self,name):
@@ -3510,7 +3550,7 @@ class region:
             USERspacefilling =regiondata(**self.spacefilling)
             s = LammpsSpacefilling(**USERspacefilling)+s
         if live:
-            beadtypes = [ x[0] for x in self.count() ]
+            beadtypes = self.beadtypes
             USER = regiondata(**self.live)
             USER.nbeads = self.nbeads
             USER.mass = "$"
@@ -3529,6 +3569,18 @@ class region:
             livemode = "dynamic" if self.hasfixmove else "static"
             USER.run =self.livelammps["options"][livemode]["run"]
             s = LammpsHeader(**USER)+s+LammpsFooter(**USER)
+        return s
+    
+    # SCRIPTBOX add header for generating the box matching the region object
+    def scriptbox(self,live=False):
+        """ script the box header for all the region objects"""
+        USERregion = regiondata(**self.live)
+        USERregion.regionname = "$"+self.name
+        USERregion.nbeads = self.nbeads
+        s = LammpsHeaderBox(**USERregion)
+        if self.isspacefilled:
+            USERspacefilling =regiondata(**self.spacefilling)
+            s = s+LammpsSpacefilling(**USERspacefilling)
         return s
 
     # DO METHOD = main static compiler
@@ -3881,6 +3933,7 @@ if __name__ == '__main__':
     position = [x - total_height / 2 for x in position_original]
     
     # information for beads
+    # add attributes to forcefields to match your needs or derive new forcefields
     beadtypes = [1, 2, 3, 1]
     groups = [["rigid","wall1"],["food1","soft"],["food2","soft"],["rigid","wall2"]]
     forcefields = [rigidwall(),solidfood(),solidfood(),rigidwall()]
@@ -3918,7 +3971,9 @@ if __name__ == '__main__':
     # Compile statically all objects
     # sR contains the LAMMPS code to generate all region objects and their atoms
     # sR is a string, all variables have been executed
+    # sRheader is a string
     sR = R.do() # this line force the execution of R
+    sRheader = R.scriptbox().do() # generate the box that contains R
         
     # Generate information on beads from the scripted objects
     # note that scriptobject is a method of script extended to region
@@ -3932,7 +3987,7 @@ if __name__ == '__main__':
     # The script corresponding to the collection is given by:
     # scollection is an object of the class script
     # its final execution can be still affected by variables
-    scollection = collection.script
+    scollection = collection.script.do()
     
     # Execute the region setup only for visualization (control only)
     R.dolive()
@@ -3941,3 +3996,5 @@ if __name__ == '__main__':
     R.geometry
 
     # to be continued as in the previous workshops
+    # sRheader, sR and scollection can be concatenated (they are strings)
+    # Note that scripts can be concatenated before do()
