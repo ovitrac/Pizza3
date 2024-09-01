@@ -4189,7 +4189,7 @@ if __name__ == '__main__':
     # To generate all header scripts in the specified order, use R.scriptHeaders.
     # Note: sRallheaders is a script object. Use sRallheaders.do() to convert it into a string.
     # Scripts can be dynamically combined using the + operator or statically with the & operator.
-    # Scripts can also be combined with pipescripts using the + operator.
+    # Scripts can also be combined with pipescripts using the + or | (piped) operator.
     # Region and collection objects are considered pipescripts.
     # 
     # Comment on the differences between scripts and pipescripts:
