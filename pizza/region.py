@@ -4112,6 +4112,47 @@ if __name__ == '__main__':
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     # History: 2024-07-04 (first version), 2024-07-29 (update), 2024-09-01 (community, per request)
     
+    """
+=== [  S Y N O P S I S  ] ===
+This script provides a detailed example of simulating gel compression using cylindrical objects 
+within a defined region, employing SI units. The example is designed for production and includes 
+steps to create, script, and visualize the simulation setup using LAMMPS-compatible scripts.
+
+Key Features:
+1. **Geometry Setup**: 
+    - Four cylindrical objects ('top', 'food', 'tongue', 'bottom') are defined with specific radii 
+      and heights.
+    - The cylinders are positioned within a central container, with spacing determined by a spacer 
+      element.
+    - The total height of the system is calculated, and the objects are centered within the region.
+  
+2. **Forcefield Assignment**:
+    - Each object is assigned a bead type and grouped with attributes such as rigidity or softness.
+    - Custom forcefields are applied to each object, simulating different physical properties like 
+      rigid walls or soft materials.
+  
+3. **Region Definition**:
+    - A simulation region is created with specific dimensions, accounting for the maximum radius of 
+      the cylinders and the total height of the system.
+    - The region is defined in SI units, with additional parameters like separation distance and 
+      lattice scale.
+  
+4. **Script Generation**:
+    - The script converts the defined region and objects into LAMMPS-compatible code.
+    - Header scripts for initialization, lattice, and the bounding box are generated.
+    - The example emphasizes the flexibility in scripting, allowing dynamic reordering and 
+      combination of scripts.
+
+5. **Execution and Visualization**:
+    - The region setup is executed for visualization purposes, enabling control and inspection of 
+      the geometry.
+    - The geometry details, including an estimation of the number of atoms, are provided for 
+      further analysis.
+
+This example showcases how to effectively set up a gel compression simulation, highlighting key 
+aspects of geometry definition, forcefield application, and scripting for simulation execution.
+"""
+    
     # EXAMPLE: gel compression with SI units
     name = ['top', 'food', 'tongue', 'bottom']
     radius = [10e-3, 5e-3, 8e-3, 10e-3]  # in m
