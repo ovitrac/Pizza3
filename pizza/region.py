@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.83"
+__version__ = "0.85"
 
 """
 
@@ -23,7 +23,7 @@ Credits: Olivier Vitrac, Han Chen
 License: GPLv3
 Maintainer: Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Version: 0.83
+Version: 0.85
 
 Overview
 --------
@@ -195,7 +195,7 @@ __credits__ = ["Olivier Vitrac", "Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.83"
+__version__ = "0.85"
 
 
 
@@ -243,6 +243,7 @@ __version__ = "0.83"
 # 2024-07-29 consolidation of the method scriptobject (note that a do() is required before calling scriptobject)
 # 2024-08-02 community implementation
 # 2024-08-31 add method R.beadtypes(), class headerbox(), method R.headerbox()
+# 2024-08-01 more robust implementation via method: scriptHeaders() and headersData object
 
 # %% Imports and private library
 import os, sys, math
@@ -270,7 +271,7 @@ protectedregionkeys = ('name', 'live', 'nbeads' 'volume', 'mass', 'radius', 'con
                         'forces', 'filename', 'index', 'objects', 'nobjects', 'counter','_iter_',\
                         'livelammps','copy', 'hasfixmove', 'spacefilling', 'isspacefilled', 'spacefillingbeadtype','mass','density',
                         'units','boxcenter','separationdistance','lattice_scale','lattice_style','lattice_scale_siunits',
-                        'geometry', 'natoms'
+                        'geometry', 'natoms', 'headersData'
                             )
 
 # livelammps
@@ -360,6 +361,22 @@ class regioncollection(struct):
                 for i in range(len(list_s)): self.setattr(list_s[i], s[i].copy())
             elif o!=None:
                 self.setattr(o.name, o.copy())
+
+# Class for headersData (added on 2024-09-01)
+class headersRegiondata(regiondata):
+    """
+        class of script parameters
+            Typical constructor:
+                DEFINITIONS = headersRegiondata(
+                    var1 = value1,
+                    var2 = value2
+                    )
+        See script, struct, param to get review all methods attached to it
+    """
+    _type = "HRD"
+    _fulltype = "Header parameters - helper for scripts"
+    _ftype = "header definition"
+
 
 # %% PRIVATE SUB-CLASSES
 # Use the equivalent methods of raster() to call these constructors
@@ -631,34 +648,148 @@ create_box	${nbeads} box
 # ------------------------------------------
 """
 
-class LammpsHeaderBox(LammpsGeneric):
-    """ Box header for pizza.region """
+class LammpsHeaderInit(LammpsGeneric): # --- helper script ---
+    """
+    Generates an initialization header script for a pizza.region object in LAMMPS.
+
+    This class constructs a LAMMPS header based on user-defined properties stored
+    in `R.headersData` of the pizza.region object. Properties set to `None` or an
+    empty string will be omitted from the script.
+
+    Attributes:
+        DEFINITIONS: Defines the parameters like dimension, units, boundary, etc.,
+        that can be set in `R.headersData`.
+
+    Methods:
+        __init__(persistentfile=True, persistentfolder=None, **userdefinitions):
+            Initializes the header script and sets up the `USER` attribute.
+
+        generate_template():
+            Creates the header template based on the provided `USER` definitions.
+
+    Note: This class is primarily intended for internal use within the simulation setup.
+    """
     name = "LammpsHeaderBox"
     SECTIONS = ["HEADER"]
-    position = 0
-    role = "header for live view"
+    position = -2
+    role = "initialization header for pizza.region"
     description = "helper method"
-    userid = "headerbox"              # user name
+    userid = "headerinit"          # user name
     version = 0.1                  # version
     verbose = False
 
     # DEFINITIONS USED IN TEMPLATE
+    # circular references (the variable is defined by its field in USER of class regiondata)
+    # are not needed but this explicits the requirements.
+    # All fields are stored in R.headersData with R a region object.
+    # Use R.headersData.property = value to assign a value
+    # Use R.headersData.property = None or "" to prevent the initialization of property
     DEFINITIONS = scriptdata(
-               regionname = "$no name",
-                    width = 10,
-                   height = 10,
-                    depth = 10,
-                    nbeads = 1,
+                regionname = "${name}",
+                 dimension = "${dimension}",
+                     units = "${units}",
+                  boundary = "${boundary}",
+                atom_style = "${atom_style}",
+               atom_modify = "${atom_modify}",
+               comm_modify = "${comm_modify}",
+              neigh_modify = "${neigh_modify}",
+                    newton = "${newton}",
+            hasvariables = False
+                    )
+    
+    def __init__(self, persistentfile=True, persistentfolder=None, **userdefinitions):
+        """Constructor adding instance definitions stored in USER."""
+        super().__init__(persistentfile, persistentfolder, **userdefinitions)
+        self.generate_template()
+
+    def generate_template(self):
+        """Generate the TEMPLATE based on USER definitions."""
+        self.TEMPLATE = """
+% --------------[ Initialization Header (helper) for "${name}"   ]--------------
+    """
+        self.TEMPLATE += '# set a parameter to None or "" to remove the definition\n'
+        if self.USER.dimension:   self.TEMPLATE += "dimension    ${dimension}\n"
+        if self.USER.units:       self.TEMPLATE += "units        ${units}\n"
+        if self.USER.boundary:    self.TEMPLATE += "boundary     ${boundary}\n"
+        if self.USER.atom_style:  self.TEMPLATE += "atom_style   ${atom_style}\n"
+        if self.USER.atom_modify: self.TEMPLATE += "atom_modify  ${atom_modify}\n"
+        if self.USER.comm_modify: self.TEMPLATE += "comm_modify  ${comm_modify}\n"
+        if self.USER.neigh_modify:self.TEMPLATE += "neigh_modify ${neigh_modify}\n"
+        if self.USER.newton:      self.TEMPLATE += "newton       ${newton}\n"
+        self.TEMPLATE += "# ------------------------------------------\n"
+
+
+class LammpsHeaderLattice(LammpsGeneric): # --- helper script ---
+    """
+        Lattice header for pizza.region
+
+        Use R.headersData.property = value to assign a value
+        with R a pizza.region object
+    """
+    name = "LammpsHeaderLattice"
+    SECTIONS = ["HEADER"]
+    position = 0
+    role = "lattice header for pizza.region"
+    description = "helper method"
+    userid = "headerlattice"       # user name
+    version = 0.1                  # version
+    verbose = False
+
+    # DEFINITIONS USED IN TEMPLATE
+    # circular references (the variable is defined by its field in USER of class regiondata)
+    # are not needed but this explicits the requirements.
+    # All fields are stored in R.headersData with R a region object.
+    # Use R.headersData.property = value to assign a value
+    DEFINITIONS = scriptdata(
+             lattice_style = "${lattice_style}",
+             lattice_scale = "${lattice_scale}",
             hasvariables = False
                     )
 
     # Template
     TEMPLATE = """
-% --------------[ Header  B O X  for  ${regionname}   ]--------------
-variable        halfwidth equal ${width}/2
-variable        halfheight equal ${height}/2
-variable        halfdepth equal ${depth}/2
-region box block -${halfwidth} ${halfwidth} -${halfheight} ${halfheight} -${halfdepth} ${halfdepth}
+% --------------[ LatticeHeader 'helper' for "${name}"   ]--------------
+lattice ${lattice_style} ${lattice_scale}
+# ------------------------------------------
+"""
+
+class LammpsHeaderBox(LammpsGeneric): # --- helper script ---
+    """
+        Box header for pizza.region
+
+        Use R.headersData.property = value to assign a value
+        with R a pizza.region object
+    """
+    name = "LammpsHeaderBox"
+    SECTIONS = ["HEADER"]
+    position = 0
+    role = "box header for pizza.region"
+    description = "helper method"
+    userid = "headerbox"           # user name
+    version = 0.1                  # version
+    verbose = False
+
+    # DEFINITIONS USED IN TEMPLATE
+    # circular references (the variable is defined by its field in USER of class regiondata)
+    # are not needed but this explicits the requirements.
+    # All fields are stored in R.headersData with R a region object.
+    # Use R.headersData.property = value to assign a value
+    DEFINITIONS = scriptdata(
+                      name = "${name}",
+                      xmin = "${xmin}",
+                      xmax = "${xmax}",
+                      ymin = "${ymin}",
+                      ymax = "${ymax}",
+                      zmin = "${zmin}",
+                      zmax = "${zmax}",
+                    nbeads = "${nbeads}",
+            hasvariables = False
+                    )
+
+    # Template
+    TEMPLATE = """
+% --------------[ Box Header 'helper' for "${name}"   ]--------------
+region box block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax}
 create_box	${nbeads} box
 # ------------------------------------------
 """
@@ -2091,7 +2222,7 @@ class region:
            "file": None,
         "options": livepreview_options
             }
-        # space filling  added 2023-08-10
+        # space filling  (added 2023-08-10)
         self.spacefilling = {
                    "flag": spacefilling,
            "fillingstyle": "$block",
@@ -2107,8 +2238,34 @@ class region:
         self.separationdistance = separationdistance
         self.lattice_scale = lattice_scale
         self.lattice_scale_siunits = lattice_scale_siunits
-        self.lattice_style = lattice_style
-
+        self.lattice_style = lattice_style 
+        # headers for header scripts (added 2024-09-01)
+        # geometry is assumed to be in lattive units (add lattice first)
+        self.headersData = headersRegiondata(
+            # use $ and [] to prevent execution
+            name = "$"+name,
+            # Initialize Lammps
+            dimension = 3,
+            units = "$"+regionunits,
+            boundary = ["sm","sm","sm"],
+            atom_style = "$smd",
+            atom_modify = ["map","array"],
+            comm_modify = ["vel","yes"],
+            neigh_modify = ["every",10,"delay",0,"check","yes"],
+            newton ="$off",
+            # Lattice
+            lattice_style = "$"+lattice_style,
+            lattice_scale = lattice_scale,
+            # Box
+            xmin = -floor(width/2)  +boxcenter[0],
+            xmax = +ceil(width/2)   +boxcenter[0],
+            ymin = -floor(height/2) +boxcenter[1],
+            ymax = +ceil(height/2)  +boxcenter[1],
+            zmin = -floor(depth/2)  +boxcenter[2],
+            zmax = +ceil(depth/2)   +boxcenter[2],
+            nbeads = nbeads
+            )
+       
 
     # Method to for coordinate/length scaling and translation including with formula embedded strings (added 2024-07-03, fixed 2024-07-04)
     # note that the translation is not fully required since the scaling applies also to full cordinates.
@@ -3571,16 +3728,57 @@ class region:
             s = LammpsHeader(**USER)+s+LammpsFooter(**USER)
         return s
     
-    # SCRIPTBOX add header for generating the box matching the region object
-    def scriptbox(self,live=False):
-        """ script the box header for all the region objects"""
-        USERregion = regiondata(**self.live)
-        USERregion.regionname = "$"+self.name
-        USERregion.nbeads = self.nbeads
-        s = LammpsHeaderBox(**USERregion)
-        if self.isspacefilled:
-            USERspacefilling =regiondata(**self.spacefilling)
-            s = s+LammpsSpacefilling(**USERspacefilling)
+    # SCRIPTHEADERS add header scripts for initializing script, lattice, box  for region (firstly added on 2024-08-31)
+    def scriptHeaders(self,what=["init","lattice","box"],nbeads=1):
+        """
+        Generate and return LAMMPS header scripts for initializing the simulation, defining the lattice, 
+        and specifying the simulation box for all region objects.
+    
+        Parameters:
+        - what (list of str): Specifies which scripts to generate. Options are "init", "lattice", and "box".
+                              Multiple scripts can be generated by passing a list of these options. 
+                              Default is ["init", "lattice", "box"].
+        - nbeads (int): Specifies the number of beads, overriding the default if larger than `self.nbeads`.
+                        Default is 1.
+    
+        Returns:
+        - str: The combined header scripts as a single string. 
+               Header values can be overridden by updating `self.headersData`.
+    
+        Raises:
+        - Exception: If no valid script options are provided in `what`.
+    
+        Example usage:
+        sRheader = R.scriptHeaders("box").do()  # Generate the box header script.
+        sRallheaders = R.scriptHeaders(["init", "lattice", "box"])  # Generate all headers.
+    
+        Example usage without naming parameters:
+        sRheader = R.scriptHeaders("box")  # "what" specified as "box", nbeads defaults to 1.
+    
+        Example of overriding values with headersData:
+        R.headersData.lattice_style = "$sq"  # Override the lattice style.
+        sRheader = R.scriptHeaders("lattice")  # Generate the lattice header script with the overridden value.
+        """
+        USERregion = self.headersData
+        USERregion.nbeads = max(nbeads,self.nbeads)
+        if not isinstance(what,list): what = [what]
+        s = None
+        if "init" in what:
+            s = LammpsHeaderInit(**USERregion)
+        if "lattice" in what:
+            if s is None:
+                s = LammpsHeaderLattice(**USERregion)
+            else:
+                s = s + LammpsHeaderLattice(**USERregion)
+        if "box" in what:
+            if s is None:
+                s = LammpsHeaderBox(**USERregion)
+            else:
+                s = s + LammpsHeaderBox(**USERregion)
+            if self.isspacefilled:
+                s = s+LammpsSpacefilling(**self.spacefilling)
+        if s is None:
+            raise Exception('nothing to do (use: "init", "lattice" and "box" within [ ])')
         return s
 
     # DO METHOD = main static compiler
@@ -3912,7 +4110,7 @@ if __name__ == '__main__':
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     #             F O R   P R O D U C T I O N
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    # History: 2024-07-04 (first version), 2024-07-29 (update)
+    # History: 2024-07-04 (first version), 2024-07-29 (update), 2024-09-01 (community, per request)
     
     # EXAMPLE: gel compression with SI units
     name = ['top', 'food', 'tongue', 'bottom']
@@ -3971,13 +4169,43 @@ if __name__ == '__main__':
     # Compile statically all objects
     # sR contains the LAMMPS code to generate all region objects and their atoms
     # sR is a string, all variables have been executed
-    # sRheader is a string
     sR = R.do() # this line force the execution of R
-    sRheader = R.scriptbox().do() # generate the box that contains R
+    
+    # Header Scripts facilitate the deployment and initialization of region objects.
+    # ------------- Summary ---------------
+    # Available scripts include "init", "lattice", and "box".
+    # Multiple scripts can be generated simultaneously by specifying them in a list.
+    #   For example: ["init", "lattice", "box"] will generate all three scripts.
+    # Script parameters and variables can be customized via R.headersData.
+    #   For instance: R.headersData.lattice_style = "$sq"
+    #   This overrides the lattice style, which was originally set in the region object.
+    #   The "$" prefix indicates that lattice_style is a static value.
+    #   Alternatively, R.headersData.lattice_style = ["sq"] can also be used.
+    # --------------------------------------
+    # use help(R.scriptHeaders) to get a full help
+    # Note: sRheader is a string since a do()
+    sRheader = R.scriptHeaders("box").do() # generate the box that contains R
+    print(sRheader)
+    # To generate all header scripts in the specified order, use R.scriptHeaders.
+    # Note: sRallheaders is a script object. Use sRallheaders.do() to convert it into a string.
+    # Scripts can be dynamically combined using the + operator or statically with the & operator.
+    # Scripts can also be combined with pipescripts using the + operator.
+    # Region and collection objects are considered pipescripts.
+    # 
+    # Comment on the differences between scripts and pipescripts:
+    #   - Scripts operate within a single variable space and cannot be reordered once combined.
+    #   - Pipescripts, however, include both global and local variable spaces and can be reordered,
+    #     and indexed, offering greater flexibility in complex simulations.
+    #
+    # A property can be removed from the initialization process by setting it to None or ""
+    # In this example, atom_style is removed as it also set with forcefields
+    R.headersData.atom_style = None
+    sRallheaders = R.scriptHeaders(["init", "lattice", "box"] )
         
     # Generate information on beads from the scripted objects
     # note that scriptobject is a method of script extended to region
     # the region must have been preallably scripted, which has been done with "sR = R.do()"
+    # Note that the current implementation include also style definitions in init
     b = []
     for i in range(nobjects):
         # style, group and forcefield can be overdefined if needed

@@ -9,7 +9,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.57"
+__version__ = "0.85"
 
 """
 
@@ -105,7 +105,7 @@ Created on Sat Feb 19 11:00:43 2022
 @author: olivi
 """
 
-# INRAE\Olivier Vitrac - rev. 2024-04-18
+# INRAE\Olivier Vitrac - rev. 2024-09-01 (community)
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -139,6 +139,7 @@ Created on Sat Feb 19 11:00:43 2022
 # 2023-08-17 fix span() when vector is "" or str
 # 2024-04-16 fix the method tmpwrite(self) on windows with proper error handling
 # 2024-04-18 fix scriptobjectgroup.script for empty and None filename
+# 2024-09-01 script accepts persistentfolder=None for inheritance
 
 # %% Dependencies
 import types
@@ -751,9 +752,10 @@ class script():
 
     # constructor
     def __init__(self,persistentfile=True,
-                 persistentfolder = get_tmp_location(),
+                 persistentfolder = None,
                  **userdefinitions):
         """ constructor adding instance definitions stored in USER """
+        if persistentfolder is None: persistentfolder = get_tmp_location()
         self.persistentfile = persistentfile
         self.persistentfolder = persistentfolder
         self.USER = scriptdata(**userdefinitions)
