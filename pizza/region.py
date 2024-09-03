@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__project__ = "Pizza3"
-__author__ = "Olivier Vitrac, Han Chen"
-__copyright__ = "Copyright 2023"
-__credits__ = ["Olivier Vitrac","Han Chen"]
-__license__ = "GPLv3"
-__maintainer__ = "Olivier Vitrac"
-__email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.85"
-
 """
 
 ================================================================================
