@@ -1136,7 +1136,7 @@ class param(struct):
                 txt = p.formateval("this my text with ${variable1}, ${variable2} ")
 
                 where:
-                    p is a paramm object
+                    p is a param object
 
                 Example:
                     definitions = param(a=1,b="${a}",c="\${a}")
