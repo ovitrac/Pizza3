@@ -1461,11 +1461,8 @@ class dscript:
         Raises
         ------
         ValueError
-            If the file does not start with the correct DSCRIPT header or the file format is invalid.
-        
-        FileNotFoundError
-            If the specified file does not exist.
-    
+            If content does not start with the correct DSCRIPT header or the file format is invalid.
+            
         Notes
         -----
         - The file is expected to follow the same structured format as the one produced by the `save()` method.
@@ -1572,6 +1569,10 @@ class dscript:
         inside_attributes = False
         current_attr_key = None  # Ensure this is properly initialized
         global_params_content = ""
+        
+        # Step 1: Authenticate the file
+        if not lines[0].strip().startswith("# DSCRIPT SAVE FILE"):
+            raise ValueError("File/Content is not a valid DSCRIPT file.")
 
         # Step 2: Process each line dynamically
         for line in lines[1:]:
@@ -1877,8 +1878,9 @@ if __name__ == '__main__':
     #   It will be added with the write method
     # ========================================================
  
-    # The script is defined here in a string
-    myscript = """
+    # The script is defined here within a string
+    # note that the first line should be: # DSCRIPT SAVE FILE
+    myscript = """# DSCRIPT SAVE FILE
 # Global Parameters:
 # ------------------
 # Define general settings for the script class.
