@@ -77,7 +77,7 @@ Notes:
   independently, making them highly flexible for preprocessing, debugging, or running custom logic within a 
   LAMMPS-related workflow.
 
-Important Distinction between **PIZZA.DSCRIPT** and **PIZZA.SCRIPT**: (possibly changed in the future)
+Important Distinction between **PIZZA.DSCRIPT** and **PIZZA.SCRIPT**: (with possible evolution in the future)
 ---------------------------------------------------------------------
 - **PIZZA.DSCRIPT** stores the DEFINITIONS in lambdaScriptdata objects based on pizza.private.struct.paramauto
   The practical consequence is that all variables should be within {} such as ${variable}.
@@ -403,7 +403,7 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.95"
+__version__ = "0.96"
 
 
 
@@ -414,7 +414,7 @@ __version__ = "0.95"
 # 2024-09-02 alpha version (compatibility issues with pizza.script)
 # 2024-09-03 release candidate (fully compatible with pizza.script)
 # 2024-09-04 load() and save() methods, improved documentation
-# 2024-09-05 several fixes, add write() 
+# 2024-09-05 several fixes, add dscript.write(), dscript.parsesyntax()
 
 
 # Dependencies
@@ -425,6 +425,11 @@ from pizza.private.struct import paramauto
 from pizza.script import script
 
 # %% Private Functions
+
+def autoname(numChars=8):
+    """ generate automatically names """
+    return ''.join(random.choices(string.ascii_letters, k=numChars))  # Generates a random name of numChars letters
+
 def remove_comments(line):
     """ remove comments in stripped lines"""
     in_single_quote = False
@@ -937,6 +942,12 @@ class dscript:
         templates, and attributes. Handles parsing and variable substitution based on 
         the structure of the file.
         
+    parsesyntax(cls, content, numerickeys=True):
+        Parses a script instance from a string input, restoring the content, definitions, 
+        templates, and attributes. Handles parsing and variable substitution based on the 
+        structure of the provided string, ensuring the correct format and key conversions 
+        when necessary.
+        
 
     Example:
     --------
@@ -1001,7 +1012,7 @@ class dscript:
         """
         
         if name is None:
-            self.name = ''.join(random.choices(string.ascii_letters, k=8))  # Generates a random name of 8 letters
+            self.name = autoname
         else:
             self.name = name
         self.SECTIONS = SECTIONS
@@ -1319,7 +1330,7 @@ class dscript:
     
         # Use self.name if filename is not provided
         if filename is None:
-            filename = ''.join(random.choices(string.ascii_letters, k=8))  # Generates a random name of 8 letters
+            filename = autoname(8)  # Generates a random name of 8 letters
     
         # Ensure the filename ends with '.txt'
         if not filename.endswith('.txt'):
@@ -1379,6 +1390,69 @@ class dscript:
             If True, numeric string keys in the template section are automatically converted into integers.
             For example, the key "0" would be converted into the integer 0.
     
+        Returns
+        -------
+        dscript
+            A new `dscript` instance populated with the content of the loaded file.
+    
+        Raises
+        ------
+        ValueError
+            If the file does not start with the correct DSCRIPT header or the file format is invalid.
+        
+        FileNotFoundError
+            If the specified file does not exist.
+    
+        Notes
+        -----
+        - The file is expected to follow the same structured format as the one produced by the `save()` method.
+        - The method processes global parameters, definitions, template lines, and attributes. If the file
+          includes numeric keys as strings (e.g., "0", "1"), they can be automatically converted into integers
+          if `numerickeys=True`.
+        - The script structure is dynamically rebuilt, and each section (global parameters, definitions,
+          template, and attributes) is correctly parsed and assigned to the corresponding parts of the `dscript`
+          instance.
+        """
+        
+        # Step 0 validate filepath
+        if not filename.endswith('.txt'):
+            filename += '.txt'    
+        if foldername is None:
+            foldername = tempfile.gettempdir()
+        if not os.path.isabs(filename):
+            filepath = os.path.join(foldername, filename)
+        else:
+            filepath = filename
+        
+        # Read the file contents
+        with open(filepath, 'r') as f:
+            content = f.read()
+    
+        # Call parsesyntax to parse the file content
+        fname = os.path.basename(filepath)  # Extracts the filename (e.g., "myscript.txt")
+        name, _ = os.path.splitext(fname)   # Removes the extension, e.g., "myscript
+        return cls.parsesyntax(content, name, numerickeys)
+    
+
+
+    # Load Method and its Parsing Rules -- added on 2024-09-04
+    # ---------------------------------
+    @classmethod
+    def parsesyntax(cls, content, name=None, numerickeys=True):
+        """
+        Parse a script from a string content.
+    
+        Parameters
+        ----------
+        content : str
+            The string content of the script to be parsed.
+        
+        name : str
+            The name of the dscript project (if None, it is set randomly)
+        
+        numerickeys : bool, default=True
+            If True, numeric string keys in the template section are automatically converted into integers.
+
         Returns
         -------
         dscript
@@ -1484,23 +1558,8 @@ class dscript:
             ```
         """
         
-        # Step 0 validate filepath
-        if not filename.endswith('.txt'):
-            filename += '.txt'    
-        if foldername is None:
-            foldername = tempfile.gettempdir()
-        if not os.path.isabs(filename):
-            # Filename does not include folder, so use foldername
-            filepath = os.path.join(foldername, filename)
-        else:
-            # Filename includes full path, so use it directly
-            filepath = filename
-        with open(filepath, 'r') as f:
-            lines = f.readlines()
-
-        # Step 1: Authenticate the file
-        if not lines[0].strip().startswith("# DSCRIPT SAVE FILE"):
-            raise ValueError("File is not a valid DSCRIPT file.")
+        # Split the content into lines
+        lines = content.splitlines()
 
         # Initialize containers for global parameters, definitions, templates, and attributes
         global_params = {}
@@ -1603,8 +1662,8 @@ class dscript:
         template[key].refreshvar()
 
         # Step 7: Create and return a new dscript instance
-        fname = os.path.basename(filepath)  # Extracts the filename (e.g., "myscript.txt")
-        name, _ = os.path.splitext(fname)   # Removes the extension, e.g., "myscript
+        if name is None:
+            name = autoname(8)
         instance = cls(
             name = name,
             SECTIONS=global_params.get('SECTIONS', ['DYNAMIC']),
@@ -1912,3 +1971,11 @@ dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=Fa
     # Ececute the script and print it
     ssmyS = smyS.do()
     print(ssmyS)
+    
+    # The conversion of a string into a script
+    # can be mediated via dscript.parsesyntax()
+    # without using a temporary file
+    mytemplate = dscript.parsesyntax(myscript).script()
+    mytemplatetxt = mytemplate.do()
+    print(mytemplatetxt)
+    
