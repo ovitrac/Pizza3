@@ -76,6 +76,15 @@ Notes:
 - **Execution Flexibility**: Since `pizza.dscript` scripts are not bound to LAMMPS directly, they can be executed 
   independently, making them highly flexible for preprocessing, debugging, or running custom logic within a 
   LAMMPS-related workflow.
+
+Important Distinction between **PIZZA.DSCRIPT** and **PIZZA.SCRIPT**: (possibly changed in the future)
+---------------------------------------------------------------------
+- **PIZZA.DSCRIPT** stores the DEFINITIONS in lambdaScriptdata objects based on pizza.private.struct.paramauto
+  The practical consequence is that all variables should be within {} such as ${variable}.
+  The definitions will be redordered to authorize execution
+- **PIZZA.SCRIPT** stores the DEFINITIONS in Scriptdata objects based on pizza.private.struct.param
+  The variables can be $myvar or ${myvar}. The definition order is important.
+  
   
 
 Practical Usage:
@@ -394,17 +403,18 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.94"
+__version__ = "0.95"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-09-04 (community)
+# INRAE\Olivier Vitrac - rev. 2024-09-05 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
 # 2024-09-02 alpha version (compatibility issues with pizza.script)
 # 2024-09-03 release candidate (fully compatible with pizza.script)
 # 2024-09-04 load() and save() methods, improved documentation
+# 2024-09-05 several fixes, add write() 
 
 
 # Dependencies
@@ -711,6 +721,12 @@ class ScriptTemplate:
             substituted based on the definitions and conditions applied. 
             If the line is facultative and the condition is not met, an empty 
             string is returned.
+            
+         refreshvar(self):
+            Detects variables in the content and adds them to definitions if needed.
+            This method ensures that variables like ${varname} are correctly detected
+            and added to the definitions if they are missing.
+            
 
         Example:
         --------
@@ -747,7 +763,7 @@ class ScriptTemplate:
         # Truncate the content if necessary
         truncated_line = (self.content[:18] + '[...]' + self.content[-18:]) if len(self.content) > 40 else self.content
         repr_str += f"{truncated_line:<50}\n"
-        if (self.definitions is not None) and isinstance(content,str) and self.attributes["eval"]:
+        if (self.definitions is not None) and isinstance(self.content,str) and self.attributes["eval"]:
             repr_str += f"= {self.definitions.formateval(self.content,True):<50}\n"
 
         # Add attributes
@@ -900,13 +916,27 @@ class dscript:
         Creates new variables in `DEFINITIONS` if they do not already exist. 
         Accepts a single variable name or a list of variable names.
 
-    script(self, **userdefinitions):
-        Generates a `lamdaScript` object from the current `dscript` object, 
-        applying any additional user definitions provided.
-
     do(self):
         Executes all script lines in the `TEMPLATE`, concatenating the results, 
         and handling variable substitution. Returns the full script as a string.
+
+    script(self, **userdefinitions):
+        Generates a `lamdaScript` object from the current `dscript` object, 
+        applying any additional user definitions provided.
+        
+    save(self, filename=None, foldername=None, overwrite=False):
+        Saves the current script instance to a text file in a structured format. 
+        Includes metadata, global parameters, definitions, templates, and attributes.
+
+    write(self, scriptcontent, filename=None, foldername=None, overwrite=False):
+        Writes the provided script content to a specified file in a given folder, 
+        with a header added if necessary, ensuring the correct file format.
+
+    load(cls, filename, foldername=None, numerickeys=True):
+        Loads a script instance from a text file, restoring the content, definitions, 
+        templates, and attributes. Handles parsing and variable substitution based on 
+        the structure of the file.
+        
 
     Example:
     --------
@@ -1251,6 +1281,81 @@ class dscript:
         with open(filepath, 'w') as f:
             f.write(content)        
         print(f"\nScript saved to {filepath}")
+        
+        return filepath
+    
+
+    # Write Method -- added on 2024-09-05
+    # ------------
+    @staticmethod
+    def write(scriptcontent, filename=None, foldername=None, overwrite=False):
+        """
+        Writes the provided script content to a specified file in a given folder, with a header if necessary.
+    
+        Parameters
+        ----------
+        scriptcontent : str
+            The content to be written to the file.
+        
+        filename : str, optional
+            The name of the file. If not provided, `self.name` will be used. The extension `.txt` will be appended if not already present.
+        
+        foldername : str, optional
+            The folder where the file will be saved. If not provided, the system's temporary directory is used.
+        
+        overwrite : bool, optional
+            If False (default), raises a `FileExistsError` if the file already exists. If True, the file will be overwritten if it exists.
+    
+        Raises
+        ------
+        FileExistsError
+            If the file already exists and `overwrite` is set to False.
+        
+        Notes
+        -----
+        - The first line of the file will be a header (`# DSCRIPT SAVE FILE`). If this header does not already exist in `scriptcontent`, it will be added.
+        - The header also includes the current date, username, hostname, the value of `self.name`, and the full file path.
+        """
+    
+        # Use self.name if filename is not provided
+        if filename is None:
+            filename = ''.join(random.choices(string.ascii_letters, k=8))  # Generates a random name of 8 letters
+    
+        # Ensure the filename ends with '.txt'
+        if not filename.endswith('.txt'):
+            filename += '.txt'
+    
+        # Default folder to tempdir if foldername is not provided
+        if foldername is None:
+            foldername = tempfile.gettempdir()
+    
+        # Construct full path
+        if not os.path.isabs(filename):
+            filepath = os.path.join(foldername, filename)
+        else:
+            filepath = filename
+    
+        # Check if file already exists, raise exception if it does and overwrite is False
+        if os.path.exists(filepath) and not overwrite:
+            raise FileExistsError(f"The file '{filepath}' already exists.")
+    
+        # Prepare header if not already present
+        if not scriptcontent.startswith("# DSCRIPT SAVE FILE"):
+            fname = os.path.basename(filepath)  # Extracts the filename (e.g., "myscript.txt")
+            name, _ = os.path.splitext(fname)   # Removes the extension, e.g., "myscript
+            user = getpass.getuser()
+            host = socket.gethostname()
+            date = datetime.now().strftime('%Y-%m-%d')
+            header = f"# DSCRIPT SAVE FILE\n# written on {date} by {user}@{host}\n"
+            header += f'\n#\tname = "{name}"\n'
+            header += f'\n#\tpath = "{filepath}"\n\n'
+            scriptcontent = header + scriptcontent
+    
+        # Write the content to the file
+        with open(filepath, 'w') as file:
+            file.write(scriptcontent)
+    
+        return filepath   
 
 
     # Load Method and its Parsing Rules -- added on 2024-09-04
@@ -1338,8 +1443,8 @@ class dscript:
             d = 3                               # Define a number
             periodic = "$p"                     # '$' prevents immediate evaluation of 'p'
             units = "$metal"                    # '$' prevents immediate evaluation of 'metal'
-            dimension = $d                      # Variable substitution
-            boundary = ['${periodic}', 'p', 'p']  # List with a mix of variables and values
+            dimension = "${d}"                  # Variable substitution
+            boundary = ['p', 'p', 'p']  # List with a mix of variables and values
             atom_style = "$atomic"              # String variable with delayed evaluation
             ```
         
@@ -1422,16 +1527,33 @@ class dscript:
 
             # Step 3: Handle global parameters inside {...}
             if stripped.startswith("{"):
+                # Found the opening `{`, start accumulating global parameters
                 inside_global_params = True
-                global_params_content = ""
+                # Remove the opening `{` and accumulate the remaining content
+                global_params_content = stripped[stripped.index('{') + 1:].strip()
+                
+                # Check if the closing `}` is also on the same line
+                if '}' in global_params_content:
+                    global_params_content = global_params_content[:global_params_content.index('}')].strip()
+                    inside_global_params = False  # We found the closing `}` on the same line
+                    # Now parse the global parameters block
+                    cls._parse_global_params(global_params_content.strip(), global_params)
+                    global_params_content = ""  # Reset for the next block
                 continue
 
             if inside_global_params:
-                if stripped == "}":
-                    inside_global_params = False
-                    cls._parse_global_params(global_params_content, global_params)
-                    continue
-                global_params_content += stripped
+                # Accumulate content until the closing `}` is found
+                if stripped.endswith("}"):
+                    # Found the closing `}`, accumulate and process the entire block
+                    global_params_content += " " + stripped[:stripped.index('}')].strip()
+                    inside_global_params = False  # Finished reading global parameters block
+                    
+                    # Now parse the entire global parameters block
+                    cls._parse_global_params(global_params_content.strip(), global_params)
+                    global_params_content = ""  # Reset for the next block if necessary
+                else:
+                    # Continue accumulating if `}` is not found
+                    global_params_content += " " + stripped
                 continue
 
             # Step 4: Handle attributes inside {...}
@@ -1449,8 +1571,8 @@ class dscript:
 
             # Step 5: Determine if the line is a definition, template, or attribute
             definition_match = re.match(r'(\w+)\s*=\s*(.+)', stripped)
-            template_match = re.match(r'(\w+)\s*:\s*(?!\{)(.+)', stripped)
-            attribute_match = re.match(r'(\w+)\s*:\s*\{(.+)\}', stripped)
+            template_match = re.match(r'(\w+)\s*:\s*(?!\s*\{.*\}\s*$)(.+)', stripped) # template_match = re.match(r'(\w+)\s*:\s*(?!\{)(.+)', stripped)
+            attribute_match = re.match(r'(\w+)\s*:\s*\{\s*(.+)\s*\}', stripped)       # attribute_match = re.match(r'(\w+)\s*:\s*\{(.+)\}', stripped)
 
             if definition_match:
                 # Line is a definition (key=value)
@@ -1515,10 +1637,17 @@ class dscript:
     @classmethod
     def _parse_global_params(cls, content, global_params):
         """Parses global parameters from the accumulated content between {}."""
-        for line in content.split(","):
-            match = re.match(r'(\w+)\s*=\s*(.+)', line)
+        # Split by commas, ignoring any commas inside brackets, parentheses, or quotes
+        lines = re.split(r',(?![^(){}\[\]]*[\)\}\]])', content)
+        for line in lines:
+            line = line.strip()  # Remove leading/trailing whitespace
+            # Ensure it's a valid key-value pair
+            match = re.match(r'([\w_]+)\s*=\s*(.+)', line)
             if match:
                 key, value = match.groups()
+                key = key.strip()
+                value = value.strip()
+                # Convert the value to the appropriate type and store in global_params
                 global_params[key] = cls._convert_value(value)
 
     @classmethod
@@ -1676,8 +1805,110 @@ if __name__ == '__main__':
     R.save(overwrite=True)
     
     # Load again the same script and show the script
-    S = dscript.load(R.name)
-    print(repr(S))
-    ssS = R.script(units="$lj",  # Use "$" to prevent immediate evaluation
+    T = dscript.load(R.name)
+    print(repr(T))
+    ssT = R.script(units="$lj",  # Use "$" to prevent immediate evaluation
                   comment="$my second dynamic script").do()
-    print(ssS)
+    print(ssT)
+    
+    # ========================================================
+    # DSCRIPT SAVE FILE: Example: LAMMPS generic code
+    #   This example is intended to illustrate the syntax
+    #   Note that the script below does not include the header.
+    #   It will be added with the write method
+    # ========================================================
+ 
+    # The script is defined here in a string
+    myscript = """
+# Global Parameters:
+# ------------------
+# Define general settings for the script class.
+# This section is not mandatory.
+# Properties are defined within { }
+# They include
+#       SECTIONS = ["DYNAMIC"] # the considered section names
+#       section = 0            # the current section index,
+#       position = 0           # the script  position order,
+#       role = "dscript instance",
+#       description = "dynamic script",
+#       userid = "dscript",
+#       version = 0.1,
+#       verbose = False
+{ # a line starting with { indicates the begining of the section
+    SECTIONS = ['INITIALIZATION', 'SIMULATION'], # this is a comment
+    section=0, position=0 } # note the closing } is mandatory
+
+# DEFINITIONS (Define general settings for the script.)
+# -----------
+# All variables are defined in a Python way
+
+d = 3                        # d is a number and equals 3
+units = "$lj"                # $ is used to block immediate execution in a string
+periodic = "$p"              # $ is used to block immediate execution in a string
+dimension = "${d}"           # d is a variable
+boundary = ["p", "p", "p"]   # this a list (Python syntax)
+atom_style = "$atomic"
+lattice = ["fcc", 3.52]       # this a list (Python syntax)
+region = ["box", "block", 0, 10, 0, 10, 0, 10] # this a list (Python syntax)
+create_box = [1, "box"]
+create_atoms = [1, "box"]
+mass = 1.0
+pair_style = ["lj/cut", 2.5]
+pair_coeff = [1, 1, 1.0, 1.0, 2.5]
+velocity = ["all", "create", 300.0, 12345]
+fix = [1, "all", "nve"]
+run = 1000
+timestep = 0.001
+thermo = 100
+
+# TEMPLATE:
+# ---------
+# Provide a template for how these parameters should be formatted or used in the script.
+#  The general syntax is:
+#      KEY: INSTRUCTION
+#      KEY can be numeric, alphanumeric
+#      INSTRUCTION can be any LAMMPS command involving variables defined in the DEFINITION section or elsewhere
+units: units ${units}     # key = units, template = units ${units}
+dim: dimension ${dimension}
+bound: boundary ${boundary}
+astyle: atom_style ${atom_style}
+lattice: lattice ${lattice}
+region: region ${region}
+create_box: create_box ${create_box}
+create_atoms: create_atoms ${create_atoms}
+mass: mass ${mass}
+pair_style: pair_style ${pair_style}
+pair_coeff: pair_coeff ${pair_coeff}
+velocity: velocity ${velocity}
+fix: fix ${fix}
+run: run ${run}
+timestep: timestep ${timestep}
+thermo: thermo ${thermo}
+
+# Attributes:
+# -----------
+# Each template line can have attributes (here default attributes, but the user can add more)
+# Default value between ()
+#   facultative = True or (False) (remove the template line if True)
+#   eval = True or (False) (evaluate the template line with eval() if True)
+#   readonly True or (False) (prevent any subsequent modification() if True)
+#   condition = any expression with variables
+#   condeval = True or (False) (evaluate the condition with eval() if True)
+#   detectvar = (True) or False (create variables in DEFINITIONS if True)
+units: {facultative=False, eval=False, readonly=False, condition="${units}", condeval=False, detectvar=True}
+dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+    """
+    
+    # write myscript to disk
+    myscriptfile = dscript.write(myscript)
+    print(f"DSCRIPT SAVE FILE: {myscriptfile}")
+    
+    # load the script as a dscript object
+    myS = dscript.load(myscriptfile)
+    
+    # generate the corresponding script
+    smyS = myS.script()
+    
+    # Ececute the script and print it
+    ssmyS = smyS.do()
+    print(ssmyS)
