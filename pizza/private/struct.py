@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.461"
+__version__ = "0.97"
 
 """
 Matlab-like Structure class
@@ -55,6 +55,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2023-01-27 param.eval() add % to freeze an interpretation (needed when a list is spanned as a string)
 # 2023-01-27 struct.format() will replace {var} by ${var} if var is not defined
 # 2023-08-11 display "" as <empty string> if evaluated
+# 2024-09-06 add _returnerror as paramm class attribute (default=true) - dscript.lambdaScriptdata overrides it
 
 
 # %% Dependencies
@@ -288,7 +289,7 @@ class struct():
     _iter_ = 0
 
     # excluded attributes (keep the , in the Tupple if it is singleton)
-    _excludedattr = ('_iter_','__class__','_protection','_evaluation') # used by keys() and len()
+    _excludedattr = ('_iter_','__class__','_protection','_evaluation','_returnerror') # used by keys() and len()
 
 
     # Methods
@@ -987,6 +988,7 @@ class param(struct):
     _fulltype = "parameter list"
     _ftype = "definition"
     _evalfeature = True    # This class can be evaluated with .eval()
+    _returnerror = True    # This class returns an error in the evaluation string (added on 2024-09-06)
 
     # magic constructor
     def __init__(self,_protection=False,_evaluation=True,
@@ -1104,9 +1106,12 @@ class param(struct):
                             try:
                                 resstr = tmp.format(valuesafe,raiseerror=False)
                             except (KeyError,NameError) as nameerr:
-                                strnameerr = str(nameerr).replace("'","")
-                                tmp.setattr(key,'< undef %s "${%s}" >' % \
+                                if self._returnerror: # added on 2024-09-06
+                                    strnameerr = str(nameerr).replace("'","")
+                                    tmp.setattr(key,'< undef %s "${%s}" >' % \
                                             (self._ftype,strnameerr))
+                                else:
+                                    tmp.setattr(key,value) #we keep the original value
                             except (SyntaxError,TypeError,ValueError) as commonerr:
                                 tmp.setattr(key,"ERROR < %s >" % commonerr)
                             except Exception as othererr:
