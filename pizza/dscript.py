@@ -473,11 +473,11 @@ Dependencies
 ------------
 - Python 3.x
 - LAMMPS
-- pizza3.pizza
+- Pizza3.pizza
 
 Installation
 ------------
-To use the REGION module, ensure that you have Python 3.x and LAMMPS installed. You can integrate the module into your project by placing the `region.py` file in your working directory or your Python path.
+To use the Pizza3.pizza module, ensure that you have Python 3.x and LAMMPS installed. You can integrate the module into your project by placing the `region.py` file in your working directory or your Python path.
 
 License
 -------
@@ -498,7 +498,7 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.97"
+__version__ = "0.99"
 
 
 

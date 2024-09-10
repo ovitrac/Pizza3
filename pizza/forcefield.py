@@ -1,16 +1,36 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__project__ = "Pizza3"
-__author__ = "Olivier Vitrac"
-__copyright__ = "Copyright 2022"
-__credits__ = ["Olivier Vitrac"]
-__license__ = "GPLv3"
-__maintainer__ = "Olivier Vitrac"
-__email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.451"
-
 """
+Synopsis of forcefield Class
+============================
+
+The `forcefield` class defines the core behavior for managing inter-particle interactions 
+in molecular dynamics simulations or similar physics-based models. It provides methods 
+to calculate interaction parameters, including pair styles, diagonal pair coefficients, 
+and off-diagonal pair coefficients, which are crucial for forcefield models.
+
+Key Attributes:
+---------------
+- `PAIR_STYLE` (str): Defines the pair style command for the forcefield interactions.
+- `PAIR_DIAGCOEFF` (str): Defines the command for calculating diagonal pair coefficients.
+- `PAIR_OFFDIAGCOEFF` (str): Defines the command for calculating off-diagonal pair coefficients.
+- `parameters` (parameterforcefield): Stores the parameters used for interaction evaluations.
+- `beadtype` (int): The bead type used in the forcefield model.
+- `userid` (str): A unique identifier for the forcefield instance.
+
+Key Methods:
+------------
+- `pair_style(printflag=True)`: Returns the pair style command based on the current 
+  `parameters`, `beadtype`, and `userid`.
+- `pair_diagcoeff(printflag=True, i=None)`: Returns the diagonal pair coefficient command 
+  based on the current bead type `i` and `userid`. The bead type can be overridden.
+- `pair_offdiagcoeff(o=None, printflag=True, i=None)`: Returns the off-diagonal pair 
+  coefficient command for interactions between two bead types or forcefield objects. 
+  The bead type `i` and the interacting forcefield `o` can be specified or overridden.
+
+
+
     --- forcefield methods for LAMMPS ---
 
     The superclass provides a collection of classes to define materials
@@ -112,8 +132,17 @@ __version__ = "0.451"
 
 """
 
+__project__ = "Pizza3"
+__author__ = "Olivier Vitrac"
+__copyright__ = "Copyright 2022"
+__credits__ = ["Olivier Vitrac"]
+__license__ = "GPLv3"
+__maintainer__ = "Olivier Vitrac"
+__email__ = "olivier.vitrac@agroparistech.fr"
+__version__ = "0.99"
 
-# INRAE\Olivier Vitrac - rev. 2022-07-25
+
+# INRAE\Olivier Vitrac - rev. 2022-09-10
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -127,6 +156,7 @@ __version__ = "0.451"
 # 2022-05-16 force sortdefintions for + and += with parameterforcefield()
 # 2022-05-17 direct use of pizza.private.struct.paramauto()
 # 2023-07-25 fix forcefield (deepduplicate instead of duplicate)
+# 2024-09-10 updated documentation for pizza.forcefield (to be read along with pizza.dforcefield)
 
 # %% Dependencies
 import types
@@ -154,7 +184,55 @@ class parameterforcefield(paramauto):
 
 # core class
 class forcefield():
-    """ core forcefield class (not to be called directly) """
+    """
+    The `forcefield` class represents the core implementation of a forcefield model, 
+    defining interaction parameters and coefficients for simulations. This class provides
+    methods to handle pair styles, diagonal pair coefficients, and off-diagonal pair coefficients,
+    which are essential for simulating inter-particle interactions in molecular dynamics or 
+    other physics-based simulations.
+
+    Attributes:
+    -----------
+    PAIR_STYLE : str
+        The default pair style command for the forcefield interactions.
+        
+    PAIR_DIAGCOEFF : str
+        The default command for calculating diagonal pair coefficients.
+
+    PAIR_OFFDIAGCOEFF : str
+        The default command for calculating off-diagonal pair coefficients.
+
+    parameters : parameterforcefield
+        An instance of `parameterforcefield` that stores the parameters for 
+        evaluating interaction commands.
+
+    beadtype : int
+        The bead type associated with the current forcefield instance.
+        
+    userid : str
+        A unique identifier for the forcefield instance, used in interaction commands.
+    
+    Methods:
+    --------
+    pair_style(printflag=True):
+        Generate and return the pair style command based on the current parameters,
+        beadtype, and userid.
+
+    pair_diagcoeff(printflag=True, i=None):
+        Generate and return the diagonal pair coefficients based on the current parameters,
+        beadtype, and userid. The bead type `i` can be overridden with an optional argument.
+
+    pair_offdiagcoeff(o=None, printflag=True, i=None):
+        Generate and return the off-diagonal pair coefficients between two different 
+        bead types or forcefield objects. The bead type `i` can be overridden, and the 
+        interaction with another forcefield object `o` can also be specified.
+    
+    Notes:
+    ------
+    - This class is intended to be extended by specific forcefield types such as `ulsph`.
+    - The parameters used in the interaction commands are dynamically evaluated using 
+      the `parameterforcefield` class, which provides the required values during runtime.
+    """
 
     # Main attributes (instance independent)
     name = struct(forcefield="undefined", style="undefined", material="undefined")
@@ -203,26 +281,95 @@ class forcefield():
         return {k: getattr(self, k) for k in dir(self) \
                 if (not k.startswith('_')) and (not isinstance(getattr(self, k),types.MethodType))}
 
+
     # Forcefield Methods: pair_style(), pair_coeff()
     # the substitution of LAMMPS variables is carried out with the method
     # parameters.format() method implemented in struct and inherited by parameterforcefield()
     def pair_style(self,printflag=True):
-        """ return pair_style from FFi.pair_style()"""
+        """
+        Generate and return the pair style command for the current forcefield instance.
+        
+        The method evaluates the pair style based on the interaction parameters stored 
+        in the `parameters` attribute, and formats the command using the bead type 
+        (`beadtype`) and user identifier (`userid`).
+        
+        Parameters:
+        -----------
+        printflag : bool, optional, default=True
+            If True, the generated pair style command will be printed to the console.
+        
+        Returns:
+        --------
+        str
+            The formatted pair style command string.
+        """
         cmd = self.parameters.formateval(self.PAIR_STYLE)
         cmd = cmd.replace("[comment]","{comment}").format(comment=("[%d:%s]" % (self.beadtype,self.userid)))
         if printflag: print(cmd)
         return cmd
+    
 
     def pair_diagcoeff(self,printflag=True,i=None):
-        """ return diagonal pair_coeff from FFi.pair_diagcoeff(), FFi.pair_diagcoeff(i=override value) """
+        """
+        Generate and return the diagonal pair coefficients for the current forcefield instance.
+
+        This method evaluates the diagonal pair coefficients based on the interaction 
+        parameters, the bead type (`beadtype`), and the user identifier (`userid`).
+        The bead type `i` can be overridden by passing it as an argument.
+
+        Parameters:
+        -----------
+        printflag : bool, optional, default=True
+            If True, the generated diagonal pair coefficient command will be printed to the console.
+        i : int, optional
+            The bead type to be used for evaluating the diagonal pair coefficients. If not provided, 
+            the current bead type of the instance (`self.beadtype`) will be used.
+
+        Returns:
+        --------
+        str
+            The formatted diagonal pair coefficient command string.
+            diagonal pair_coeff from FFi.pair_diagcoeff(), FFi.pair_diagcoeff(i=override value)
+        """
         if i==None: i = self.beadtype
         cmd = self.parameters.formateval(self.PAIR_DIAGCOEFF) % (i,i)
         cmd = cmd.replace("[comment]","{comment}").format(comment=("[%d:%s x %d:%s]" % (i,self.userid,i,self.userid)))
         if printflag: print(cmd)
         return cmd
+    
 
     def pair_offdiagcoeff(self,o=None,printflag=True,i=None):
-        """ return off-diagonal pair_coeff from FFi.pair_offdiagcoeff(FFj), FFi.pair_offdiagcoeff(FFj,i=override value) """
+        """
+        Generate and return the off-diagonal pair coefficients for the current forcefield instance.
+
+        This method evaluates the off-diagonal pair coefficients between two different bead types 
+        or forcefield objects, and formats the command using the interaction parameters, bead type, 
+        and user identifier. The bead type `i` can be overridden, and the interaction with another 
+        forcefield object `o` can also be specified.
+
+        Parameters:
+        -----------
+        o : forcefield or int, optional
+            The second forcefield object or bead type to be used for calculating off-diagonal 
+            pair coefficients. If not provided, the method will assume interactions between 
+            beads of the same type.
+        printflag : bool, optional, default=True
+            If True, the generated off-diagonal pair coefficient command will be printed to the console.
+        i : int, optional
+            The bead type to be used for the current forcefield instance. If not provided, 
+            the current bead type of the instance (`self.beadtype`) will be used.
+
+        Returns:
+        --------
+        str
+            The formatted off-diagonal pair coefficient command string.
+            off-diagonal pair_coeff from FFi.pair_offdiagcoeff(FFj), FFi.pair_offdiagcoeff(FFj,i=override value)
+
+        Raises:
+        -------
+        IndexError
+            If the first argument `o` is not a forcefield object or an integer.
+        """
         if i==None:
             i = self.beadtype
         if o==None:
