@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.97"
+__version__ = "0.99"
 
 """
 Matlab-like Structure class
@@ -56,12 +56,15 @@ Created on Sun Jan 23 14:19:03 2022
 # 2023-01-27 struct.format() will replace {var} by ${var} if var is not defined
 # 2023-08-11 display "" as <empty string> if evaluated
 # 2024-09-06 add _returnerror as paramm class attribute (default=true) - dscript.lambdaScriptdata overrides it
+# 2024-09-12 file management for all OS
+# 2024-09-12 repr() improvements
 
 
 # %% Dependencies
 from math import * # import math to authorize all math expressions in parameters
 import types       # to check types
 import re          # regular expression
+from pathlib import Path # for write
 import numpy as np
 from copy import copy as duplicate # to duplicate objects
 from copy import deepcopy as duplicatedeep # used by __deepcopy__()
@@ -537,6 +540,7 @@ class struct():
             width = max(10,max(keylengths)+2)
             fmt = "%%%ss:" % width
             fmteval = fmt[:-1]+"="
+            fmtcls =  fmt[:-1]+":"
             line = ( fmt % ('-'*(width-2)) ) + ( '-'*(min(40,width*5)) )
             print(line)
             for key,value in self.__dict__.items():
@@ -554,6 +558,7 @@ class struct():
                         print(fmt % key,self.dispmax(str(value)))
                     else:
                         print(fmt % key,type(value))
+                        print(fmtcls % "",self.dispmax(str(value)))
                     if self._evalfeature:
                         if isinstance(self,paramauto):
                             try:
@@ -779,48 +784,78 @@ class struct():
             setattr(copie, k, duplicatedeep(v, memo))
         return copie
 
-    # write a file
-    def write(self,file):
-        """
-            write the equivalent structure (not recursive for nested struct)
-                write(filename)
-        """
-        f = open(file,mode="w",encoding='utf-8')
-        print(f"# {self._fulltype} with {len(self)} {self._ftype}s\n",file=f)
-        for k,v in self.items():
-            if v is None:
-                print(k,"=None",file=f,sep="")
-            elif isinstance(v,(int,float)):
-                print(k,"=",v,file=f,sep="")
-            elif isinstance(v,str):
-                print(k,'="',v,'"',file=f,sep="")
-            else:
-              print(k,"=",str(v),file=f,sep="")
-        f.close()
 
     # write a file
+    def write(self, file, overwrite=True, mkdir=False):
+        """
+            write the equivalent structure (not recursive for nested struct)
+                write(filename, overwrite=True, mkdir=False)
+            
+            Parameters:
+            - file: The file path to write to.
+            - overwrite: Whether to overwrite the file if it exists (default: True).
+            - mkdir: Whether to create the directory if it doesn't exist (default: False).
+        """
+        # Create a Path object for the file to handle cross-platform paths
+        file_path = Path(file).resolve()
+
+        # Check if the directory exists or if mkdir is set to True, create it
+        if mkdir:
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+        elif not file_path.parent.exists():
+            raise FileNotFoundError(f"The directory {file_path.parent} does not exist.")
+        # If overwrite is False and the file already exists, raise an exception
+        if not overwrite and file_path.exists():
+            raise FileExistsError(f"The file {file_path} already exists, and overwrite is set to False.")
+        # Open and write to the file using the resolved path
+        with file_path.open(mode="w", encoding='utf-8') as f:
+            print(f"# {self._fulltype} with {len(self)} {self._ftype}s\n", file=f)
+            for k, v in self.items():
+                if v is None:
+                    print(k, "=None", file=f, sep="")
+                elif isinstance(v, (int, float)):
+                    print(k, "=", v, file=f, sep="")
+                elif isinstance(v, str):
+                    print(k, '="', v, '"', file=f, sep="")
+                else:
+                    print(k, "=", str(v), file=f, sep="")
+
+
+    # read a file
     @staticmethod
     def read(file):
         """
             read the equivalent structure
                 read(filename)
+            
+            Parameters:
+            - file: The file path to read from.
         """
-        f = open(file,mode="r",encoding="utf-8")
-        s = struct()
-        while 1:
-            line = f.readline()
-            if not line: break
-            line = line.strip()
-            expr = line.split(sep="=")
-            if len(line)>0 and line[0]!="#" and len(expr)>0:
-                lhs = expr[0]
-                rhs = "".join(expr[1:]).strip()
-                if len(rhs)==0 or rhs=="None":
-                    v = None
-                else:
-                    v = eval(rhs)
-                s.setattr(lhs,v)
-        f.close()
+        # Create a Path object for the file to handle cross-platform paths
+        file_path = Path(file).resolve()
+        # Check if the parent directory exists, otherwise raise an error
+        if not file_path.parent.exists():
+            raise FileNotFoundError(f"The directory {file_path.parent} does not exist.")
+        # If the file does not exist, raise an exception
+        if not file_path.exists():
+            raise FileNotFoundError(f"The file {file_path} does not exist.")
+        # Open and read the file
+        with file_path.open(mode="r", encoding="utf-8") as f:
+            s = struct()  # Assuming struct is defined elsewhere
+            while True:
+                line = f.readline()
+                if not line:
+                    break
+                line = line.strip()
+                expr = line.split(sep="=")
+                if len(line) > 0 and line[0] != "#" and len(expr) > 0:
+                    lhs = expr[0]
+                    rhs = "".join(expr[1:]).strip()
+                    if len(rhs) == 0 or rhs == "None":
+                        v = None
+                    else:
+                        v = eval(rhs)
+                    s.setattr(lhs, v)
         return s
 
     # argcheck
