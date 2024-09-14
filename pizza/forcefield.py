@@ -56,7 +56,7 @@ Key Methods:
 
     --- Template to define a material ---
 
-          class mymateral(myforcefield):
+          class mymaterial(myforcefield):
               userid = "short name"
               version = value
               def __init__(self, beadtype=1, userid=None):
@@ -96,7 +96,7 @@ Key Methods:
         ............................... [ description ] ................................
 
         	# 	LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)
-        	# 	SMD:TLSPH - total Langrangian for solids
+        	# 	SMD:TLSPH - total Lagrangian for solids
         	# 	food beads - solid behavior
 
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ [ methods ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,7 +142,7 @@ __email__ = "olivier.vitrac@agroparistech.fr"
 __version__ = "0.99"
 
 
-# INRAE\Olivier Vitrac - rev. 2022-09-10
+# INRAE\Olivier Vitrac - rev. 2022-09-12
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -157,6 +157,7 @@ __version__ = "0.99"
 # 2022-05-17 direct use of pizza.private.struct.paramauto()
 # 2023-07-25 fix forcefield (deepduplicate instead of duplicate)
 # 2024-09-10 updated documentation for pizza.forcefield (to be read along with pizza.dforcefield)
+# 2024-09-12 upgrading of parameterforcefield
 
 # %% Dependencies
 import types
@@ -180,6 +181,27 @@ class parameterforcefield(paramauto):
     _fulltype = "forcefield"
     _ftype = "parameter"
     _maxdisplay = 80
+    
+    # same strategy as used in dscript for forcing  _returnerror = False (added 2024-09-12)
+    def __init__(self, _protection=False, _evaluation=True, sortdefinitions=False, **kwargs):
+        """
+        Constructor for parameterforcefield. It forces the parent's _returnerror parameter to False.
+    
+        Parameters:
+        -----------
+        _protection : bool, optional
+            Whether to enable protection on the parameters (default: False).
+        _evaluation : bool, optional
+            Whether evaluation is enabled for the parameters (default: True).
+        sortdefinitions : bool, optional
+            Whether to sort definitions upon initialization (default: False).
+        **kwargs : dict
+            Additional keyword arguments for the parent class.
+        """
+        # Call the parent class constructor
+        super().__init__(_protection=_protection, _evaluation=_evaluation, sortdefinitions=sortdefinitions, **kwargs)
+        # Override the _returnerror attribute at the instance level
+        self._returnerror = False
 
 
 # core class
@@ -285,7 +307,7 @@ class forcefield():
     # Forcefield Methods: pair_style(), pair_coeff()
     # the substitution of LAMMPS variables is carried out with the method
     # parameters.format() method implemented in struct and inherited by parameterforcefield()
-    def pair_style(self,printflag=True):
+    def pair_style(self,printflag=True,raw=False):
         """
         Generate and return the pair style command for the current forcefield instance.
         
@@ -297,19 +319,25 @@ class forcefield():
         -----------
         printflag : bool, optional, default=True
             If True, the generated pair style command will be printed to the console.
+        raw: bool, optional default=False
+            If True, the raw template is given without interpretation
         
         Returns:
         --------
         str
             The formatted pair style command string.
         """
+        if raw:
+            return self.PAIR_STYLE
         cmd = self.parameters.formateval(self.PAIR_STYLE)
-        cmd = cmd.replace("[comment]","{comment}").format(comment=("[%d:%s]" % (self.beadtype,self.userid)))
+        # Replace [comment] with the formatted comment (e.g., "[2:my_user_id]")
+        comment = "[%d:%s]" % (self.beadtype, self.userid)
+        cmd = cmd.replace("[comment]", comment)
         if printflag: print(cmd)
         return cmd
     
 
-    def pair_diagcoeff(self,printflag=True,i=None):
+    def pair_diagcoeff(self,printflag=True,i=None,raw=False):
         """
         Generate and return the diagonal pair coefficients for the current forcefield instance.
 
@@ -324,6 +352,8 @@ class forcefield():
         i : int, optional
             The bead type to be used for evaluating the diagonal pair coefficients. If not provided, 
             the current bead type of the instance (`self.beadtype`) will be used.
+        raw: bool, optional default=False
+            If True, the raw template is given without interpretation
 
         Returns:
         --------
@@ -331,14 +361,17 @@ class forcefield():
             The formatted diagonal pair coefficient command string.
             diagonal pair_coeff from FFi.pair_diagcoeff(), FFi.pair_diagcoeff(i=override value)
         """
+        if raw:
+            return self.PAIR_DIAGCOEFF
         if i==None: i = self.beadtype
         cmd = self.parameters.formateval(self.PAIR_DIAGCOEFF) % (i,i)
-        cmd = cmd.replace("[comment]","{comment}").format(comment=("[%d:%s x %d:%s]" % (i,self.userid,i,self.userid)))
+        # Replace [comment] with the formatted string, without using .format()
+        cmd = cmd.replace("[comment]", "[%d:%s x %d:%s]" % (i, self.userid, i, self.userid))
         if printflag: print(cmd)
         return cmd
     
 
-    def pair_offdiagcoeff(self,o=None,printflag=True,i=None):
+    def pair_offdiagcoeff(self,o=None,printflag=True,i=None,raw=False):
         """
         Generate and return the off-diagonal pair coefficients for the current forcefield instance.
 
@@ -358,6 +391,8 @@ class forcefield():
         i : int, optional
             The bead type to be used for the current forcefield instance. If not provided, 
             the current bead type of the instance (`self.beadtype`) will be used.
+        raw: bool, optional default=False
+            If True, the raw template is given without interpretation
 
         Returns:
         --------
@@ -370,6 +405,8 @@ class forcefield():
         IndexError
             If the first argument `o` is not a forcefield object or an integer.
         """
+        if raw:
+            return self.PAIR_OFFDIAGCOEFF
         if i==None:
             i = self.beadtype
         if o==None:
@@ -387,7 +424,8 @@ class forcefield():
             if i>1: j=i-1
             else: j=i+1
         cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (min(i,j),max(j,i))
-        cmd = cmd.replace("[comment]","{comment}").format(comment=("[%d:%s x %d:%s]" % (i,self.userid,j,oname)))
+        # Replace [comment] with the formatted string, without using .format()
+        cmd = cmd.replace("[comment]", "[%d:%s x %d:%s]" % (i, self.userid, j, oname))
         if printflag: print(cmd)
         return cmd
 
@@ -425,7 +463,7 @@ class smd(forcefield):
 class ulsph(smd):
     """ SMD:ULSPH forcefield (updated Lagrangian) """
     name = smd.name + struct(style="ulsph")
-    description = smd.description + struct(style="SMD:ULSPH - updated Langrangian for fluids - SPH-like")
+    description = smd.description + struct(style="SMD:ULSPH - updated Lagrangian for fluids - SPH-like")
 
     # style definition (LAMMPS code between triple """)
     PAIR_DIAGCOEFF = """
@@ -444,8 +482,8 @@ class ulsph(smd):
 # BEGIN PAIR-COEFF FORCEFIELD ===========================
 class tlsph(smd):
     """ SMD:TLSPH forcefield (total Lagrangian) """
-    name = smd.name + struct(syle="tlsph")
-    description = smd.description + struct(style="SMD:TLSPH - total Langrangian for solids")
+    name = smd.name + struct(style="tlsph")
+    description = smd.description + struct(style="SMD:TLSPH - total Lagrangian for solids")
 
     # style definition (LAMMPS code between triple """)
     PAIR_DIAGCOEFF = """
@@ -483,7 +521,7 @@ class none(smd):
 
 # %% Material library
 # template:
-#   class mymateral(myforcefield):
+#   class mymaterial(myforcefield):
 #       userid = "short name"
 #       version = value
 #       def __init__(self, beadtype=1, userid=None):

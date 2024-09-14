@@ -1764,6 +1764,10 @@ class dscript:
         
         # Split the content into lines
         lines = content.splitlines()
+        lines = [line for line in lines if line.strip()]  # Remove blank or empty lines
+        # Raise an error if no content is left after removing blank lines
+        if not lines:
+            raise ValueError("File/Content is empty or only contains blank lines.")
 
         # Initialize containers for global parameters, definitions, templates, and attributes
         global_params = {}
