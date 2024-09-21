@@ -2332,30 +2332,30 @@ nu = 0.3
     obj = parsed_forcefield .scriptobject(group="A")
     
     
-#     # *********************************************************************************************
-#     # Production Example: Scriptobject Creation and Combination
-#     # 
-#     # This example demonstrates the creation and combination of `scriptobject` instances from both
-#     # static forcefield classes and dynamic forcefield instances (via `dforcefield`).
-#     # 
-#     # Key Points:
-#     # ------------
-#     # 1. **Static and Dynamic Forcefields**: 
-#     #    - Scriptobjects can be created using static forcefields (e.g., `rigidwall`, `solidfood`, etc.)
-#     #      or dynamic forcefields generated from a `dforcefield` instance (e.g., `waterFF`).
-#     #    - Dynamic forcefields can either be passed directly to the `pizza.script.scriptobject()`
-#     #      constructor or instantiated through the `scriptobject` method of any `pizza.dforcefield` object.
-#     #
-#     # 2. **Combining Scriptobjects**: 
-#     #    - Scriptobjects can be combined using the `+` operator to create a collection of objects.
-#     #    - This collection of scriptobjects can then be scripted dynamically using the `script` property
-#     #      to generate their interaction definitions.
-#     #
-#     # 3. **Geometry Input**: 
-#     #    - Geometry for the scriptobjects can be provided either via an input file (using `filename`)
-#     #      or dynamically using `pizza.region.region()`.
-#     #
-#     # **********************************************************************************************
+    # *********************************************************************************************
+    # Production Example: Scriptobject Creation and Combination
+    # 
+    # This example demonstrates the creation and combination of `scriptobject` instances from both
+    # static forcefield classes and dynamic forcefield instances (via `dforcefield`).
+    # 
+    # Key Points:
+    # ------------
+    # 1. **Static and Dynamic Forcefields**: 
+    #    - Scriptobjects can be created using static forcefields (e.g., `rigidwall`, `solidfood`, etc.)
+    #      or dynamic forcefields generated from a `dforcefield` instance (e.g., `waterFF`).
+    #    - Dynamic forcefields can either be passed directly to the `pizza.script.scriptobject()`
+    #      constructor or instantiated through the `scriptobject` method of any `pizza.dforcefield` object.
+    #
+    # 2. **Combining Scriptobjects**: 
+    #    - Scriptobjects can be combined using the `+` operator to create a collection of objects.
+    #    - This collection of scriptobjects can then be scripted dynamically using the `script` property
+    #      to generate their interaction definitions.
+    #
+    # 3. **Geometry Input**: 
+    #    - Geometry for the scriptobjects can be provided either via an input file (using `filename`)
+    #      or dynamically using `pizza.region.region()`.
+    #
+    # **********************************************************************************************
     
     from pizza.forcefield import rigidwall, solidfood, water
     
