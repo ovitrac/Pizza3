@@ -139,10 +139,10 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.99"
+__version__ = "0.992"
 
 
-# INRAE\Olivier Vitrac - rev. 2022-09-12
+# INRAE\Olivier Vitrac - rev. 2022-09-21
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -158,6 +158,7 @@ __version__ = "0.99"
 # 2023-07-25 fix forcefield (deepduplicate instead of duplicate)
 # 2024-09-10 updated documentation for pizza.forcefield (to be read along with pizza.dforcefield)
 # 2024-09-12 upgrading of parameterforcefield
+# 2024-09-21 dforcefield and forcefield can be combined indifferently (no precedence)
 
 # %% Dependencies
 import types
@@ -405,6 +406,8 @@ class forcefield():
         IndexError
             If the first argument `o` is not a forcefield object or an integer.
         """
+        
+        # Ensure 'i' is define
         if raw:
             return self.PAIR_OFFDIAGCOEFF
         if i==None:
@@ -412,7 +415,8 @@ class forcefield():
         if o==None:
             j = i
             oname = "none"
-        elif isinstance(o,forcefield):
+        # Check if the object has 'beadtype' and 'userid' attributes
+        elif hasattr(o, 'beadtype') and hasattr(o, 'userid'): #"forcefield" in str(type(o)) or str(type(o)).endswith("dforcefield'>"):
             j = o.beadtype
             oname = o.userid
         elif isinstance(o,float) or isinstance(o,int):
@@ -421,8 +425,7 @@ class forcefield():
         else:
             raise IndexError("the first argument should be j or a forcefield object")
         if j==i:
-            if i>1: j=i-1
-            else: j=i+1
+            j = i - 1 if i > 1 else i + 1
         cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (min(i,j),max(j,i))
         # Replace [comment] with the formatted string, without using .format()
         cmd = cmd.replace("[comment]", "[%d:%s x %d:%s]" % (i, self.userid, j, oname))

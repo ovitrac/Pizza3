@@ -17,19 +17,30 @@ to define objects built with atoms, set the interactions between those objects, 
 equivalent scripts. This flexibility enables users to choose between dynamic instances (`dforcefield`) 
 and static classes (`forcefield`) for defining `scriptobject` interactions.
 
-Key Differences Between `forcefield` and `dforcefield`:
--------------------------------------------------------
+Moreover, dynamic forcefields can also be defined using methods from `generic` classes. These 
+`generic` classes allow creating high-level forcefields dynamically, providing another layer of 
+customization that can be combined with both static and dynamic forcefields.
+
+Key Differences Between `forcefield`, `generic`, and `dforcefield`:
+-------------------------------------------------------------------
 - **`forcefield`**:
     - New materials are defined using classes, often within a material library (e.g., `pizza.generic`).
     - Supports inheritance to manage complex materials and extend functionality.
     - Primarily used for well-defined, library-based material management.
     
+- **`generic`**:
+    - Provides high-level forcefield definitions via methods that can be dynamically called.
+    - These dynamic definitions can be used interchangeably with static forcefields.
+    - Suitable for defining specialized forcefields on the fly without modifying the core library.
+
 - **`dforcefield`**:
     - Enables dynamic definition of forcefields at runtime without needing a predefined library.
     - Ideal for rapid prototyping and testing new configurations on the fly.
     - Attributes like `parameters`, `beadtype`, and `userid` can be modified at runtime and 
       automatically injected into the base forcefield class for flexible interaction modeling.
     - Provides a method, `scriptobject()`, to create objects compatible with static forcefields.
+    - Allows integrating high-level forcefield definitions from `generic` methods, enhancing
+      dynamic forcefield customization.
 
 Key Attributes:
 ---------------
@@ -241,11 +252,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.99"
+__version__ = "0.992"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-09-10 (community)
+# INRAE\Olivier Vitrac - rev. 2024-09-21 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -262,6 +273,7 @@ from datetime import datetime
 from pizza.private.struct import struct
 from pizza.forcefield import forcefield, parameterforcefield
 from pizza.script import scriptdata, scriptobject
+from pizza.generic import generic, USERSMD
 
 
 # %% Private Functions
@@ -434,12 +446,14 @@ Example Usage:
     _dforcefield_specific_attributes = {'name', 'description', 'beadtype', 'userid', 'version', 'parameters'}
     # Class attribute: construction flag is True by default for all instances
     _in_construction = True
+    RULES = parameterforcefield()  # Default empty RULES at the class level
 
-    def __init__(self, base_class=None, beadtype=1, userid=None, USER=parameterforcefield(), 
-                 name=None, description=None, version=0.1, additional_modules=None, **kwargs):
+    def __init__(self, base_class=None, beadtype=1, userid=None, USER=parameterforcefield(),
+                 name=None, description=None, version=0.1, additional_modules=None,
+                 GLOBAL=None, LOCAL=None, **kwargs):
         """
         Initialize a dynamic forcefield with default or custom values.
-        
+    
         Args:
             base_class (str or class): The base class to use (e.g., 'ulsph', tlsph, etc.) or the actual class.
             beadtype (int): The bead type identifier. Default is 1.
@@ -449,29 +463,95 @@ Example Usage:
             version (float): Version number for the forcefield. Default is 0.1.
             USER (parameterforcefield): Custom parameters to override defaults.
             additional_modules (module or list of modules): Additional modules to search for forcefields.
+            GLOBAL (parameterforcefield): Global parameters to be used. Default is None.
+            LOCAL (parameterforcefield): Local parameters to be used. Default is None.
             kwargs: Additional parameters passed to the base class.
         """
         
-        # Step 1: Handle base_class, either a string or a class reference
+        # Initialize GLOBAL and LOCAL containers
+        self.GLOBAL = GLOBAL if GLOBAL else parameterforcefield()
+        self.LOCAL = LOCAL if LOCAL else parameterforcefield()
+        self.RULES = parameterforcefield()  # Initialize RULES, to be populated later if applicable
+    
+        # Step 1a: Handle base_class, either a string or a class reference
         print(f"Initializing dforcefield with base_class: {base_class}")
-        if isinstance(base_class, str):
-            available_forcefields = self.list_forcefield_subclasses(printflag=False, additional_modules=additional_modules)
-            if base_class not in available_forcefields:
-                available_classes = ", ".join(available_forcefields.keys())
-                raise ValueError(f"Invalid base_class: '{base_class}'. Must be one of the available forcefields: {available_classes}")
-            base_class = self._load_base_class(base_class)  # Load the base class
-
-        # Ensure the base_class is valid and a subclass of `forcefield`            
-        if base_class is None or not issubclass(base_class, forcefield):
-            raise ValueError(f"Invalid base_class: {base_class}. It must be a valid subclass of 'forcefield'.")
-        print(f"Base class loaded successfully: {base_class}")
         
-        # Step 2: Extract default parameters from the base class or its ancestors
-        default_params = self.extract_default_parameters(base_class, displayflag=True)
+        # Handle base_class loading (using additional_modules if needed)
+        if isinstance(base_class, str):
+            # Get available forcefields and short names mapping
+            available_forcefields, short_name_mapping = self.list_forcefield_subclasses(
+                printflag=False,
+                additional_modules=additional_modules
+            )
+            # Check if the provided base_class name matches either the full or short name
+            if base_class not in available_forcefields and base_class not in short_name_mapping:
+                available_classes = ", ".join(short_name_mapping.keys())
+                raise ValueError(
+                    f"Invalid base_class: '{base_class}'. Must be one of the available forcefields: {available_classes}"
+            )    
+            # Use the full name from the short name if necessary
+            # if base_class in short_name_mapping:
+            #     base_class = short_name_mapping[base_class]
+                
+            # Load the base class or method
+            base_class = dforcefield._load_base_class(base_class, additional_modules=additional_modules)
+            
+        # Ensure the base_class is valid
+        if not (inspect.isclass(base_class) and issubclass(base_class, forcefield)) and not (
+            callable(base_class) and hasattr(base_class, '__qualname__') and
+            base_class.__qualname__.split('.')[0] in {cls.__name__ for cls in generic.__subclasses__()}
+        ):
+            raise ValueError(
+                f"Invalid base_class: {base_class}. It must be a valid subclass of 'forcefield' or a callable forcefield method "
+                f"from a 'generic' subclass."
+        )
+            
+        # Step 1b: Initialize the base_class
+        # If base_class is callable (like a method), call it to get an instance; otherwise, instantiate directly
+        if callable(base_class):
+            # Check if the base_class is a method of a generic subclass
+            qualname = base_class.__qualname__.split('.')
+            parent_class_name = qualname[0] if len(qualname) > 1 else None
+            parent_class = next((cls for cls in generic.__subclasses__() if cls.__name__ == parent_class_name), None)
+            
+            if parent_class:
+                # Instantiate the parent class and call the method on it
+                parent_instance = parent_class()  # Create an instance of the parent class (e.g., USERSMD)
+                self.base_class = base_class(parent_instance)  # Call the method with the instance context
+            else:
+                # Call the method directly if no parent class context is needed
+                self.base_class = base_class()
+        else:
+            self.base_class = base_class()  # Instantiate the class if it's not a method  
+    
+        # Ensure the base_class is valid and handle classes and methods separately
+        if inspect.isclass(base_class):
+            # Step 2a: Extract default parameters from the base class
+            extracted_info = self.extract_default_parameters(base_class, displayflag=True)
+        elif callable(base_class) and hasattr(base_class, '__qualname__'):
+            # If base_class is a method, extract the parent class name
+            parent_class_name = base_class.__qualname__.split('.')[0]
+            parent_class = next(
+                (cls for cls in generic.__subclasses__() if cls.__name__ == parent_class_name), None
+            )
+            if parent_class is None:
+                raise ValueError(f"Unable to find parent class '{parent_class_name}' for method '{base_class.__name__}'.")
+            
+            # Step 2b: Extract default parameters from the method within its parent class
+            extracted_info = self.extract_default_parameters(parent_class, method_name=base_class.__name__, displayflag=True)
+        else:
+            raise ValueError(
+                f"Invalid base_class: {base_class}. It must be a valid subclass of 'forcefield' or a callable forcefield method."
+            )
+    
+        # Populate RULES, GLOBAL, and LOCAL if extracted
+        self.RULES = extracted_info.get("RULES", parameterforcefield())
+        self.GLOBAL = extracted_info.get("GLOBAL", parameterforcefield()) + self.GLOBAL
+        self.LOCAL = extracted_info.get("LOCAL", parameterforcefield()) + self.LOCAL
     
         # Step 3: Initialize the base_class
-        self.base_class = base_class()  # Instantiate the base_class if it's callable
-        
+        #self.base_class = base_class()  # Instantiate the base_class if it's callable
+    
         # Step 4: Initialize name and description
         default_name = self.base_class.name  # Access base_class.name after ensuring it's properly set
         
@@ -499,10 +579,10 @@ Example Usage:
                 raise TypeError(f"description must be of type parameterforcefield, not {type(description)}")
         else:
             description = default_description + struct(material=f"{self.__class__.__name__.lower()} beads - SPH-like")
-        
+    
         self.description = description
-        
-        # Step 4: Other properties and parameters
+    
+        # Step 5: Other properties and parameters
         self.userid = userid if userid else self.__class__.__name__.lower()
         self.version = version
         self.beadtype = beadtype
@@ -510,14 +590,17 @@ Example Usage:
         # Ensure USER is of the correct type
         if not isinstance(USER, parameterforcefield):
             raise TypeError(f"USER must be of type parameterforcefield, not {type(USER)}")
-        
+    
         # Merge USER and kwargs into parameters
         # If no default parameters, proceed with user parameters
-        if default_params is None:
-            self.parameters = parameterforcefield(**kwargs) + USER
+        if extracted_info["parameters"] is None:
+            self.parameters = self.GLOBAL + self.LOCAL + self.RULES + USER + parameterforcefield(**kwargs)
         else:
-            self.parameters = default_params + parameterforcefield(**kwargs) + USER
-    
+            self.parameters = extracted_info["parameters"] + self.GLOBAL + self.LOCAL + self.RULES + USER + parameterforcefield(**kwargs)
+        # After merging parameters, ensure USER is not part of it
+        # if 'USER' in self.parameters:
+        #     del self.parameters['USER']
+                
         # End of construction
         self._in_construction = False
     
@@ -525,33 +608,98 @@ Example Usage:
         self._inject_attributes()
 
 
+    # New methods to access GLOBAL, LOCAL, and RULES
 
+    def get_global(self):
+        """Return the GLOBAL parameters for this dforcefield instance."""
+        return self.GLOBAL
+
+    def get_local(self):
+        """Return the LOCAL parameters for this dforcefield instance."""
+        return self.LOCAL
+
+    def get_rules(self):
+        """Return the RULES parameters for this dforcefield instance."""
+        return self.RULES
+
+    # Method to combine GLOBAL, LOCAL, and RULES
+    def combine_parameters(self):
+        """
+        Combine GLOBAL, LOCAL, and RULES to get the current parameter configuration.
+        """
+        return self.GLOBAL + self.LOCAL + self.RULES
+    
+    # Other methods like _load_base_class, extract_default_parameters, etc., remain unchanged
+    
     @classmethod
-    def _load_base_class(cls, base_class_name):
+    def _load_base_class(cls, base_class_name, additional_modules=None):
         """
-        Dynamically load the base class by its string name from the available forcefield subclasses.
-        """
-        subclasses_info = cls.list_forcefield_subclasses(printflag=False)
+        Dynamically load the base class by its string name from the available forcefield subclasses 
+        or additional modules.
         
+        Args:
+            base_class_name (str): The name of the forcefield class or method to load.
+            additional_modules (list): Optional list of additional modules to search for the base class.
+        
+        Returns:
+            class or function: The base class or function if found.
+        """
+        # Retrieve subclass information and short name mappings
+        subclasses_info, short_name_mapping = cls.list_forcefield_subclasses(
+            printflag=False, additional_modules=additional_modules
+            )   
         print(f"Trying to load base_class: {base_class_name}")
-        
+    
+        # Directly look for the exact name in the subclasses_info
         if base_class_name in subclasses_info:
-            if not subclasses_info[base_class_name]['loaded']:
-                module_name = subclasses_info[base_class_name]['module']
+            info = subclasses_info[base_class_name]
+            if not info['loaded']:
+                module_name = info['module']
                 try:
-                    print(f"Attempting to import module '{module_name}' and class '{base_class_name}'")
+                    print(f"Attempting to import module '{module_name}' and load '{base_class_name}'")
                     module = __import__(module_name, fromlist=[base_class_name])
-                    return getattr(module, base_class_name)
+                    target = getattr(module, base_class_name)
+    
+                    # Check if the target is a class or method
+                    if inspect.isclass(target) and issubclass(target, forcefield):
+                        return target
+                    elif inspect.isfunction(target):
+                        return target
+                    else:
+                        raise ValueError(f"Loaded target '{base_class_name}' is not a suitable forcefield class or method.")
                 except (ImportError, AttributeError) as e:
                     available_classes = cls._get_available_forcefields()
-                    raise ImportError(f"Failed to load the base class '{base_class_name}' from module '{module_name}'. "
+                    raise ImportError(f"Failed to load the target '{base_class_name}' from module '{module_name}'. "
                                       f"Available forcefields: {available_classes}") from e
-            else:
-                print(f"Base class '{base_class_name}' is already loaded.")
-                return sys.modules[subclasses_info[base_class_name]['module']].__dict__.get(base_class_name)
     
-        raise ValueError(f"Base class '{base_class_name}' is not a recognized subclass of forcefield. "
-                         f"Available forcefields: {cls._get_available_forcefields()}")
+            # If already loaded, return the class directly
+            return sys.modules[info['module']].__dict__.get(base_class_name)
+    
+        # If not found directly, check for nested methods within classes
+        for key, info in subclasses_info.items():
+            # Check if base_class_name is a method of a class
+            if '.' in key and key.split('.')[-1] == base_class_name:
+                parent_class_name = key.split('.')[0]
+                if parent_class_name in subclasses_info:
+                    # Load the parent class if it hasn't been loaded yet
+                    parent_class_info = subclasses_info[parent_class_name]
+                    if not parent_class_info['loaded']:
+                        parent_class = cls._load_base_class(parent_class_name, additional_modules=additional_modules)
+                    else:
+                        # Directly access the parent class from the loaded module
+                        module = sys.modules[parent_class_info['module']]
+                        parent_class = getattr(module, parent_class_name)
+                    
+                    # Get the method from the loaded parent class
+                    method = getattr(parent_class, base_class_name, None)
+                    if method and callable(method):
+                        return method
+                    else:
+                        raise ValueError(f"Method '{base_class_name}' was not found in the parent class '{parent_class_name}' or is not callable.")
+    
+        # If the target is a direct class but not a method or nested class, throw an appropriate error
+        raise ValueError(f"Target '{base_class_name}' is not a recognized class or method. "
+                         f"Available entries: {cls._get_available_forcefields()}")
 
 
     @classmethod
@@ -566,52 +714,85 @@ Example Usage:
         return list(subclasses_info.keys())
 
 
-
     @classmethod
-    def extract_default_parameters(cls, base_class, displayflag=True):
+    def extract_default_parameters(cls, base_class, method_name=None, displayflag=True):
         """
-        Extract default parameters from the base class or its ancestors by instantiating the class.
-
+        Extract default parameters from the base class or its method by instantiating the class.
+        
+        If the base class is derived from `generic`, this function will also extract RULES, LOCAL, 
+        and GLOBAL attributes if they are defined once the instance is created.
+    
         Parameters:
         -----------
         base_class : class
-            The base class from which to extract default parameterforcefield values.
+            The base class from which to extract default parameterforcefield values or a method.
+        method_name : str, optional
+            The name of the method to call on the instance, if applicable (e.g., `newtonianfluid`).
         displayflag : bool, optional (default=True)
             If True, prints a message when no default parameters are found.
-
+    
         Returns:
         --------
-        parameterforcefield or None
-            The default parameters extracted from the base class, or None if no parameters are found.
+        dict
+            A dictionary containing the default parameters extracted from the base class or method.
+            Also includes RULES, LOCAL, and GLOBAL if applicable.
         """
-        # Instantiate the base class to access the constructor-defined parameters
+        extracted_info = {
+            "parameters": parameterforcefield(),
+            "RULES": parameterforcefield(),
+            "GLOBAL": parameterforcefield(),
+            "LOCAL": parameterforcefield()
+        }
+    
         try:
-            instance = base_class()  # Create an instance of the class
+            # Create an instance of the base class
+            instance = base_class()
+            
+            # Extract parameters if the instance has them
             if hasattr(instance, 'parameters') and isinstance(instance.parameters, parameterforcefield):
-                return instance.parameters
+                extracted_info["parameters"] = instance.parameters
+            
+            # Extract RULES, GLOBAL, and LOCAL if they exist
+            for attr in ["RULES", "GLOBAL", "LOCAL"]:
+                if hasattr(instance, attr) and isinstance(getattr(instance, attr), parameterforcefield):
+                    extracted_info[attr] = getattr(instance, attr)
+    
+            # If a method is specified, call it to get additional parameters
+            if method_name and hasattr(instance, method_name):
+                method = getattr(instance, method_name)
+                if callable(method):
+                    try:
+                        result = method()  # Call the method (ensure it returns the desired forcefield object)
+                        if hasattr(result, 'parameters') and isinstance(result.parameters, parameterforcefield):
+                            extracted_info["parameters"] = result.parameters
+                    except Exception as e:
+                        if displayflag:
+                            print(f"Error calling method {method_name} on {base_class.__name__}: {str(e)}")
+                            
         except TypeError as e:
             if displayflag:
                 print(f"Could not instantiate {base_class.__name__}: {str(e)}")
-
+    
         # If no parameters found or cannot instantiate the class, return None
-        if displayflag:
+        if displayflag and not extracted_info["parameters"]:
             print(f"No default parameters found in {base_class.__name__} or its ancestors.")
         
-        return None
-
+        return extracted_info
 
         
     def _inject_attributes(self):
         """Inject dforcefield attributes into the base class, bypassing __setattr__."""
         if not self._in_construction:  # Prevent injection during construction
-            self.base_class.__dict__.update({
-                'name': self.name,
-                'description': self.description,
-                'beadtype': self.beadtype,
-                'userid': self.userid,
-                'version': self.version,
-                'parameters': self.parameters
-        })
+            # Check if base_class is a class (not a method)
+            if inspect.isclass(self.base_class):
+                self.base_class.__dict__.update({
+                    'name': self.name,
+                    'description': self.description,
+                    'beadtype': self.beadtype,
+                    'userid': self.userid,
+                    'version': self.version,
+                    'parameters': self.parameters
+                })
             
 
     def __getattr__(self, attr):
@@ -1601,27 +1782,27 @@ Example Usage:
     @classmethod
     def list_forcefield_subclasses(cls, printflag=True, additional_modules=None):
         """
-        Class method to list all subclasses of the `forcefield` class, including subclasses from additional modules.
+        Class method to list all subclasses of the `forcefield` and `generic` classes, including their methods.
     
         Parameters:
         -----------
         printflag : bool, optional (default=True)
-            If True, prints the subclasses of `forcefield`, their load status, and their default parameters.
+            If True, prints the subclasses of `forcefield`, `generic`, their load status, and their default parameters.
         additional_modules : module or list of modules, optional
-            A module or list of additional modules to search for forcefield subclasses.
+            A module or list of additional modules to search for subclasses and methods.
     
         Returns:
         --------
         dict
-            A dictionary where keys are class names and values are dictionaries containing:
-            - "loaded": Whether the class is already loaded in memory.
-            - "module": The module path of the class.
-            - "default_parameters": A parameterforcefield object containing default parameters, or None.
-            - "num_defaults": The number of default parameters, or None.
+            A dictionary where keys are class names or method names and values are dictionaries containing:
+            - "loaded": Whether the class or method is already loaded in memory.
+            - "module": The module path of the class or method.
+            - "default_parameters": Extracted parameters, RULES, LOCAL, and GLOBAL from the class or method.
+        dict
+            A dictionary mapping short names to full names.
         """
-        # Get all subclasses of the `forcefield` class from the current module (pizza.forcefield)
         subclasses = set()
-        classes_to_check = [forcefield]
+        classes_to_check = [forcefield, generic]  # Start with both forcefield and generic
     
         # Ensure additional_modules is a list, even if it's a single module
         if additional_modules is not None and not isinstance(additional_modules, list):
@@ -1631,9 +1812,17 @@ Example Usage:
         if additional_modules:
             for mod in additional_modules:
                 for name, obj in inspect.getmembers(mod):
-                    if inspect.isclass(obj) and issubclass(obj, forcefield) and obj is not forcefield:
+                    # Add classes that are subclasses of forcefield or generic
+                    if inspect.isclass(obj) and (issubclass(obj, forcefield) or issubclass(obj, generic)) and obj not in {forcefield, generic}:
                         subclasses.add(obj)
                         classes_to_check.append(obj)
+                    # Also add relevant high-level methods/functions that do not start with '_'
+                    elif (inspect.isfunction(obj) or inspect.ismethod(obj)) and not name.startswith('_'):
+                        # Check if the method belongs to a class derived from generic, not forcefield
+                        parent_class_name = obj.__qualname__.split('.')[0]
+                        parent_class = next((cls for cls in subclasses if cls.__name__ == parent_class_name), None)
+                        if parent_class and issubclass(parent_class, generic) and not issubclass(parent_class, forcefield):
+                            subclasses.add((parent_class, name, obj))  # Add (parent_class, method_name, function/method)
     
         # Traverse through all found subclasses
         while classes_to_check:
@@ -1644,34 +1833,84 @@ Example Usage:
     
         # Prepare the output dictionary with load status flags and default parameters
         subclass_info = {}
-        for subclass in subclasses:
-            class_name = subclass.__name__
-            is_loaded = class_name in globals()  # Check if class is already loaded
-            
-            # Extract default parameters if they exist
-            default_params = cls.extract_default_parameters(subclass, displayflag=False)
-            num_defaults = len(default_params.keys()) if default_params else None
+        short_name_mapping = {}
     
-            subclass_info[class_name] = {
-                "loaded": is_loaded,
-                "module": subclass.__module__,
-                "default_parameters": default_params,
-                "num_defaults": num_defaults
-            }
+        for subclass in subclasses:
+            if inspect.isclass(subclass):
+                class_name = subclass.__name__
+                is_loaded = class_name in globals()  # Check if class is already loaded
+    
+                # Extract default parameters if they exist
+                extracted_params = cls.extract_default_parameters(subclass, displayflag=False)
+                num_defaults = len(extracted_params.get('parameters', {}).keys()) if extracted_params else None
+    
+                # Check if RULES, GLOBAL, and LOCAL are defined
+                rules_defined = ''
+                if extracted_params:
+                    rules_defined += 'R' if extracted_params["RULES"] else '-'
+                    rules_defined += 'G' if extracted_params["GLOBAL"] else '-'
+                    rules_defined += 'L' if extracted_params["LOCAL"] else '-'
+    
+                # Add entry for the class
+                subclass_info[class_name] = {
+                    "loaded": is_loaded,
+                    "module": subclass.__module__,
+                    "num_defaults": num_defaults,
+                    "rules_defined": rules_defined if rules_defined else '---'  # Display as '---' if none defined
+                }
+    
+                # Map short name to full name
+                short_name_mapping[class_name] = class_name
+    
+                # Inspect and add high-level methods from the class itself if not forcefield
+                if not issubclass(subclass, forcefield):
+                    for method_name, method in inspect.getmembers(subclass, predicate=inspect.isfunction):
+                        if not method_name.startswith('_'):  # Skip private methods
+                            method_full_name = f"{class_name}.{method_name}"
+                            extracted_method_params = cls.extract_default_parameters(subclass, method_name=method_name, displayflag=False)
+                            num_defaults = len(extracted_method_params.get('parameters', {}).keys()) if extracted_method_params else None
+                            rules_defined = extracted_method_params.get("rules_defined", "---")
+                            subclass_info[method_full_name] = {
+                                "loaded": True,
+                                "module": subclass.__module__,
+                                "num_defaults": num_defaults,
+                                "rules_defined": rules_defined
+                            }
+                            # Add method short name to mapping
+                            short_name_mapping[method_name] = method_full_name
+    
+            else:
+                # Handle function/method cases
+                parent_class, func_name, func_obj = subclass
+                is_loaded = func_name in globals() or parent_class.__module__ in sys.modules
+                extracted_method_params = cls.extract_default_parameters(parent_class, method_name=func_name, displayflag=False)
+                num_defaults = len(extracted_method_params.get('parameters', {}).keys()) if extracted_method_params else None
+                rules_defined = extracted_method_params.get("rules_defined", "---")
+                func_full_name = f"{parent_class.__name__}.{func_name}"
+                subclass_info[func_full_name] = {
+                    "loaded": is_loaded,
+                    "module": parent_class.__module__,
+                    "num_defaults": num_defaults,
+                    "rules_defined": rules_defined
+                }
+                # Add function/method to short names
+                short_name_mapping[func_name] = func_full_name
     
         # Optionally print the subclasses and their load status with parameter info
         if printflag:
-            print("List of available forcefields in pizza.forcefield:\n")
-            print(f"{'Class Name':<20} {'Module Path':<20} {'Status':<10} {'Default Params':<10}")
-            print("="*70)
-            for class_name, info in sorted(subclass_info.items(), key=lambda x: x[0]):
+            print("List of available forcefields and relevant methods:\n")
+            print(f"{'Short Name':<15} {'Class/Method Name':<30} {'Module Path':<30} {'Status':<10} {'Default Params':<10} {'RULES':<5}")
+            print("=" * 105)
+            for short_name, class_name in sorted(short_name_mapping.items(), key=lambda x: x[0]):
+                info = subclass_info[class_name]
                 status = "Loaded" if info["loaded"] else "Not Loaded"
                 num_defaults = info["num_defaults"] if info["num_defaults"] is not None else "None"
-                print(f"{class_name:<20} {info['module']:<20} {status:<10} {num_defaults:<10}")
-            print(f"\nTotal number of forcefields: {len(subclass_info)}")
-            return None
+                rules_defined = info["rules_defined"]
+                print(f"{short_name:<15} {class_name:<30} {info['module']:<30} {status:<10} {num_defaults:<10} {rules_defined:<5}")
+            print(f"\nTotal number of forcefields and methods: {len(subclass_info)}")
     
-        return subclass_info
+        return subclass_info, short_name_mapping
+
 
 
     def scriptobject(self, beadtype=None, name=None, fullname=None, filename=None, group=None, style=None, USER=scriptdata()):
@@ -1783,7 +2022,7 @@ Example Usage:
                 # Deep copy other attributes
                 setattr(copie, k, copy.deepcopy(v, memo))
         
-        return copie
+        return copie # return copied instance
 
 
 # %% DEBUG
@@ -1795,179 +2034,179 @@ Example Usage:
 # ============================
 if __name__ == '__main__':
     
-    # ---------------------------------------------------------------
-    # The examples below reconstruct dynamycally the FF:
-    #       * water from pizza.forcefield.water()
-    #       * solidfood from pizza.forcefield.solidfood()
-    #       * salt from pizza.forcefield.saltTLSPH()
-    #       * rigidwall from pizza.forcefield.rigidwall()
-    # ---------------------------------------------------------------
+#     # ---------------------------------------------------------------
+#     # The examples below reconstruct dynamycally the FF:
+#     #       * water from pizza.forcefield.water()
+#     #       * solidfood from pizza.forcefield.solidfood()
+#     #       * salt from pizza.forcefield.saltTLSPH()
+#     #       * rigidwall from pizza.forcefield.rigidwall()
+#     # ---------------------------------------------------------------
     
-    # List available forcefields
-    dforcefield.list_forcefield_subclasses(printflag=True,additional_modules=None) # we could add other modules
+#     # List available forcefields
+#     dforcefield.list_forcefield_subclasses(printflag=True,additional_modules=None) # we could add other modules
     
-    # We reuse a high-level forcefield
-    mywater = dforcefield(
-        base_class="water",
-        userid = "my customized water",
-        rho = 900,
-        q1 = 0.1
-        )
+#     # We reuse a high-level forcefield
+#     mywater = dforcefield(
+#         base_class="water",
+#         userid = "my customized water",
+#         rho = 900,
+#         q1 = 0.1
+#         )
     
-    # Test dynamic water class using ulsph as the base class
-    dynamic_water = dforcefield(
-        base_class='ulsph',
-        beadtype=1,
-        userid="dynamic_water",
-        USER=parameterforcefield(
-            rho=1000,
-            c0=10.0,
-            q1=1.0,
-            Cp=1.0,
-            taitexponent=7,
-            contact_scale=1.5,
-            contact_stiffness="2.5*${c0}^2*${rho}"
-        )
-    )
-    print(f"Water parameters: {dynamic_water.parameters}")
-    print(f"Water name: {dynamic_water.name}")
-    print(f"Water Cp: {dynamic_water.Cp}")
-    dynamic_water
+#     # Test dynamic water class using ulsph as the base class
+#     dynamic_water = dforcefield(
+#         base_class='ulsph',
+#         beadtype=1,
+#         userid="dynamic_water",
+#         USER=parameterforcefield(
+#             rho=1000,
+#             c0=10.0,
+#             q1=1.0,
+#             Cp=1.0,
+#             taitexponent=7,
+#             contact_scale=1.5,
+#             contact_stiffness="2.5*${c0}^2*${rho}"
+#         )
+#     )
+#     print(f"Water parameters: {dynamic_water.parameters}")
+#     print(f"Water name: {dynamic_water.name}")
+#     print(f"Water Cp: {dynamic_water.Cp}")
+#     dynamic_water
     
-    # Test dynamic solidfood class using tlsph as the base class
-    dynamic_solidfood = dforcefield(
-        base_class='tlsph',
-        beadtype=2,
-        userid="dynamic_solidfood",
-        #USER=parameterforcefield( #<--- note that USER is not used in this case
-            rho=1000,
-            c0=10.0,
-            E="5*${c0}^2*${rho}",
-            nu=0.3,
-            q1=1.0,
-            q2=0.0,
-            Hg=10.0,
-            Cp=1.0,
-            sigma_yield="0.1*${E}",
-            hardening=0,
-            contact_scale=1.5,
-            contact_stiffness="2.5*${c0}^2*${rho}"
-        #)
-    )
-    print(f"Solidfood parameters: {dynamic_solidfood.parameters}")
-    print(f"Solidfood name: {dynamic_solidfood.name}")
-    repr(dynamic_solidfood)
+#     # Test dynamic solidfood class using tlsph as the base class
+#     dynamic_solidfood = dforcefield(
+#         base_class='tlsph',
+#         beadtype=2,
+#         userid="dynamic_solidfood",
+#         #USER=parameterforcefield( #<--- note that USER is not used in this case
+#             rho=1000,
+#             c0=10.0,
+#             E="5*${c0}^2*${rho}",
+#             nu=0.3,
+#             q1=1.0,
+#             q2=0.0,
+#             Hg=10.0,
+#             Cp=1.0,
+#             sigma_yield="0.1*${E}",
+#             hardening=0,
+#             contact_scale=1.5,
+#             contact_stiffness="2.5*${c0}^2*${rho}"
+#         #)
+#     )
+#     print(f"Solidfood parameters: {dynamic_solidfood.parameters}")
+#     print(f"Solidfood name: {dynamic_solidfood.name}")
+#     repr(dynamic_solidfood)
     
-    # Test dynamic saltTLSPH class using tlsph as the base class
-    dynamic_salt = dforcefield(
-        base_class='tlsph',
-        beadtype=3,
-        userid="dynamic_salt",
-        USER=parameterforcefield(
-            rho=1000,
-            c0=10.0,
-            E="5*${c0}^2*${rho}",
-            nu=0.3,
-            q1=1.0,
-            q2=0.0,
-            Hg=10.0,
-            Cp=1.0,
-            sigma_yield="0.1*${E}",
-            hardening=0,
-            contact_scale=1.5,
-            contact_stiffness="2.5*${c0}^2*${rho}"
-        )
-    )
-    print(f"Salt TLSPH parameters: {dynamic_salt.parameters}")
-    print(f"Salt TLSPH name: {dynamic_salt.name}")
-    repr(dynamic_salt)
+#     # Test dynamic saltTLSPH class using tlsph as the base class
+#     dynamic_salt = dforcefield(
+#         base_class='tlsph',
+#         beadtype=3,
+#         userid="dynamic_salt",
+#         USER=parameterforcefield(
+#             rho=1000,
+#             c0=10.0,
+#             E="5*${c0}^2*${rho}",
+#             nu=0.3,
+#             q1=1.0,
+#             q2=0.0,
+#             Hg=10.0,
+#             Cp=1.0,
+#             sigma_yield="0.1*${E}",
+#             hardening=0,
+#             contact_scale=1.5,
+#             contact_stiffness="2.5*${c0}^2*${rho}"
+#         )
+#     )
+#     print(f"Salt TLSPH parameters: {dynamic_salt.parameters}")
+#     print(f"Salt TLSPH name: {dynamic_salt.name}")
+#     repr(dynamic_salt)
     
-    # Test dynamic rigidwall class using none as the base class
-    dynamic_rigidwall = dforcefield(
-        base_class='none',  # Assuming a class `none` exists
-        beadtype=4,
-        userid="dynamic_rigidwall",
-        USER=parameterforcefield(
-            rho=3000,
-            c0=10.0,
-            contact_scale=1.5,
-            contact_stiffness="2.5*${c0}^2*${rho}"
-        )
-    )
-    print(f"Rigidwall parameters: {dynamic_rigidwall.parameters}")
-    print(f"Rigidwall name: {dynamic_rigidwall.name}")
-    repr(dynamic_rigidwall)
+#     # Test dynamic rigidwall class using none as the base class
+#     dynamic_rigidwall = dforcefield(
+#         base_class='none',  # Assuming a class `none` exists
+#         beadtype=4,
+#         userid="dynamic_rigidwall",
+#         USER=parameterforcefield(
+#             rho=3000,
+#             c0=10.0,
+#             contact_scale=1.5,
+#             contact_stiffness="2.5*${c0}^2*${rho}"
+#         )
+#     )
+#     print(f"Rigidwall parameters: {dynamic_rigidwall.parameters}")
+#     print(f"Rigidwall name: {dynamic_rigidwall.name}")
+#     repr(dynamic_rigidwall)
 
 
-    # create a new food and save it on disk
-    newfood = dynamic_solidfood.copy(rho=2100,q1=4,E=1000,name="new food")
-    repr(newfood)
-    newfood.base_repr()
-    fname = newfood.save(overwrite=True)
+#     # create a new food and save it on disk
+#     newfood = dynamic_solidfood.copy(rho=2100,q1=4,E=1000,name="new food")
+#     repr(newfood)
+#     newfood.base_repr()
+#     fname = newfood.save(overwrite=True)
     
-    # load again the same file
-    newfood2 = dforcefield.load(fname)
+#     # load again the same file
+#     newfood2 = dforcefield.load(fname)
     
-    # compare the content
-    newfood.compare(newfood2,printflag=True)
+#     # compare the content
+#     newfood.compare(newfood2,printflag=True)
     
-    # note that the variables are automatically identified and added to parameters if missing 
-    newfood.parameters = parameterforcefield(a=1,b=2)
-    missingvars = newfood.missingVariables()
-    print('updated newfood:\n')
-    repr(newfood)
-    print('missing variables in updated newfood:\n')
-    repr(missingvars)
+#     # note that the variables are automatically identified and added to parameters if missing 
+#     newfood.parameters = parameterforcefield(a=1,b=2)
+#     missingvars = newfood.missingVariables()
+#     print('updated newfood:\n')
+#     repr(newfood)
+#     print('missing variables in updated newfood:\n')
+#     repr(missingvars)
     
-    # compare the content
-    newfood.compare(newfood2,printflag=True)
+#     # compare the content
+#     newfood.compare(newfood2,printflag=True)
     
-    # check the parser
-    content = """
-# DFORCEFIELD SAVE FILE
-base_class="tlsph"
-beadtype = 1
-userid = "dynamic_water"
-version = 1.0
+#     # check the parser
+#     content = """
+# # DFORCEFIELD SAVE FILE
+# base_class="tlsph"
+# beadtype = 1
+# userid = "dynamic_water"
+# version = 1.0
 
-description:{forcefield="LAMMPS:SMD", style="tlsph", material="water"}
-name:{forcefield="LAMMPS:SMD", material="water"}
+# description:{forcefield="LAMMPS:SMD", style="tlsph", material="water"}
+# name:{forcefield="LAMMPS:SMD", material="water"}
 
-rho = 1000
-E = "5*${c0}^2*${rho}"
-nu = 0.3
-"""
-    parsed_forcefield = dforcefield.parse(content)
-    print(parsed_forcefield.script)
+# rho = 1000
+# E = "5*${c0}^2*${rho}"
+# nu = 0.3
+# """
+#     parsed_forcefield = dforcefield.parse(content)
+#     print(parsed_forcefield.script)
     
-    # create a script object
-    obj = parsed_forcefield .scriptobject(group="A")
+#     # create a script object
+#     obj = parsed_forcefield .scriptobject(group="A")
     
     
-    # *********************************************************************************************
-    # Production Example: Scriptobject Creation and Combination
-    # 
-    # This example demonstrates the creation and combination of `scriptobject` instances from both
-    # static forcefield classes and dynamic forcefield instances (via `dforcefield`).
-    # 
-    # Key Points:
-    # ------------
-    # 1. **Static and Dynamic Forcefields**: 
-    #    - Scriptobjects can be created using static forcefields (e.g., `rigidwall`, `solidfood`, etc.)
-    #      or dynamic forcefields generated from a `dforcefield` instance (e.g., `waterFF`).
-    #    - Dynamic forcefields can either be passed directly to the `pizza.script.scriptobject()`
-    #      constructor or instantiated through the `scriptobject` method of any `pizza.dforcefield` object.
-    #
-    # 2. **Combining Scriptobjects**: 
-    #    - Scriptobjects can be combined using the `+` operator to create a collection of objects.
-    #    - This collection of scriptobjects can then be scripted dynamically using the `script` property
-    #      to generate their interaction definitions.
-    #
-    # 3. **Geometry Input**: 
-    #    - Geometry for the scriptobjects can be provided either via an input file (using `filename`)
-    #      or dynamically using `pizza.region.region()`.
-    #
-    # **********************************************************************************************
+#     # *********************************************************************************************
+#     # Production Example: Scriptobject Creation and Combination
+#     # 
+#     # This example demonstrates the creation and combination of `scriptobject` instances from both
+#     # static forcefield classes and dynamic forcefield instances (via `dforcefield`).
+#     # 
+#     # Key Points:
+#     # ------------
+#     # 1. **Static and Dynamic Forcefields**: 
+#     #    - Scriptobjects can be created using static forcefields (e.g., `rigidwall`, `solidfood`, etc.)
+#     #      or dynamic forcefields generated from a `dforcefield` instance (e.g., `waterFF`).
+#     #    - Dynamic forcefields can either be passed directly to the `pizza.script.scriptobject()`
+#     #      constructor or instantiated through the `scriptobject` method of any `pizza.dforcefield` object.
+#     #
+#     # 2. **Combining Scriptobjects**: 
+#     #    - Scriptobjects can be combined using the `+` operator to create a collection of objects.
+#     #    - This collection of scriptobjects can then be scripted dynamically using the `script` property
+#     #      to generate their interaction definitions.
+#     #
+#     # 3. **Geometry Input**: 
+#     #    - Geometry for the scriptobjects can be provided either via an input file (using `filename`)
+#     #      or dynamically using `pizza.region.region()`.
+#     #
+#     # **********************************************************************************************
     
     from pizza.forcefield import rigidwall, solidfood, water
     
@@ -1995,3 +2234,60 @@ nu = 0.3
     # Similarly, using the alternate water bead definition (bwater2)
     collection2 = bwater2 + b1 + b2 + b3 + b4
     collection2.script
+
+
+    # *********************************************************************************************
+    # Example: Using Dynamic Forcefields from `pizza.generic` alongside `forcefield` Classes
+    #
+    # This example illustrates how to use dynamic forcefields defined within `pizza.generic` 
+    # and integrate them seamlessly with existing `forcefield` classes for simulation scripting.
+    #
+    # Key Points:
+    # ------------
+    # 1. **Dynamic Forcefields via Generic Classes**:
+    #    - The `generic` module allows defining new forcefields dynamically through high-level methods
+    #      (e.g., `newtonianfluid` from `USERSMD`) without predefining them as static classes.
+    #    - Forcefields can be dynamically instantiated using the `dforcefield` class and linked to 
+    #      these high-level methods via `additional_modules`.
+    #
+    # 2. **Integration with Existing Forcefields**:
+    #    - `dforcefield` instances created from `generic` methods are fully compatible with other 
+    #      static forcefield classes (e.g., `rigidwall`, `solidfood`).
+    #    - Scriptobjects created from these dynamic instances can be combined and scripted like 
+    #      any other forcefield-derived objects.
+    #
+    # 3. **Workflow**:
+    #    - Specify the additional modules where the high-level forcefield definitions reside (e.g., `generic`).
+    #    - Initialize the `dforcefield` with the specific method name (e.g., `newtonianfluid`) to dynamically create 
+    #      the forcefield.
+    #    - Use the created dynamic forcefield instance to define scriptobjects and combine them with others 
+    #      in a collection for interactive scripting.
+    #
+    # *********************************************************************************************
+    
+    from pizza.forcefield import rigidwall, solidfood, water
+    from pizza.generic import generic
+    
+    # Step 1: Specify the additional module(s) where USERSMD and its methods are located
+    additional_modules = [generic]  # Can also be a string like "generic" if import resolves correctly
+    
+    # Step 2: Initialize a dynamic forcefield using `newtonianfluid` from USERSMD via additional_modules
+    dynamic_ff = dforcefield(
+        base_class="newtonianfluid",  # Use the name of the function from USERSMD
+        beadtype=6,
+        userid="fluid_instance",
+        additional_modules=additional_modules,
+    )
+    
+    # Display the dynamic forcefield instance
+    print("\nDynamic dforcefield instance based on generic.newtonianfluid:\n")
+    repr(dynamic_ff)
+    
+    # Define a scriptobject using the dynamic forcefield instance
+    bwater3 = dynamic_ff.scriptobject(name="water_newtonian", group=["A", "D"], filename="mygeomXX")
+    
+    # Combine this scriptobject with an existing collection
+    collection3 = collection2 + bwater3
+    
+    # Generate the script for the interactions in the new collection
+    collection3.script
