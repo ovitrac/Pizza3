@@ -379,9 +379,10 @@ class dforcefield:
     - `name` (struct or str): A human-readable name for the forcefield instance, merged with `description`.
     - `description` (struct or str): A brief description of the forcefield, merged with `name`.
     - `version` (float): Version number for the forcefield instance.
-    - `RULES` (parameterforcefield): Defines specific rules or formulae applied to forcefield calculations.
-    - `GLOBAL` (parameterforcefield): Stores global parameters that apply to the entire forcefield.
-    - `LOCAL` (parameterforcefield): Contains local parameters specific to certain forcefield interactions.
+    - `RULES` (genericdata): Defines specific rules or formulae applied to forcefield calculations.
+    - `GLOBAL` (genericdata): Stores global parameters that apply to the entire forcefield.
+    - `LOCAL` (genericdata): Contains local parameters specific to certain forcefield interactions.
+    - `USER` (scriptdata): Contains USER parameters for scriptobject
 
     Methods:
     --------
@@ -454,7 +455,7 @@ class dforcefield:
     # Display
     _maxdisplay = 40
     # Class attribute for the six specific attributes
-    _dforcefield_specific_attributes = {'name', 'description', 'beadtype', 'userid', 'version', 'parameters','RULES','GLOBAL','LOCAL'}
+    _dforcefield_specific_attributes = {'name', 'description', 'beadtype', 'userid', 'version', 'parameters','RULES','GLOBAL','LOCAL','USER'}
     # Class attribute: construction flag is True by default for all instances
     _in_construction = True
     RULES = parameterforcefield()  # Default empty RULES at the class level
@@ -483,6 +484,9 @@ class dforcefield:
         self.GLOBAL = GLOBAL if GLOBAL else genericdata()
         self.LOCAL = LOCAL if LOCAL else genericdata()
         self.RULES = genericdata()  # Initialize RULES, to be populated later if applicable
+        
+        # Initialize USER containter (which is used by scriptobject)
+        self.USER = scriptdata()
     
         # Step 1a: Handle base_class, either a string or a class reference
         print(f"Initializing dforcefield with base_class: {base_class}")
@@ -638,7 +642,7 @@ class dforcefield:
         """
         Combine GLOBAL, LOCAL, and RULES to get the current parameter configuration.
         """
-        return self.RULES + self.GLOBAL + self.LOCAL
+        return self.GLOBAL + self.LOCAL + self.RULES
     
     
     def update_parameters(self):
@@ -812,9 +816,9 @@ class dforcefield:
         """
         extracted_info = {
             "parameters": parameterforcefield(),
-            "RULES": parameterforcefield(),
-            "GLOBAL": parameterforcefield(),
-            "LOCAL": parameterforcefield()
+            "RULES": genericdata(),
+            "GLOBAL": genericdata(),
+            "LOCAL": genericdata()
         }
     
         try:
@@ -1052,10 +1056,10 @@ class dforcefield:
         base_class_name = self.base_class.__class__.__name__ if self.base_class else "None"
         # Generate the name table dynamically (iterating over key-value pairs)
         sep = "  "+"-"*20+":"+"-"*30
-        name_table = sep + "[ BEADTYPE (can be changed) ]\n"
+        name_table = sep + "[ BEADTYPE ]\n"
         key = "beadtype"
         name_table += f"  {key:<20}: {self.beadtype}\n"
-        name_table += sep + "[ FF CLASS (cannot be changed) ]\n"
+        name_table += sep + "[ FF CLASS (read only) ]\n"
         # Generate the name table dynamically (iterating over key-value pairs)
         for key, value in self.merged_name_description.items():
             # Check if the value is a list (when the field exists in both name and description)
@@ -1082,7 +1086,7 @@ class dforcefield:
         tmp = self.parameters.eval()
         tmpkey= ""
         # Generate the parameters table dynamically (iterating over key-value pairs)
-        parameters_table = sep+ "[ PARAMS (can be changed) ]\n"
+        parameters_table = sep+ "[ PARAMS ]\n"
         missing = 0
         for key, value in self.parameters.items():  # Assuming parameters is a class with __dict__
             parameters_table += f"  {key:<20}: {value}"  # Align the keys and values dynamically
@@ -2114,7 +2118,8 @@ class dforcefield:
         forcefield = self
         
         # Apply any user-defined parameters to the forcefield
-        forcefield.USER = USER
+        # This is the standard behavior of scriptobject
+        forcefield.USER = forcefield.USER + USER
     
         # Create and return the scriptobject instance
         return scriptobject(
