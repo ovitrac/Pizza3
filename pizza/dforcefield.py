@@ -252,7 +252,7 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.992"
+__version__ = "0.9921"
 
 
 
@@ -263,6 +263,7 @@ __version__ = "0.992"
 # 2024-09-10 release candidate
 # 2024-09-12 file management and parsing 
 # 2024-09-14 major update fully compatible with scriptobject, script
+# 2024-09-21 fully compatible with forcefields of class generic
 
 
 # Dependencies
@@ -273,7 +274,7 @@ from datetime import datetime
 from pizza.private.struct import struct
 from pizza.forcefield import forcefield, parameterforcefield
 from pizza.script import scriptdata, scriptobject
-from pizza.generic import generic, USERSMD
+from pizza.generic import generic, genericdata, USERSMD
 
 
 # %% Private Functions
@@ -355,21 +356,22 @@ def remove_comments(content, split_lines=False):
 # %% Main class
 class dforcefield:
     """
-The `dforcefield` class represents a dynamic extension of a base forcefield class. It allows for dynamic inheritance, 
-delegation of methods, and flexible management of forcefield-specific attributes. The class supports the customization 
-and injection of forcefield parameters at runtime, making it highly versatile for scientific simulations involving 
-various forcefield models like `ulsph`, `tlsph`, and others.
+    The `dforcefield` class represents a dynamic extension of a base forcefield class. It allows for dynamic inheritance, 
+    delegation of methods, and flexible management of forcefield-specific attributes. The class supports the customization 
+    and injection of forcefield parameters at runtime, making it highly versatile for scientific simulations involving 
+    various forcefield models like `ulsph`, `tlsph`, and others.
 
-Key Features:
--------------
+    Key Features:
+    -------------
     - Dynamic inheritance and delegation of base class methods.
     - Merging of `name` and `description` attributes, with automatic handling of overlapping fields.
     - Detection of variables used in `pair_style`, `pair_diagcoeff`, and `pair_offdiagcoeff` outputs.
     - Automatic handling of missing variables, including implicit variable detection and assignment.
     - Supports additional modules to be dynamically loaded for forcefield definitions.
+    - Management of `RULES`, `GLOBAL`, and `LOCAL` parameters, which can be updated dynamically at runtime.
 
-Attributes:
------------
+    Attributes:
+    -----------
     - `base_class` (forcefield): The base class for forcefield behavior, inherited from `forcefield` subclasses like `ulsph`.
     - `parameters` (parameterforcefield): Stores interaction parameters dynamically injected into the base class.
     - `beadtype` (int): The bead type identifier associated with the forcefield instance.
@@ -377,9 +379,12 @@ Attributes:
     - `name` (struct or str): A human-readable name for the forcefield instance, merged with `description`.
     - `description` (struct or str): A brief description of the forcefield, merged with `name`.
     - `version` (float): Version number for the forcefield instance.
+    - `RULES` (parameterforcefield): Defines specific rules or formulae applied to forcefield calculations.
+    - `GLOBAL` (parameterforcefield): Stores global parameters that apply to the entire forcefield.
+    - `LOCAL` (parameterforcefield): Contains local parameters specific to certain forcefield interactions.
 
-Methods:
---------
+    Methods:
+    --------
     ### High-Level Methods:
     These methods are primarily used for interacting with the `dforcefield` instance:
     
@@ -400,7 +405,7 @@ Methods:
     - **`validate`**: Validates the forcefield instance to ensure all required attributes are set.
     - **`base_repr`**: Returns the representation of the `base_class`.
     - **`script`**: Returns the raw outputs of pair methods as a script.
-    - **scriptobject**: Method to return a scriptobject based on the current dforcefield instance.
+    - **`scriptobject`**: Method to return a `scriptobject` based on the current `dforcefield` instance.
 
     ### Low-Level Methods:
     These methods handle internal logic and lower-level operations:
@@ -428,22 +433,28 @@ Methods:
     - **`_parse_struct_block`**: Parses key-value pairs from `description` or `name` blocks.
     - **`__copy__`**: Creates a shallow copy of the `dforcefield` instance, copying only the attributes at the top level without duplicating nested objects.
     - **`__deepcopy__`**: Creates a deep copy of the `dforcefield` instance, fully duplicating all attributes, including nested objects, while leaving class references intact.
-
-
+    - **`get_global`**: Returns the `GLOBAL` parameters.
+    - **`get_local`**: Returns the `LOCAL` parameters.
+    - **`get_rules`**: Returns the `RULES` parameters.
+    - **`set_global`**: Updates the `GLOBAL` parameters and recalculates the combined parameters.
+    - **`set_local`**: Updates the `LOCAL` parameters and recalculates the combined parameters.
+    - **`set_rules`**: Updates the `RULES` parameters and recalculates the combined parameters.
+    - **`combine_parameters`**: Combines `GLOBAL`, `LOCAL`, and `RULES` into the current parameter configuration.
+    - **`update_parameters`**: Updates `self.parameters` after changes to `GLOBAL`, `LOCAL`, or `RULES`.
     
-Example Usage:
---------------
-    >>> dynamic_ff = dforcefield(ulsph, beadtype=1, userid="dynamic_water", USER=parameterforcefield(rho=1000))
-    >>> dynamic_ff.pair_style()  # Uses attributes from the dforcefield instance
-    lj/cut
-    >>> dynamic_ff.compare(another_ff_instance, printflag=True)
+    Example Usage:
+    --------------
+        >>> dynamic_ff = dforcefield(ulsph, beadtype=1, userid="dynamic_water", USER=parameterforcefield(rho=1000))
+        >>> dynamic_ff.pair_style()  # Uses attributes from the dforcefield instance
+        lj/cut
+        >>> dynamic_ff.compare(another_ff_instance, printflag=True)
     """
 
 
     # Display
     _maxdisplay = 40
     # Class attribute for the six specific attributes
-    _dforcefield_specific_attributes = {'name', 'description', 'beadtype', 'userid', 'version', 'parameters'}
+    _dforcefield_specific_attributes = {'name', 'description', 'beadtype', 'userid', 'version', 'parameters','RULES','GLOBAL','LOCAL'}
     # Class attribute: construction flag is True by default for all instances
     _in_construction = True
     RULES = parameterforcefield()  # Default empty RULES at the class level
@@ -469,9 +480,9 @@ Example Usage:
         """
         
         # Initialize GLOBAL and LOCAL containers
-        self.GLOBAL = GLOBAL if GLOBAL else parameterforcefield()
-        self.LOCAL = LOCAL if LOCAL else parameterforcefield()
-        self.RULES = parameterforcefield()  # Initialize RULES, to be populated later if applicable
+        self.GLOBAL = GLOBAL if GLOBAL else genericdata()
+        self.LOCAL = LOCAL if LOCAL else genericdata()
+        self.RULES = genericdata()  # Initialize RULES, to be populated later if applicable
     
         # Step 1a: Handle base_class, either a string or a class reference
         print(f"Initializing dforcefield with base_class: {base_class}")
@@ -545,9 +556,9 @@ Example Usage:
             )
     
         # Populate RULES, GLOBAL, and LOCAL if extracted
-        self.RULES = extracted_info.get("RULES", parameterforcefield())
-        self.GLOBAL = extracted_info.get("GLOBAL", parameterforcefield()) + self.GLOBAL
-        self.LOCAL = extracted_info.get("LOCAL", parameterforcefield()) + self.LOCAL
+        self.RULES = extracted_info.get("RULES", genericdata())
+        self.GLOBAL = extracted_info.get("GLOBAL", genericdata()) + self.GLOBAL
+        self.LOCAL = extracted_info.get("LOCAL", genericdata()) + self.LOCAL
     
         # Step 3: Initialize the base_class
         #self.base_class = base_class()  # Instantiate the base_class if it's callable
@@ -627,9 +638,71 @@ Example Usage:
         """
         Combine GLOBAL, LOCAL, and RULES to get the current parameter configuration.
         """
-        return self.GLOBAL + self.LOCAL + self.RULES
+        return self.RULES + self.GLOBAL + self.LOCAL
     
-    # Other methods like _load_base_class, extract_default_parameters, etc., remain unchanged
+    
+    def update_parameters(self):
+        """
+        Update self.parameters by combining GLOBAL, LOCAL, RULES, and USER parameters.
+        """
+        self.parameters = self.parameters + self.combine_parameters()
+        self._inject_attributes()
+        
+        
+    def set_local(self, new_local=None, **kwargs):
+        """
+        Update the LOCAL parameters and adjust the combined parameters accordingly.
+        
+        Args:
+        -----
+        new_local : parameterforcefield, optional
+            The new LOCAL parameters to set. If None, only the parameters in kwargs are modified.
+        kwargs : dict, optional
+            Keyword arguments representing individual parameters to add or modify in LOCAL.
+        """
+        if new_local is not None and not isinstance(new_local, parameterforcefield):
+            raise TypeError(f"LOCAL must be of type parameterforcefield, not {type(new_local)}.")
+        
+        # Combine current LOCAL, new_local, and additional parameters in kwargs
+        self.LOCAL = (self.LOCAL + (new_local or genericdata()) + genericdata(**kwargs))
+        self.update_parameters()
+
+    def set_global(self, new_global=None, **kwargs):
+        """
+        Update the GLOBAL parameters and adjust the combined parameters accordingly.
+        
+        Args:
+        -----
+        new_global : parameterforcefield, optional
+            The new GLOBAL parameters to set. If None, only the parameters in kwargs are modified.
+        kwargs : dict, optional
+            Keyword arguments representing individual parameters to add or modify in GLOBAL.
+        """
+        if new_global is not None and not isinstance(new_global, parameterforcefield):
+            raise TypeError(f"GLOBAL must be of type parameterforcefield, not {type(new_global)}.")
+        
+        # Combine current GLOBAL, new_global, and additional parameters in kwargs
+        self.GLOBAL = (self.GLOBAL + (new_global or genericdata()) + genericdata(**kwargs))
+        self.update_parameters()
+
+    def set_rules(self, new_rules=None, **kwargs):
+        """
+        Update the RULES parameters and adjust the combined parameters accordingly.
+        
+        Args:
+        -----
+        new_rules : parameterforcefield, optional
+            The new RULES parameters to set. If None, only the parameters in kwargs are modified.
+        kwargs : dict, optional
+            Keyword arguments representing individual parameters to add or modify in RULES.
+        """
+        if new_rules is not None and not isinstance(new_rules, parameterforcefield):
+            raise TypeError(f"RULES must be of type parameterforcefield, not {type(new_rules)}.")
+        
+        # Combine current RULES, new_rules, and additional parameters in kwargs
+        self.RULES = (self.RULES + (new_rules or genericdata()) + genericdata(**kwargs))
+        self.update_parameters()
+    
     
     @classmethod
     def _load_base_class(cls, base_class_name, additional_modules=None):
@@ -793,6 +866,15 @@ Example Usage:
                     'version': self.version,
                     'parameters': self.parameters
                 })
+            else:
+                # For methods, set attributes on the instance itself, as methods can't have attributes directly
+                # Methods are often accessed from an instance, so we update the instance's attributes instead
+                self.base_class.name = self.name
+                self.base_class.description = self.description
+                self.base_class.beadtype = self.beadtype
+                self.base_class.userid = self.userid
+                self.base_class.version = self.version
+                self.base_class.parameters = self.parameters
             
 
     def __getattr__(self, attr):
@@ -1080,7 +1162,7 @@ Example Usage:
 
     
     def __add__(self, other):
-        """Concatenate dforcefield attributes if different, else keep the version of self."""
+        """Concatenate dforcefield attributes, including RULES, GLOBAL, and LOCAL, if different, else keep the version of self."""
         if not isinstance(other, dforcefield):
             raise TypeError(f"Cannot concatenate {type(other)} with dforcefield.")
         
@@ -1094,6 +1176,11 @@ Example Usage:
         new_parameters = self.parameters + other.parameters  # Assuming parameters supports '+'
         new_userid = self.userid if self.userid == other.userid else f"{self.userid}_{other.userid}"
         
+        # Concatenate RULES, GLOBAL, and LOCAL, preserving their combined nature
+        new_rules = self.RULES + other.RULES
+        new_global = self.GLOBAL + other.GLOBAL
+        new_local = self.LOCAL + other.LOCAL
+    
         # Keep the version from self
         new_version = self.version
         
@@ -1106,12 +1193,15 @@ Example Usage:
             description=new_description,
             version=new_version,
             USER=new_parameters,
+            RULES=new_rules,
+            GLOBAL=new_global,
+            LOCAL=new_local
         )
+
     
-    def copy(self, beadtype=None, userid=None, name=None, description=None, version=None, USER=parameterforcefield(), **kwargs):
+    def copy(self, beadtype=None, userid=None, name=None, description=None, version=None, USER=parameterforcefield(), RULES=None, GLOBAL=None, LOCAL=None, **kwargs):
         """
-        Create a new instance of dforcefield with the option to override the six attributes:
-        beadtype, userid, name, description, version, USER.
+        Create a new instance of dforcefield with the option to override key attributes including RULES, GLOBAL, and LOCAL.
         """
         # Use the current instance's values as defaults, and override if values are provided
         new_beadtype = beadtype if beadtype is not None else self.beadtype
@@ -1123,6 +1213,12 @@ Example Usage:
             new_userid = new_userid + " (copy)"
         # USER is computed by combining self.parameters + USER + parameterforcefield(**kwargs)
         new_parameters = self.parameters + USER
+        
+        # Combine or override RULES, GLOBAL, and LOCAL if provided
+        new_rules = RULES if RULES is not None else self.RULES
+        new_global = GLOBAL if GLOBAL is not None else self.GLOBAL
+        new_local = LOCAL if LOCAL is not None else self.LOCAL
+    
         # Create and return the new instance with overridden values
         return self.__class__(
             base_class=self.base_class.__class__,
@@ -1132,30 +1228,42 @@ Example Usage:
             description=new_description,
             version=new_version,
             USER=new_parameters,
+            RULES=new_rules,
+            GLOBAL=new_global,
+            LOCAL=new_local,
             **kwargs
         )
+
     
     def update(self, **kwargs):
         """
-        Update multiple attributes of the dforcefield instance at once.
+        Update multiple attributes of the dforcefield instance at once, including RULES, GLOBAL, and LOCAL.
         
         Args:
             kwargs: Key-value pairs of attributes to update.
         """
         for key, value in kwargs.items():
-            setattr(self, key, value)
+            if key == "RULES":
+                self.RULES = self.RULES + value if self.RULES else value
+            elif key == "GLOBAL":
+                self.GLOBAL = self.GLOBAL + value if self.GLOBAL else value
+            elif key == "LOCAL":
+                self.LOCAL = self.LOCAL + value if self.LOCAL else value
+            else:
+                setattr(self, key, value)
+
 
 
     def to_dict(self):
         """
-        Serialize the dforcefield instance to a dictionary.
+        Serialize the dforcefield instance to a dictionary, including RULES, GLOBAL, and LOCAL.
         
         Returns:
             dict: A dictionary containing all the attributes and their current values.
+    
         Example:
             config = dynamic_water.to_dict()
             print(config)
-
         """
         data = {
             "name": self.name,
@@ -1163,22 +1271,27 @@ Example Usage:
             "beadtype": self.beadtype,
             "userid": self.userid,
             "version": self.version,
-            "parameters": dict(self.parameters),
-            "base_class": self.base_class.__class__.__name__
+            "parameters": dict(self.parameters),  # Convert parameters to a standard dict
+            "base_class": self.base_class.__class__.__name__,
+            "RULES": dict(self.RULES) if self.RULES else {},  # Include RULES if defined
+            "GLOBAL": dict(self.GLOBAL) if self.GLOBAL else {},  # Include GLOBAL if defined
+            "LOCAL": dict(self.LOCAL) if self.LOCAL else {}  # Include LOCAL if defined
         }
         return data
+
 
 
     @classmethod
     def from_dict(cls, data):
         """
-        Create a dforcefield instance from a dictionary.
+        Create a dforcefield instance from a dictionary, including RULES, GLOBAL, and LOCAL.
         
         Args:
             data (dict): A dictionary containing the attributes to initialize the dforcefield.
         
         Returns:
             dforcefield: A new dforcefield instance.
+    
         Example:
             config = {
                 "name": "water_ff",
@@ -1187,24 +1300,56 @@ Example Usage:
                 "userid": "water_sim",
                 "version": 1.0,
                 "parameters": {"rho": 1000, "sigma": 0.5},
-                "base_class": "ulsph"
+                "base_class": "ulsph",
+                "RULES": {"some_rule": "value"},
+                "GLOBAL": {"global_param": 10},
+                "LOCAL": {"local_param": 5}
             }
             
             new_ff = dforcefield.from_dict(config)
-
         """
+        # Extract base class information
         base_class_name = data.pop("base_class", None)
         base_class = globals().get(base_class_name) if base_class_name else None
-        return cls(base_class=base_class, **data)
+        
+        # Extract RULES, GLOBAL, and LOCAL from the data dictionary if they exist
+        rules = data.pop("RULES", parameterforcefield())
+        global_params = data.pop("GLOBAL", parameterforcefield())
+        local_params = data.pop("LOCAL", parameterforcefield())
+    
+        # Create and return the new dforcefield instance with extracted or default RULES, GLOBAL, and LOCAL
+        return cls(
+            base_class=base_class,
+            RULES=rules,
+            GLOBAL=global_params,
+            LOCAL=local_params,
+            **data
+        )
 
 
     def reset(self):
         """
-        Reset the dforcefield instance to its initial state, reapplying the default values.
+        Reset the dforcefield instance to its initial state, reapplying the default values
+        including RULES, GLOBAL, and LOCAL.
         """
-        self.__init__(self.base_class.__class__, beadtype=self.beadtype, userid=self.userid, 
-                      name=self.name, description=self.description, version=self.version)
-        
+        # Preserve the current RULES, GLOBAL, and LOCAL or reset them
+        current_rules = self.RULES
+        current_global = self.GLOBAL
+        current_local = self.LOCAL
+    
+        # Reinitialize the instance with existing or reset RULES, GLOBAL, and LOCAL
+        self.__init__(
+            base_class=self.base_class.__class__,
+            beadtype=self.beadtype,
+            userid=self.userid,
+            name=self.name,
+            description=self.description,
+            version=self.version,
+            RULES=current_rules,
+            GLOBAL=current_global,
+            LOCAL=current_local
+            )
+      
     def validate(self):
         """
         Validate the dforcefield instance to ensure all required attributes are set.
@@ -1223,7 +1368,7 @@ Example Usage:
 
     def compare(self, other, printflag=False):
         """
-        Compare the current instance with another dforcefield instance.
+        Compare the current instance with another dforcefield instance, including RULES, GLOBAL, and LOCAL.
         
         Args:
         -----
@@ -1248,7 +1393,6 @@ Example Usage:
         if printflag:
             Prints a comparison table with a type column and a legend at the end.
         """
-        
         # Define abbreviations for types
         type_abbreviations = {
             str: 'STR',
@@ -1316,8 +1460,8 @@ Example Usage:
         
         diffs = {}
         
-        # Collect all keys from both instances
-        all_keys = set(self.keys()).union(other.keys())
+        # Collect all keys from both instances, including RULES, GLOBAL, and LOCAL
+        all_keys = set(self.keys()).union(other.keys(), {'RULES', 'GLOBAL', 'LOCAL'})
     
         # Iterate over all keys and compare the values
         for key in all_keys:
@@ -1357,14 +1501,14 @@ Example Usage:
             comparison_table.append(sep)
             # Add a legend for type abbreviations
             legend = "\nType Legend: " + ", ".join(f"{abbrev} = {('NoneType' if type_ is None else type_.__name__.upper())}" for type_, abbrev in type_abbreviations.items() if type_ != 'missing')
-
+    
             comparison_table.append(legend)
             
             # Print the comparison table
             print("\n".join(comparison_table))
         
         return diffs
-    
+
 
 
     def save(self, filename=None, foldername=None, overwrite=False):
@@ -2239,55 +2383,82 @@ if __name__ == '__main__':
     # *********************************************************************************************
     # Example: Using Dynamic Forcefields from `pizza.generic` alongside `forcefield` Classes
     #
-    # This example illustrates how to use dynamic forcefields defined within `pizza.generic` 
-    # and integrate them seamlessly with existing `forcefield` classes for simulation scripting.
+    # This example demonstrates how to use dynamic forcefields defined within the `pizza.generic` 
+    # module and seamlessly integrate them with existing static `forcefield` classes for simulation scripting.
     #
     # Key Points:
     # ------------
     # 1. **Dynamic Forcefields via Generic Classes**:
-    #    - The `generic` module allows defining new forcefields dynamically through high-level methods
-    #      (e.g., `newtonianfluid` from `USERSMD`) without predefining them as static classes.
-    #    - Forcefields can be dynamically instantiated using the `dforcefield` class and linked to 
-    #      these high-level methods via `additional_modules`.
+    #    - The `generic` module enables the creation of dynamic forcefields using high-level methods 
+    #      (e.g., `newtonianfluid` from the `USERSMD` class) without the need to define them statically.
+    #    - These dynamic forcefields can be instantiated using the `dforcefield` class and linked 
+    #      to the high-level methods in the `generic` module via `additional_modules`.
     #
     # 2. **Integration with Existing Forcefields**:
-    #    - `dforcefield` instances created from `generic` methods are fully compatible with other 
-    #      static forcefield classes (e.g., `rigidwall`, `solidfood`).
-    #    - Scriptobjects created from these dynamic instances can be combined and scripted like 
-    #      any other forcefield-derived objects.
+    #    - `dforcefield` instances created from `generic` methods are fully compatible with static 
+    #      forcefield classes such as `rigidwall`, `solidfood`, and `water`.
+    #    - Scriptobjects created from dynamic instances can be combined with other forcefield-derived objects, 
+    #      making them versatile for complex simulations.
     #
     # 3. **Workflow**:
-    #    - Specify the additional modules where the high-level forcefield definitions reside (e.g., `generic`).
-    #    - Initialize the `dforcefield` with the specific method name (e.g., `newtonianfluid`) to dynamically create 
-    #      the forcefield.
-    #    - Use the created dynamic forcefield instance to define scriptobjects and combine them with others 
-    #      in a collection for interactive scripting.
+    #    - **Step 1**: Specify the additional modules (`additional_modules`) where the high-level forcefield 
+    #      definitions are located (e.g., the `generic` module).
+    #    - **Step 2**: Initialize the `dforcefield` with a specific method name (e.g., `newtonianfluid`) 
+    #      to dynamically create the forcefield. The properties can be set directly during initialization or updated later.
+    #    - **Step 3**: Use the created dynamic forcefield instance to define scriptobjects and combine them 
+    #      with other static forcefields in a collection for further interactive scripting.
+    #
+    # 4. **Adjusting Parameters Dynamically**:
+    #    - `RULES`, `GLOBAL`, and `LOCAL` parameters are integral parts of the `generic` module, providing additional 
+    #      flexibility to modify forcefield behavior on-the-fly.
+    #    - Use methods like `get_rules()`, `set_rules()`, `set_local()`, and `set_global()` to adjust these parameters 
+    #      dynamically according to the simulation needs.
     #
     # *********************************************************************************************
     
     from pizza.forcefield import rigidwall, solidfood, water
     from pizza.generic import generic
     
-    # Step 1: Specify the additional module(s) where USERSMD and its methods are located
-    additional_modules = [generic]  # Can also be a string like "generic" if import resolves correctly
+    # Step 1: Specify the additional module(s) where USERSMD and its methods are located.
+    # The `additional_modules` list informs `dforcefield` where to find high-level method definitions like `newtonianfluid`.
+    additional_modules = [generic]  # You can also use a string like "generic" if imports resolve correctly.
     
-    # Step 2: Initialize a dynamic forcefield using `newtonianfluid` from USERSMD via additional_modules
+    # Step 2: Initialize a dynamic forcefield using `newtonianfluid` from the USERSMD class via additional_modules.
     dynamic_ff = dforcefield(
-        base_class="newtonianfluid",  # Use the name of the function from USERSMD
-        beadtype=6,
-        userid="fluid_instance",
-        additional_modules=additional_modules,
+        base_class="newtonianfluid",  # Use the name of the function from USERSMD.
+        beadtype=6,                   # Specify the bead type for the forcefield.
+        userid="fluid_instance",      # Assign a unique identifier for the forcefield instance.
+        additional_modules=additional_modules,  # Pass the module list containing high-level forcefield methods.
+        rho=900,                      # Define fluid density directly during initialization.
+        nu=1e-4                       # Define kinematic viscosity directly during initialization.
     )
     
-    # Display the dynamic forcefield instance
+    # Step 3: Read and update RULES parameters dynamically.
+    # RULES are predefined formulas or constants that affect forcefield behavior and can be adjusted on-the-fly.
+    current_RULES = dynamic_ff.get_rules()
+    print(f"Dynamic RULES apply to {dynamic_ff.name}:")
+    repr(current_RULES)
+    # Update a specific RULE, which impacts how forces are calculated in the simulation.
+    current_RULES.q1 = "10*${nu}/(${c0}*${h})"
+    dynamic_ff.set_rules(current_RULES)  # Update the RULES parameters in the dforcefield instance.
+    
+    # Step 4: Update LOCAL parameters dynamically.
+    # LOCAL parameters represent properties specific to the instance, such as material properties.
+    dynamic_ff.set_local(rho=1011, nu=0.00123)  # Update properties directly with keyword arguments.
+    
+    # Display the current state of the dynamic forcefield instance.
     print("\nDynamic dforcefield instance based on generic.newtonianfluid:\n")
     repr(dynamic_ff)
     
-    # Define a scriptobject using the dynamic forcefield instance
+    # Define a scriptobject using the dynamic forcefield instance.
+    # Scriptobjects represent physical entities in simulations, defined using the forcefield properties.
     bwater3 = dynamic_ff.scriptobject(name="water_newtonian", group=["A", "D"], filename="mygeomXX")
     
-    # Combine this scriptobject with an existing collection
+    # Step 5: Combine this scriptobject with an existing collection of scriptobjects.
+    # Collections enable interactions and complex definitions in simulations.
     collection3 = collection2 + bwater3
     
-    # Generate the script for the interactions in the new collection
+    # Step 6: Generate the script for the interactions in the new collection.
+    # The `script` attribute provides a formatted script ready for use in simulations.
     collection3.script
+
