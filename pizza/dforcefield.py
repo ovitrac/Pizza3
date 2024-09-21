@@ -252,7 +252,7 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9921"
+__version__ = "0.9922"
 
 
 
@@ -454,7 +454,7 @@ class dforcefield:
 
     # Display
     _maxdisplay = 40
-    # Class attribute for the six specific attributes
+    # Class attribute for the six specific attributes + 3 generic attributes + USER set by scriptobject
     _dforcefield_specific_attributes = {'name', 'description', 'beadtype', 'userid', 'version', 'parameters','RULES','GLOBAL','LOCAL','USER'}
     # Class attribute: construction flag is True by default for all instances
     _in_construction = True
@@ -2183,153 +2183,153 @@ class dforcefield:
 # ============================
 if __name__ == '__main__':
     
-#     # ---------------------------------------------------------------
-#     # The examples below reconstruct dynamycally the FF:
-#     #       * water from pizza.forcefield.water()
-#     #       * solidfood from pizza.forcefield.solidfood()
-#     #       * salt from pizza.forcefield.saltTLSPH()
-#     #       * rigidwall from pizza.forcefield.rigidwall()
-#     # ---------------------------------------------------------------
+    # ---------------------------------------------------------------
+    # The examples below reconstruct dynamycally the FF:
+    #       * water from pizza.forcefield.water()
+    #       * solidfood from pizza.forcefield.solidfood()
+    #       * salt from pizza.forcefield.saltTLSPH()
+    #       * rigidwall from pizza.forcefield.rigidwall()
+    # ---------------------------------------------------------------
     
-#     # List available forcefields
-#     dforcefield.list_forcefield_subclasses(printflag=True,additional_modules=None) # we could add other modules
+    # List available forcefields
+    dforcefield.list_forcefield_subclasses(printflag=True,additional_modules=None) # we could add other modules
     
-#     # We reuse a high-level forcefield
-#     mywater = dforcefield(
-#         base_class="water",
-#         userid = "my customized water",
-#         rho = 900,
-#         q1 = 0.1
-#         )
+    # We reuse a high-level forcefield
+    mywater = dforcefield(
+        base_class="water",
+        userid = "my customized water",
+        rho = 900,
+        q1 = 0.1
+        )
     
-#     # Test dynamic water class using ulsph as the base class
-#     dynamic_water = dforcefield(
-#         base_class='ulsph',
-#         beadtype=1,
-#         userid="dynamic_water",
-#         USER=parameterforcefield(
-#             rho=1000,
-#             c0=10.0,
-#             q1=1.0,
-#             Cp=1.0,
-#             taitexponent=7,
-#             contact_scale=1.5,
-#             contact_stiffness="2.5*${c0}^2*${rho}"
-#         )
-#     )
-#     print(f"Water parameters: {dynamic_water.parameters}")
-#     print(f"Water name: {dynamic_water.name}")
-#     print(f"Water Cp: {dynamic_water.Cp}")
-#     dynamic_water
+    # Test dynamic water class using ulsph as the base class
+    dynamic_water = dforcefield(
+        base_class='ulsph',
+        beadtype=1,
+        userid="dynamic_water",
+        USER=parameterforcefield(
+            rho=1000,
+            c0=10.0,
+            q1=1.0,
+            Cp=1.0,
+            taitexponent=7,
+            contact_scale=1.5,
+            contact_stiffness="2.5*${c0}^2*${rho}"
+        )
+    )
+    print(f"Water parameters: {dynamic_water.parameters}")
+    print(f"Water name: {dynamic_water.name}")
+    print(f"Water Cp: {dynamic_water.Cp}")
+    dynamic_water
     
-#     # Test dynamic solidfood class using tlsph as the base class
-#     dynamic_solidfood = dforcefield(
-#         base_class='tlsph',
-#         beadtype=2,
-#         userid="dynamic_solidfood",
-#         #USER=parameterforcefield( #<--- note that USER is not used in this case
-#             rho=1000,
-#             c0=10.0,
-#             E="5*${c0}^2*${rho}",
-#             nu=0.3,
-#             q1=1.0,
-#             q2=0.0,
-#             Hg=10.0,
-#             Cp=1.0,
-#             sigma_yield="0.1*${E}",
-#             hardening=0,
-#             contact_scale=1.5,
-#             contact_stiffness="2.5*${c0}^2*${rho}"
-#         #)
-#     )
-#     print(f"Solidfood parameters: {dynamic_solidfood.parameters}")
-#     print(f"Solidfood name: {dynamic_solidfood.name}")
-#     repr(dynamic_solidfood)
+    # Test dynamic solidfood class using tlsph as the base class
+    dynamic_solidfood = dforcefield(
+        base_class='tlsph',
+        beadtype=2,
+        userid="dynamic_solidfood",
+        #USER=parameterforcefield( #<--- note that USER is not used in this case
+            rho=1000,
+            c0=10.0,
+            E="5*${c0}^2*${rho}",
+            nu=0.3,
+            q1=1.0,
+            q2=0.0,
+            Hg=10.0,
+            Cp=1.0,
+            sigma_yield="0.1*${E}",
+            hardening=0,
+            contact_scale=1.5,
+            contact_stiffness="2.5*${c0}^2*${rho}"
+        #)
+    )
+    print(f"Solidfood parameters: {dynamic_solidfood.parameters}")
+    print(f"Solidfood name: {dynamic_solidfood.name}")
+    repr(dynamic_solidfood)
     
-#     # Test dynamic saltTLSPH class using tlsph as the base class
-#     dynamic_salt = dforcefield(
-#         base_class='tlsph',
-#         beadtype=3,
-#         userid="dynamic_salt",
-#         USER=parameterforcefield(
-#             rho=1000,
-#             c0=10.0,
-#             E="5*${c0}^2*${rho}",
-#             nu=0.3,
-#             q1=1.0,
-#             q2=0.0,
-#             Hg=10.0,
-#             Cp=1.0,
-#             sigma_yield="0.1*${E}",
-#             hardening=0,
-#             contact_scale=1.5,
-#             contact_stiffness="2.5*${c0}^2*${rho}"
-#         )
-#     )
-#     print(f"Salt TLSPH parameters: {dynamic_salt.parameters}")
-#     print(f"Salt TLSPH name: {dynamic_salt.name}")
-#     repr(dynamic_salt)
+    # Test dynamic saltTLSPH class using tlsph as the base class
+    dynamic_salt = dforcefield(
+        base_class='tlsph',
+        beadtype=3,
+        userid="dynamic_salt",
+        USER=parameterforcefield(
+            rho=1000,
+            c0=10.0,
+            E="5*${c0}^2*${rho}",
+            nu=0.3,
+            q1=1.0,
+            q2=0.0,
+            Hg=10.0,
+            Cp=1.0,
+            sigma_yield="0.1*${E}",
+            hardening=0,
+            contact_scale=1.5,
+            contact_stiffness="2.5*${c0}^2*${rho}"
+        )
+    )
+    print(f"Salt TLSPH parameters: {dynamic_salt.parameters}")
+    print(f"Salt TLSPH name: {dynamic_salt.name}")
+    repr(dynamic_salt)
     
-#     # Test dynamic rigidwall class using none as the base class
-#     dynamic_rigidwall = dforcefield(
-#         base_class='none',  # Assuming a class `none` exists
-#         beadtype=4,
-#         userid="dynamic_rigidwall",
-#         USER=parameterforcefield(
-#             rho=3000,
-#             c0=10.0,
-#             contact_scale=1.5,
-#             contact_stiffness="2.5*${c0}^2*${rho}"
-#         )
-#     )
-#     print(f"Rigidwall parameters: {dynamic_rigidwall.parameters}")
-#     print(f"Rigidwall name: {dynamic_rigidwall.name}")
-#     repr(dynamic_rigidwall)
+    # Test dynamic rigidwall class using none as the base class
+    dynamic_rigidwall = dforcefield(
+        base_class='none',  # Assuming a class `none` exists
+        beadtype=4,
+        userid="dynamic_rigidwall",
+        USER=parameterforcefield(
+            rho=3000,
+            c0=10.0,
+            contact_scale=1.5,
+            contact_stiffness="2.5*${c0}^2*${rho}"
+        )
+    )
+    print(f"Rigidwall parameters: {dynamic_rigidwall.parameters}")
+    print(f"Rigidwall name: {dynamic_rigidwall.name}")
+    repr(dynamic_rigidwall)
 
 
-#     # create a new food and save it on disk
-#     newfood = dynamic_solidfood.copy(rho=2100,q1=4,E=1000,name="new food")
-#     repr(newfood)
-#     newfood.base_repr()
-#     fname = newfood.save(overwrite=True)
+    # create a new food and save it on disk
+    newfood = dynamic_solidfood.copy(rho=2100,q1=4,E=1000,name="new food")
+    repr(newfood)
+    newfood.base_repr()
+    fname = newfood.save(overwrite=True)
     
-#     # load again the same file
-#     newfood2 = dforcefield.load(fname)
+    # load again the same file
+    newfood2 = dforcefield.load(fname)
     
-#     # compare the content
-#     newfood.compare(newfood2,printflag=True)
+    # compare the content
+    newfood.compare(newfood2,printflag=True)
     
-#     # note that the variables are automatically identified and added to parameters if missing 
-#     newfood.parameters = parameterforcefield(a=1,b=2)
-#     missingvars = newfood.missingVariables()
-#     print('updated newfood:\n')
-#     repr(newfood)
-#     print('missing variables in updated newfood:\n')
-#     repr(missingvars)
+    # note that the variables are automatically identified and added to parameters if missing 
+    newfood.parameters = parameterforcefield(a=1,b=2)
+    missingvars = newfood.missingVariables()
+    print('updated newfood:\n')
+    repr(newfood)
+    print('missing variables in updated newfood:\n')
+    repr(missingvars)
     
-#     # compare the content
-#     newfood.compare(newfood2,printflag=True)
+    # compare the content
+    newfood.compare(newfood2,printflag=True)
     
-#     # check the parser
-#     content = """
-# # DFORCEFIELD SAVE FILE
-# base_class="tlsph"
-# beadtype = 1
-# userid = "dynamic_water"
-# version = 1.0
+    # check the parser
+    content = """
+# DFORCEFIELD SAVE FILE
+base_class="tlsph"
+beadtype = 1
+userid = "dynamic_water"
+version = 1.0
 
-# description:{forcefield="LAMMPS:SMD", style="tlsph", material="water"}
-# name:{forcefield="LAMMPS:SMD", material="water"}
+description:{forcefield="LAMMPS:SMD", style="tlsph", material="water"}
+name:{forcefield="LAMMPS:SMD", material="water"}
 
-# rho = 1000
-# E = "5*${c0}^2*${rho}"
-# nu = 0.3
-# """
-#     parsed_forcefield = dforcefield.parse(content)
-#     print(parsed_forcefield.script)
+rho = 1000
+E = "5*${c0}^2*${rho}"
+nu = 0.3
+"""
+    parsed_forcefield = dforcefield.parse(content)
+    print(parsed_forcefield.script)
     
-#     # create a script object
-#     obj = parsed_forcefield .scriptobject(group="A")
+    # create a script object
+    obj = parsed_forcefield .scriptobject(group="A")
     
     
 #     # *********************************************************************************************
