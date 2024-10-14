@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.99"
+__version__ = "0.9971"
 
 """
 Matlab-like Structure class
@@ -58,6 +58,8 @@ Created on Sun Jan 23 14:19:03 2022
 # 2024-09-06 add _returnerror as paramm class attribute (default=true) - dscript.lambdaScriptdata overrides it
 # 2024-09-12 file management for all OS
 # 2024-09-12 repr() improvements
+# 2024-10-09 enable @property as attribute if _propertyasattribute is True
+# 2024-10-11 add _callable__ and update()
 
 
 # %% Dependencies
@@ -286,18 +288,21 @@ class struct():
     _ftype = "field"        # field name
     _evalfeature = False    # true if eval() is available
     _maxdisplay = 40        # maximum number of characters to display (should be even)
+    _propertyasattribute = False
 
     # attributes for the iterator method
     # Please keep it static, duplicate the object before changing _iter_
     _iter_ = 0
 
     # excluded attributes (keep the , in the Tupple if it is singleton)
-    _excludedattr = ('_iter_','__class__','_protection','_evaluation','_returnerror') # used by keys() and len()
+    _excludedattr = {'_iter_','__class__','_protection','_evaluation','_returnerror'} # used by keys() and len()
 
 
     # Methods
     def __init__(self,**kwargs):
         """ constructor """
+        # Optionally extend _excludedattr here
+        self._excludedattr = self._excludedattr | {'_excludedattr', '_type', '_fulltype','_ftype'} # addition 2024-10-11
         self.set(**kwargs)
 
     def zip(self):
@@ -338,14 +343,24 @@ class struct():
             self.__dict__[key] = value
 
     def getattr(self,key):
-        """ get value """
-        if key in self.keys():
+        """Get attribute override to access both instance attributes and properties if allowed."""
+        if key in self.__dict__:
             return self.__dict__[key]
-        raise AttributeError(f'the {self._ftype} "{key}" does not exist')
+        elif getattr(self, '_propertyasattribute', False) and \
+             key not in self._excludedattr and \
+             key in self.__class__.__dict__ and isinstance(self.__class__.__dict__[key], property):
+            # If _propertyasattribute is True and it's a property, get its value
+            return self.__class__.__dict__[key].fget(self)
+        else:
+            raise AttributeError(f'the {self._ftype} "{key}" does not exist')
 
-    def hasattr(self,key):
-        """ return true if the field exist """
-        return key in self.keys()
+    def hasattr(self, key):
+        """Return true if the field exists, considering properties as regular attributes if allowed."""
+        return key in self.__dict__ or (
+            getattr(self, '_propertyasattribute', False) and
+            key not in self._excludedattr and
+            key in self.__class__.__dict__ and isinstance(self.__class__.__dict__[key], property)
+        )
 
     def __getstate__(self):
         """ getstate for cooperative inheritance / duplication """
@@ -879,6 +894,68 @@ class struct():
                     ((ref is not None) and (ref!=[])):
                         self.setattr(f, ref)
 
+
+    # update values based on key:value
+    def update(self, **kwargs):
+        """
+        Update multiple fields at once, while protecting certain attributes.
+
+        Parameters:
+        -----------
+        **kwargs : dict
+            The fields to update and their new values.
+
+        Protected attributes defined in _excludedattr are not updated.
+
+        Usage:
+        ------
+        s.update(a=10, b=[1, 2, 3], new_field="new_value")
+        """
+        protected_attributes = getattr(self, '_excludedattr', ())
+
+        for key, value in kwargs.items():
+            if key in protected_attributes:
+                print(f"Warning: Cannot update protected attribute '{key}'")
+            else:
+                self.setattr(key, value)
+
+
+    # override () for subindexing structure with key names
+    def __call__(self, *keys):
+        """
+        Extract a sub-structure based on the specified keys, 
+        keeping the same class type.
+    
+        Parameters:
+        -----------
+        *keys : str
+            The keys for the fields to include in the sub-structure.
+    
+        Returns:
+        --------
+        struct
+            A new instance of the same class as the original, containing 
+            only the specified keys.
+    
+        Usage:
+        ------
+        sub_struct = s('key1', 'key2', ...)
+        """
+        # Create a new instance of the same class
+        sub_struct = self.__class__()
+    
+        # Get the full type and field type for error messages
+        fulltype = getattr(self, '_fulltype', 'structure')
+        ftype = getattr(self, '_ftype', 'field')
+    
+        # Add only the specified keys to the new sub-structure
+        for key in keys:
+            if key in self:
+                sub_struct.setattr(key, self.getattr(key))
+            else:
+                raise KeyError(f"{fulltype} does not contain the {ftype} '{key}'.")
+    
+        return sub_struct
 
 # %% param class with scripting and evaluation capabilities
 class param(struct):
