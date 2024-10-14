@@ -139,10 +139,10 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.992"
+__version__ = "0.9971"
 
 
-# INRAE\Olivier Vitrac - rev. 2022-09-21
+# INRAE\Olivier Vitrac - rev. 2022-10-10
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -159,6 +159,7 @@ __version__ = "0.992"
 # 2024-09-10 updated documentation for pizza.forcefield (to be read along with pizza.dforcefield)
 # 2024-09-12 upgrading of parameterforcefield
 # 2024-09-21 dforcefield and forcefield can be combined indifferently (no precedence)
+# 2024-10-10 fix the dynamic parameterization with dforcefield (more overrides)
 
 # %% Dependencies
 import types
@@ -308,127 +309,216 @@ class forcefield():
     # Forcefield Methods: pair_style(), pair_coeff()
     # the substitution of LAMMPS variables is carried out with the method
     # parameters.format() method implemented in struct and inherited by parameterforcefield()
-    def pair_style(self,printflag=True,raw=False):
+    def pair_style(self,printflag=False,verbose=True, raw=False,USER=None,beadtype=None,userid=None):
         """
         Generate and return the pair style command for the current forcefield instance.
-        
-        The method evaluates the pair style based on the interaction parameters stored 
-        in the `parameters` attribute, and formats the command using the bead type 
-        (`beadtype`) and user identifier (`userid`).
-        
+    
+        This method creates a formatted pair style command based on the interaction parameters
+        stored in the `parameters` attribute. It allows customization of the command using the 
+        `beadtype` and `userid` arguments. The behavior can be altered by passing a `USER` object 
+        or opting for the raw command template.
+    
         Parameters:
         -----------
-        printflag : bool, optional, default=True
-            If True, the generated pair style command will be printed to the console.
-        raw: bool, optional default=False
-            If True, the raw template is given without interpretation
-        
+        printflag : bool, optional, default=False
+            If True, the generated pair style command is printed to the console.
+        verbose : bool, optional, default=True
+            If True, enables verbose output during the script generation.
+        raw : bool, optional, default=False
+            If True, returns the raw template of the pair style without any interpretation.
+        USER : struct, optional, default=None
+            A user-defined struct object used for overriding the default parameters.
+            When provided, the method updates parameters using `USER` in conjunction with 
+            the instance's base parameters.
+        beadtype : int, optional, default=None
+            The bead type identifier used in the generated command. If not provided, the 
+            instance's beadtype is used.
+        userid : str, optional, default=None
+            The user identifier to include in the formatted command. Defaults to the instance's 
+            userid if not specified.
+    
         Returns:
         --------
         str
             The formatted pair style command string.
+    
+        Raises:
+        -------
+        TypeError
+            If `USER` is provided but is not of type `struct` or derived from `struct`.
         """
+        # raw format
         if raw:
             return self.PAIR_STYLE
-        cmd = self.parameters.formateval(self.PAIR_STYLE)
+        # USER overrride if the forcefield class is inherited
+        if USER is None: # ---- default behavior for forcefield
+            parameters = self.parameters
+            beadtype = self.beadtype
+            userid = self.userid
+        elif isinstance(USER,struct): # ---- behavior for dforcefield (using baseclass)
+            parameters = self.parameters+USER
+            beadtype = beadtype if beadtype is not None else USER.beadtype if hasattr(USER, 'beadtype') else self.beadtype
+            userid = userid if userid is not None else USER.userid if hasattr(USER, 'userid') else self.userid
+        else:
+            raise TypeError(f'USER must be of type struct or derived from struct, not {type(USER)}')
+        # cmd
+        cmd = parameters.formateval(self.PAIR_STYLE)
         # Replace [comment] with the formatted comment (e.g., "[2:my_user_id]")
-        comment = "[%d:%s]" % (self.beadtype, self.userid)
-        cmd = cmd.replace("[comment]", comment)
+        cmd = cmd.replace("[comment]","[%d:%s]" % (beadtype, userid) if verbose else "")
         if printflag: print(cmd)
         return cmd
     
 
-    def pair_diagcoeff(self,printflag=True,i=None,raw=False):
+    def pair_diagcoeff(self,printflag=False,verbose=True, i=None,raw=False,USER=None,beadtype=None,userid=None):
         """
         Generate and return the diagonal pair coefficients for the current forcefield instance.
-
-        This method evaluates the diagonal pair coefficients based on the interaction 
-        parameters, the bead type (`beadtype`), and the user identifier (`userid`).
-        The bead type `i` can be overridden by passing it as an argument.
-
+    
+        This method evaluates the diagonal pair coefficients based on the interaction parameters,
+        the bead type (`beadtype`), and the user identifier (`userid`). The bead type `i` can 
+        be overridden by passing it as an argument. The method supports returning the raw template 
+        without evaluation and modifying parameters using a `USER` object.
+    
         Parameters:
         -----------
-        printflag : bool, optional, default=True
-            If True, the generated diagonal pair coefficient command will be printed to the console.
-        i : int, optional
-            The bead type to be used for evaluating the diagonal pair coefficients. If not provided, 
-            the current bead type of the instance (`self.beadtype`) will be used.
-        raw: bool, optional default=False
-            If True, the raw template is given without interpretation
-
+        printflag : bool, optional, default=False
+            If True, the generated diagonal pair coefficient command is printed to the console.
+        verbose : bool, optional, default=True
+            If True, enables verbose output during the script generation.
+        i : int, optional, default=None
+            The bead type used for evaluating the diagonal pair coefficients. If not provided,
+            defaults to the instance's bead type (`self.beadtype`).
+        raw : bool, optional, default=False
+            If True, returns the raw template for the diagonal pair coefficients without interpretation.
+        USER : struct, optional, default=None
+            A user-defined struct object used for overriding the default parameters.
+            When provided, the method updates parameters using `USER` in conjunction with 
+            the instance's base parameters.
+        beadtype : int, optional, default=None
+            The bead type identifier to use in the command. Defaults to the instance's beadtype
+            if not provided.
+        userid : str, optional, default=None
+            The user identifier to include in the formatted command. Defaults to the instance's
+            userid if not specified.
+    
         Returns:
         --------
         str
             The formatted diagonal pair coefficient command string.
-            diagonal pair_coeff from FFi.pair_diagcoeff(), FFi.pair_diagcoeff(i=override value)
+    
+        Raises:
+        -------
+        TypeError
+            If `USER` is provided but is not of type `struct` or derived from `struct`.
         """
+        # raw format
         if raw:
             return self.PAIR_DIAGCOEFF
-        if i==None: i = self.beadtype
-        cmd = self.parameters.formateval(self.PAIR_DIAGCOEFF) % (i,i)
+        # USER overrride if the forcefield class is inherited
+        if USER is None: # ---- default behavior for forcefield
+            parameters = self.parameters
+            beadtype = self.beadtype
+            userid = self.userid
+        elif isinstance(USER,struct): # ---- behavior for dforcefield (using baseclass)
+            parameters = self.parameters+USER
+            beadtype = beadtype if beadtype is not None else USER.beadtype if hasattr(USER, 'beadtype') else self.beadtype
+            userid = userid if userid is not None else USER.userid if hasattr(USER, 'userid') else self.userid
+        else:
+            raise TypeError(f'USER must be of type struct or derived from struct, not {type(USER)}')
+        # diagonal index
+        i = i if i is not None else beadtype
+        # cmd
+        cmd = parameters.formateval(self.PAIR_DIAGCOEFF) % (i,i)
         # Replace [comment] with the formatted string, without using .format()
-        cmd = cmd.replace("[comment]", "[%d:%s x %d:%s]" % (i, self.userid, i, self.userid))
+        cmd = cmd.replace("[comment]", "[%d:%s x %d:%s]" % (i, userid, i, userid) if verbose else "")
         if printflag: print(cmd)
         return cmd
     
 
-    def pair_offdiagcoeff(self,o=None,printflag=True,i=None,raw=False):
+    def pair_offdiagcoeff(self,o=None,printflag=False,verbose=True,i=None,raw=False,USER=None,beadtype=None,userid=None,oname=None):
         """
         Generate and return the off-diagonal pair coefficients for the current forcefield instance.
-
+    
         This method evaluates the off-diagonal pair coefficients between two different bead types 
-        or forcefield objects, and formats the command using the interaction parameters, bead type, 
-        and user identifier. The bead type `i` can be overridden, and the interaction with another 
-        forcefield object `o` can also be specified.
-
+        or forcefield objects, using the interaction parameters, bead type, and user identifier. 
+        The bead type `i` can be overridden, and the interaction with another forcefield object `o` 
+        can also be specified.
+    
         Parameters:
         -----------
-        o : forcefield or int, optional
-            The second forcefield object or bead type to be used for calculating off-diagonal 
-            pair coefficients. If not provided, the method will assume interactions between 
+        o : forcefield or int, optional, default=None
+            The second forcefield object or bead type used for calculating the off-diagonal 
+            pair coefficients. If not provided, the method assumes interactions between 
             beads of the same type.
-        printflag : bool, optional, default=True
-            If True, the generated off-diagonal pair coefficient command will be printed to the console.
-        i : int, optional
-            The bead type to be used for the current forcefield instance. If not provided, 
-            the current bead type of the instance (`self.beadtype`) will be used.
-        raw: bool, optional default=False
-            If True, the raw template is given without interpretation
-
+        printflag : bool, optional, default=False
+            If True, the generated off-diagonal pair coefficient command is printed to the console.
+        verbose : bool, optional, default=True
+            If True, enables verbose output during the script generation.
+        i : int, optional, default=None
+            The bead type used for the current forcefield instance. If not provided, 
+            defaults to the instance's bead type (`self.beadtype`).
+        raw : bool, optional, default=False
+            If True, returns the raw template for the off-diagonal pair coefficients without interpretation.
+        USER : struct, optional, default=None
+            A user-defined struct object used for overriding the default parameters.
+            When provided, the method updates parameters using `USER` in conjunction with 
+            the instance's base parameters.
+        beadtype : int, optional, default=None
+            The bead type identifier used in the command. Defaults to the instance's beadtype 
+            if not provided.
+        userid : str, optional, default=None
+            The user identifier included in the formatted command. Defaults to the instance's 
+            userid if not specified.
+        oname : str, optional, default=None
+            The user identifier for the second forcefield or bead type. If not provided, it 
+            defaults to `"none"`.
+    
         Returns:
         --------
         str
             The formatted off-diagonal pair coefficient command string.
-            off-diagonal pair_coeff from FFi.pair_offdiagcoeff(FFj), FFi.pair_offdiagcoeff(FFj,i=override value)
-
+    
         Raises:
         -------
+        TypeError
+            If `USER` is not of type `struct` or derived from `struct`.
         IndexError
             If the first argument `o` is not a forcefield object or an integer.
         """
         
-        # Ensure 'i' is define
+        # raw format
         if raw:
             return self.PAIR_OFFDIAGCOEFF
-        if i==None:
-            i = self.beadtype
-        if o==None:
-            j = i
-            oname = "none"
-        # Check if the object has 'beadtype' and 'userid' attributes
-        elif hasattr(o, 'beadtype') and hasattr(o, 'userid'): #"forcefield" in str(type(o)) or str(type(o)).endswith("dforcefield'>"):
-            j = o.beadtype
-            oname = o.userid
-        elif isinstance(o,float) or isinstance(o,int):
-            j = int(o)
-            oname = o.userid
+        # USER overrride if the forcefield class is inherited
+        if USER is None: # ---- default behavior for forcefield
+            parameters = self.parameters
+            beadtype = self.beadtype
+            userid = self.userid       
+            i = i if i is not None else beadtype
+        elif isinstance(USER,struct): # ---- behavior for dforcefield (using baseclass)
+            parameters = self.parameters+USER
+            beadtype = beadtype if beadtype is not None else USER.beadtype if hasattr(USER, 'beadtype') else self.beadtype
+            userid = userid if userid is not None else USER.userid if hasattr(USER, 'userid') else self.userid
         else:
-            raise IndexError("the first argument should be j or a forcefield object")
-        if j==i:
+            raise TypeError(f'USER must be of type struct or derived from struct, not {type(USER)}')  
+        # Determine the first bead type (i)
+        i = i if i is not None else beadtype
+        # Determine the second bead type (j) based on o
+        if o is None:
+            j = i
+        elif hasattr(o, 'beadtype'):
+            j = o.beadtype
+        elif isinstance(o, (float, int)):
+            j = int(o)
+        else:
+            raise IndexError("The first argument should be a forcefield object or an integer representing bead type.")
+        # Adjust j if it matches i (to ensure off-diagonal interaction)
+        if j == i:
             j = i - 1 if i > 1 else i + 1
-        cmd = self.parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (min(i,j),max(j,i))
+        oname = oname if oname is not None else o.userid if hasattr(o, "userid") else "none"            
+        # cmd
+        cmd = parameters.formateval(self.PAIR_OFFDIAGCOEFF) % (min(i,j),max(j,i))
         # Replace [comment] with the formatted string, without using .format()
-        cmd = cmd.replace("[comment]", "[%d:%s x %d:%s]" % (i, self.userid, j, oname))
+        cmd = cmd.replace("[comment]", "[%d:%s x %d:%s]" % (i, self.userid, j, oname) if verbose else "")
         if printflag: print(cmd)
         return cmd
 

@@ -1,61 +1,81 @@
 # __init__.py
 # Pizza library for Python 3.x
-#   It is back compatible with original Pizza with more features
+#   Backward compatible with the original Pizza with additional features
 #   INRAE\olivier.vitrac@agroparistech.fr
 
 # For the end-user:
-#    1) add pizza/ to your PYTHONPATH
-#    export PYTHONPATH="${PYTHONPATH}:/home/me/python/pizza"
-#    2) in your Python code
-#    import pizza *
+#    1) Add pizza/ to your PYTHONPATH
+#       export PYTHONPATH="${PYTHONPATH}:/home/me/python/pizza"
+#    2) In your Python code, use:
+#       import pizza.*
 
-# list of public classes: data, dump, raster, script, forcefield, struct, param
+# List of public classes: data, dump, raster, script, forcefield, struct, param
 
-# $ last revision - 2023-07-12 $
+# $ Last revision: 2024-04-14 $
 
 # Revision history
-# 2022-05-16 RC
-# 2023-01-03 workaround to have raster working on Windows without restrictions
-# 2023-07-12 add paramauto
+# 2022-05-16: Initial Release Candidate (RC)
+# 2023-01-03: Workaround for raster on Windows without restrictions
+# 2023-07-12: Added paramauto
+# 2023-04-14: Fixed issues for Python 3.11 on Windows
+# 2024-10-11 add global flag
 
-# to test system (isPC)
+import os
 from platform import system
+from warnings import warn
 
-# check system
-def check_PIL():
-    if system().startswith("darwin") or system().startswith("win"):
-        try:
-            from PIL import Image
-            print("pizza.private.PIL.Image not compiled on Darwin or Windows\n\t>>try the default Pillow (installed v. %s)"
-                  % Image.__version__)
-        except ImportError:
-            print("please add Pillow to your Python 3.x\n\t>> https://pillow.readthedocs.io/en/latest/installation.html")
+# Define a flag to check if initialization has already been done
+if not globals().get('_PIZZA_INITIALIZED', False):
+    print("\n"+" "*10+"*"*10)
+    _PIZZA_INITIALIZED = True
+
+    # Function to check PIL compatibility
+    def check_PIL():
+        system_name = system().lower()
+        if system_name.startswith("darwin") or system_name.startswith("win"):
+            try:
+                from PIL import Image
+                print(f"pizza.private.PIL.Image not compiled on {system_name.capitalize()}\n"
+                      f"\t>> Using default Pillow (installed v. {Image.__version__})")
+            except ImportError:
+                print("Please install Pillow for Python 3.x\n\t>> https://pillow.readthedocs.io/en/latest/installation.html")
+            else:
+                print("\n -- [ Your installation of Pizza3 ]")
+                print("\nYour installed PIL may not be fully compatible with pizza3 on Darwin and Windows systems.")
         else:
-            raise Exception("PIL is not compatible with Darwin or Windows systems")
-    else:
-        from pizza.private.PIL.Image import Image
+            from pizza.private.PIL.Image import Image
 
-# input data objects and methods
-from pizza.data3 import data
-# dump objects and methods
-from pizza.dump3 import dump
-# 2D sketching methods (3D pending)
-from pizza.raster import raster,emulsion,coreshell
-# script engine and methods
-from pizza.script import *
-# forcefield objects and derived classes
-from pizza.forcefield import *
-from pizza.generic import *
-# script objects and derived classes
-from pizza.script import *
-# basic tools à la Matlab
-# including a feature similar to MS/alias() from INRAE/MS Toolbox
-from pizza.private.struct import struct,param,paramauto
-# region objects and methods
-from pizza.region import *
-# Image
-check_PIL()
+    # Check PIL compatibility once during initialization
+    check_PIL()
 
+    # Import data objects and methods
+    from pizza.data3 import data
 
-# other libraries will be added there
-from workshop0 import *
+    # Import dump objects and methods
+    from pizza.dump3 import dump
+
+    # Import 2D sketching methods (3D support pending)
+    from pizza.raster import raster, emulsion, coreshell
+
+    # Import script engine and methods
+    from pizza.script import *
+
+    # Import forcefield objects and derived classes
+    from pizza.forcefield import *
+
+    # Import generic utilities
+    from pizza.generic import *
+
+    # Import struct and param utilities with Matlab-like features
+    from pizza.private.struct import struct, param, paramauto
+
+    # Import region objects and methods
+    from pizza.region import *
+
+    # Import additional libraries for the workshop
+    from workshop0 import *
+
+    print("Pizza library initialized successfully.")
+else:
+    print("Pizza library was already initialized. Skipping repeated initialization.")
+print(" "*10+"*"*10)

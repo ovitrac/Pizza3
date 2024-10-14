@@ -69,15 +69,16 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.451"
+__version__ = "0.9971"
 
-# INRAE\Olivier Vitrac - rev. 2022-02-13
+# INRAE\Olivier Vitrac - rev. 2024-10-11
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
 # 2022-05-13 draft version (fields are not reordered)
 # 2022-05-16 splitting CORE and USER classes and extended help
 # 2022-05-16 full implementation of pizza.private.struct.sortdefinitions() in parameterforcefield()
+# 2024-10-11 fix userid for newtonianfluid
 
 # %% CORE DEFINITIONS (please)
 
@@ -145,7 +146,7 @@ class USERSMD(generic):
             ) + USER
         
     # forcefield derived from pizza.forcefield.water()
-    def newtonianfluid(self, beadtype=1, userid = "", rho=1000.0, nu = 1e-6, mu = None, USER = genericdata()):
+    def newtonianfluid(self, beadtype=1, userid = None, rho=1000.0, nu = 1e-6, mu = None, USER = genericdata()):
         """
             newtonianfluid() returns a parameterized ULSPH forcefield
             with prescribed viscosity (mu [Pa.s] or nu in [m2/s])
@@ -160,9 +161,9 @@ class USERSMD(generic):
         if self.LOCAL.nu is None: self.LOCAL.nu = self.LOCAL.mu / self.LOCAL.rho
         if self.LOCAL.nu is None: raise(ValueError("bad kinematic viscosity value: nu [m2/s]"))
         if self.LOCAL.mu is None: self.LOCAL.mu = self.LOCAL.nu * self.LOCAL.rho
-        if userid == "":
-            userid = print("newtonianfluid rho=%0.4g [kg/m3] and nu=%0.4g [m2/s]" \
-                           % (self.LOCAL.rho,self.LOCAL.nu))
+        if userid == "" or userid is None:
+            userid = "newtonianfluid rho=%0.4g [kg/m3] and nu=%0.4g [m2/s]" \
+                           % (self.LOCAL.rho,self.LOCAL.nu)
         # this simple line with + 
         # manages inheritance (the las definition as always higher precendence)
         # sorts definitions to enable execution (struct.sortdefinitions())

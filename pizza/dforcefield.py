@@ -252,11 +252,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9922"
+__version__ = "0.9972"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-09-21 (community)
+# INRAE\Olivier Vitrac - rev. 2024-10-12 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -264,6 +264,7 @@ __version__ = "0.9922"
 # 2024-09-12 file management and parsing 
 # 2024-09-14 major update fully compatible with scriptobject, script
 # 2024-09-21 fully compatible with forcefields of class generic
+# 2024-10-12 add |
 
 
 # Dependencies
@@ -462,6 +463,7 @@ class dforcefield:
 
     def __init__(self, base_class=None, beadtype=1, userid=None, USER=parameterforcefield(),
                  name=None, description=None, version=0.1, additional_modules=None,
+                 printflag=False, verbose=False,
                  GLOBAL=None, LOCAL=None, **kwargs):
         """
         Initialize a dynamic forcefield with default or custom values.
@@ -487,9 +489,13 @@ class dforcefield:
         
         # Initialize USER containter (which is used by scriptobject)
         self.USER = scriptdata()
+        
+        #• Initialize print/verbose behavior
+        self.printflag = printflag
+        self.verbose = verbose
     
         # Step 1a: Handle base_class, either a string or a class reference
-        print(f"Initializing dforcefield with base_class: {base_class}")
+        print(f"\nInitializing dforcefield with base_class: {base_class}")
         
         # Handle base_class loading (using additional_modules if needed)
         if isinstance(base_class, str):
@@ -1149,24 +1155,40 @@ class dforcefield:
             return strcontent[:nchar]+" [...] "+strcontent[-nchar:]
         else:
             return content
+        
+    def show(self):
+        """Show the corresponding base_class forcefield definition """
+        self.base_class.__repr__()
+        return self.base_class.__str__()
 
-    def pair_style(self, printflag=True,raw=False):
+    def pair_style(self, printflag=None, verbose=None, raw=False):
         """Delegate pair_style to the base class, ensuring it uses the correct attributes."""
-        return self.base_class.pair_style(printflag,raw)
+        printflag = self.printflag if printflag is None else printflag
+        verbose = self.verbose if verbose is None else verbose
+        self._inject_attributes()
+        return self.base_class.pair_style(printflag=printflag, verbose=verbose, raw=raw,USER=None, beadtype=self.beadtype, userid=self.userid)
     
     
-    def pair_diagcoeff(self, printflag=True, i=None, raw=False):
+    def pair_diagcoeff(self, printflag=None, verbose=None, i=None, raw=False):
         """Delegate pair_diagcoeff to the base class, ensuring it uses the correct attributes."""
-        return self.base_class.pair_diagcoeff(printflag, i, raw)
+        printflag = self.printflag if printflag is None else printflag
+        verbose = self.verbose if verbose is None else verbose
+        self._inject_attributes()
+        return self.base_class.pair_diagcoeff(printflag=printflag, verbose=verbose, i=i, raw=raw, USER=None, beadtype=self.beadtype, userid=self.userid)
     
     
-    def pair_offdiagcoeff(self, o=None, printflag=True, i=None, raw=False):
+    def pair_offdiagcoeff(self, o=None, printflag=None, verbose=None, i=None, raw=False,oname=None):
         """Delegate pair_offdiagcoeff to the base class, ensuring it uses the correct attributes."""
-        return self.base_class.pair_offdiagcoeff(o, printflag, i, raw)
+        printflag = self.printflag if printflag is None else printflag
+        verbose = self.verbose if verbose is None else verbose
+        self._inject_attributes()
+        return self.base_class.pair_offdiagcoeff(o=o, printflag=printflag, verbose=verbose, i=i, raw=raw, USER=None, beadtype=self.beadtype, userid=self.userid,oname=oname)
 
     
     def __add__(self, other):
-        """Concatenate dforcefield attributes, including RULES, GLOBAL, and LOCAL, if different, else keep the version of self."""
+        """Concatenate dforcefield attributes, i
+        
+        ncluding RULES, GLOBAL, and LOCAL, if different, else keep the version of self."""
         if not isinstance(other, dforcefield):
             raise TypeError(f"Cannot concatenate {type(other)} with dforcefield.")
         
@@ -1201,7 +1223,15 @@ class dforcefield:
             GLOBAL=new_global,
             LOCAL=new_local
         )
+    
 
+    def __or__(self, other):
+        """ Overload | pipe operator in dscript """
+        # Convert the dscript instance into a pipescript
+        leftarg = self.pscript()
+        # Simply use the existing pipe operator for pipescript
+        return leftarg | other
+    
     
     def copy(self, beadtype=None, userid=None, name=None, description=None, version=None, USER=parameterforcefield(), RULES=None, GLOBAL=None, LOCAL=None, **kwargs):
         """
@@ -2061,7 +2091,7 @@ class dforcefield:
 
 
 
-    def scriptobject(self, beadtype=None, name=None, fullname=None, filename=None, group=None, style=None, USER=scriptdata()):
+    def scriptobject(self, beadtype=None, name=None, userid=None, fullname=None, filename=None, group=None, style=None, USER=scriptdata()):
         """
         Method to return a scriptobject based on the current dforcefield instance.
         
@@ -2099,10 +2129,13 @@ class dforcefield:
             if isinstance(self.name, struct) and hasattr(self.name, 'material'):
                 name = f"{self.name.material} bead"
             else:
-                name = f"beadtype_{self.beadtype}"
+                name = f"beadtype_{beadtype}"
+        
+        if userid is None:
+            userid = name
     
         if fullname is None:
-            fullname = f"beads of type {self.beadtype} | object of forcefield: {self.name.forcefield if isinstance(self.name, struct) and hasattr(self.name, 'forcefield') else 'unknown'}"
+            fullname = f"beads of type {beadtype} | object of forcefield: {self.name.forcefield if isinstance(self.name, struct) and hasattr(self.name, 'forcefield') else 'unknown'}"
     
         if group is None:
             group = []
@@ -2115,11 +2148,14 @@ class dforcefield:
                 style = "undefined style"
         
         # The current dforcefield instance behaves as the forcefield for the scriptobject
-        forcefield = self
+        forcefield = copy.deepcopy(self)
+        forcefield.beadtype = beadtype
+        forcefield.name = name
+        forcefield.userid = userid
         
         # Apply any user-defined parameters to the forcefield
         # This is the standard behavior of scriptobject
-        forcefield.USER = forcefield.USER + USER
+        forcefield.parameters = forcefield.parameters + USER
     
         # Create and return the scriptobject instance
         return scriptobject(

@@ -14,7 +14,7 @@ Credits: Olivier Vitrac, Han Chen
 License: GPLv3
 Maintainer: Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Version: 0.85
+Version: 0.995
 
 Overview
 --------
@@ -186,12 +186,12 @@ __credits__ = ["Olivier Vitrac", "Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.85"
+__version__ = "0.995"
 
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-08-31 (community)
+# INRAE\Olivier Vitrac - rev. 2024-09-07 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -235,6 +235,7 @@ __version__ = "0.85"
 # 2024-08-02 community implementation
 # 2024-08-31 add method R.beadtypes(), class headerbox(), method R.headerbox()
 # 2024-08-01 more robust implementation via method: scriptHeaders() and headersData object
+# 2024-10-08 add lattice_scale
 
 # %% Imports and private library
 import os, sys, math
@@ -261,7 +262,8 @@ from pizza.forcefield import *
 protectedregionkeys = ('name', 'live', 'nbeads' 'volume', 'mass', 'radius', 'contactradius', 'velocities', \
                         'forces', 'filename', 'index', 'objects', 'nobjects', 'counter','_iter_',\
                         'livelammps','copy', 'hasfixmove', 'spacefilling', 'isspacefilled', 'spacefillingbeadtype','mass','density',
-                        'units','boxcenter','separationdistance','lattice_scale','lattice_style','lattice_scale_siunits',
+                        'units','center','separationdistance',
+                        'lattice_scale','lattice_style','lattice_scale_siunits', 'lattice_spacing',
                         'geometry', 'natoms', 'headersData'
                             )
 
@@ -388,7 +390,7 @@ class LammpsGeneric(script):
             self.VARIABLES.generatorforlammps(verbose=verbose,hasvariables=True)
         else:
             cmd = ""
-        cmd += super().do(printflag=False)
+        cmd += super().do(printflag=False,verbose=verbose)
         if printflag: print(cmd)
         return cmd
 
@@ -736,13 +738,22 @@ class LammpsHeaderLattice(LammpsGeneric): # --- helper script ---
              lattice_scale = "${lattice_scale}",
             hasvariables = False
                     )
+    def __init__(self, persistentfile=True, persistentfolder=None, **userdefinitions):
+        """Constructor adding instance definitions stored in USER."""
+        super().__init__(persistentfile, persistentfolder, **userdefinitions)
+        self.generate_template()
 
-    # Template
-    TEMPLATE = """
+    def generate_template(self):
+        """Generate the TEMPLATE based on USER definitions."""
+        self.TEMPLATE = """
 % --------------[ LatticeHeader 'helper' for "${name}"   ]--------------
-lattice ${lattice_style} ${lattice_scale}
-# ------------------------------------------
-"""
+    """
+        if self.USER.lattice_spacing is None:
+            self.TEMPLATE += "lattice ${lattice_style} ${lattice_scale}\n"
+        else:
+            self.TEMPLATE += "lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}\n"
+        self.TEMPLATE += "# ------------------------------------------\n"
+
 
 class LammpsHeaderBox(LammpsGeneric): # --- helper script ---
     """
@@ -1095,11 +1106,11 @@ class coregeometry:
         # before 2023-07-17
         #return self.SECTIONS["variables"] | self.SECTIONS["region"] | self.SECTIONS["create"]
 
-    def do(self,printflag=True):
+    def do(self,printflag=False,verbosity=1):
         """ generates a script """
         p = self.script # intentional, force script before do(), comment added on 2023-07-17
-        cmd = self.script.do()
-        if printflag: print(cmd)
+        cmd = p.do(printflag=printflag,verbosity=verbosity)
+        # if printflag: print(cmd)
         return cmd
 
     def __repr__(self):
@@ -2033,70 +2044,139 @@ class Collection:
 # %% region class (main class)
 class region:
     """
-        region main class
-        assuming a simulation box centered 0,0,0
-        and of size: width x height x depth
+    The `region` class represents a simulation region, centered at the origin (0, 0, 0) by default, 
+    and is characterized by its physical dimensions, properties, and boundary conditions. It supports
+    setting up lattice structures, particle properties, and options for live previews.
 
-        Attributes:
-        ----------
-        name : str, optional
-            Name of the region (default is 'region container').
-        nbeads : int, optional
-            Number of beads in the region (default is 1).
-        run : int, optional
-            Run configuration parameter (default is 1).
-        mass : float, optional
-            Mass of the region (default is 1).
-        volume : float, optional
-            Volume of the region (default is 1).
-        radius : float, optional
-            Radius of the region (default is 1.5).
-        contactradius : float, optional
-            Contact radius of the region (default is 0.5).
-        velocities : list of floats, optional
-            Velocities configuration (default is [0, 0, 0]).
-        forces : list of floats, optional
-            Forces configuration (default is [0, 0, 0]).
-        filename : str, optional
-            Name of the output file (default is an empty string, which leads to naming based on the region name).
-        index : int, optional
-            Index or identifier for the region.
-        width : float, optional
-            Width of the region (default is 10).
-        height : float, optional
-            Height of the region (default is 10).
-        depth : float, optional
-            Depth of the region (default is 10).
-        units: str, optional
-            Units for create_box (default is "")
-        hasfixmove : bool, optional
-            Indicates if the region has a fix move (default is False).
-        livepreview_options : dict, optional
-            Configuration for live preview, with 'static' and 'dynamic' options (default values provided).
-        spacefilling : bool, optional
-            Indicates if the design is space-filling (default is False).
-        fillingbeadtype : int, optional
-            Type of bead used for space filling (default is 1).
+    Attributes:
+    ----------
+    name : str, optional
+        Name of the region (default is 'region container').
 
-        Attributes controlling scaling: (added 2024-07-03)
-        -------------------------------
-        boxcenter : list, optional
-            center of the box, to scale the coordinates (default = [0,0,0]), the units are defined by region units
-        regionunits : str, optional
-            units used internally by region either "lattice" (default) or "si"
-            region use internally only lattice units (USER.args), for convenience USER.args_siunits are also provided
-            Note that units can be overdefined for each object created in the region (lattice|box)
-        lattice_scale : float, optional
-            Gives the scale of the lattice (used by create_atoms, same space filling approach as used in pizza.raster())
-        lattice_style : str, optional
-            Indicates the type of lattice to be used (default = 'fcc',)
-            any LAMMPS lattice model is accepted, use 'sc' if you want a simple cubic lattice
-        separationdistance : float, optional
-            Sets the distance between atoms in SPH simulations (units in SI)
-            For production, it is recommended to choose separatationdistance equals to lattice_scale for consistency.
-            However, separationdistance is not a property used directly by region and it could be defined at a later stage.
+    dimension : int, optional
+        Number of spatial dimensions for the simulation (either 2 or 3, default is 3).
+
+    boundary : list of str or None, optional
+        Boundary conditions for each dimension. If None, defaults to ["sm"] * dimension.
+        Must be a list of length `dimension`, where "s" indicates shrink-wrapped, and "m" indicates a non-periodic boundary.
+
+    nbeads : int, optional
+        Number of beads in the region (default is 1).
+
+    units : str, optional
+        Units for the simulation box (default is "").
+
+    Particle Properties:
+    -------------------
+    mass : float, optional
+        Mass of particles in the region (default is 1).
+    
+    volume : float, optional
+        Volume of the region (default is 1).
+
+    density : float, optional
+        Density of the region (default is 1).
+
+    radius : float, optional
+        Radius of the particles (default is 1.5).
+
+    contactradius : float, optional
+        Contact radius of the particles (default is 0.5).
+
+    velocities : list of floats, optional
+        Initial velocities of particles (default is [0, 0, 0]).
+
+    forces : list of floats, optional
+        External forces acting on the particles (default is [0, 0, 0]).
+
+    Other Properties:
+    ----------------
+    filename : str, optional
+        Name of the output file (default is an empty string, which will auto-generate a name based on the region name).
+
+    index : int, optional
+        Index or identifier for the region.
+
+    run : int, optional
+        Run configuration parameter (default is 1).
+
+    Box Properties:
+    ---------------
+    center : list of floats, optional
+        Center of the simulation box for coordinate scaling (default is [0, 0, 0]).
+
+    width : float, optional
+        Width of the region (default is 10).
+
+    height : float, optional
+        Height of the region (default is 10).
+
+    depth : float, optional
+        Depth of the region (default is 10).
+
+    hasfixmove : bool, optional
+        Indicates whether the region has a fixed movement (default is False).
+
+    Spacefilling Design:
+    -------------------
+    spacefilling : bool, optional
+        Indicates whether the design is space-filling (default is False).
+
+    fillingbeadtype : int, optional
+        Type of bead used for space filling (default is 1).
+
+    Lattice Properties:
+    ------------------
+    regionunits : str, optional
+        Defines the units of the region. Can be either "lattice" (default) or "si".
+
+    separationdistance : float, optional
+        Separation distance between atoms in SI units (default is 5e-6).
+
+    lattice_scale : float, optional
+        Scaling factor for the lattice, used mainly in visualization (default is 0.8442).
+
+    lattice_spacing : list or None, optional
+        Specifies the spacing between lattice points. If None, the default spacing is used. Can be a list of [dx, dy, dz].
+
+    lattice_style : str, optional
+        Specifies the lattice structure style (default is "fcc"). Accepts any LAMMPS valid style, e.g., "sc" for simple cubic.
+
+    Atom Properties:
+    ----------------
+    atom_style : str, optional
+        Defines the atom style for the region (default is "smd").
+
+    atom_modify : list of str, optional
+        LAMMPS command for atom modification (default is ["map", "array"]).
+
+    comm_modify : list of str, optional
+        LAMMPS command for communication modification (default is ["vel", "yes"]).
+
+    neigh_modify : list, optional
+        LAMMPS command for neighbor list modification (default is ["every", 10, "delay", 0, "check", "yes"]).
+
+    newton : str, optional
+        Specifies the Newton flag (default is "off").
+
+    Live Preview:
+    ------------
+    live_units : str, optional
+        Units for live preview (default is "lj", for Lennard-Jones units).
+
+    live_atom_style : str, optional
+        Atom style used specifically for live LAMMPS sessions (default is "atomic").
+
+    livepreview_options : dict, optional
+        Contains options for live preview. The dictionary includes 'static' (default: run = 1) and 'dynamic' (default: run = 100) options.
+
+    Methods:
+    -------
+    __init__ : 
+        Constructor method to initialize all the attributes of the `region` class.
     """
-    _version = "0.36"
+   
+    _version = "0.995"
     __custom_documentations__ = "pizza.region.region class"
 
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -2120,9 +2200,12 @@ class region:
     def __init__(self,
                  # region properties
                  name="region container",
+                 dimension = 3,
+                 boundary = None,
                  nbeads=1,
-                 run=1,
-                 # for data conversion (not implemented for now)
+                 units = "",
+                 
+                 # particle properties
                  mass=1,
                  volume=1,
                  density=1,
@@ -2130,38 +2213,80 @@ class region:
                  contactradius=0.5,
                  velocities=[0,0,0],
                  forces=[0,0,0],
+                 
                  # other properties
                  filename="",
                  index = None,
+                 run=1,
+
+                 # Box lengths
+                 center = [0,0,0],    # center of the box for coordinates scaling
                  width = 10,
                  height = 10,
                  depth = 10,
-                 units = "",
                  hasfixmove = False, # by default no fix move
+
+                 # Spacefilling design (added on 2023-08-10)
+                 spacefilling = False,
+                 fillingbeadtype = 1,
+
+                 # Lattice properties
+                 regionunits = "lattice",   # units ("lattice" or "si")
+                 separationdistance = 5e-6, # SI units
+                 lattice_scale = 0.8442,    # LJ units (for visualization)
+                 lattice_spacing = None,    # lattice spacing is not used by default (set [dx dy dz] if needed)
+                 lattice_style = "fcc" ,    # any valid lattice style accepted by LAMMPS (sc=simple cubic)
+                 
+                 # Atom properties
+                 atom_style = "smd",
+                 atom_modify = ["map","array"],
+                 comm_modify = ["vel","yes"],
+                 neigh_modify = ["every",10,"delay",0,"check","yes"],
+                 newton ="off",
+                                  
+                 # Live preview
+                 live_units = "lj",         # units to be used ONLY with livelammps (https://andeplane.github.io/atomify/)
+                 live_atom_style = "atomic",# atom style to be used ONLY with livelammps (https://andeplane.github.io/atomify/)
+                 
                  # livepreview options
                  livepreview_options = {
                      'static':{'run':1},
                      'dynamic':{'run':100}
-                     },
-                 # spacefilling design (added on 2023-08-10)
-                 spacefilling = False,
-                 fillingbeadtype = 1,
-                 # lattice (added 2024-07-03)
-                 boxcenter = [0,0,0],       # center of the box for coordinates scaling
-                 regionunits = "lattice",   # units ("lattice" or "si")
-                 separationdistance = 5e-6, # SI units
-                 lattice_scale = 0.8442,    # LJ units (for visualization)
-                 lattice_style = "fcc" ,    # any valid lattice style accepted by LAMMPS (sc=simple cubic)
-                 live_units = "lj",         # units to be used ONLY with livelammps (https://andeplane.github.io/atomify/)
-                 live_atom_style = "atomic" # atom style to be used ONLY with livelammps (https://andeplane.github.io/atomify/)
+                     }
+
                  ):
         """ constructor """
         self.name = name
-        # Validate regionunits (2024-07-04)
-        if regionunits not in ["lattice", "si"]:
+        
+
+        # Ensure dimension is an integer (must be 2 or 3 for LAMMPS)
+        if not isinstance(dimension, int) or dimension not in (2, 3):
+            raise ValueError("dimension must be either 2 or 3.")
+        
+        # Handle boundary input
+        if boundary is None:
+            boundary = ["sm"] * dimension
+        elif isinstance(boundary, list):
+            if len(boundary) != dimension:
+                raise ValueError(f"The length of boundary ({len(boundary)}) must match the dimension ({dimension}).")
+        else:
+            raise ValueError("boundary must be a list of strings or None.")
+        
+        # Validate regionunits
+        if regionunits not in ("lattice", "si"):
             raise ValueError("regionunits can only be 'lattice' or 'si'.")
+        
+        # Lattice scaling logic
         lattice_scale_siunits = lattice_scale if regionunits == "si" else separationdistance
-        if lattice_scale_siunits is None: lattice_scale_siunits = separationdistance
+        if lattice_scale_siunits is None or lattice_scale_siunits=="":
+            lattice_scale_siunits = separationdistance
+        if lattice_spacing == "":
+            lattice_spacing = None
+        elif isinstance(lattice_spacing, (int, float)):
+            lattice_spacing = [lattice_spacing] * dimension
+        elif isinstance(lattice_spacing, list):
+            lattice_spacing = lattice_spacing + [lattice_spacing[-1]] * (dimension - len(lattice_spacing)) if len(lattice_spacing) < dimension else lattice_spacing[:dimension]
+
         # live data (updated 2024-07-04)
         live_lattice_scale = lattice_scale/separationdistance if regionunits == "si" else lattice_scale
         live_box_scale = 1/lattice_scale_siunits if regionunits == "si" else 1
@@ -2224,10 +2349,12 @@ class region:
            "fillingunits": units
                }
         # lattice
-        self.units = regionunits
-        self.boxcenter = boxcenter
+        self.units = units
+        self.regionunits = units
+        self.center = center
         self.separationdistance = separationdistance
         self.lattice_scale = lattice_scale
+        self.lattice_spacing = lattice_spacing
         self.lattice_scale_siunits = lattice_scale_siunits
         self.lattice_style = lattice_style 
         # headers for header scripts (added 2024-09-01)
@@ -2236,24 +2363,25 @@ class region:
             # use $ and [] to prevent execution
             name = "$"+name,
             # Initialize Lammps
-            dimension = 3,
-            units = "$"+regionunits,
-            boundary = ["sm","sm","sm"],
-            atom_style = "$smd",
-            atom_modify = ["map","array"],
-            comm_modify = ["vel","yes"],
-            neigh_modify = ["every",10,"delay",0,"check","yes"],
-            newton ="$off",
+            dimension = dimension,
+            units = "$"+units,
+            boundary = boundary,
+            atom_style = "$" + atom_style,
+            atom_modify = atom_modify,
+            comm_modify = comm_modify,
+            neigh_modify = neigh_modify,
+            newton ="$" + newton,
             # Lattice
             lattice_style = "$"+lattice_style,
             lattice_scale = lattice_scale,
+            lattice_spacing = lattice_spacing,
             # Box
-            xmin = -floor(width/2)  +boxcenter[0],
-            xmax = +ceil(width/2)   +boxcenter[0],
-            ymin = -floor(height/2) +boxcenter[1],
-            ymax = +ceil(height/2)  +boxcenter[1],
-            zmin = -floor(depth/2)  +boxcenter[2],
-            zmax = +ceil(depth/2)   +boxcenter[2],
+            xmin = -(width/2)  +center[0],
+            xmax = +(width/2)   +center[0],
+            ymin = -(height/2) +center[1],
+            ymax = +(height/2) +center[1],
+            zmin = -(depth/2)  +center[2],
+            zmax = +(depth/2)  +center[2],
             nbeads = nbeads
             )
        
@@ -2308,7 +2436,7 @@ class region:
         details = f"Region: {self.name}\n"
         details += f"Total atoms: {self.natoms}\n"
         details += f"Span: width={self.spacefilling['fillingwidth']}, height={self.spacefilling['fillingheight']}, depth={self.spacefilling['fillingdepth']}\n"
-        details += f"Box center: {self.boxcenter}\n"
+        details += f"Box center: {self.center}\n"
         details += "Objects in the region:\n\n"
         for obj in self:
             details += "\n\n"+"-"*32+"\n"
@@ -2445,12 +2573,12 @@ class region:
         # geometry args (2024-07-04)  -------------------------------------
         args = [xlo, xhi, ylo, yhi, zlo, zhi]  # args = [....] as defined in the class Block
         args_scaled = [
-            self.scale_and_translate(xlo, self.boxcenter[0]),
-            self.scale_and_translate(xhi, self.boxcenter[0]),
-            self.scale_and_translate(ylo, self.boxcenter[1]),
-            self.scale_and_translate(yhi, self.boxcenter[1]),
-            self.scale_and_translate(zlo, self.boxcenter[2]),
-            self.scale_and_translate(zhi, self.boxcenter[2])
+            self.scale_and_translate(xlo, self.center[0]),
+            self.scale_and_translate(xhi, self.center[0]),
+            self.scale_and_translate(ylo, self.center[1]),
+            self.scale_and_translate(yhi, self.center[1]),
+            self.scale_and_translate(zlo, self.center[2]),
+            self.scale_and_translate(zhi, self.center[2])
         ]
         if self.units == "si":
             B.USER.args = args_scaled
@@ -2553,32 +2681,32 @@ class region:
         if dim == "x":  # x-axis
             args_scaled = [
                 dim,
-                self.scale_and_translate(c1, self.boxcenter[1]),
-                self.scale_and_translate(c2, self.boxcenter[2]),
+                self.scale_and_translate(c1, self.center[1]),
+                self.scale_and_translate(c2, self.center[2]),
                 self.scale_and_translate(radlo, 0),
                 self.scale_and_translate(radhi, 0),
-                self.scale_and_translate(lo, self.boxcenter[0]),
-                self.scale_and_translate(hi, self.boxcenter[0])
+                self.scale_and_translate(lo, self.center[0]),
+                self.scale_and_translate(hi, self.center[0])
             ]
         elif dim == "y":  # y-axis
             args_scaled = [
                 dim,
-                self.scale_and_translate(c1, self.boxcenter[0]),
-                self.scale_and_translate(c2, self.boxcenter[2]),
+                self.scale_and_translate(c1, self.center[0]),
+                self.scale_and_translate(c2, self.center[2]),
                 self.scale_and_translate(radlo, 0),
                 self.scale_and_translate(radhi, 0),
-                self.scale_and_translate(lo, self.boxcenter[1]),
-                self.scale_and_translate(hi, self.boxcenter[1])
+                self.scale_and_translate(lo, self.center[1]),
+                self.scale_and_translate(hi, self.center[1])
             ]
         else:  # z-axis
             args_scaled = [
                 dim,
-                self.scale_and_translate(c1, self.boxcenter[0]),
-                self.scale_and_translate(c2, self.boxcenter[1]),
+                self.scale_and_translate(c1, self.center[0]),
+                self.scale_and_translate(c2, self.center[1]),
                 self.scale_and_translate(radlo, 0),
                 self.scale_and_translate(radhi, 0),
-                self.scale_and_translate(lo, self.boxcenter[2]),
-                self.scale_and_translate(hi, self.boxcenter[2])
+                self.scale_and_translate(lo, self.center[2]),
+                self.scale_and_translate(hi, self.center[2])
             ]
         
         if self.units == "si":
@@ -2687,29 +2815,29 @@ class region:
         if dim == "x":  # x-axis
             args_scaled = [
                 dim,
-                self.scale_and_translate(c1, self.boxcenter[1]),
-                self.scale_and_translate(c2, self.boxcenter[2]),
+                self.scale_and_translate(c1, self.center[1]),
+                self.scale_and_translate(c2, self.center[2]),
                 self.scale_and_translate(radius, 0),
-                self.scale_and_translate(lo, self.boxcenter[0]),
-                self.scale_and_translate(hi, self.boxcenter[0])
+                self.scale_and_translate(lo, self.center[0]),
+                self.scale_and_translate(hi, self.center[0])
             ]
         elif dim == "y":  # y-axis
             args_scaled = [
                 dim,
-                self.scale_and_translate(c1, self.boxcenter[0]),
-                self.scale_and_translate(c2, self.boxcenter[2]),
+                self.scale_and_translate(c1, self.center[0]),
+                self.scale_and_translate(c2, self.center[2]),
                 self.scale_and_translate(radius, 0),
-                self.scale_and_translate(lo, self.boxcenter[1]),
-                self.scale_and_translate(hi, self.boxcenter[1])
+                self.scale_and_translate(lo, self.center[1]),
+                self.scale_and_translate(hi, self.center[1])
             ]
         else:  # z-axis
             args_scaled = [
                 dim,
-                self.scale_and_translate(c1, self.boxcenter[0]),
-                self.scale_and_translate(c2, self.boxcenter[1]),
+                self.scale_and_translate(c1, self.center[0]),
+                self.scale_and_translate(c2, self.center[1]),
                 self.scale_and_translate(radius, 0),
-                self.scale_and_translate(lo, self.boxcenter[2]),
-                self.scale_and_translate(hi, self.boxcenter[2])
+                self.scale_and_translate(lo, self.center[2]),
+                self.scale_and_translate(hi, self.center[2])
             ]        
         if self.units == "si":
             C.USER.args = args_scaled
@@ -2825,9 +2953,9 @@ class region:
         # geometry args (2024-07-04)  -------------------------------------
         args = [x, y, z, a, b, c]  # args = [....] as defined in the class Ellipsoid
         args_scaled = [
-            self.scale_and_translate(x, self.boxcenter[0]),
-            self.scale_and_translate(y, self.boxcenter[1]),
-            self.scale_and_translate(z, self.boxcenter[2]),
+            self.scale_and_translate(x, self.center[0]),
+            self.scale_and_translate(y, self.center[1]),
+            self.scale_and_translate(z, self.center[2]),
             self.scale_and_translate(a, 0),
             self.scale_and_translate(b, 0),
             self.scale_and_translate(c, 0)
@@ -2924,9 +3052,9 @@ class region:
         # geometry args (2024-07-04) ---------------------------
         args = [px, py, pz, nx, ny, nz]  # args = [....] as defined in the class Plane
         args_scaled = [
-            self.scale_and_translate(px, self.boxcenter[0]),
-            self.scale_and_translate(py, self.boxcenter[1]),
-            self.scale_and_translate(pz, self.boxcenter[2]),
+            self.scale_and_translate(px, self.center[0]),
+            self.scale_and_translate(py, self.center[1]),
+            self.scale_and_translate(pz, self.center[2]),
             self.scale_and_translate(nx, 0),
             self.scale_and_translate(ny, 0),
             self.scale_and_translate(nz, 0)
@@ -3028,12 +3156,12 @@ class region:
         # geometry args (2024-07-04) ---------------------------
         args = [xlo, xhi, ylo, yhi, zlo, zhi, xy, xz, yz]  # args = [....] as defined in the class Prism
         args_scaled = [
-            self.scale_and_translate(xlo, self.boxcenter[0]),
-            self.scale_and_translate(xhi, self.boxcenter[0]),
-            self.scale_and_translate(ylo, self.boxcenter[1]),
-            self.scale_and_translate(yhi, self.boxcenter[1]),
-            self.scale_and_translate(zlo, self.boxcenter[2]),
-            self.scale_and_translate(zhi, self.boxcenter[2]),
+            self.scale_and_translate(xlo, self.center[0]),
+            self.scale_and_translate(xhi, self.center[0]),
+            self.scale_and_translate(ylo, self.center[1]),
+            self.scale_and_translate(yhi, self.center[1]),
+            self.scale_and_translate(zlo, self.center[2]),
+            self.scale_and_translate(zhi, self.center[2]),
             self.scale_and_translate(xy, 0),
             self.scale_and_translate(xz, 0),
             self.scale_and_translate(yz, 0)
@@ -3133,9 +3261,9 @@ class region:
         # geometry args (2024-07-04) ---------------------------
         args = [x, y, z, radius]  # args = [....] as defined in the class Sphere
         args_scaled = [
-            self.scale_and_translate(x, self.boxcenter[0]),
-            self.scale_and_translate(y, self.boxcenter[1]),
-            self.scale_and_translate(z, self.boxcenter[2]),
+            self.scale_and_translate(x, self.center[0]),
+            self.scale_and_translate(y, self.center[1]),
+            self.scale_and_translate(z, self.center[2]),
             self.scale_and_translate(radius, 0)
         ]
         if self.units == "si":
@@ -3668,12 +3796,12 @@ class region:
             return None
 
     # PIPESCRIPT method generates a pipe for all objects and sections
-    def pipescript(self):
+    def pipescript(self,printflag=False,verbosity=0):
         """ pipescript all objects in the region """
         if len(self)<1: return pipescript()
         # execute all objects
         for myobj in self:
-            if not isinstance(myobj,Collection): myobj.do()
+            if not isinstance(myobj,Collection): myobj.do(printflag=printflag,verbosity=verbosity)
         # concatenate all objects into a pipe script
         # for collections, only group is accepted
         liste = [x.SECTIONS["variables"] for x in self if not isinstance(x,Collection) and x.hasvariables] + \
@@ -3690,7 +3818,7 @@ class region:
         # chain all scripts
         return pipescript.join(liste)
 
-    # SCRIPT add header and foodter to PIPECRIPT
+    # SCRIPT add header and footer to PIPECRIPT
     def script(self,live=False):
         """ script all objects in the region """
         s = self.pipescript().script()
@@ -3719,8 +3847,8 @@ class region:
             s = LammpsHeader(**USER)+s+LammpsFooter(**USER)
         return s
     
-    # SCRIPTHEADERS add header scripts for initializing script, lattice, box  for region (firstly added on 2024-08-31)
-    def scriptHeaders(self,what=["init","lattice","box"],nbeads=1):
+    # SCRIPTHEADERS add header scripts for initializing script, lattice, box for region
+    def scriptHeaders(self, what=["init", "lattice", "box"], nbeads=1, pipescript=False):
         """
         Generate and return LAMMPS header scripts for initializing the simulation, defining the lattice, 
         and specifying the simulation box for all region objects.
@@ -3731,10 +3859,11 @@ class region:
                               Default is ["init", "lattice", "box"].
         - nbeads (int): Specifies the number of beads, overriding the default if larger than `self.nbeads`.
                         Default is 1.
+        - pipescript (bool): If True, the generated scripts are combined with `|` instead of `+`. Default is False.
     
         Returns:
-        - str: The combined header scripts as a single string. 
-               Header values can be overridden by updating `self.headersData`.
+        - object: The combined header scripts as a single object. 
+                  Header values can be overridden by updating `self.headersData`.
     
         Raises:
         - Exception: If no valid script options are provided in `what`.
@@ -3751,31 +3880,67 @@ class region:
         sRheader = R.scriptHeaders("lattice")  # Generate the lattice header script with the overridden value.
         """
         USERregion = self.headersData
-        USERregion.nbeads = max(nbeads,self.nbeads)
-        if not isinstance(what,list): what = [what]
-        s = None
+        USERregion.nbeads = max(nbeads, self.nbeads)
+        
+        if not isinstance(what, list):
+            what = [what]
+    
+        scripts = []  # Store all generated script objects here
+    
+        # Generate the initialization script
         if "init" in what:
-            s = LammpsHeaderInit(**USERregion)
+            scripts.append(LammpsHeaderInit(**USERregion))
+    
+        # Generate the lattice script
         if "lattice" in what:
-            if s is None:
-                s = LammpsHeaderLattice(**USERregion)
-            else:
-                s = s + LammpsHeaderLattice(**USERregion)
+            scripts.append(LammpsHeaderLattice(**USERregion))
+    
+        # Generate the box script
         if "box" in what:
-            if s is None:
-                s = LammpsHeaderBox(**USERregion)
-            else:
-                s = s + LammpsHeaderBox(**USERregion)
+            scripts.append(LammpsHeaderBox(**USERregion))
             if self.isspacefilled:
-                s = s+LammpsSpacefilling(**self.spacefilling)
-        if s is None:
-            raise Exception('nothing to do (use: "init", "lattice" and "box" within [ ])')
-        return s
+                scripts.append(LammpsSpacefilling(**self.spacefilling))
+    
+        if not scripts:
+            raise Exception('nothing to do (use: "init", "lattice", and "box" within [ ])')
+    
+        # Combine the scripts based on the pipescript flag
+        combined_script = scripts[0]  # Initialize the combined script with the first element
+        
+        for script in scripts[1:]:
+            if pipescript:
+                # Combine scripts using the | operator, maintaining pipescript format
+                combined_script = combined_script | script  # p_ab = s_a | s_b or p_ab = s_a | p_b
+            else:
+                # Combine scripts using the + operator, maintaining regular script format
+                combined_script = combined_script + script  # s_ab = s_a + s_b
+    
+        return combined_script
+    
+
+    def pscriptHeaders(self, what=["init", "lattice", "box"], nbeads=1):
+        """
+        Surrogate method for generating LAMMPS pipescript headers.
+        Calls the `scriptHeaders` method with `pipescript=True`.
+    
+        Parameters:
+        - what (list of str): Specifies which scripts to generate. Options are "init", "lattice", and "box".
+                              Multiple scripts can be generated by passing a list of these options. 
+                              Default is ["init", "lattice", "box"].
+        - nbeads (int): Specifies the number of beads, overriding the default if larger than `self.nbeads`.
+                        Default is 1.
+    
+        Returns:
+        - object: The combined pipescript header scripts as a single object.
+        """
+        # Call scriptHeaders with pipescript=True
+        return self.scriptHeaders(what=what, nbeads=nbeads, pipescript=True)
+
 
     # DO METHOD = main static compiler
-    def do(self):
+    def do(self, printflag=False, verbosity=1):
         """ execute the entire script """
-        return self.pipescript().do()
+        return self.pipescript().do(printflag=printflag, verbosity=verbosity)
 
     # DOLIVE = fast code generation for online rendering
     def dolive(self):
@@ -3967,7 +4132,6 @@ class emulsion(scatter):
 # ===================================================
 if __name__ == '__main__':
 
-    # example 2024 to show how to retrieve the number of atoms in an object
     R = region(name="my region", mass=2, density=5)
     # Create a Block object using the block method of the region container with specific dimensions
     R.block(xlo=0, xhi=10, ylo=0, yhi=10, zlo=0, zhi=10, name="B1",mass=3)

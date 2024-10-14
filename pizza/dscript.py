@@ -498,11 +498,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.99"
+__version__ = "0.9972"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-09-05 (community)
+# INRAE\Olivier Vitrac - rev. 2024-10-07 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -510,91 +510,24 @@ __version__ = "0.99"
 # 2024-09-03 release candidate (fully compatible with pizza.script)
 # 2024-09-04 load() and save() methods, improved documentation
 # 2024-09-05 several fixes, add dscript.write(), dscript.parsesyntax()
-# 2024-09-06 finalization of the block syntax between [], and its examples + documentation 
+# 2024-09-06 finalization of the block syntax between [], and its examples + documentation
+# 2024-10-07 fix example
+# 2024-10-09 remove_comments moved to script (to prevent circular reference)
+# 2024-10-14 finalization of the integration with scripts
 
 
 # Dependencies
 import os, getpass, socket, tempfile
-import re, string, random
+import re, string, random, copy
 from datetime import datetime
 from pizza.private.struct import paramauto
-from pizza.script import script
+from pizza.script import script, pipescript, remove_comments
 
 # %% Private Functions
 
 def autoname(numChars=8):
     """ generate automatically names """
     return ''.join(random.choices(string.ascii_letters, k=numChars))  # Generates a random name of numChars letters
-
-def remove_comments(content, split_lines=False):
-    """
-    Removes comments from a single or multi-line string. Handles quotes and escaped characters.
-    
-    Parameters:
-    -----------
-    content : str
-        The input string, which may contain multiple lines. Each line will be processed 
-        individually to remove comments, while preserving content inside quotes.
-    split_lines : bool, optional (default: False)
-        If True, the function will return a list of processed lines. If False, it will 
-        return a single string with all lines joined by newlines.
-    
-    Returns:
-    --------
-    str or list of str
-        The processed content with comments removed. Returns a list of lines if 
-        `split_lines` is True, or a single string if False.
-    """
-    def process_line(line):
-        """Remove comments from a single line while handling quotes and escapes."""
-        in_single_quote = False
-        in_double_quote = False
-        escaped = False
-        result = []
-        
-        for i, char in enumerate(line):
-            if escaped:
-                result.append(char)
-                escaped = False
-                continue
-            
-            if char == '\\':  # Handle escape character
-                escaped = True
-                result.append(char)
-                continue
-            
-            # Toggle state for single and double quotes
-            if char == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif char == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            
-            # If we encounter a '#' and we're not inside quotes, it's a comment
-            if char == '#' and not in_single_quote and not in_double_quote:
-                break  # Stop processing the line when a comment is found
-            
-            result.append(char)
-        
-        return ''.join(result).strip()
-
-    # Split the input content into lines
-    lines = content.split('\n')
-
-    # Process each line, skipping empty lines and those starting with #
-    processed_lines = []
-    for line in lines:
-        stripped_line = line.strip()
-        if not stripped_line or stripped_line.startswith('#'):
-            continue  # Skip empty lines and lines that are pure comments
-        processed_line = process_line(line)
-        if processed_line:  # Only add non-empty lines
-            processed_lines.append(process_line(line))
-
-    if split_lines:
-        return processed_lines  # Return list of processed lines
-    else:
-        return '\n'.join(processed_lines)  # Join lines back into a single string
-
 
 
 # %% Low-level Classes (wrappers for pizza.script)
@@ -714,7 +647,9 @@ class lamdaScript(script):
     """
     name = ""
     
-    def __init__(self, dscriptobj, persistentfile=True, persistentfolder=None, **userdefinitions):
+    def __init__(self, dscriptobj, persistentfile=True, persistentfolder=None,
+                 printflag = False, verbose = True,
+                 **userdefinitions):
         """
         Initialize a new `lamdaScript` instance.
         
@@ -745,7 +680,8 @@ class lamdaScript(script):
         """
         if not isinstance(dscriptobj, dscript):
             raise TypeError(f"The 'dscriptobj' object must be of class dscript not {type(dscriptobj).__name__}.")
-        super().__init__(persistentfile, persistentfolder, **userdefinitions)
+        verbose = dscriptobj.verbose if verbose is None else dscriptobj.verbose
+        super().__init__(persistentfile=persistentfile, persistentfolder=persistentfolder, printflag=printflag, verbose=verbose, **userdefinitions)
         self.name = dscriptobj.name
         self.SECTIONS = dscriptobj.SECTIONS
         self.section = dscriptobj.section
@@ -754,7 +690,8 @@ class lamdaScript(script):
         self.description = dscriptobj.description
         self.userid = dscriptobj.userid
         self.version= dscriptobj.version
-        self.verbose = dscriptobj.verbose
+        self.verbose = verbose
+        self.printflag = printflag
         self.DEFINITIONS = dscriptobj.DEFINITIONS
         self.USER = lambdaScriptdata(**self.USER)
         self.TEMPLATE = dscriptobj.do()
@@ -1044,43 +981,43 @@ class dscript:
     """
     dscript: A Dynamic Script Management Class
 
-    The `dscript` class is designed to manage and dynamically generate multiple 
-    lines/items of a script, typically for use with LAMMPS or similar simulation tools. 
-    Each line in the script is represented as a `ScriptTemplate` object, and the 
-    class provides tools to easily manipulate, concatenate, and execute these 
+    The `dscript` class is designed to manage and dynamically generate multiple
+    lines/items of a script, typically for use with LAMMPS or similar simulation tools.
+    Each line in the script is represented as a `ScriptTemplate` object, and the
+    class provides tools to easily manipulate, concatenate, and execute these
     script lines/items.
 
     Key Features:
     -------------
-    - **Dynamic Script Generation**: Define and manage script lines/items dynamically, 
+    - **Dynamic Script Generation**: Define and manage script lines/items dynamically,
       with variables that can be substituted at runtime.
-    - **Conditional Execution**: Add conditions to script lines/items so they are only 
+    - **Conditional Execution**: Add conditions to script lines/items so they are only
       included if certain criteria are met.
-    - **Script Concatenation**: Combine multiple script objects while maintaining 
+    - **Script Concatenation**: Combine multiple script objects while maintaining
       control over variable precedence and script structure.
-    - **User-Friendly Access**: Easily access and manipulate script lines/items using 
+    - **User-Friendly Access**: Easily access and manipulate script lines/items using
       familiar Python constructs like indexing and iteration.
 
     Practical Use Cases:
     --------------------
-    - **Custom LAMMPS Scripts**: Generate complex simulation scripts with varying 
+    - **Custom LAMMPS Scripts**: Generate complex simulation scripts with varying
       parameters based on dynamic conditions.
-    - **Automation**: Automate the creation of scripts for batch processing, 
+    - **Automation**: Automate the creation of scripts for batch processing,
       simulations, or other repetitive tasks.
-    - **Script Management**: Manage and version-control different script sections 
+    - **Script Management**: Manage and version-control different script sections
       and configurations easily.
-      
+
     Methods:
     --------
     __init__(self, name=None):
         Initializes a new `dscript` object with an optional name.
 
     __getitem__(self, key):
-        Retrieves a script line by its key. If a list of keys is provided, 
+        Retrieves a script line by its key. If a list of keys is provided,
         returns a new `dscript` object with lines/items reordered accordingly.
 
     __setitem__(self, key, value):
-        Adds or updates a script line. If the value is an empty list, the 
+        Adds or updates a script line. If the value is an empty list, the
         corresponding script line is removed.
 
     __delitem__(self, key):
@@ -1090,62 +1027,75 @@ class dscript:
         Checks if a key exists in the script. Allows usage of `in` keyword.
 
     __iter__(self):
-        Returns an iterator over the script lines/items, allowing for easy iteration 
+        Returns an iterator over the script lines/items, allowing for easy iteration
         through all lines/items in the `TEMPLATE`.
 
     __len__(self):
         Returns the number of script lines/items currently stored in the `TEMPLATE`.
 
+    keys(self):
+        Returns the keys of the `TEMPLATE` dictionary.
+
+    values(self):
+        Returns the `ScriptTemplate` objects stored as values in the `TEMPLATE`.
+
+    items(self):
+        Returns the keys and `ScriptTemplate` objects from the `TEMPLATE` as pairs.
+
     __str__(self):
-        Returns a human-readable summary of the script, including the number 
+        Returns a human-readable summary of the script, including the number
         of lines/items and total attributes. Shortcut: `str(S)`.
 
     __repr__(self):
-        Provides a detailed string representation of the entire `dscript` object, 
+        Provides a detailed string representation of the entire `dscript` object,
         including all script lines/items and their attributes. Useful for debugging.
 
     reorder(self, order):
-        Reorders the script lines/items based on a given list of indices, creating a 
+        Reorders the script lines/items based on a given list of indices, creating a
         new `dscript` object with the reordered lines/items.
 
     get_content_by_index(self, index, do=True, protected=True):
-        Returns the processed content of the script line at the specified index, 
+        Returns the processed content of the script line at the specified index,
         with variables substituted based on the definitions and conditions applied.
 
     get_attributes_by_index(self, index):
         Returns the attributes of the script line at the specified index.
 
     createEmptyVariables(self, vars):
-        Creates new variables in `DEFINITIONS` if they do not already exist. 
+        Creates new variables in `DEFINITIONS` if they do not already exist.
         Accepts a single variable name or a list of variable names.
 
-    do(self):
-        Executes all script lines/items in the `TEMPLATE`, concatenating the results, 
+    do(self, printflag=None, verbose=None):
+        Executes all script lines/items in the `TEMPLATE`, concatenating the results,
         and handling variable substitution. Returns the full script as a string.
 
     script(self, **userdefinitions):
-        Generates a `lamdaScript` object from the current `dscript` object, 
+        Generates a `lamdaScript` object from the current `dscript` object,
         applying any additional user definitions provided.
-        
+
+    pipescript(self, printflag=None, verbose=None, **USER):
+        Returns a `pipescript` object by combining script objects for all keys
+        in the `TEMPLATE`. Each key in `TEMPLATE` is handled separately, and
+        the resulting scripts are combined using the `|` operator.
+
     save(self, filename=None, foldername=None, overwrite=False):
-        Saves the current script instance to a text file in a structured format. 
+        Saves the current script instance to a text file in a structured format.
         Includes metadata, global parameters, definitions, templates, and attributes.
 
-    write(self, scriptcontent, filename=None, foldername=None, overwrite=False):
-        Writes the provided script content to a specified file in a given folder, 
+    write(scriptcontent, filename=None, foldername=None, overwrite=False):
+        Writes the provided script content to a specified file in a given folder,
         with a header added if necessary, ensuring the correct file format.
 
     load(cls, filename, foldername=None, numerickeys=True):
-        Loads a script instance from a text file, restoring the content, definitions, 
-        templates, and attributes. Handles parsing and variable substitution based on 
+        Loads a script instance from a text file, restoring the content, definitions,
+        templates, and attributes. Handles parsing and variable substitution based on
         the structure of the file.
-        
+
     parsesyntax(cls, content, numerickeys=True):
-        Parses a script instance from a string input, restoring the content, definitions, 
-        templates, and attributes. Handles parsing and variable substitution based on the 
-        structure of the provided string, ensuring the correct format and key conversions 
+        Parses a script instance from a string input, restoring the content, definitions,
+        templates, and attributes. Handles parsing and variable substitution based on the
+        structure of the provided string, ensuring the correct format and key conversions
         when necessary.
-        
 
     Example:
     --------
@@ -1173,6 +1123,7 @@ class dscript:
     DEFINITIONS : lambdaScriptdata
         Stores the variables and parameters used within the script lines/items.
     """
+
     
     def __init__(self,  name=None,
                         SECTIONS = ["DYNAMIC"],
@@ -1182,7 +1133,9 @@ class dscript:
                         description = "dynamic script",
                         userid = "dscript",
                         version = 0.1,
-                        verbose = False):
+                        printflag = False,
+                        verbose = False
+                        ):
         """
         Initializes a new `dscript` object.
 
@@ -1221,6 +1174,7 @@ class dscript:
         self.userid = userid
         self.version = version
         self.verbose = verbose
+        self.printflag = printflag
         self.DEFINITIONS = lambdaScriptdata()
         self.TEMPLATE = {}
 
@@ -1248,15 +1202,15 @@ class dscript:
 
     def keys(self):
         return self.TEMPLATE.keys()
+
+    def values(self):
+        return (s.content for s in self.TEMPLATE.values())
     
     def __contains__(self, key):
         return key in self.TEMPLATE
     
     def __len__(self):
         return len(self.TEMPLATE)
-
-    def values(self):
-        return (s.content for s in self.TEMPLATE.values())
 
     def items(self):
         return ((key, s.content) for key, s in self.TEMPLATE.items())
@@ -1273,6 +1227,15 @@ class dscript:
             repr_str += f"\n[{c} | Template Key: {k} ]\n{repr(s)}\n"
             c += 1
         return repr_str
+    
+    def keys(self):
+        """Return the keys of the TEMPLATE."""
+        return self.TEMPLATE.keys()
+    
+    def values(self):
+        """Return the ScriptTemplate objects in TEMPLATE."""
+        return self.TEMPLATE.values()
+
     
     def reorder(self, order):
         """Reorder the TEMPLATE lines according to a list of indices."""
@@ -1332,6 +1295,42 @@ class dscript:
                 result.TEMPLATE[key] = value        
         return result
     
+    def __call__(self, *keys):
+        """
+        Extracts subobjects from the dscript based on the provided keys.
+    
+        Parameters:
+        -----------
+        *keys : one or more keys that correspond to the `TEMPLATE` entries.
+    
+        Returns:
+        --------
+        A new `dscript` object that contains only the selected script lines/items, along with
+        the relevant definitions and attributes from the original object.
+        """
+        # Create a new dscript object to store the extracted sub-objects
+        result = dscript(name=f"{self.name}_subobject")
+        # Copy the TEMPLATE entries corresponding to the provided keys
+        for key in keys:
+            if key in self.TEMPLATE:
+                result.TEMPLATE[key] = self.TEMPLATE[key]
+            else:
+                raise KeyError(f"Key '{key}' not found in TEMPLATE.")
+        # Copy the DEFINITIONS from the current object
+        result.DEFINITIONS = copy.deepcopy(self.DEFINITIONS)
+        # Copy other relevant attributes
+        result.SECTIONS = self.SECTIONS[:]
+        result.section = self.section
+        result.position = self.position
+        result.role = self.role
+        result.description = self.description
+        result.userid = self.userid
+        result.version = self.version
+        result.verbose = self.verbose
+        result.printflag = self.printflag
+    
+        return result
+    
     def createEmptyVariables(self, vars):
         """
         Creates empty variables in DEFINITIONS if they don't already exist.
@@ -1347,18 +1346,20 @@ class dscript:
             if varname not in self.DEFINITIONS:
                 self.DEFINITIONS.setattr(varname,"${" + varname + "}")
     
-    def do(self):
+    def do(self,printflag=None,verbose=None):
         """
         Executes all ScriptTemplate instances in TEMPLATE and concatenates the results.
         Includes a pretty header and footer.
         """
-        header = f"# --------------[ TEMPLATE \"{self.name}\" ]--------------"
-        footer = "# --------------------------------------------"
+        printflag = self.printflag if printflag is None else printflag
+        verbose = self.verbose if verbose is None else verbose
+        header = f"# --------------[ TEMPLATE \"{self.name}\" ]--------------" if verbose else ""
+        footer = "# --------------------------------------------"  if verbose else ""
         output = [header]
         non_empty_lines = 0
         ignored_lines = 0
         for key, s in self.TEMPLATE.items():
-            result = s.do()
+            result = s.do() if verbose else remove_comments(s.do())
             if result:  # Only count and include non-empty results
                 output.append(result)
                 non_empty_lines += 1
@@ -1366,15 +1367,86 @@ class dscript:
                 ignored_lines += 1
         nel_word = 'items' if non_empty_lines>1 else 'item'
         il_word = 'items' if ignored_lines>1 else 'item'
-        footer += f"\n# ---> Total {nel_word}: {non_empty_lines} - Ignored {il_word}: {ignored_lines}"
+        footer += f"\n# ---> Total {nel_word}: {non_empty_lines} - Ignored {il_word}: {ignored_lines}"  if verbose else ""
         output.append(footer)
         return "\n".join(output)
     
-    def script(self,**USER):
+    def script(self,printflag=None,verbose=None,**USER):
         """
         returns the corresponding script
         """
-        return lamdaScript(self,persistentfile=True, persistentfolder=None,**USER)
+        printflag = self.printflag if printflag is None else printflag
+        verbose = self.verbose if verbose is None else verbose
+        return lamdaScript(self,persistentfile=True, persistentfolder=None,
+                           printflag=printflag, verbose=verbose,
+                           **USER)
+    
+    def pipescript(self, *keys, printflag=None, verbose=None, **USER):
+        """
+        Returns a pipescript object by combining script objects corresponding to the given keys.
+        
+        Parameters:
+        -----------
+        *keys : one or more keys that correspond to the `TEMPLATE` entries.
+        printflag : bool, optional
+            Whether to enable printing of additional information.
+        verbose : bool, optional
+            Whether to run in verbose mode for debugging or detailed output.
+        **USER : dict, optional
+            Additional user-defined variables to pass into the script.
+    
+        Returns:
+        --------
+        A `pipescript` object that combines the script objects generated from the selected 
+        dscript subobjects.
+        """
+        # Start with an empty pipescript
+        # combined_pipescript = None
+        # # Iterate over the provided keys to extract corresponding subobjects
+        # for key in keys:
+        #     # Extract the dscript subobject for the given key
+        #     sub_dscript = self(key)
+        #     # Convert the dscript subobject to a script object, passing USER, printflag, and verbose
+        #     script_obj = sub_dscript.script(printflag=printflag, verbose=verbose, **USER)
+        #     # Combine script objects into a pipescript object
+        #     if combined_pipescript is None:
+        #         combined_pipescript = pipescript(script_obj)  # Initialize pipescript
+        #     else:
+        #         combined_pipescript = combined_pipescript | script_obj  # Use pipe operator
+        # if combined_pipescript is None:
+        #     ValueError('The conversion to pipescript from {type{self}} falled')
+        # return combined_pipescript
+        combined_pipescript = None
+        
+        # Loop over all keys in TEMPLATE and combine them
+        for key in self.keys():
+            # Create a new dscript object with only the current key in TEMPLATE
+            focused_dscript = dscript(name=f"{self.name}:{key}")
+            focused_dscript.TEMPLATE[key] = self.TEMPLATE[key]
+            focused_dscript.DEFINITIONS = copy.deepcopy(self.DEFINITIONS)
+            focused_dscript.SECTIONS = self.SECTIONS[:]
+            focused_dscript.section = self.section
+            focused_dscript.position = self.position
+            focused_dscript.role = self.role
+            focused_dscript.description = self.description
+            focused_dscript.userid = self.userid
+            focused_dscript.version = self.version
+            focused_dscript.verbose = self.verbose
+            focused_dscript.printflag = self.printflag
+    
+            # Convert the focused dscript object to a script object
+            script_obj = focused_dscript.script(printflag=printflag, verbose=verbose, **USER)
+    
+            # Combine the script objects into a pipescript object using the pipe operator
+            if combined_pipescript is None:
+                combined_pipescript = pipescript(script_obj)  # Initialize pipescript
+            else:
+                combined_pipescript = combined_pipescript | pipescript(script_obj)  # Use pipe operator
+    
+        if combined_pipescript is None:
+            ValueError('The conversion to pipescript from {type{self}} falled')
+        return combined_pipescript
+
 
 
     # Save Method -- added on 2024-09-04
@@ -1982,7 +2054,21 @@ class dscript:
             # Return the value as-is if it doesn't match other types
             return value
 
-        
+    def __copy__(self):
+        """ copy method """
+        cls = self.__class__
+        copie = cls.__new__(cls)
+        copie.__dict__.update(self.__dict__)
+        return copie
+
+    def __deepcopy__(self, memo):
+        """ deep copy method """
+        cls = self.__class__
+        copie = cls.__new__(cls)
+        memo[id(self)] = copie
+        for k, v in self.__dict__.items():
+            setattr(copie, k, copy.deepcopy(v, memo))
+        return copie        
 
 # %% debug section - generic code to test methods (press F5)
 # ===================================================
@@ -2561,10 +2647,10 @@ runtime = 2500  # variables can be defined and changed any time (only the last d
 
     """
     
-TLSPH = dscript.parsesyntax(TLSPH_template)  # this is a dscript instance
-TLSPH_script = TLSPH.script()                # this is a script instance
-TLSPH.code = TLSPH_script.do()               # this is the corresponding LAMMPS code
-print(TLSPH.code)
-# Note that some definitions are missing since they are calculated by LAMMPS during the simulation
-# It includes: stress, strain, length
-repr(TLSPH.DEFINITIONS)
+    TLSPH = dscript.parsesyntax(TLSPH_template)  # this is a dscript instance
+    TLSPH_script = TLSPH.script()                # this is a script instance
+    TLSPH.code = TLSPH_script.do()               # this is the corresponding LAMMPS code
+    print(TLSPH.code)
+    # Note that some definitions are missing since they are calculated by LAMMPS during the simulation
+    # It includes: stress, strain, length
+    repr(TLSPH.DEFINITIONS)
