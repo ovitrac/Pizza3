@@ -175,46 +175,70 @@ print("\n# CUSTOMIZED GROUPS\n", S3.do(printflag=False, verbose=False), sep="\n"
 
 
 # %% S4a: Movable Objects (Upper Cylinder Movement)
-# This section defines movement for the upper cylinder using `dscript`.
+# Define movement for lower (fixed) and upper (wingle) cylinders using dynamic scripting `dscript`.
+# Three codelets are defined:  "moveinit", "movelower" and "moveupper"
+# They can be set and checked via several shorthands
 
-move = dscript(name="S4a:move")  # Create a new dynamic script
+# Create the container of for the  dynamic script 
+# All codelets share the same global variables (DEFINITIONS).
+# Codelets are independent and their behavior are specifically managed via attributes.
+# Only variables can be set at construction time.
+move = dscript(name="S4a:move",  # Create a new dynamic script
+               SECTIONS = ["DYNAMICS","move"], section = 4, position = None,
+               description = "Movements of lower and upper cylinders ",
+               verbose = True, # we keep comments
+               amplitude=1.0e-3,  # Amplitude of movement (1 mm)
+               period=1.0 # Period of movement (1 second)
+             )
 
-# Set movement variables
+# If needed, movement variables can be modified later
 move.DEFINITIONS.update(
     amplitude=1.0e-3,  # Amplitude of movement (1 mm)
     period=1.0  # Period of movement (1 second)
 )
 
-# Define movement for lower and upper cylinders
-move["moveinit"] = """
+# CODELET "moveinit" initializes velocity for all beads
+# It can be defined via several shorthands
+#   move["moveinit"] = "..." is a shorthand of move.TEMPLATE["moveinit"]="..."
+#   move.moveinit =  "..." is a shorthand of move.TEMPLATE["moveinit"]="..."
+# Note: it is imperative to use move["move:init"] if you use special characters in name
+move.moveinit= """
 # Set initial velocities to zero
-velocity all set 0.0 0.0 0.0 units box
+velocity all set 0.0 0.0 0.0 units box # note box units
+"""
+# rapid control showing template and default attributes
+move.moveinit
 
+
+# CODELET "movelower" fixes the position of the lower cylinder
+move.movelower = """
 # Fix the lower cylinder to prevent movement
 fix fix_lower lower setforce 0.0 0.0 0.0
 """
 
-move["moveset"] = """
+# CODELET "movelower" fixes the position of the lower cylinder
+move.moveupper = """
 # Apply periodic movement to the upper cylinder
 fix move_upper upper move wiggle 0.0 0.0 ${amplitude} ${period} units box
 """
-move["moveset"].eval = True  # Force evaluation of movement
+move.moveupper.eval = True  # Force evaluation of movement
 
-print("\n# MOVABLE OBJECTS", move.do(printflag=False, verbose=False), sep="\n")
+print("\n# MOVABLE OBJECTS", move.do(printflag=False, verbose=True), sep="\n")
 
 
 # %% S4b: Time Integration Setup
-integration = dscript(name="S4b:timeintegration")  # Create the time integration script
-integration.DEFINITIONS.dt = 0.1  # Set time step (dt)
-integration["intinit"] = "fix dtfix tlsph smd/adjust_dt ${dt} # Adjust time increment dynamically"
-integration["intset"] = "fix integration_fix tlsph smd/integrate_tlsph"  # Set up integration
-integration["intinit"].eval = True
+# we use a compact syntax, verbosity is removed
+integration = dscript(name="S4b:timeintegration",
+                      dt=0.1)  # Create the time integration script
+integration.intinit = "fix dtfix tlsph smd/adjust_dt ${dt} # Adjust time increment dynamically"
+integration.intinit.eval = True
+integration.intset = "fix integration_fix tlsph smd/integrate_tlsph"  # Set up integration
 print("\n# TIME INTEGRATION", integration.do(printflag=False, verbose=False), sep="\n")
 
 
 # %% S4c: Trajectory Output Setup
 trajectory = dscript(name="S4c:trajectoryoutput")  # Create trajectory output script
-trajectory["compute"] = """
+trajectory.compute = """
 compute S all smd/tlsph_stress # Cauchy stress tensor
 compute E all smd/tlsph_strain # Green-Lagrange strain tensor
 compute nn all smd/tlsph_num_neighs # Number of neighbors for each particle
@@ -225,38 +249,40 @@ print("\n# TRAJECTORY OUTPUT", trajectory.do(printflag=False, verbose=False), se
 # %% S4: Combine S4a + S4b + S4c
 S4 = move + integration + trajectory  # Combine movement, integration, and output into one script
 S4.name = "S4:dynamics"
+print ("\n","-"*70,"S4 code which be saved with S4.save():","-"*70,S4.generator(),"-"*70,sep="\n")
 print("\n# DYNAMICS", S4.do(printflag=False, verbose=False), sep="\n")
 
 
 # %% S5: Dump Settings
-S5 = dscript(name="S5:dump")
-S5.DEFINITIONS.update(dumpdt=50, dumpfile="$dump.LAMMPS")  # Set dump interval and file name
-S5["dumpinit"] = """
+S5 = dscript(name="S5:dump",
+             dumpdt=50,
+             dumpfile="$dump.LAMMPS")  # Set dump interval and file name
+S5.dumpinit = """
 dump dump_id all custom ${dumpdt} ${dumpfile} id type x y z vx vy vz & 
 c_S[1] c_S[2] c_S[4] c_nn & 
 c_E[1] c_E[2] c_E[4] & 
 vx vy vz
 """
-S5["dumpset"] = """
+S5.dumpset = """
 dump_modify dump_id first yes
 """
 
 
 # %% S6: Thermodynamic Output
-S6 = dscript(name="S6:thermo")
-S6.DEFINITIONS.thermodt = 100  # Set thermodynamic output interval
-S6["thermo"] = """
+S6 = dscript(name="S6:thermo",
+             thermodt = 100)  # Set thermodynamic output interval
+S6.thermo = """
 thermo ${thermodt}
 thermo_style custom step dt f_dtfix v_strain
 """
-S6["thermo"].eval = True
+S6.thermo.eval = True
 
 
 # %% S7: Run the Simulation
-S7 = dscript(name="S7:run")
-S7.DEFINITIONS.runtime = 5000  # Set the simulation runtime (5000 steps)
-S7["run"] = "run ${runtime}"
-S7["run"].eval = True
+S7 = dscript(name="S7:run",
+             runtime = 5000)  # Set the simulation runtime (5000 steps)
+S7.run = "run ${runtime}"
+S7.run.eval = True
 
 
 # %% Combine All Sections (S1, S2, S3, S4, S5, S6, S7)
