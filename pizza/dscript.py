@@ -498,11 +498,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9972"
+__version__ = "0.9974"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-10-07 (community)
+# INRAE\Olivier Vitrac - rev. 2024-10-17 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -514,6 +514,7 @@ __version__ = "0.9972"
 # 2024-10-07 fix example
 # 2024-10-09 remove_comments moved to script (to prevent circular reference)
 # 2024-10-14 finalization of the integration with scripts
+# 2024-10-17 fix __add__, improve repr()
 
 
 # Dependencies
@@ -521,7 +522,7 @@ import os, getpass, socket, tempfile
 import re, string, random, copy
 from datetime import datetime
 from pizza.private.struct import paramauto
-from pizza.script import script, pipescript, remove_comments
+from pizza.script import script, pipescript, remove_comments, span
 
 # %% Private Functions
 
@@ -775,75 +776,108 @@ class ScriptTemplate:
         A reference to the `lambdaScriptdata` object that holds the global 
         definitions for the script. This is used for variable substitution 
         within the script line.
-    """
-    
-    def __init__(self, content, definitions=None):
-        """
+        
+        
+    Methods:
+    --------
+    __init__(self, content, definitions=None):
         Initializes a new `ScriptTemplate` object.
 
-        The constructor sets up a new script line with its content and optional 
-        global definitions for variable substitution. The `ScriptTemplate` 
-        allows you to manage the script line's attributes and dynamically 
-        substitute variables.
+    __str__(self):
+        Returns a summary of the script line, indicating the number of attributes.
+        Shortcut: `str(line)`.
 
-        Parameters:
-        -----------
-        content : str or list of str
-            The content of the script line(s). If a string is provided, it will be 
-            converted to a list with one element. This allows for consistent handling 
-            of multiple lines of content.
-        definitions : lambdaScriptdata, optional
-            A reference to a lambdaScriptdata object that contains global variable 
-            definitions. If provided, it will be used to substitute variables within 
-            the content.
-            
-        Methods:
-        --------
-        __init__(self, content, definitions=None):
-            Initializes a new `ScriptTemplate` object.
-    
-        __str__(self):
-            Returns a summary of the script line, indicating the number of attributes.
-            Shortcut: `str(line)`.
-    
-        __repr__(self):
-            Provides a detailed, tabulated string representation of the script line, 
-            showing the content, attributes, and evaluated result if applicable.
-            Useful for debugging and detailed inspection.
-    
-        __setattr__(self, name, value):
-            Sets an attribute for the script line. Enforces type checking for 
-            specific attributes (`facultative`, `eval`, `readonly`). Automatically 
-            detects and adds variables to definitions when `content` is set.
-    
-        __getattr__(self, name):
-            Retrieves the value of an attribute. Returns None if the attribute 
-            does not exist.
-    
-        do(self, protected=True):
-            Returns the processed content of the script line, with variables 
-            substituted based on the definitions and conditions applied. 
-            If the line is facultative and the condition is not met, an empty 
-            string is returned.
-            
-         refreshvar(self):
-            Detects variables in the content and adds them to definitions if needed.
-            This method ensures that variables like ${varname} are correctly detected
-            and added to the definitions if they are missing.
-            
+    __repr__(self):
+        Provides a detailed, tabulated string representation of the script line, 
+        showing the content, attributes, and evaluated result if applicable.
+        Useful for debugging and detailed inspection.
 
-        Example:
-        --------
-        # Create a ScriptTemplate object with content and optional definitions
-        line = ScriptTemplate("dimension    ${dimension}")
+    __setattr__(self, name, value):
+        Sets an attribute for the script line. Enforces type checking for 
+        specific attributes (`facultative`, `eval`, `readonly`). Automatically 
+        detects and adds variables to definitions when `content` is set.
 
-        # You can also pass in global definitions if needed
-        global_definitions = lambdaScriptdata(dimension=3)
-        line_with_defs = ScriptTemplate("dimension    ${dimension}", 
-                                        definitions=global_definitions)
+    __getattr__(self, name):
+        Retrieves the value of an attribute. Returns None if the attribute 
+        does not exist.
 
-        After initialization, you can modify the line's attributes or use it as 
-        part of a larger script managed by a `dscript` object.
+    do(self, protected=True):
+        Returns the processed content of the script line, with variables 
+        substituted based on the definitions and conditions applied. 
+        If the line is facultative and the condition is not met, an empty 
+        string is returned.
+        
+     refreshvar(self):
+        Detects variables in the content and adds them to definitions if needed.
+        This method ensures that variables like ${varname} are correctly detected
+        and added to the definitions if they are missing.
+        
+
+    Example:
+    --------
+    # Create a ScriptTemplate object with content and optional definitions
+    line = ScriptTemplate("dimension    ${dimension}")
+
+    # You can also pass in global definitions if needed
+    global_definitions = lambdaScriptdata(dimension=3)
+    line_with_defs = ScriptTemplate("dimension    ${dimension}", 
+                                    definitions=global_definitions)
+
+    After initialization, you can modify the line's attributes or use it as 
+    part of a larger script managed by a `dscript` object.
+    """
+    
+    
+    def __init__(self, content="", definitions=lambdaScriptdata(), verbose=False, **kwargs):
+        """
+    Initializes a new `ScriptTemplate` object.
+
+    The constructor sets up a new script template with content, optional variable 
+    definitions, and a set of configurable attributes. This template is capable 
+    of dynamically substituting variables using a provided `lambdaScriptdata` 
+    object or internal definitions. You can also manage attributes like evaluation, 
+    facultative execution, and variable detection.
+
+    Parameters:
+    -----------
+    content : str or list of str
+        The content of the script template, which can be a single string or a list of strings.
+        If a single string is provided, it will automatically be converted to a list of lines.
+        This ensures consistent handling of multi-line content.
+    
+    definitions : lambdaScriptdata, optional
+        A reference to a `lambdaScriptdata` object that contains global variable 
+        definitions. These definitions will be used to substitute variables within the content.
+        If `definitions` is not provided, variable substitution will rely on local 
+        or inline definitions.
+    
+    verbose : flag (default value=False)
+        If True the comments are preserved (applied when str is a string)
+
+    **kwargs : 
+        Additional keyword arguments to set specific attributes for the script line.
+        These attributes control the behavior of the script template during evaluation 
+        and execution. Any keyword argument passed here will update the default 
+        attribute values.
+
+            Default attributes (with default values):
+        - facultative (False): 
+            If True, the script line is optional and may be discarded if certain conditions are not met.
+        - eval (False): 
+            If True, the content will be evaluated using `formateval`, allowing variable 
+            substitution during the execution.
+        - readonly (False): 
+            If True, the content of the script cannot be modified after initialization.
+        - condition (None): 
+            An optional condition that controls whether the content will be executed. 
+            If the condition is not met, the script line will not be executed.
+        - condeval (False): 
+            If True, the `condition` attribute will be evaluated, allowing conditional 
+            logic based on variable values.
+        - detectvar (True): 
+            If True, the content will automatically detect and register any variables 
+            (such as `${varname}`) within the `definitions` for substitution.
+
         """
         
         self.attributes = {
@@ -857,20 +891,34 @@ class ScriptTemplate:
         self.definitions = definitions  # Reference to the DEFINITIONS object
         # Convert single string content to a list for consistent processing
         if isinstance(content, str):
-            content = remove_comments(content,split_lines=True)  # Split string by newlines into list of strings
+            if verbose:
+                content = content.split('\n') # all comments are preserved during construction
+                # Remove leading and trailing empty lines (but keep empty lines in the middle)
+                while content and content[0].strip() == '': content.pop(0)  # Remove leading empty lines
+                while content and content[-1].strip() == '': content.pop()  # Remove trailing empty lines
+            else:
+                content = remove_comments(content,split_lines=True)  # Split string by newlines into list of strings
         elif not isinstance(content, list) or not all(isinstance(item, str) for item in content):
             raise TypeError("The 'content' attribute must be a string or a list of strings.")
         self.content = content  # Ensure content is a list of strings
+        # Update attributes with any additional keyword arguments
+        self.attributes.update(kwargs)
 
     def __str__(self):
         num_attrs = len(self.attributes)  # All attributes count
         return f"1 line/block, {num_attrs} attributes"
 
+
     def __repr__(self):
+        # Template content section
         total_lines = len(self.content)
         line_word = "lines" if total_lines > 1 else "line"
-        repr_str = f"{'Template Content (' + str(total_lines) + ' ' + line_word + ')':<50}\n"
+        content_label = "Template Content"
+        available_space = 50 - len(content_label) - 1
+        repr_str = "-" * 50 + "\n"
+        repr_str += f"{content_label}{('(' + str(total_lines) + ' ' + line_word + ')').rjust(available_space)}\n"
         repr_str += "-" * 50 + "\n"
+
         if total_lines < 1:
             repr_str += "< empty content >\n"
         elif total_lines <= 12:
@@ -879,35 +927,59 @@ class ScriptTemplate:
                 truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
                 repr_str += f"{truncated_line:<50}\n"
         else:
-            # Display first three lines
+            # Display first three lines, middle three lines, and last three lines
             for line in self.content[:3]:
                 truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
                 repr_str += f"{truncated_line:<50}\n"
-            repr_str += "\t\t[...]\n"  # Ellipsis indicating skipped lines
-             # Display three lines from the middle
+            repr_str += "\t\t[...]\n"
             mid_start = total_lines // 2 - 1
             mid_end = mid_start + 3
             for line in self.content[mid_start:mid_end]:
                 truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
                 repr_str += f"{truncated_line:<50}\n"
-            repr_str += "\t\t[...]\n"  # Ellipsis indicating more skipped lines
-            # Display last three lines
+            repr_str += "\t\t[...]\n"
             for line in self.content[-3:]:
                 truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
-                repr_str += f"{truncated_line:<50}\n"           
-        # Add attributes after the content
-        total_attr = len(self.attributes)
-        attr_word = "attributes" if total_attr > 1 else "attribute"  # Fix condition to check `total_attr`
-        repr_str += f"\n{'Template Attributes (' + str(total_attr) + ' ' + attr_word + ')':<50}\n"
+                repr_str += f"{truncated_line:<50}\n"
+                
+        # Detected Variables section in 3 column
+        detected_variables = self.detect_variables()
+        if detected_variables:
+            repr_str += "-" * 50 + "\n"
+            # Count the number of defined and missing variables
+            defined_variables = set(self.definitions.keys()) if self.definitions else set()
+            variable_word = 'Variables' if len(detected_variables) > 1 else 'Variable'
+            detected_set = set(detected_variables)
+            missing_variables = detected_set - defined_variables
+            defined_count = len(detected_set & defined_variables)
+            missing_count = len(missing_variables)
+            total_variables = len(detected_set)
+            repr_str += f"Detected {variable_word}{('(' + str(total_variables) + ' / +' + str(defined_count) + ' / -' + str(missing_count) + ')').rjust(50 - len('Detected Variables') - 1)}\n"
+            repr_str += "-" * 50 + "\n"
+            # Create a compact three-column layout for detected variables
+            for i in range(0, len(detected_variables), 3):
+                var_set = detected_variables[i:i+3]
+                line = ""
+                for var in var_set:
+                    var_name = (var[:10] + ' ') if len(var) > 10 else var.ljust(11)
+                    line += f"{var_name}  "
+                repr_str += f"{line}\n"
+
+        # Attribute section in 3 columns
         repr_str += "-" * 50 + "\n"
-        for attr, value in self.attributes.items():
-            if attr == 'definitions':
-                continue
-            if value == "":
-                attr_str = '""'
-                repr_str += f"{attr:<20} {attr_str:<30}\n"
-            else:
-                repr_str += f"{attr:<20} {str(value):<30}\n"
+        repr_str += f"Template Attributes{('(' + str(len(self.attributes)) + ' attributes)').rjust(50 - len('Template Attributes') - 1)}\n"
+        repr_str += "-" * 50 + "\n"
+
+        # Create a compact three-column layout for attributes with checkboxes
+        attr_items = [(attr, '[x]' if value else '[ ]') for attr, value in self.attributes.items() if attr != 'definitions']
+        for i in range(0, len(attr_items), 3):
+            attr_set = attr_items[i:i+3]
+            line = ""
+            for attr, value in attr_set:
+                attr_name = (attr[:10] + ' ') if len(attr) > 10 else attr.ljust(11)
+                line += f"{value} {attr_name}  "
+            repr_str += f"{line}\n"
+
         return repr_str
 
     def __setattr__(self, name, value):
@@ -960,6 +1032,27 @@ class ScriptTemplate:
         else:
             return ""
 
+    
+    def detect_variables(self):
+        """
+        Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'.
+
+        Returns:
+        --------
+        list
+            A list of unique variable names detected in the content.
+        """
+        variable_pattern = re.compile(r'\$\{(\w+)\}')
+        detected_vars = set()  # Using a set to avoid duplicates
+
+        # Iterate over each line of the content
+        for line in self.content:
+            detected_vars.update(variable_pattern.findall(line))  # Add all matches to the set
+
+        return list(detected_vars)  # Convert the set back to a list
+
+
+
     def refreshvar(self):
         """
         Detects variables in the content and adds them to definitions if needed.
@@ -967,13 +1060,13 @@ class ScriptTemplate:
         and added to the definitions if they are missing.
         """
         if self.attributes["detectvar"] and isinstance(self.content, list) and self.definitions is not None:
-            # Find all occurrences of ${varname} in each line of content
-            for line in self.content:
-                variables = re.findall(r'\$\{(\w+)\}', line)
-                # Add each variable to definitions if not already present
-                for varname in variables:
-                    if varname not in self.definitions:
-                        self.definitions.setattr(varname, "${" + varname + "}")
+            # Use the detect_variables method to find all variables in content
+            variables = self.detect_variables()
+            
+            # Add each variable to definitions if not already present
+            for varname in variables:
+                if varname not in self.definitions:
+                    self.definitions.setattr(varname, "${" + varname + "}")
 
 
 
@@ -1124,6 +1217,10 @@ class dscript:
         Stores the variables and parameters used within the script lines/items.
     """
 
+    # Class variable to list attributes that should not be treated as TEMPLATE entries
+    construction_attributes = {'name', 'SECTIONS', 'section', 'position', 'role', 'description',
+                               'userid', 'version', 'verbose', 'printflag', 'DEFINITIONS', 'TEMPLATE'
+                               }
     
     def __init__(self,  name=None,
                         SECTIONS = ["DYNAMIC"],
@@ -1134,7 +1231,8 @@ class dscript:
                         userid = "dscript",
                         version = 0.1,
                         printflag = False,
-                        verbose = False
+                        verbose = False,
+                        **userdefinitions
                         ):
         """
         Initializes a new `dscript` object.
@@ -1166,7 +1264,7 @@ class dscript:
             self.name = autoname
         else:
             self.name = name
-        self.SECTIONS = SECTIONS
+        self.SECTIONS = SECTIONS if isinstance(SECTIONS,(list,tuple)) else [SECTIONS]
         self.section = section
         self.position = position if position is not None else 0
         self.role = role
@@ -1175,8 +1273,53 @@ class dscript:
         self.version = version
         self.verbose = verbose
         self.printflag = printflag
-        self.DEFINITIONS = lambdaScriptdata()
+        self.DEFINITIONS = lambdaScriptdata(**userdefinitions)
         self.TEMPLATE = {}
+
+
+    def __getattr__(self, attr):
+        # During construction phase, we only access the predefined attributes
+        if 'TEMPLATE' not in self.__dict__:
+            if attr in self.__dict__:
+                return self.__dict__[attr]
+            raise AttributeError(f"'dscript' object has no attribute '{attr}'")
+        
+        # If TEMPLATE is initialized and attr is in TEMPLATE, return the corresponding ScriptTemplate entry
+        if attr in self.TEMPLATE:
+            return self.TEMPLATE[attr]
+
+        # Fall back to internal __dict__ attributes if not in TEMPLATE
+        if attr in self.__dict__:
+            return self.__dict__[attr]
+
+        raise AttributeError(f"'dscript' object has no attribute '{attr}'")
+        
+        
+    def __setattr__(self, attr, value):
+        # Handle internal attributes during the construction phase
+        if 'TEMPLATE' not in self.__dict__:
+            self.__dict__[attr] = value
+            return
+
+        # Handle construction attributes separately (name, TEMPLATE, USER)
+        if attr in self.construction_attributes:
+            self.__dict__[attr] = value
+        # If TEMPLATE exists, and the attribute is intended for it, update TEMPLATE
+        elif 'TEMPLATE' in self.__dict__:
+            # Convert the value to a ScriptTemplate if needed, and update the template
+            if attr in self.TEMPLATE:
+                # Modify the existing ScriptTemplate object for this attribute
+                if isinstance(value, str):
+                    self.TEMPLATE[attr].content = value
+                elif isinstance(value, dict):
+                    self.TEMPLATE[attr].attributes.update(value)
+            else:
+                # Create a new entry if it does not exist
+                self.TEMPLATE[attr] = ScriptTemplate(content=value,verbose=self.verbose)
+        else:
+            # Default to internal attributes
+            self.__dict__[attr] = value
+            
 
     def __getitem__(self, key):
         if isinstance(key, list):
@@ -1192,7 +1335,7 @@ class dscript:
             del self.TEMPLATE[key]
         else:
             # Otherwise, set the key to the new ScriptTemplate
-            self.TEMPLATE[key] = ScriptTemplate(value, definitions=self.DEFINITIONS)
+            self.TEMPLATE[key] = ScriptTemplate(value, definitions=self.DEFINITIONS, verbose=self.verbose)
 
     def __delitem__(self, key):
         del self.TEMPLATE[key]
@@ -1221,13 +1364,25 @@ class dscript:
         return f"{num_TEMPLATE} TEMPLATE, {total_attributes} attributes"
 
     def __repr__(self):
-        repr_str = f"dscript object ({self.name})\nwith {len(self.TEMPLATE)} TEMPLATE(s):\n"
+        """Representation of dscript object with additional properties."""
+        repr_str = f"dscript object ({self.name})\n"
+        # Add description, role, and version at the beginning
+        repr_str += f"Descr: {self.description}\n"
+        repr_str += f"Role: {self.role} (v. {self.version})\n"
+        repr_str += f'SECTIONS {span(self.SECTIONS,",","[","]")} | index: {self.section} | position: {self.position}\n'
+        repr_str += f"\n\n\twith {len(self.TEMPLATE)} TEMPLATE"
+        repr_str += "s" if len(self.TEMPLATE)>1 else ""
+        repr_str += f" (with {len(self.DEFINITIONS)} DEFINITIONS)\n\n"
+        # Add TEMPLATE information
         c = 0
         for k, s in self.TEMPLATE.items():
-            repr_str += f"\n[{c} | Template Key: {k} ]\n{repr(s)}\n"
+            head = f"|  idx: {c} |  key: {k}  |"
+            dashes = (50 - len(head)) // 2
+            repr_str += "-" * 50 + "\n"
+            repr_str += f"{'<' * dashes}{head}{'>' * dashes}\n{repr(s)}\n"
             c += 1
         return repr_str
-    
+
     def keys(self):
         """Return the keys of the TEMPLATE."""
         return self.TEMPLATE.keys()
@@ -1235,7 +1390,6 @@ class dscript:
     def values(self):
         """Return the ScriptTemplate objects in TEMPLATE."""
         return self.TEMPLATE.values()
-
     
     def reorder(self, order):
         """Reorder the TEMPLATE lines according to a list of indices."""
@@ -1279,7 +1433,7 @@ class dscript:
         if not isinstance(other, dscript):
             raise TypeError(f"Cannot concatenate 'dscript' with '{type(other).__name__}'")
         # Create a new dscript to store the result
-        result = dscript()
+        result = dscript(**self.DEFINITIONS)
         # Start by copying the current TEMPLATE to the result
         result.TEMPLATE = self.TEMPLATE.copy()
         # Track the next available index if keys need to be created
@@ -1292,7 +1446,8 @@ class dscript:
                     next_index += 1
                 result.TEMPLATE[next_index] = value
             else:
-                result.TEMPLATE[key] = value        
+                result.TEMPLATE[key] = value
+            result.DEFINITIONS = result.DEFINITIONS + getattr(result,key).definitions
         return result
     
     def __call__(self, *keys):
@@ -1449,9 +1604,22 @@ class dscript:
 
 
 
+    # Generator -- added on 2024-10-17
+    # -----------
+    def generator(self):
+        """
+        Returns
+        -------
+        STR
+            generated code corresponding to dscript (using dscript syntax/language).
+
+        """
+        return self.save(generatoronly=True)
+
+
     # Save Method -- added on 2024-09-04
     # -----------
-    def save(self, filename=None, foldername=None, overwrite=False):
+    def save(self, filename=None, foldername=None, overwrite=False, generatoronly=False):
         """
         Save the current script instance to a text file.
     
@@ -1495,33 +1663,38 @@ class dscript:
             # ATTRIBUTES (number of items with explicit attributes=...)
             key:{attr1=value1, attr2=value2, ...}
         """
-        # Use self.name if filename is not provided
-        if filename is None:
-            filename = self.name
-        # Ensure the filename ends with '.txt'
-        if not filename.endswith('.txt'):
-            filename += '.txt'
-        # Default folder to tempdir if foldername is not provided
-        if foldername is None:
-            foldername = tempfile.gettempdir()
-        # Construct full path
-        if not os.path.isabs(filename):
-            # Filename does not include folder, so use foldername
-            filepath = os.path.join(foldername, filename)
-        else:
-            # Filename includes full path, so use it directly
-            filepath = filename
-        # Check if file already exists, raise exception if it does
-        if os.path.exists(filepath) and not overwrite:
-            raise FileExistsError(f"The file '{filepath}' already exists.")
+        
+        if not generatoronly:
+            # Use self.name if filename is not provided
+            if filename is None:
+                filename = self.name
+            # Ensure the filename ends with '.txt'
+            if not filename.endswith('.txt'):
+                filename += '.txt'
+            # Default folder to tempdir if foldername is not provided
+            if foldername is None:
+                foldername = tempfile.gettempdir()
+            # Construct full path
+            if not os.path.isabs(filename):
+                # Filename does not include folder, so use foldername
+                filepath = os.path.join(foldername, filename)
+            else:
+                # Filename includes full path, so use it directly
+                filepath = filename
+            # Check if file already exists, raise exception if it does
+            if os.path.exists(filepath) and not overwrite:
+                raise FileExistsError(f"The file '{filepath}' already exists.")
             
         # Header with current date, username, and host
         user = getpass.getuser()
         host = socket.gethostname()
         date = datetime.now().strftime('%Y-%m-%d')
         header = f"# DSCRIPT SAVE FILE\n# generated on {date} on {user}@{host}\n"
-        header += f'\n#\tname = "{self.name}"\n'
-        header += f'\n#\tpath = "{filepath}"\n\n'
+        if generatoronly:
+            header += 'dynamic code generation (no file)\n'
+        else:
+            header += f'\n#\tname = "{self.name}"\n'
+            header += f'\n#\tpath = "{filepath}"\n\n'
         
         # Global parameters in strict Python syntax
         global_params = "# GLOBAL PARAMETERS\n"
@@ -1567,12 +1740,14 @@ class dscript:
         # Combine all sections into one content
         content = header + "\n" + global_params + "\n" + definitions + "\n" + template + "\n" + attributes
         
-        # Write the content to the file
-        with open(filepath, 'w') as f:
-            f.write(content)        
-        print(f"\nScript saved to {filepath}")
-        
-        return filepath
+        if generatoronly:
+            return content
+        else:
+            # Write the content to the file
+            with open(filepath, 'w') as f:
+                f.write(content)        
+            print(f"\nScript saved to {filepath}")
+            return filepath
     
 
     # Write Method -- added on 2024-09-05
@@ -1915,7 +2090,7 @@ class dscript:
             if inside_template_block:
                 if stripped == "]":
                     # End of the template block, join the content and store it
-                    template[current_template_key] = ScriptTemplate(current_template_content, definitions=definitions)
+                    template[current_template_key] = ScriptTemplate(current_template_content, definitions=definitions, verbose=True)
                     template[current_template_key].refreshvar()
                     inside_template_block = False
                     current_template_key = None
@@ -1951,7 +2126,7 @@ class dscript:
             elif template_match and not inside_template_block:
                 # Line is a template (key: content)
                 key, content = template_match.groups()
-                template[key] = ScriptTemplate(content, definitions=definitions)
+                template[key] = ScriptTemplate(content, definitions=definitions, verbose=True)
                 template[key].refreshvar()
 
             elif attribute_match:
@@ -2068,7 +2243,30 @@ class dscript:
         memo[id(self)] = copie
         for k, v in self.__dict__.items():
             setattr(copie, k, copy.deepcopy(v, memo))
-        return copie        
+        return copie
+    
+    def detect_all_variables(self):
+        """
+        Detects all variables across all templates in the dscript object.
+        
+        This method iterates through all ScriptTemplate objects in the dscript and
+        collects variables from each template using the detect_variables method.
+    
+        Returns:
+        --------
+        list
+            A sorted list of unique variables detected in all templates.
+        """
+        all_variables = set()  # Use a set to avoid duplicates
+    
+        # Iterate through all templates in the dscript object
+        for template_key, template in self.TEMPLATE.items():
+            # Ensure the template is a ScriptTemplate and has the detect_variables method
+            if isinstance(template, ScriptTemplate):
+                detected_vars = template.detect_variables()
+                all_variables.update(detected_vars)  # Add the detected variables to the set
+    
+        return sorted(all_variables)  # Return a sorted list of unique variables
 
 # %% debug section - generic code to test methods (press F5)
 # ===================================================
