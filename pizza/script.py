@@ -2,15 +2,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__project__ = "Pizza3"
-__author__ = "Olivier Vitrac"
-__copyright__ = "Copyright 2022"
-__credits__ = ["Olivier Vitrac"]
-__license__ = "GPLv3"
-__maintainer__ = "Olivier Vitrac"
-__email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9972"
-
 """
 
     The class script() and derived facilitate the coding in LAMMPS
@@ -105,7 +96,18 @@ Created on Sat Feb 19 11:00:43 2022
 @author: olivi
 """
 
-# INRAE\Olivier Vitrac - rev. 2024-10-14 (community)
+__project__ = "Pizza3"
+__author__ = "Olivier Vitrac"
+__copyright__ = "Copyright 2022"
+__credits__ = ["Olivier Vitrac"]
+__license__ = "GPLv3"
+__maintainer__ = "Olivier Vitrac"
+__email__ = "olivier.vitrac@agroparistech.fr"
+__version__ = "0.9976"
+
+
+
+# INRAE\Olivier Vitrac - rev. 2024-10-19 (community)
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -143,6 +145,8 @@ Created on Sat Feb 19 11:00:43 2022
 # 2024-10-09 verbosity handling with script.do() and pscript.do() methods, remove_comments moved to script from dscript (circular reference)
 # 2024-10-12 implement | for dscript objects
 # 2024-10-14 finalization of dscript integration, improved doc
+# 2024-10-18 add dscript() method to generate a dscript object from a pipescript
+# 2024.10.19 script.do() convert literal \\n back to \n
 
 
 # %% Dependencies
@@ -1117,140 +1121,6 @@ class script:
 
     With additional sections, scripts can be concatenated and executed as a single
     entity, with inheritance of variables and customizable behavior.
-    """
-class script:
-    """
-    script: A Core Class for Flexible LAMMPS Script Generation
-
-    The `script` class provides a flexible framework for generating dynamic LAMMPS
-    script sections. It supports various LAMMPS sections such as "GLOBAL", "INITIALIZE",
-    "GEOMETRY", "INTERACTIONS", and more, while allowing users to define custom sections
-    with variable definitions, templates, and dynamic evaluation of script content.
-
-    Key Features:
-    -------------
-    - **Dynamic Script Generation**: Easily define and manage script sections,
-      using templates and definitions to dynamically generate LAMMPS-compatible scripts.
-    - **Script Concatenation**: Combine multiple script sections while managing
-      variable precedence and ensuring that definitions propagate as expected.
-    - **Flexible Variable Management**: Separate `DEFINITIONS` for static variables and
-      `USER` for user-defined variables, with clear rules for inheritance and precedence.
-    - **Operators for Advanced Script Handling**: Use `+`, `&`, `>>`, `|`, and `**` operators
-      for script merging, static execution, right-shifting of definitions, and more.
-    - **Pipeline Support**: Integrate scripts into pipelines, with full support for
-      staged execution, variable inheritance, and reordering of script sections.
-
-    Practical Use Cases:
-    --------------------
-    - **LAMMPS Automation**: Automate the generation of complex LAMMPS scripts by defining
-      reusable script sections with variables and templates.
-    - **Multi-Step Simulations**: Manage multi-step simulations by splitting large scripts
-      into smaller, manageable sections and combining them as needed.
-    - **Advanced Script Control**: Dynamically modify script behavior by overriding variables
-      or using advanced operators to concatenate, pipe, or merge scripts.
-
-    Methods:
-    --------
-    __init__(self, persistentfile=True, persistentfolder=None, printflag=False, verbose=False, **userdefinitions):
-        Initializes a new `script` object, with optional user-defined variables
-        passed as `userdefinitions`.
-
-    do(self, printflag=None, verbose=None):
-        Generates the LAMMPS script based on the current configuration, evaluating
-        templates and definitions to produce the final output.
-
-    script(self, idx=None, printflag=True, verbosity=2, verbose=None, forced=False):
-        Generate the final LAMMPS script from the pipeline or a subset of the pipeline.
-
-    add(self, s):
-        Overloads the `+` operator to concatenate script objects, merging definitions
-        and templates while maintaining variable precedence.
-
-    and(self, s):
-        Overloads the `&` operator for static execution, combining the generated scripts
-        of two script objects without merging their definitions.
-
-    __mul__(self, ntimes):
-        Overloads the `*` operator to repeat the script `ntimes`, returning a new script
-        object with repeated sections.
-
-    __pow__(self, ntimes):
-        Overloads the `**` operator to concatenate the script with itself `ntimes`,
-        similar to the `&` operator, but repeated.
-
-    __or__(self, pipe):
-        Overloads the pipe (`|`) operator to integrate the script into a pipeline,
-        returning a `pipescript` object.
-
-    write(self, file, printflag=True, verbose=False):
-        Writes the generated script to a file, including headers with metadata.
-
-    tmpwrite(self):
-        Writes the script to a temporary file, creating both a full version and a clean
-        version without comments.
-
-    printheader(txt, align="^", width=80, filler="~"):
-        Static method to print formatted headers, useful for organizing output.
-
-    __copy__(self):
-        Creates a shallow copy of the script object.
-
-    __deepcopy__(self, memo):
-        Creates a deep copy of the script object, duplicating all internal variables.
-
-    Additional Features:
-    --------------------
-    - **Customizable Templates**: Use string templates with variable placeholders
-      (e.g., `${value}`) to dynamically generate script lines.
-    - **Static and User-Defined Variables**: Manage global `DEFINITIONS` for static
-      variables and `USER` variables for dynamic, user-defined settings.
-    - **Advanced Operators**: Leverage a range of operators (`+`, `>>`, `|`, `&`) to
-      manipulate script content, inherit definitions, and control variable precedence.
-    - **Verbose Output**: Control verbosity to include detailed comments and debugging
-      information in generated scripts.
-
-    Original Content:
-    -----------------
-    The `script` class supports LAMMPS section generation and variable management with
-    features such as:
-    - **Dynamic Evaluation of Scripts**: Definitions and templates are evaluated at runtime,
-      allowing for flexible and reusable scripts.
-    - **Inheritance of Definitions**: Variable definitions can be inherited from previous
-      sections, allowing for modular script construction.
-    - **Precedence Rules for Variables**: When scripts are concatenated, definitions from
-      the left take precedence, ensuring that the first defined values are preserved.
-    - **Instance and Global Variables**: Instance variables are set via the `USER` object,
-      while global variables (shared across instances) are managed in `DEFINITIONS`.
-    - **Script Pipelines**: Scripts can be integrated into pipelines for sequential execution
-      and dynamic variable propagation.
-    - **Flexible Output Formats**: Lists are expanded into space-separated strings, while
-      tuples are expanded with commas, making the output more readable.
-
-    Example Usage:
-    --------------
-    ```
-    from pizza.script import script, scriptdata
-    
-    class example_section(script):
-        DEFINITIONS = scriptdata(
-            X = 10,
-            Y = 20,
-            result = "${X} + ${Y}"
-        )
-        TEMPLATE = "${result} = ${X} + ${Y}"
-    
-    s1 = example_section()
-    s1.USER.X = 5
-    s1.do()
-    ```
-
-    The output for `s1.do()` will be:
-    ```
-    25 = 5 + 20
-    ```
-
-    With additional sections, scripts can be concatenated and executed as a single
-    entity, with inheritance of variables and customizable behavior.
 
 
         --------------------------------------
@@ -1787,6 +1657,9 @@ class pipescript:
 
     write(self, file, printflag=True, verbosity=2, verbose=None):
         Write the generated script to a file.
+        
+    dscript(self, verbose=None, **USER)
+        Convert the current pipescript into a dscript object
 
     Static Methods:
     ---------------
@@ -1908,7 +1781,7 @@ class pipescript:
             Pending: mechanism to store LAMMPS results (dump3) in the pipeline
     """
 
-    def __init__(self,s=None):
+    def __init__(self,s=None, name=None):
         """ constructor """
         self.globalscript = None
         self.listscript = []
@@ -2295,6 +2168,7 @@ class pipescript:
                 self.globalscript.USER = self.globalscript.USER + self.listUSER[j]
                 self.cmd += self.globalscript.do(printflag=printflag,verbose=verbosity>1)
                 self.executed[i] = True
+            self.cmd = self.cmd.replace("\\n", "\n") # remove literal \\n if any (dscript.save add \\n)
             return remove_comments(self.cmd) if verbosity==0 else self.cmd
         else:
             return "# empty pipe - nothing to do"
@@ -2380,6 +2254,86 @@ class pipescript:
         """ write file """
         myscript = self.script(printflag=printflag, verbosity=verbosity, verbose=verbose, forced=True)
         myscript.write(file, printflag=printflag, verbose=verbose)
+        
+    def dscript(self, name=None, verbose=None, **USER):
+        """
+        Convert the current pipescript object to a dscript object.
+    
+        This method merges the STATIC, GLOBAL, and LOCAL variable spaces from each step
+        in the pipescript into a single dynamic script per step in the dscript. 
+        Each step in the pipescript is transformed into a dynamic script in the dscript,
+        where variable spaces are combined using the following order:
+        
+        1. STATIC: Definitions specific to each script in the pipescript.
+        2. GLOBAL: User variables shared across steps from a specific point onwards.
+        3. LOCAL: User variables for each individual step.
+    
+        The resulting dscript object will have the combined templates and definitions 
+        transferred from the pipescript.
+    
+        Parameters:
+        -----------
+        verbose : bool, optional
+            Controls verbosity of the dynamic scripts in the resulting dscript object.
+            If None, the verbosity setting of the pipescript will be used.
+        
+        **USER : scriptobjectdata(), optional
+            Additional user-defined variables that can override existing static variables
+            in the dscript object or be added to it.
+    
+        Returns:
+        --------
+        outd : dscript
+            A dscript object that contains all steps of the pipescript as dynamic scripts.
+            Each step from the pipescript is added as a dynamic script with the same content
+            and combined variable spaces.
+    
+        Notes:
+        ------
+        - Each step in the pipescript is assigned a unique key in the dscript TEMPLATE,
+          based on the step's index (`i`).
+        - Static variables (STATIC), global variables (GLOBAL), and local variables (LOCAL)
+          are merged using the `+` operator and are passed to the dscript.
+        - The `add_dynamic_script` method of the dscript class is used to create each step.
+        """
+        # local import
+        from pizza.dscript import dscript, ScriptTemplate, lambdaScriptdata
+        # adjust name
+        if name is None:
+            if isinstance(self.name,str):
+                name = self.name
+            elif isinstance(self.name,list):
+                if len(self.name)<1:
+                    name = "undefined name"
+                elif len(self.name)==1:
+                    name = self.name[0]
+                else:
+                    name = self.name[0] + "..." + self.name[-1]
+                    
+        # Create the dscript container with the pipescript name as the userid
+        outd = dscript(userid=name, verbose=self.verbose, **USER)
+        # Loop over each step (i) in the pipescript
+        for i in range(len(self.listscript)):
+            # Merge STATIC, GLOBAL, and LOCAL variables for the current step
+            static_vars = self.listscript[i].DEFINITIONS
+            global_vars = self.scripts[i].USER
+            local_vars = self.USER[i]
+            merged_definitions = static_vars + global_vars + local_vars
+
+            # Create the dynamic script for this step using the method in dscript
+            key_name = i  # Use the index 'i' as the key in TEMPLATE
+            content = self.listscript[i].TEMPLATE
+            # Use the helper method in dscript to add this dynamic script
+            outd.add_dynamic_script(
+                key=key_name,
+                content=content,
+                definitions=merged_definitions,
+                verbose=self.verbose if verbose is None else verbose,
+                userid = self.name[i]
+            )
+            # Force evaluation for each dynamic script in the dscript
+            outd.TEMPLATE[key_name].eval = True
+        return outd
 
 # %% Child classes of script sessions (to be derived)
 # navigate with the outline tab through the different classes

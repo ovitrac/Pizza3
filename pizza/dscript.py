@@ -498,11 +498,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9974"
+__version__ = "0.9976"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-10-17 (community)
+# INRAE\Olivier Vitrac - rev. 2024-10-19 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -515,6 +515,8 @@ __version__ = "0.9974"
 # 2024-10-09 remove_comments moved to script (to prevent circular reference)
 # 2024-10-14 finalization of the integration with scripts
 # 2024-10-17 fix __add__, improve repr()
+# 2024-10-18 add add_dynamic_script() helper for adding a step to a dscript
+# 2024-10-19 better file management 
 
 
 # Dependencies
@@ -522,7 +524,7 @@ import os, getpass, socket, tempfile
 import re, string, random, copy
 from datetime import datetime
 from pizza.private.struct import paramauto
-from pizza.script import script, pipescript, remove_comments, span
+from pizza.script import script, scriptdata, pipescript, remove_comments, span
 
 # %% Private Functions
 
@@ -828,7 +830,7 @@ class ScriptTemplate:
     """
     
     
-    def __init__(self, content="", definitions=lambdaScriptdata(), verbose=False, **kwargs):
+    def __init__(self, content="", definitions=lambdaScriptdata(), userid=None, verbose=False, **kwargs):
         """
     Initializes a new `ScriptTemplate` object.
 
@@ -903,6 +905,7 @@ class ScriptTemplate:
         self.content = content  # Ensure content is a list of strings
         # Update attributes with any additional keyword arguments
         self.attributes.update(kwargs)
+        self.userid = userid
 
     def __str__(self):
         num_attrs = len(self.attributes)  # All attributes count
@@ -917,6 +920,8 @@ class ScriptTemplate:
         available_space = 50 - len(content_label) - 1
         repr_str = "-" * 50 + "\n"
         repr_str += f"{content_label}{('(' + str(total_lines) + ' ' + line_word + ')').rjust(available_space)}\n"
+        if self.userid:
+            repr_str += f"id: {self.userid}"
         repr_str += "-" * 50 + "\n"
 
         if total_lines < 1:
@@ -997,7 +1002,7 @@ class ScriptTemplate:
             if self.attributes['readonly']:
                 raise AttributeError("Cannot modify content. It is read-only.") 
         elif name =="definitions":
-            if (not isinstance(value,lambdaScriptdata)) and (value is not None):
+            if (not isinstance(value,(lambdaScriptdata,scriptdata))) and (value is not None):
                 raise TypeError(f"The 'definitions' must be a lambdaScriptdata, not {type(value).__name__}.")
         # If the name is 'content' or 'attributes', handle as usual
         if name in ['content', 'attributes', 'definitions']:
@@ -1153,6 +1158,9 @@ class dscript:
 
     get_attributes_by_index(self, index):
         Returns the attributes of the script line at the specified index.
+        
+    add_dynamic_script(self, key, content="", definitions=None, verbose=None, **USER):
+        Add a dynamic script step to the `dscript` object.
 
     createEmptyVariables(self, vars):
         Creates new variables in `DEFINITIONS` if they do not already exist.
@@ -1261,7 +1269,7 @@ class dscript:
         """
         
         if name is None:
-            self.name = autoname
+            self.name = autoname()
         else:
             self.name = name
         self.SECTIONS = SECTIONS if isinstance(SECTIONS,(list,tuple)) else [SECTIONS]
@@ -1322,12 +1330,46 @@ class dscript:
             
 
     def __getitem__(self, key):
+        """
+        Implements index-based retrieval, slicing, or reordering for dscript objects.
+    
+        Parameters:
+        -----------
+        key : int, slice, list, or str
+            - If `key` is an int, returns the corresponding template at that index.
+            - If `key` is a slice, returns a new `dscript` object containing the templates in the specified range.
+            - If `key` is a list, reorders the TEMPLATE based on the list of indices or keys.
+            - If `key` is a string, treats it as a key and returns the corresponding template.
+    
+        Returns:
+        --------
+        dscript or ScriptTemplate : Depending on the type of key, returns either a new dscript object (for slicing or reordering)
+                                    or a ScriptTemplate object (for direct key access).
+        """
+        # Handle list-based reordering
         if isinstance(key, list):
-            # If key is a list, reorder the TEMPLATE based on the list of indices
             return self.reorder(key)
+    
+        # Handle slicing
+        elif isinstance(key, slice):
+            new_dscript = dscript(name=f"{self.name}_slice_{key.start}_{key.stop}")
+            keys = list(self.TEMPLATE.keys())
+            for k in keys[key]:
+                new_dscript.TEMPLATE[k] = self.TEMPLATE[k]
+            return new_dscript
+    
+        # Handle integer indexing
+        elif isinstance(key, int):
+            keys = list(self.TEMPLATE.keys())
+            if key < 0 or key >= len(keys):
+                raise IndexError(f"Index {key} is out of range")
+            # Return the template corresponding to the integer index
+            return self.TEMPLATE[keys[key]]
+    
+        # Handle key-based access
         else:
-            # Otherwise, treat key as a normal index or key
             return self.TEMPLATE[key]
+
 
     def __setitem__(self, key, value):
         if (value == []) or (value is None):
@@ -1367,7 +1409,8 @@ class dscript:
         """Representation of dscript object with additional properties."""
         repr_str = f"dscript object ({self.name})\n"
         # Add description, role, and version at the beginning
-        repr_str += f"Descr: {self.description}\n"
+        repr_str += f"id: {self.userid}\n" if self.userid else ""
+        repr_str += f"Descr: {self.description}\n" if self.description else ""
         repr_str += f"Role: {self.role} (v. {self.version})\n"
         repr_str += f'SECTIONS {span(self.SECTIONS,",","[","]")} | index: {self.section} | position: {self.position}\n'
         repr_str += f"\n\n\twith {len(self.TEMPLATE)} TEMPLATE"
@@ -1667,24 +1710,28 @@ class dscript:
         if not generatoronly:
             # Use self.name if filename is not provided
             if filename is None:
-                filename = self.name
+                filename = span(self.name,sep="\n")
+            
             # Ensure the filename ends with '.txt'
             if not filename.endswith('.txt'):
                 filename += '.txt'
-            # Default folder to tempdir if foldername is not provided
-            if foldername is None:
-                foldername = tempfile.gettempdir()
-            # Construct full path
-            if not os.path.isabs(filename):
-                # Filename does not include folder, so use foldername
-                filepath = os.path.join(foldername, filename)
+            
+            # Construct the full path
+            if foldername in [None, ""]:  # Handle cases where foldername is None or an empty string
+                if not os.path.isabs(filename):
+                    # If filename is relative, combine it with the current working directory
+                    filepath = os.path.join(os.getcwd(), filename)
+                else:
+                    # If filename is absolute, use it as is
+                    filepath = filename
             else:
-                # Filename includes full path, so use it directly
-                filepath = filename
-            # Check if file already exists, raise exception if it does
+                # If foldername is provided, join it with filename (absolute or relative)
+                filepath = os.path.join(foldername, filename)
+            
+            # Check if the file already exists, and raise an exception if it does and overwrite is False
             if os.path.exists(filepath) and not overwrite:
                 raise FileExistsError(f"The file '{filepath}' already exists.")
-            
+
         # Header with current date, username, and host
         user = getpass.getuser()
         host = socket.gethostname()
@@ -1709,12 +1756,24 @@ class dscript:
         global_params += f"    verbose = {self.verbose}\n"
         global_params += "}\n"
         
-        # Definitions (number of definitions)
-        definitions = f"# DEFINITIONS (number of definitions={len(self.DEFINITIONS)})\n"
-        for key, value in self.DEFINITIONS.items():
-            if isinstance(value, str) and value == "":
-                # If the value is an empty string, format it as ""
-                definitions += f'{key}=""\n'
+        # Initialize definitions with self.DEFINITIONS
+        merged_definitions = self.DEFINITIONS
+        
+        # Accumulate definitions from each TEMPLATE, using the + operator to combine
+        for key, template in self.TEMPLATE.items():
+            # Merge TEMPLATE.definitions into merged_definitions
+            merged_definitions += template.definitions  # Use += to merge and give TEMPLATE higher precedence
+        
+        # Prepare the definitions section for output
+        definitions = f"# DEFINITIONS (number of definitions={len(merged_definitions)})\n"
+        for key, value in merged_definitions.items():
+            if isinstance(value, str):
+                if value == "":
+                    # If the value is an empty string, format it as ""
+                    definitions += f'{key}=""\n'
+                else:
+                    safe_value = value.replace('\\', '\\\\').replace('\n', '\\n')
+                    definitions += f"{key}={safe_value}\n"
             else:
                 definitions += f"{key}={value}\n"
                 
@@ -1782,7 +1841,7 @@ class dscript:
         - The header also includes the current date, username, hostname, the value of `self.name`, and the full file path.
         """
     
-        # Use self.name if filename is not provided
+        # Generate a random name if filename is not provided
         if filename is None:
             filename = autoname(8)  # Generates a random name of 8 letters
     
@@ -1790,15 +1849,19 @@ class dscript:
         if not filename.endswith('.txt'):
             filename += '.txt'
     
-        # Default folder to tempdir if foldername is not provided
-        if foldername is None:
-            foldername = tempfile.gettempdir()
-    
-        # Construct full path
-        if not os.path.isabs(filename):
-            filepath = os.path.join(foldername, filename)
+        # Handle foldername and relative paths
+        if foldername is None or foldername == "":
+            # If foldername is empty or None, use current working directory for relative paths
+            if not os.path.isabs(filename):
+                filepath = os.path.join(os.getcwd(), filename)
+            else:
+                filepath = filename  # If filename is absolute, use it directly
         else:
-            filepath = filename
+            # If foldername is provided and filename is not absolute, use foldername
+            if not os.path.isabs(filename):
+                filepath = os.path.join(foldername, filename)
+            else:
+                filepath = filename
     
         # Check if file already exists, raise exception if it does and overwrite is False
         if os.path.exists(filepath) and not overwrite:
@@ -1870,13 +1933,24 @@ class dscript:
         
         # Step 0 validate filepath
         if not filename.endswith('.txt'):
-            filename += '.txt'    
-        if foldername is None:
-            foldername = tempfile.gettempdir()
-        if not os.path.isabs(filename):
-            filepath = os.path.join(foldername, filename)
+            filename += '.txt'
+        
+        # Handle foldername and relative paths
+        if foldername is None or foldername == "":
+            # If the foldername is empty or None, use current working directory for relative paths
+            if not os.path.isabs(filename):
+                filepath = os.path.join(os.getcwd(), filename)
+            else:
+                filepath = filename  # If filename is absolute, use it directly
         else:
-            filepath = filename
+            # If foldername is provided and filename is not absolute, use foldername
+            if not os.path.isabs(filename):
+                filepath = os.path.join(foldername, filename)
+            else:
+                filepath = filename
+        
+        if not os.path.exists(filepath):
+            raise FileExistsError(f"The file '{filepath}' does not exist.")
         
         # Read the file contents
         with open(filepath, 'r') as f:
@@ -2258,15 +2332,43 @@ class dscript:
             A sorted list of unique variables detected in all templates.
         """
         all_variables = set()  # Use a set to avoid duplicates
-    
         # Iterate through all templates in the dscript object
         for template_key, template in self.TEMPLATE.items():
             # Ensure the template is a ScriptTemplate and has the detect_variables method
             if isinstance(template, ScriptTemplate):
                 detected_vars = template.detect_variables()
-                all_variables.update(detected_vars)  # Add the detected variables to the set
-    
+                all_variables.update(detected_vars)  # Add the detected variables to the set    
         return sorted(all_variables)  # Return a sorted list of unique variables
+    
+    def add_dynamic_script(self, key, content="", userid=None, definitions=None, verbose=None, **USER):
+        """
+        Add a dynamic script step to the dscript object.
+
+        Parameters:
+        -----------
+        key : str
+            The key for the dynamic script (usually an index or step identifier).
+        content : str or list of str, optional
+            The content (template) of the script step.
+        definitions : lambdaScriptdata, optional
+            The merged variable space (STATIC + GLOBAL + LOCAL).
+        verbose : bool, optional
+            If None, self.verbose will be used. Controls verbosity of the template.
+        USER : dict
+            Additional user variables that override the definitions for this step.
+        """
+        if definitions is None:
+            definitions = lambdaScriptdata()
+        if verbose is None:
+            verbose = self.verbose
+        # Create a new ScriptTemplate and add it to the TEMPLATE
+        self.TEMPLATE[key] = ScriptTemplate(
+            content=content,
+            definitions=definitions,
+            verbose=verbose,
+            userid = userid,
+            **USER
+        )    
 
 # %% debug section - generic code to test methods (press F5)
 # ===================================================
