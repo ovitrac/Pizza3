@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9971"
+__version__ = "0.9978"
 
 """
 Matlab-like Structure class
@@ -60,6 +60,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2024-09-12 repr() improvements
 # 2024-10-09 enable @property as attribute if _propertyasattribute is True
 # 2024-10-11 add _callable__ and update()
+# 2024-10-22 raises an error in escape() if s is not a string
 
 
 # %% Dependencies
@@ -1132,6 +1133,8 @@ class param(struct):
                 returns ('{tata}', False)
 
         """
+        if not isinstance(s,str):
+            raise TypeError(f'the argument must be string not {type(s)}')
         se, start, found = "", 0, True
         while found:
             pos0 = s.find("\${",start)
@@ -1157,7 +1160,7 @@ class param(struct):
             if escape: t = t.replace("££","\$")
             if isinstance(s,pstr): t = pstr(t)
             return t, escape
-        raise TypeError('the argument must be string')
+        raise TypeError(f'the argument must be string not {type(s)}')
 
 
     # lines starting with # (hash) are interpreted as comments
