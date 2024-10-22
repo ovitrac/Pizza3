@@ -103,7 +103,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9976"
+__version__ = "0.9978"
 
 
 
@@ -146,7 +146,8 @@ __version__ = "0.9976"
 # 2024-10-12 implement | for dscript objects
 # 2024-10-14 finalization of dscript integration, improved doc
 # 2024-10-18 add dscript() method to generate a dscript object from a pipescript
-# 2024.10.19 script.do() convert literal \\n back to \n
+# 2024-10-19 script.do() convert literal \\n back to \n
+# 2024-10-22 fix | for non-native pipescript objects
 
 
 # %% Dependencies
@@ -1441,12 +1442,17 @@ class script:
     # override +
     def __add__(self,s):
         """ overload addition operator """
+        from pizza.dscript import dscript
         if isinstance(s,script):
             dup = duplicate(self)
             dup.DEFINITIONS = dup.DEFINITIONS + s.DEFINITIONS
             dup.USER = dup.USER + s.USER
             dup.TEMPLATE = "\n".join([dup.TEMPLATE,s.TEMPLATE])
             return dup
+        elif isinstance(s,pipescript):
+            return pipescript(self) | s
+        elif isinstance(s,dscript):
+            return self + s.script()
         raise TypeError(f"the second operand in + must a script object not {type(s)}")
 
     # override +=
@@ -1895,11 +1901,13 @@ class pipescript:
                 rightarg.executed[i] = False
             leftarg.executed = leftarg.executed + rightarg.executed
             return leftarg
+        # Piping for non-native objects (dscript or script-like objects)
         else:
-            if rightarg.n > 0:
-                leftarg.listscript.append(rightarg.listscript[0])
-                leftarg.listUSER.append(rightarg.listUSER[0])
-                leftarg.name.append(rightarg.name[0])
+            # Loop through all items in rightarg and concatenate them
+            for i in range(rightarg.n):
+                leftarg.listscript.append(rightarg.listscript[i])
+                leftarg.listUSER.append(rightarg.listUSER[i])
+                leftarg.name.append(rightarg.name[i])
                 leftarg.executed.append(False)
             return leftarg
 

@@ -498,11 +498,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9976"
+__version__ = "0.9978"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-10-19 (community)
+# INRAE\Olivier Vitrac - rev. 2024-10-22 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -517,6 +517,7 @@ __version__ = "0.9976"
 # 2024-10-17 fix __add__, improve repr()
 # 2024-10-18 add add_dynamic_script() helper for adding a step to a dscript
 # 2024-10-19 better file management 
+# 2024-10-22 sophistication of ScriptTemplate to recognize defined variables at construction and to parse flags/conditions
 
 
 # Dependencies
@@ -719,104 +720,88 @@ class lamdaScript(script):
 # %% Main Classes
 class ScriptTemplate:
     """
-    ScriptTemplate: A Single Line Script Representation with Attributes
-
-    The `ScriptTemplate` class is used to represent a single line in a script, 
-    along with its associated attributes and conditions. This class allows for 
-    dynamic management of individual script lines, including the evaluation of 
-    variables and conditional execution.
-
-    Key Features:
-    -------------
-    - **Flexible Line Management**: Manage a single line of a script, including 
-      the content and associated attributes such as conditions for execution.
-    - **Variable Substitution**: Automatically identify and manage variables 
-      within the script line, allowing for dynamic substitution at runtime.
-    - **Conditional Execution**: Define conditions that determine whether the 
-      script line should be included in the final script output.
-
-    Practical Use Cases:
-    --------------------
-    - **Single Line Control**: Control and manipulate individual lines within 
-      a larger script, especially in dynamically generated scripts.
-    - **Custom Conditions**: Apply custom conditions to script lines to include 
-      or exclude them based on specific criteria.
-    - **Dynamic Variable Handling**: Automatically detect and manage variables 
-      within the script line.
-
-    Example:
-    --------
-    # Create a ScriptTemplate object with some content
-    line = ScriptTemplate("dimension    ${dimension}")
-
-    # Set an attribute
-    line.facultative = True
-
-    # Print the line with attributes
-    print(line)
-
-    Attributes:
-    -----------
-    content : str or list of str
-        The content of the script line(s). If a string is provided, it is treated 
-        as a single line. If a list of strings is provided, each element represents 
-        a line in the script. Variables within the content are identified using the 
-        ${varname} syntax and can be substituted dynamically.
-        The content of the script line(s). If a string is provided, it will be 
-        split into a list of lines based on newline characters ('\n').
-    facultative : bool
-        Indicates whether the script line is optional. If True, the line may 
-        be excluded from the final script output based on certain conditions.
-    eval : bool
-        Determines if the line's content should be evaluated (i.e., variables 
-        substituted) during script execution. If False, the content remains 
-        unchanged.
-    readonly : bool
-        If True, the script line is read-only and cannot be modified once set. 
-        This is useful for locking certain lines to prevent further changes.
-    definitions : lambdaScriptdata, optional
-        A reference to the `lambdaScriptdata` object that holds the global 
-        definitions for the script. This is used for variable substitution 
-        within the script line.
-        
-        
-    Methods:
-    --------
-    __init__(self, content, definitions=None):
-        Initializes a new `ScriptTemplate` object.
-
-    __str__(self):
-        Returns a summary of the script line, indicating the number of attributes.
-        Shortcut: `str(line)`.
-
-    __repr__(self):
-        Provides a detailed, tabulated string representation of the script line, 
-        showing the content, attributes, and evaluated result if applicable.
-        Useful for debugging and detailed inspection.
-
-    __setattr__(self, name, value):
-        Sets an attribute for the script line. Enforces type checking for 
-        specific attributes (`facultative`, `eval`, `readonly`). Automatically 
-        detects and adds variables to definitions when `content` is set.
-
-    __getattr__(self, name):
-        Retrieves the value of an attribute. Returns None if the attribute 
-        does not exist.
-
-    do(self, protected=True):
-        Returns the processed content of the script line, with variables 
-        substituted based on the definitions and conditions applied. 
-        If the line is facultative and the condition is not met, an empty 
-        string is returned.
-        
+     The `ScriptTemplate` class provides a mechanism to store, process, and dynamically substitute 
+     variables within script content. This class supports handling flags and conditions, allowing 
+     for flexible and conditional execution of parts of the script.
+    
+     Attributes:
+     -----------
+     default_attributes : dict (class-level)
+         A dictionary containing the default flags for each `ScriptTemplate` object. These attributes 
+         are applied when initializing the object or when no flags are specified in the content.
+         Flags include:
+         - facultative (bool): If True, the script line is optional and may be discarded if certain 
+             conditions are not met. (default: False)
+         - eval (bool): If True, the content is evaluated using `formateval`, which allows for variable 
+             substitution during execution. (default: False)
+         - readonly (bool): If True, the content cannot be modified after initialization. (default: False)
+         - condition (str or None): A string that specifies a condition for executing the content.
+             If the condition is not met, the script line is skipped. (default: None)
+         - condeval (bool): If True, the `condition` attribute is evaluated dynamically using variables.
+             (default: False)
+         - detectvar (bool): If True, any variables in the content (e.g., `${varname}`) are automatically 
+             detected and registered in the definitions. (default: True)
+    
+     Methods:
+     --------
+     __init__(self, content="", definitions=lambdaScriptdata(), userid=None, verbose=False, **kwargs):
+         Initializes the `ScriptTemplate` object with script content, optional variable definitions, 
+         and configurable attributes. Flags like `facultative`, `eval`, `readonly`, `condition`, 
+         and others are set via content prefixes or passed directly as keyword arguments.
+     
+     parse_content(cls, content, verbose=False):
+         A class method that parses content to detect special flags and condition tags, returning the 
+         cleaned content and a dictionary of attributes (flags).
+         
+         The method processes the following flags and tags:
+         - `!` : Sets `eval=True`, which forces evaluation of the content.
+         - `?` : Sets `facultative=True`, marking the content as optional.
+         - `^` : Sets `readonly=True`, preventing modifications to the content.
+         - `~` : Sets `detectvar=False`, disabling automatic variable detection.
+         - `[if:condition]` : Defines a condition for executing the script. If the condition is met, 
+           the script will be executed. Conditions can include `;eval` to trigger evaluation.
+    
+         Parameters:
+         -----------
+         content : str
+             The script content to be parsed. It may contain lines starting with special characters
+             that set specific attributes for the script template.
+    
+         verbose : bool (default: False)
+             If True, preserves comments and does not remove comment lines during parsing.
+    
+         Returns:
+         --------
+         cleaned_content : str
+             The cleaned script content, with all flags and conditions removed.
+         
+         attributes : dict
+             A dictionary of parsed attributes (flags) including:
+             - facultative (bool): Indicates if the content is optional.
+             - eval (bool): Specifies if the content should be evaluated for variable substitution.
+             - readonly (bool): Prevents modifications to the content.
+             - condition (str or None): Defines the condition for executing the script.
+             - condeval (bool): If True, dynamically evaluates the condition.
+             - detectvar (bool): If True, detects and registers variables in the content.
+         
+     detect_variables(self):
+         Detects variables in the content using the pattern `${varname}`. It returns a list of 
+         variable names found in the script.
+    
      refreshvar(self):
-        Detects variables in the content and adds them to definitions if needed.
-        This method ensures that variables like ${varname} are correctly detected
-        and added to the definitions if they are missing.
-        
+         Ensures that any detected variables are added to the `definitions` if they are missing.
+    
+     __setattr__(self, name, value):
+         Sets the value of an attribute. The method performs validation on specific attributes
+         (e.g., `eval`, `readonly`, `facultative`, etc.) to ensure the correct data types are assigned.
+    
+     __getattr__(self, name):
+         Retrieves the value of an attribute. If the attribute is not set, it returns the default 
+         value from `default_attributes`.
+            
 
-    Example:
-    --------
+    Example 1:
+    ----------
     # Create a ScriptTemplate object with content and optional definitions
     line = ScriptTemplate("dimension    ${dimension}")
 
@@ -827,85 +812,198 @@ class ScriptTemplate:
 
     After initialization, you can modify the line's attributes or use it as 
     part of a larger script managed by a `dscript` object.
+    
+    
+     Example 2:
+     ----------
+     # Example of using flags and conditions in content
+     
+     line = ScriptTemplate("!velocity all set 0.0 0.0 0.0 units box")
+     # This will automatically set `eval=True` due to the '!' flag.
+    
+     line_with_condition = ScriptTemplate("[if: ${condition};eval] fix upper move wiggle 0.0 0.0 1.0 1.0")
+     # This content will only execute if `${condition}` is True, and `eval` will be applied to substitute variables.
+
     """
     
+    # Class-level attribute for default flags
+    default_attributes = {
+        'facultative': False,
+        'eval': False,
+        'readonly': False,
+        'condition': None,
+        'condeval': False,
+        'detectvar': True
+    }
     
     def __init__(self, content="", definitions=lambdaScriptdata(), userid=None, verbose=False, **kwargs):
         """
-    Initializes a new `ScriptTemplate` object.
-
-    The constructor sets up a new script template with content, optional variable 
-    definitions, and a set of configurable attributes. This template is capable 
-    of dynamically substituting variables using a provided `lambdaScriptdata` 
-    object or internal definitions. You can also manage attributes like evaluation, 
-    facultative execution, and variable detection.
-
-    Parameters:
-    -----------
-    content : str or list of str
-        The content of the script template, which can be a single string or a list of strings.
-        If a single string is provided, it will automatically be converted to a list of lines.
-        This ensures consistent handling of multi-line content.
+        Initializes a new `ScriptTemplate` object.
+        
+        The constructor sets up a new script template with content, optional variable
+        definitions, and a set of configurable attributes. This template is capable
+        of dynamically substituting variables using a provided `lambdaScriptdata`
+        object or internal definitions. You can also manage attributes like evaluation,
+        facultative execution, and variable detection.
     
-    definitions : lambdaScriptdata, optional
-        A reference to a `lambdaScriptdata` object that contains global variable 
-        definitions. These definitions will be used to substitute variables within the content.
-        If `definitions` is not provided, variable substitution will rely on local 
-        or inline definitions.
+        Parameters:
+        -----------
+        content : str or list of str
+            The content of the script template, which can be a single string or a list of strings.
+            If a single string is provided, it will automatically be converted to a list of lines.
+            This ensures consistent handling of multi-line content.
     
-    verbose : flag (default value=False)
-        If True the comments are preserved (applied when str is a string)
-
-    **kwargs : 
-        Additional keyword arguments to set specific attributes for the script line.
-        These attributes control the behavior of the script template during evaluation 
-        and execution. Any keyword argument passed here will update the default 
-        attribute values.
-
-            Default attributes (with default values):
-        - facultative (False): 
-            If True, the script line is optional and may be discarded if certain conditions are not met.
-        - eval (False): 
-            If True, the content will be evaluated using `formateval`, allowing variable 
-            substitution during the execution.
-        - readonly (False): 
-            If True, the content of the script cannot be modified after initialization.
-        - condition (None): 
-            An optional condition that controls whether the content will be executed. 
-            If the condition is not met, the script line will not be executed.
-        - condeval (False): 
-            If True, the `condition` attribute will be evaluated, allowing conditional 
-            logic based on variable values.
-        - detectvar (True): 
-            If True, the content will automatically detect and register any variables 
-            (such as `${varname}`) within the `definitions` for substitution.
-
+        definitions : lambdaScriptdata, optional
+            A reference to a `lambdaScriptdata` object that contains global variable 
+            definitions. These definitions will be used to substitute variables within the content.
+            If `definitions` is not provided, variable substitution will rely on local 
+            or inline definitions.
+        
+        verbose : flag (default value=False)
+            If True the comments are preserved (applied when str is a string).
+    
+        **kwargs : 
+            Additional keyword arguments to set specific attributes for the script line.
+            These attributes control the behavior of the script template during evaluation 
+            and execution. Any keyword argument passed here will update the default 
+            attribute values.
+    
+                Default attributes (with default values):
+            - facultative (False): 
+                If True, the script line is optional and may be discarded if certain conditions are not met.
+            - eval (False): 
+                If True, the content will be evaluated using `formateval`, allowing variable 
+                substitution during the execution.
+            - readonly (False): 
+                If True, the content of the script cannot be modified after initialization.
+            - condition (None): 
+                An optional condition that controls whether the content will be executed. 
+                If the condition is not met, the script line will not be executed.
+            - condeval (False): 
+                If True, the `condition` attribute will be evaluated, allowing conditional 
+                logic based on variable values.
+            - detectvar (True): 
+                If True, the content will automatically detect and register any variables 
+                (such as `${varname}`) within the `definitions` for substitution.
         """
         
-        self.attributes = {
-            'facultative': False,  # Default attribute (if True the content is discarded)
-            'eval': False,         # Default attribute (the content is not evaluated with formateval)
-            'readonly': False,     # Default attribute (keep it False at the initialization, if not the content cannot be set)
-            'condition': None,     # Default condition (None means no condition)
-            'condeval': False,     # Default condition (if True, eval is applied)
-            'detectvar':True       # Default condition (if True, automatically detect variables)
-        }
         self.definitions = definitions  # Reference to the DEFINITIONS object
+        # Initialize attributes with default values
+        self.attributes = self.default_attributes.copy()
         # Convert single string content to a list for consistent processing
-        if isinstance(content, str):
+        if content == "" or content is None:
+            content = ""  # Set to empty string if None
+        elif isinstance(content, str):
+            # Interpret the content and extract any attribute flags (e.g. !, ?, etc.)
+            content, self.attributes = self.parse_content(content, verbose=verbose)
+            # Convert content to a list of strings
             if verbose:
-                content = content.split('\n') # all comments are preserved during construction
-                # Remove leading and trailing empty lines (but keep empty lines in the middle)
-                while content and content[0].strip() == '': content.pop(0)  # Remove leading empty lines
-                while content and content[-1].strip() == '': content.pop()  # Remove trailing empty lines
+                content = content.split('\n')  # All comments are preserved during construction
             else:
-                content = remove_comments(content,split_lines=True)  # Split string by newlines into list of strings
+                content = remove_comments(content, split_lines=True)  # Split string by newlines into list of strings
         elif not isinstance(content, list) or not all(isinstance(item, str) for item in content):
             raise TypeError("The 'content' attribute must be a string or a list of strings.")
-        self.content = content  # Ensure content is a list of strings
-        # Update attributes with any additional keyword arguments
+        # Assign content to the object
+        self.content = content
+        # Update attributes with any additional keyword arguments passed in
         self.attributes.update(kwargs)
-        self.userid = userid
+        # Detect variables in the content
+        detected_variables = self.detect_variables()
+        # Automatically set `eval=True` if any detected variables are defined in `definitions`
+        if detected_variables:
+            for var in detected_variables:
+                if var in self.definitions:
+                    self.attributes['eval'] = True
+                    break  # No need to continue checking once we know eval should be set
+        # Assign userid (optional)
+        self.userid = userid if userid is not None else autoname(3)
+
+    
+    @classmethod
+    def parse_content(cls, content, verbose=False):
+        """
+        Parse the content string and return:
+        1. Cleaned content (without flags or condition tags).
+        2. A dictionary of attributes (flags) initialized with default values.
+
+        Parameters:
+        -----------
+        content : str
+            The content string to be parsed.
+
+        Returns:
+        --------
+        cleaned_content : str
+            The cleaned content with all flag prefixes and condition tags removed.
+        attributes : dict
+            A dictionary of attributes (flags) set based on the content prefixes.
+        """
+        attributes = cls.default_attributes.copy()
+
+        # Handle empty content
+        if not content.strip():  # Empty string or whitespace-only
+            return "", attributes
+
+        idx = 0
+        cleaned_content = []
+
+        # If content is a single string, split it into lines
+        if isinstance(content, str):
+            content = content.split('\n')
+
+        # Remove leading and trailing empty lines
+        while content and content[0].strip() == '':
+            content.pop(0)
+        while content and content[-1].strip() == '':
+            content.pop()
+
+        # Process each remaining line to detect flags and conditions
+        for line in content:
+            idx = 0
+            line = line.strip()  # Trim any leading/trailing whitespace
+
+            # Parse flags and conditions only at the beginning of the line
+            while idx < len(line):
+                ch = line[idx]
+                if ch == '!':
+                    attributes['eval'] = True
+                    idx += 1
+                elif ch == '?':
+                    attributes['facultative'] = True
+                    idx += 1
+                elif ch == '^':
+                    attributes['readonly'] = True
+                    idx += 1
+                elif ch == '~':
+                    attributes['detectvar'] = False
+                    idx += 1
+                elif line.startswith('[if:', idx):
+                    # Parse condition
+                    end_idx = line.find(']', idx)
+                    if end_idx == -1:
+                        raise ValueError("Unclosed '[if:]' tag in content")
+                    cond_str = line[idx + 4:end_idx]
+                    if ';eval' in cond_str:
+                        attributes['condeval'] = True
+                        cond_str = cond_str.replace(';eval', '')
+                    attributes['condition'] = cond_str.strip()
+                    idx = end_idx + 1
+                else:
+                    break  # No more flags or conditions, process the rest of the line
+
+                # Skip any whitespace after flags or conditions
+                while idx < len(line) and line[idx] in (' ', '\t'):
+                    idx += 1
+
+            # Append the cleaned line (without flags or condition tags)
+            cleaned_content.append(line[idx:].strip())
+
+        # Join the cleaned lines back into a single string
+        cleaned_content = '\n'.join(cleaned_content)
+
+        return cleaned_content, attributes
+
+
 
     def __str__(self):
         num_attrs = len(self.attributes)  # All attributes count
@@ -915,13 +1013,14 @@ class ScriptTemplate:
     def __repr__(self):
         # Template content section
         total_lines = len(self.content)
+        total_variables = len(self.definitions)
         line_word = "lines" if total_lines > 1 else "line"
+        variable_word = "defs" if total_variables > 1 else "def"
         content_label = "Template Content"
+        content_label += "" if self.userid=="" else f" | id:{self.userid}"
         available_space = 50 - len(content_label) - 1
         repr_str = "-" * 50 + "\n"
-        repr_str += f"{content_label}{('(' + str(total_lines) + ' ' + line_word + ')').rjust(available_space)}\n"
-        if self.userid:
-            repr_str += f"id: {self.userid}"
+        repr_str += f"{content_label}{('(' + str(total_lines) + ' ' + line_word + ', ' + str(total_variables) + ' ' + variable_word + ')').rjust(available_space)}\n"
         repr_str += "-" * 50 + "\n"
 
         if total_lines < 1:
@@ -988,7 +1087,8 @@ class ScriptTemplate:
         return repr_str
 
     def __setattr__(self, name, value):
-        if name in ['facultative',"eval","readonly"]:
+        # Handle specific attributes that require validation
+        if name in ['facultative', 'eval', 'readonly']:
             if not isinstance(value, bool):
                 raise TypeError(f"The '{name}' attribute must be a Boolean, not {type(value).__name__}.")
         elif name == 'condition':
@@ -996,27 +1096,66 @@ class ScriptTemplate:
                 raise TypeError(f"The 'condition' attribute must be a string or None, not {type(value).__name__}.")
         elif name == 'content':
             if isinstance(value, str):
-                value = remove_comments(value,split_lines=True)  # Split string by newlines into list of strings
+                value = remove_comments(value, split_lines=True)  # Split string by newlines into list of strings
             elif not isinstance(value, list) or not all(isinstance(item, str) for item in value):
                 raise TypeError(f"The 'content' attribute must be a string or a list of strings, not {type(value).__name__}.")
-            if self.attributes['readonly']:
-                raise AttributeError("Cannot modify content. It is read-only.") 
-        elif name =="definitions":
-            if (not isinstance(value,(lambdaScriptdata,scriptdata))) and (value is not None):
-                raise TypeError(f"The 'definitions' must be a lambdaScriptdata, not {type(value).__name__}.")
-        # If the name is 'content' or 'attributes', handle as usual
-        if name in ['content', 'attributes', 'definitions']:
+            # Check if attributes exist and respect the readonly flag
+            if getattr(self, 'attributes', {}).get('readonly', False):
+                raise AttributeError("Cannot modify content. It is read-only.")
+        elif name == 'definitions':
+            if not isinstance(value, (lambdaScriptdata, scriptdata)) and value is not None:
+                raise TypeError(f"The 'definitions' must be a lambdaScriptdata or scriptdata, not {type(value).__name__}.")
+        # Handle direct instance variables separately (userid, attributes, definitions, content)
+        if name in ['userid', 'attributes', 'definitions', 'content']:
+            # Ensure 'attributes' exists before assigning
+            if name == 'attributes' and not isinstance(value, dict):
+                raise TypeError(f"The 'attributes' must be a dictionary, not {type(value).__name__}.")
+            # Assign directly to the instance's dictionary (bypass __setattr__)
             super().__setattr__(name, value)
-            # If the name is 'content', process the content for variables
             if name == 'content':
+                # If setting content, refresh the variables
                 self.refreshvar()
         else:
+            # Ensure 'attributes' is initialized before updating it
+            if not hasattr(self, 'attributes') or self.attributes is None:
+                self.attributes = {}
+            # All other attributes are handled in the 'attributes' dictionary
             self.attributes[name] = value
 
+
     def __getattr__(self, name):
+        """
+        Handles attribute retrieval, checking the following in order:
+        1. If 'name' is in default_attributes, return the value from attributes if it exists, 
+           otherwise return the default value from default_attributes.
+        2. If 'name' is 'content', return the content (or an empty string if content is not set).
+        3. If 'name' exists in the attributes dictionary, return its value.
+        4. If attributes itself exists in __dict__, return the value from attributes if 'name' is found.
+        5. If all previous checks fail, raise an AttributeError indicating that 'name' is not found.
+        """
+        # Step 1: Check if 'name' is a valid attribute in default_attributes
+        if name in self.default_attributes:
+            # Ensure 'attributes' exists and return its value or the default from default_attributes
+            if hasattr(self, 'attributes'):
+                return self.attributes.get(name, self.default_attributes[name])
+            else:
+                # If 'attributes' is not yet initialized, return the default value
+                return self.default_attributes[name]
+    
+        # Step 2: Special case for 'content'
         if name == 'content':
-            return super().__getattr__(name)
-        return self.attributes.get(name, None)
+            # Return the content or an empty string if content is not yet initialized
+            return self.__dict__.get('content', "")
+        # Step 3: Check if 'name' exists in 'attributes' and return its value
+        if hasattr(self, 'attributes') and name in self.attributes:
+            return self.attributes[name]
+        # Step 4: Check if 'attributes' exists in __dict__ and return 'name' from attributes
+        if 'attributes' in self.__dict__ and name in self.__dict__['attributes']:
+            return self.__dict__['attributes'][name]
+        # Step 5: If none of the above conditions are met, raise an AttributeError
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+
     
     def do(self, protected=True):
         """Executes the script template, processing its content based on the attributes."""
@@ -1323,7 +1462,7 @@ class dscript:
                     self.TEMPLATE[attr].attributes.update(value)
             else:
                 # Create a new entry if it does not exist
-                self.TEMPLATE[attr] = ScriptTemplate(content=value,verbose=self.verbose)
+                self.TEMPLATE[attr] = ScriptTemplate(content=value,definitions=self.DEFINITIONS,verbose=self.verbose)
         else:
             # Default to internal attributes
             self.__dict__[attr] = value
@@ -1361,12 +1500,14 @@ class dscript:
         # Handle integer indexing
         elif isinstance(key, int):
             keys = list(self.TEMPLATE.keys())
-            if key < 0 or key >= len(keys):
+            if key in self.TEMPLATE:  # Check if the integer exists as a key
+                return self.TEMPLATE[key]
+            if key < 0 or key >= len(keys):  # Check for index out of range
                 raise IndexError(f"Index {key} is out of range")
             # Return the template corresponding to the integer index
             return self.TEMPLATE[keys[key]]
     
-        # Handle key-based access
+        # Handle key-based access (string keys)
         else:
             return self.TEMPLATE[key]
 
@@ -1445,53 +1586,113 @@ class dscript:
         reordered_script.TEMPLATE = new_scripts
         return reordered_script
     
+    
     def get_content_by_index(self, index, do=True, protected=True):
-        """ Returns the content of the ScriptTemplate at the specified index."""
+        """
+        Returns the content of the ScriptTemplate at the specified index.
+        
+        Parameters:
+        -----------
+        index : int
+            The index of the template in the TEMPLATE dictionary.
+        do : bool, optional (default=True)
+            If True, the content will be processed based on conditions and evaluation flags.
+        protected : bool, optional (default=True)
+            Controls whether variable evaluation is protected (e.g., prevents overwriting certain definitions).
+        
+        Returns:
+        --------
+        str or list of str
+            The content of the template after processing, or an empty string if conditions or evaluation flags block it.
+        """
         key = list(self.TEMPLATE.keys())[index]
         s = self.TEMPLATE[key].content
-        att = self.TEMPLATE[key].attributes
+        att = self.TEMPLATE[key].attributes        
+        # Return an empty string if the facultative attribute is True and do is True
         if att["facultative"] and do:
             return ""
+        # Evaluate the condition (if any)
         if att["condition"] is not None:
-            cond = eval(self.DEFINITIONS.formateval(att["condition"],protected))
+            cond = eval(self.DEFINITIONS.formateval(att["condition"], protected))
         else:
             cond = True
+        # If the condition is met, process the content
         if cond:
+            # Apply formateval only if the eval attribute is True and do is True
             if att["eval"] and do:
-                return self.DEFINITIONS.formateval(s,protected)
+                if isinstance(s, list):
+                    # Apply formateval to each item in the list if s is a list
+                    return [self.DEFINITIONS.formateval(line, protected) for line in s]
+                else:
+                    # Apply formateval to the single string content
+                    return self.DEFINITIONS.formateval(s, protected)
             else:
-                return s
+                return s  # Return the raw content if no evaluation is needed
         elif do:
-            return ""
+            return ""  # Return an empty string if the condition is not met and do is True
         else:
-            return s
+            return s  # Return the raw content if do is False
+
 
     def get_attributes_by_index(self, index):
         """ Returns the attributes of the ScriptTemplate at the specified index."""
         key = list(self.TEMPLATE.keys())[index]
         return self.TEMPLATE[key].attributes
     
+    
     def __add__(self, other):
-        """Concatenates two dscript objects."""
-        if not isinstance(other, dscript):
+        """
+        Concatenates two dscript objects, creating a new dscript object that combines
+        the TEMPLATE and DEFINITIONS of both. This operation avoids deep copying 
+        of definitions by creating a new lambdaScriptdata instance from the definitions.
+    
+        Parameters:
+        -----------
+        other : dscript
+            The other dscript object to concatenate with the current one.
+    
+        Returns:
+        --------
+        result : dscript
+            A new dscript object with the concatenated TEMPLATE and merged DEFINITIONS.
+    
+        Raises:
+        -------
+        TypeError:
+            If the other object is not an instance of dscript, script, pipescript
+        """
+        if isinstance(other, dscript):
+            # Step 1: Merge global DEFINITIONS from both self and other
+            result = dscript(name=self.name+"+"+other.name,**(self.DEFINITIONS + other.DEFINITIONS))
+            # Step 2: Start by copying the TEMPLATE from self (no deepcopy for performance reasons)
+            result.TEMPLATE = self.TEMPLATE.copy()
+            # Step 3: Ensure that the local definitions for `self.TEMPLATE` are properly copied
+            for key, value in self.TEMPLATE.items():
+                result.TEMPLATE[key].definitions = lambdaScriptdata(**self.TEMPLATE[key].definitions)
+            # Step 4: Track the next available index if keys need to be created
+            next_index = len(result.TEMPLATE)
+            # Step 5: Add items from the other dscript object, updating or generating new keys as needed
+            for key, value in other.TEMPLATE.items():
+                if key in result.TEMPLATE:
+                    # If key already exists in result, assign a new unique index
+                    while next_index in result.TEMPLATE:
+                        next_index += 1
+                    new_key = next_index
+                else:
+                    # Use the original key if it doesn't already exist
+                    new_key = key
+                # Copy the TEMPLATE's content and definitions from `other`
+                result.TEMPLATE[new_key] = value
+                # Merge the local TEMPLATE definitions from `other`
+                result.TEMPLATE[new_key].definitions = lambdaScriptdata(**other.TEMPLATE[key].definitions)    
+            return result
+        elif isinstance(other,script):
+            return self.script() + script
+        elif isinstance(other,pipescript):
+            return self.pipescript() | script
+        else:
             raise TypeError(f"Cannot concatenate 'dscript' with '{type(other).__name__}'")
-        # Create a new dscript to store the result
-        result = dscript(**self.DEFINITIONS)
-        # Start by copying the current TEMPLATE to the result
-        result.TEMPLATE = self.TEMPLATE.copy()
-        # Track the next available index if keys need to be created
-        next_index = len(result.TEMPLATE)
-        # Add each item from the other dscript
-        for key, value in other.TEMPLATE.items():
-            if key in result.TEMPLATE:
-                # If key is already used, assign a new key starting from 0 and incrementing
-                while next_index in result.TEMPLATE:
-                    next_index += 1
-                result.TEMPLATE[next_index] = value
-            else:
-                result.TEMPLATE[key] = value
-            result.DEFINITIONS = result.DEFINITIONS + getattr(result,key).definitions
-        return result
+
     
     def __call__(self, *keys):
         """
@@ -1621,6 +1822,7 @@ class dscript:
             # Create a new dscript object with only the current key in TEMPLATE
             focused_dscript = dscript(name=f"{self.name}:{key}")
             focused_dscript.TEMPLATE[key] = self.TEMPLATE[key]
+            focused_dscript.TEMPLATE[key].definitions = copy.deepcopy(self.TEMPLATE[key].definitions)
             focused_dscript.DEFINITIONS = copy.deepcopy(self.DEFINITIONS)
             focused_dscript.SECTIONS = self.SECTIONS[:]
             focused_dscript.section = self.section
@@ -2364,7 +2566,7 @@ class dscript:
         # Create a new ScriptTemplate and add it to the TEMPLATE
         self.TEMPLATE[key] = ScriptTemplate(
             content=content,
-            definitions=definitions,
+            definitions=self.DEFINITIONS+definitions,
             verbose=verbose,
             userid = userid,
             **USER
