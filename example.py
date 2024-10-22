@@ -65,7 +65,7 @@ classes to generate flexible LAMMPS scripts with minimal manual intervention. Us
 This example requires Pizza3 version 0.9976 or above. All scripts (`script`, `pipescript`, `scriptobject`, and `scriptobjectgroup`) exhibit sufficient compatibility to be combined with operators. The pipe operator (`|`) is preferred as it facilitates reordering and the inclusion of local variables.
 
 **Revision:**
-Last revision: 2024-10-19
+Last revision: 2024-10-22
 
 """
 
@@ -203,7 +203,7 @@ move.moveupper = """
 # Apply periodic movement to the upper cylinder
 fix move_upper upper move wiggle 0.0 0.0 ${amplitude} ${period} units box
 """
-move.moveupper.eval = True  # Force evaluation of movement
+#move.moveupper.eval = True  # Force evaluation of movement # not needed anymore, see note 1
 
 # for a rapid control
 move.moveupper
@@ -216,9 +216,11 @@ print("\n# MOVABLE OBJECTS", move.do(printflag=False, verbose=True), sep="\n")
 # Goal: Define time integration methods for the simulation.
 # Learn how to set and dynamically adjust the timestep.
 
+# Note 1: Defined variables are recognized on the fly.
+#         There is no need to force: integration.intinit.eval = True
+
 integration = dscript(name="S4b:timeintegration", dt=0.1)
 integration.intinit = "fix dtfix tlsph smd/adjust_dt ${dt}"
-integration.intinit.eval = True
 integration.intset = "fix integration_fix tlsph smd/integrate_tlsph"
 print("\n# TIME INTEGRATION", integration.do(printflag=False, verbose=False), sep="\n")
 
@@ -251,6 +253,7 @@ c_S[1] c_S[2] c_S[4] c_nn &
 c_E[1] c_E[2] c_E[4] &
 vx vy vz
 """
+# S5.dumpinit.eval = True  # not needed anymore, see note 1
 S5.dumpset = """
 dump_modify dump_id first yes
 """
@@ -263,14 +266,14 @@ S6.thermo = """
 thermo ${thermodt}
 thermo_style custom step dt f_dtfix v_strain
 """
-S6.thermo.eval = True
+# S6.thermo.eval = True  # not needed anymore, see note 1
 
 
 # %% S7: Run the Simulation
 # Define the final run command for the simulation.
 S7 = dscript(name="S7:run", runtime=5000)
 S7.run = "run ${runtime}"
-S7.run.eval = True
+# S7.run.eval = True # not needed anymore, see note 1
 
 
 # %% Combine All Sections (S1, S2, S3, S4, S5, S6, S7)
