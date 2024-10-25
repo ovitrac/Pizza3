@@ -498,11 +498,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9978"
+__version__ = "0.9979"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-10-22 (community)
+# INRAE\Olivier Vitrac - rev. 2024-10-24 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -518,6 +518,7 @@ __version__ = "0.9978"
 # 2024-10-18 add add_dynamic_script() helper for adding a step to a dscript
 # 2024-10-19 better file management 
 # 2024-10-22 sophistication of ScriptTemplate to recognize defined variables at construction and to parse flags/conditions
+# 2024-10-24 dscript.save() and dscript.parsesyntax() manage well local definitions
 
 
 # Dependencies
@@ -1011,80 +1012,94 @@ class ScriptTemplate:
 
 
     def __repr__(self):
-        # Template content section
-        total_lines = len(self.content)
-        total_variables = len(self.definitions)
-        line_word = "lines" if total_lines > 1 else "line"
-        variable_word = "defs" if total_variables > 1 else "def"
-        content_label = "Template Content"
-        content_label += "" if self.userid=="" else f" | id:{self.userid}"
-        available_space = 50 - len(content_label) - 1
-        repr_str = "-" * 50 + "\n"
-        repr_str += f"{content_label}{('(' + str(total_lines) + ' ' + line_word + ', ' + str(total_variables) + ' ' + variable_word + ')').rjust(available_space)}\n"
-        repr_str += "-" * 50 + "\n"
+      # Template content section
+      total_lines = len(self.content)
+      total_variables = len(self.definitions)
+      line_word = "lines" if total_lines > 1 else "line"
+      variable_word = "defs" if total_variables > 1 else "def"
+      content_label = "Template Content"
+      content_label += "" if self.userid == "" else f" | id:{self.userid}"
+      available_space = 50 - len(content_label) - 1
+      repr_str = "-" * 50 + "\n"
+      repr_str += f"{content_label}{('(' + str(total_lines) + ' ' + line_word + ', ' + str(total_variables) + ' ' + variable_word + ')').rjust(available_space)}\n"
+      repr_str += "-" * 50 + "\n"
+    
+      if total_lines < 1:
+          repr_str += "< empty content >\n"
+      elif total_lines <= 12:
+          # If content has 12 or fewer lines, display all lines
+          for line in self.content:
+              truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
+              repr_str += f"{truncated_line:<50}\n"
+      else:
+          # Display first three lines, middle three lines, and last three lines
+          for line in self.content[:3]:
+              truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
+              repr_str += f"{truncated_line:<50}\n"
+          repr_str += "\t\t[...]\n"
+          mid_start = total_lines // 2 - 1
+          mid_end = mid_start + 3
+          for line in self.content[mid_start:mid_end]:
+              truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
+              repr_str += f"{truncated_line:<50}\n"
+          repr_str += "\t\t[...]\n"
+          for line in self.content[-3:]:
+              truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
+              repr_str += f"{truncated_line:<50}\n"
+    
+      # Detected Variables section in 3-column format
+      detected_variables = self.detect_variables()
+      if detected_variables:
+          repr_str += "-" * 50 + "\n"
+          # Count the number of defined and missing variables
+          defined_variables = set(self.definitions.keys()) if self.definitions else set()
+          variable_word = 'Variables' if len(detected_variables) > 1 else 'Variable'
+          detected_set = set(detected_variables)
+          missing_variables = detected_set - defined_variables
+          defined_count = len(detected_set & defined_variables)
+          missing_count = len(missing_variables)
+          total_variables = len(detected_set)
+          repr_str += f"Detected {variable_word}{('(' + str(total_variables) + ' / +' + str(defined_count) + ' / -' + str(missing_count) + ')').rjust(50 - len('Detected Variables') - 1)}\n"
+          repr_str += "-" * 50 + "\n"
+    
+          # Display variables with status:
+          # [+] for defined variables with values other than "${varname}"
+          # [-] for defined variables with default values "${varname}"
+          # [ ] for undefined variables
+          for i in range(0, len(detected_variables), 3):
+              var_set = detected_variables[i:i+3]
+              line = ""
+              for var in var_set:
+                  var_name = (var[:10] + ' ') if len(var) > 10 else var.ljust(11)
+                  if var in defined_variables:
+                      # Check if it's set to its default value (i.e., "${varname}")
+                      if self.definitions[var] == f"${{{var}}}":
+                          flag = '[-]'
+                      else:
+                          flag = '[+]'
+                  else:
+                      flag = '[ ]'
+                  line += f"{flag} {var_name}  "
+              repr_str += f"{line}\n"
+    
+      # Attribute section in 3 columns
+      repr_str += "-" * 50 + "\n"
+      repr_str += f"Template Attributes{('(' + str(len(self.attributes)) + ' attributes)').rjust(50 - len('Template Attributes') - 1)}\n"
+      repr_str += "-" * 50 + "\n"
+    
+      # Create a compact three-column layout for attributes with checkboxes
+      attr_items = [(attr, '[x]' if value else '[ ]') for attr, value in self.attributes.items() if attr != 'definitions']
+      for i in range(0, len(attr_items), 3):
+          attr_set = attr_items[i:i+3]
+          line = ""
+          for attr, value in attr_set:
+              attr_name = (attr[:10] + ' ') if len(attr) > 10 else attr.ljust(11)
+              line += f"{value} {attr_name}  "
+          repr_str += f"{line}\n"
+    
+      return repr_str
 
-        if total_lines < 1:
-            repr_str += "< empty content >\n"
-        elif total_lines <= 12:
-            # If content has 12 or fewer lines, display all lines
-            for line in self.content:
-                truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
-                repr_str += f"{truncated_line:<50}\n"
-        else:
-            # Display first three lines, middle three lines, and last three lines
-            for line in self.content[:3]:
-                truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
-                repr_str += f"{truncated_line:<50}\n"
-            repr_str += "\t\t[...]\n"
-            mid_start = total_lines // 2 - 1
-            mid_end = mid_start + 3
-            for line in self.content[mid_start:mid_end]:
-                truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
-                repr_str += f"{truncated_line:<50}\n"
-            repr_str += "\t\t[...]\n"
-            for line in self.content[-3:]:
-                truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
-                repr_str += f"{truncated_line:<50}\n"
-                
-        # Detected Variables section in 3 column
-        detected_variables = self.detect_variables()
-        if detected_variables:
-            repr_str += "-" * 50 + "\n"
-            # Count the number of defined and missing variables
-            defined_variables = set(self.definitions.keys()) if self.definitions else set()
-            variable_word = 'Variables' if len(detected_variables) > 1 else 'Variable'
-            detected_set = set(detected_variables)
-            missing_variables = detected_set - defined_variables
-            defined_count = len(detected_set & defined_variables)
-            missing_count = len(missing_variables)
-            total_variables = len(detected_set)
-            repr_str += f"Detected {variable_word}{('(' + str(total_variables) + ' / +' + str(defined_count) + ' / -' + str(missing_count) + ')').rjust(50 - len('Detected Variables') - 1)}\n"
-            repr_str += "-" * 50 + "\n"
-            # Create a compact three-column layout for detected variables
-            for i in range(0, len(detected_variables), 3):
-                var_set = detected_variables[i:i+3]
-                line = ""
-                for var in var_set:
-                    var_name = (var[:10] + ' ') if len(var) > 10 else var.ljust(11)
-                    line += f"{var_name}  "
-                repr_str += f"{line}\n"
 
-        # Attribute section in 3 columns
-        repr_str += "-" * 50 + "\n"
-        repr_str += f"Template Attributes{('(' + str(len(self.attributes)) + ' attributes)').rjust(50 - len('Template Attributes') - 1)}\n"
-        repr_str += "-" * 50 + "\n"
-
-        # Create a compact three-column layout for attributes with checkboxes
-        attr_items = [(attr, '[x]' if value else '[ ]') for attr, value in self.attributes.items() if attr != 'definitions']
-        for i in range(0, len(attr_items), 3):
-            attr_set = attr_items[i:i+3]
-            line = ""
-            for attr, value in attr_set:
-                attr_name = (attr[:10] + ' ') if len(attr) > 10 else attr.ljust(11)
-                line += f"{value} {attr_name}  "
-            repr_str += f"{line}\n"
-
-        return repr_str
 
     def __setattr__(self, name, value):
         # Handle specific attributes that require validation
@@ -1212,6 +1227,66 @@ class ScriptTemplate:
                 if varname not in self.definitions:
                     self.definitions.setattr(varname, "${" + varname + "}")
 
+
+
+    def check_variables(self, verbose=True, seteval=True):
+        """
+        Checks for undefined variables in the ScriptTemplate instance.
+
+        Parameters:
+        -----------
+        verbose : bool, optional, default=True
+            If True, prints information about variables for the template.
+            Shows [-] if the variable is set to its default value, [+] if it is defined, and [ ] if it is undefined.
+
+        seteval : bool, optional, default=True
+            If True, sets the `eval` attribute to True if at least one variable is defined or set to its default value.
+
+        Returns:
+        --------
+        out : dict
+            A dictionary with lists of default variables, set variables, and undefined variables:
+            - "defaultvalues": Variables set to their default value (${varname}).
+            - "setvalues": Variables defined with a specific value.
+            - "undefined": Variables that are undefined.
+        """
+        out = {"defaultvalues": [], "setvalues": [], "undefined": []}
+        
+        detected_vars = self.detect_variables()
+        defined_vars = set(self.definitions.keys()) if self.definitions else set()
+
+        set_values = []
+        default_values = []
+        undefined_vars = []
+        
+        if verbose:
+            print(f"\nTEMPLATE {self.userid} variables:")
+
+        for var in detected_vars:
+            if var in defined_vars:
+                if self.definitions[var] == f"${{{var}}}":  # Check for default value
+                    default_values.append(var)
+                    if verbose:
+                        print(f"[-] {var}")  # Variable is set to its default value
+                else:
+                    set_values.append(var)
+                    if verbose:
+                        print(f"[+] {var}")  # Variable is defined with a specific value
+            else:
+                undefined_vars.append(var)
+                if verbose:
+                    print(f"[ ] {var}")  # Variable is not defined
+        
+        # If seteval is True, set eval to True if at least one variable is defined or set to its default
+        if seteval and (set_values or default_values):
+            self.attributes['eval'] = True  # Set eval in the attributes dictionary
+
+        # Update the output dictionary
+        out["defaultvalues"].extend(default_values)
+        out["setvalues"].extend(set_values)
+        out["undefined"].extend(undefined_vars)
+
+        return out
 
 
 class dscript:
@@ -1462,7 +1537,7 @@ class dscript:
                     self.TEMPLATE[attr].attributes.update(value)
             else:
                 # Create a new entry if it does not exist
-                self.TEMPLATE[attr] = ScriptTemplate(content=value,definitions=self.DEFINITIONS,verbose=self.verbose)
+                self.TEMPLATE[attr] = ScriptTemplate(content=value,definitions=self.DEFINITIONS,verbose=self.verbose,userid=attr)
         else:
             # Default to internal attributes
             self.__dict__[attr] = value
@@ -1518,7 +1593,7 @@ class dscript:
             del self.TEMPLATE[key]
         else:
             # Otherwise, set the key to the new ScriptTemplate
-            self.TEMPLATE[key] = ScriptTemplate(value, definitions=self.DEFINITIONS, verbose=self.verbose)
+            self.TEMPLATE[key] = ScriptTemplate(value, definitions=self.DEFINITIONS, verbose=self.verbose, userid=key)
 
     def __delitem__(self, key):
         del self.TEMPLATE[key]
@@ -1912,7 +1987,7 @@ class dscript:
         if not generatoronly:
             # Use self.name if filename is not provided
             if filename is None:
-                filename = span(self.name,sep="\n")
+                filename = span(self.name, sep="\n")
             
             # Ensure the filename ends with '.txt'
             if not filename.endswith('.txt'):
@@ -1933,7 +2008,7 @@ class dscript:
             # Check if the file already exists, and raise an exception if it does and overwrite is False
             if os.path.exists(filepath) and not overwrite:
                 raise FileExistsError(f"The file '{filepath}' already exists.")
-
+    
         # Header with current date, username, and host
         user = getpass.getuser()
         host = socket.gethostname()
@@ -1959,16 +2034,11 @@ class dscript:
         global_params += "}\n"
         
         # Initialize definitions with self.DEFINITIONS
-        merged_definitions = self.DEFINITIONS
-        
-        # Accumulate definitions from each TEMPLATE, using the + operator to combine
-        for key, template in self.TEMPLATE.items():
-            # Merge TEMPLATE.definitions into merged_definitions
-            merged_definitions += template.definitions  # Use += to merge and give TEMPLATE higher precedence
-        
-        # Prepare the definitions section for output
-        definitions = f"# DEFINITIONS (number of definitions={len(merged_definitions)})\n"
-        for key, value in merged_definitions.items():
+        allvars = self.DEFINITIONS
+    
+        # Accumulate definitions for output
+        definitions = f"\n# GLOBAL DEFINITIONS (number of definitions={len(allvars)})\n" if len(allvars) else ""
+        for key, value in allvars.items():
             if isinstance(value, str):
                 if value == "":
                     # If the value is an empty string, format it as ""
@@ -1978,26 +2048,53 @@ class dscript:
                     definitions += f"{key}={safe_value}\n"
             else:
                 definitions += f"{key}={value}\n"
-                
+        
         # Template (number of lines/items)
-        template = f"# TEMPLATE (number of items={len(self.TEMPLATE)})\n"
+        template = f"\n# TEMPLATES (number of items={len(self.TEMPLATE)})\n"
         for key, script_template in self.TEMPLATE.items():
+            # Get local template definitions
+            template_vars = script_template.definitions
+            # Write the template definition if the variable is either undefined or its value has changed
+            islocal = False
+            for var in template_vars.keys():
+                if var not in allvars or getattr(template_vars, var) != getattr(allvars, var):
+                    # If the variable is not in allvars or the value differs, write it out
+                    if not islocal:
+                        template += f"\n# LOCAL DEFINITIONS for key '{key}'\n"
+                        islocal = True
+                    # Get the value of the variable
+                    value = getattr(template_vars, var)
+                    
+                    # If value is a string, handle escaping
+                    if isinstance(value, str):
+                        if value == "":
+                            template += f'{var} = ""\n'  # Handle empty string values
+                        else:
+                            # Escape newlines in the value
+                            safe_value = value.replace('\\', '\\\\').replace('\n', '\\n')
+                            template += f"{var} = {safe_value}\n"
+                    else:
+                        # If value is not a string, write it directly
+                        template += f"{var} = {value}\n"
+        
+            # Update allvars with local definitions after writing
+            allvars += template_vars
+            
             if isinstance(script_template.content, list):
                 # If content is a list of strings, join the lines with '\n' and indent each line
                 content_str = '\n    '.join(script_template.content)
-                template += f"{key}: [\n    {content_str}\n ]\n"
+                template += f"\n{key}: [\n    {content_str}\n ]\n"
             else:
                 # Handle single-line content (string)
                 template += f"{key}: {script_template.content}\n"
-
-            
+    
         # Attributes (number of lines/items with explicit attributes)
         attributes = f"# ATTRIBUTES (number of items with explicit attributes={len(self.TEMPLATE)})\n"
         for key, script_template in self.TEMPLATE.items():
             attr_str = ", ".join(f"{attr_name}={repr(attr_value)}"
                                  for attr_name, attr_value in script_template.attributes.items())
             attributes += f"{key}:{{{attr_str}}}\n"
-            
+        
         # Combine all sections into one content
         content = header + "\n" + global_params + "\n" + definitions + "\n" + template + "\n" + attributes
         
@@ -2009,8 +2106,8 @@ class dscript:
                 f.write(content)        
             print(f"\nScript saved to {filepath}")
             return filepath
-    
 
+    
     # Write Method -- added on 2024-09-05
     # ------------
     @staticmethod
@@ -2283,6 +2380,47 @@ class dscript:
             units: {facultative=False, eval=False, readonly=False, condition="${units}", condeval=False, detectvar=True}
             dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
             ```
+            
+        Note on multiple definitions
+        -----------------------------
+        This example demonstrates how variables defined in the `Definitions` section are handled for each template.
+        Each template retains its own snapshot of the variable definitions at the time it is created, ensuring that templates
+        can use different values for the same variable if redefined.
+        
+        content = "" "
+        # DSCRIPT SAVE FILE
+        
+        # Definitions
+        var = 10
+        
+        # Template ky1
+        key1: Template content with ${var}
+        
+        # Definitions
+        var = 20
+        
+        # Template key2
+        key2: Template content with ${var}
+        
+        # Template key3
+        key3:[
+            this is an underfined variable ${var31}
+            this is an another underfined variable ${var32}
+            this variables is defined  ${var}
+            ]
+        
+        "" "
+        
+        # Parse content using parsesyntax()
+        ds = dscript.parsesyntax(content)
+        
+        # Key1 should use the first definition of 'var' (10)
+        print(ds.key1.definitions.var)  # Output: Template content with 10
+
+        # Key2 should use the updated definition of 'var' (20)
+        print(ds.key2.definitions.var)  # Output: Template content with 10
+            
+        
         """
         
         # Split the content into lines
@@ -2324,24 +2462,24 @@ class dscript:
 
             # Step 3: Handle global parameters inside {...}
             if stripped.startswith("{"):
-                # Found the opening `{`, start accumulating global parameters
+                # Found the opening {, start accumulating global parameters
                 inside_global_params = True
-                # Remove the opening `{` and accumulate the remaining content
+                # Remove the opening { and accumulate the remaining content
                 global_params_content = stripped[stripped.index('{') + 1:].strip()
                 
-                # Check if the closing `}` is also on the same line
+                # Check if the closing } is also on the same line
                 if '}' in global_params_content:
                     global_params_content = global_params_content[:global_params_content.index('}')].strip()
-                    inside_global_params = False  # We found the closing `}` on the same line
+                    inside_global_params = False  # We found the closing } on the same line
                     # Now parse the global parameters block
                     cls._parse_global_params(global_params_content.strip(), global_params)
                     global_params_content = ""  # Reset for the next block
                 continue
 
             if inside_global_params:
-                # Accumulate content until the closing `}` is found
+                # Accumulate content until the closing } is found
                 if stripped.endswith("}"):
-                    # Found the closing `}`, accumulate and process the entire block
+                    # Found the closing }, accumulate and process the entire block
                     global_params_content += " " + stripped[:stripped.index('}')].strip()
                     inside_global_params = False  # Finished reading global parameters block
                     
@@ -2349,7 +2487,7 @@ class dscript:
                     cls._parse_global_params(global_params_content.strip(), global_params)
                     global_params_content = ""  # Reset for the next block if necessary
                 else:
-                    # Continue accumulating if `}` is not found
+                    # Continue accumulating if } is not found
                     global_params_content += " " + stripped
                 continue
             
@@ -2366,7 +2504,12 @@ class dscript:
             if inside_template_block:
                 if stripped == "]":
                     # End of the template block, join the content and store it
-                    template[current_template_key] = ScriptTemplate(current_template_content, definitions=definitions, verbose=True)
+                    template[current_template_key] = ScriptTemplate(
+                        current_template_content, 
+                        definitions=lambdaScriptdata(**definitions),  # Clone current global definitions
+                        verbose=True, 
+                        userid=current_template_key
+                        )
                     template[current_template_key].refreshvar()
                     inside_template_block = False
                     current_template_key = None
@@ -2402,7 +2545,11 @@ class dscript:
             elif template_match and not inside_template_block:
                 # Line is a template (key: content)
                 key, content = template_match.groups()
-                template[key] = ScriptTemplate(content, definitions=definitions, verbose=True)
+                template[key] = ScriptTemplate(
+                    content,
+                    definitions=lambdaScriptdata(**definitions),  # Clone current definitions
+                    verbose=True,
+                    userid=current_template_key)
                 template[key].refreshvar()
 
             elif attribute_match:
@@ -2420,7 +2567,6 @@ class dscript:
             # Apply attributes to the corresponding template object
             for attr_name, attr_value in attributes[key].items():
                 setattr(template[key], attr_name, attr_value)
-        # Refresh variables (ensure that variables are detected and added to definitions)
 
         # Step 7: Create and return a new dscript instance
         if name is None:
@@ -2436,7 +2582,8 @@ class dscript:
             version=global_params.get('version', 0.1),
             verbose=global_params.get('verbose', False)
         )
-        
+
+       
         # Convert numeric string keys to integers if numerickeys is True
         if numerickeys:
             numeric_template = {}
@@ -2452,7 +2599,15 @@ class dscript:
         instance.DEFINITIONS = definitions
         instance.TEMPLATE = template
 
+        # Refresh variables (ensure that variables are detected and added to definitions)
+        instance.set_all_variables()
+
+        # Check eval
+        instance.check_all_variables(verbose=False)
+        
+        # return the new instance
         return instance
+    
 
     @classmethod
     def _parse_global_params(cls, content, global_params):
@@ -2568,9 +2723,64 @@ class dscript:
             content=content,
             definitions=self.DEFINITIONS+definitions,
             verbose=verbose,
-            userid = userid,
+            userid = key if userid is None else userid,
             **USER
         )    
+        
+
+
+    def check_all_variables(self, verbose=True, seteval=True, output=False):
+        """
+        Checks for undefined variables for each TEMPLATE key in the dscript object.
+
+        Parameters:
+        -----------
+        verbose : bool, optional, default=True
+            If True, prints information about variables for each TEMPLATE key.
+            Shows [-] if the variable is set to its default value, [+] if it is defined, and [ ] if it is undefined.
+        
+        seteval : bool, optional, default=True
+            If True, sets the `eval` attribute to True if at least one variable is defined or set to its default value.
+        
+        output : bool, optional, default=False
+            If True, returns a dictionary with lists of default variables, set variables, and undefined variables.
+
+        Returns:
+        --------
+        out : dict, optional
+            If `output=True`, returns a dictionary with the following structure:
+            - "defaultvalues": List of variables set to their default value (${varname}).
+            - "setvalues": List of variables defined with values other than their default.
+            - "undefined": List of variables that are undefined.
+        """
+        out = {"defaultvalues": [], "setvalues": [], "undefined": []}
+
+        for key in self.TEMPLATE:
+            template = self.TEMPLATE[key]
+            # Call the check_variables method of ScriptTemplate for each TEMPLATE key
+            result = template.check_variables(verbose=verbose, seteval=seteval)
+            
+            # Update the output dictionary if needed
+            out["defaultvalues"].extend(result["defaultvalues"])
+            out["setvalues"].extend(result["setvalues"])
+            out["undefined"].extend(result["undefined"])
+
+        if output:
+            return out
+
+
+    def set_all_variables(self):
+        """
+        Ensures that all variables in the templates are added to the global definitions
+        with default values if they are not already defined.
+        """
+        for key, script_template in self.TEMPLATE.items():
+            # Check and update the global definitions with template-specific variables
+            for var in script_template.detect_variables():
+                if var not in self.DEFINITIONS:
+                    # Add undefined variables with their default value
+                    self.DEFINITIONS.setattr(var, f"${{{var}}}")  # Set default as ${varname}
+
 
 # %% debug section - generic code to test methods (press F5)
 # ===================================================
@@ -2793,6 +3003,7 @@ dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=Fa
     myS = dscript.load(myscriptfile)
     
     # generate the corresponding script
+    myS.units.do()
     smyS = myS.script()
     
     # Ececute the script and print it
