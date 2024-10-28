@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9978"
+__version__ = "0.9980"
 
 """
 Matlab-like Structure class
@@ -61,6 +61,8 @@ Created on Sun Jan 23 14:19:03 2022
 # 2024-10-09 enable @property as attribute if _propertyasattribute is True
 # 2024-10-11 add _callable__ and update()
 # 2024-10-22 raises an error in escape() if s is not a string
+# 2024-10-25 add dellatr()
+# 2024-10-26 force silentmode to + and += operators
 
 
 # %% Dependencies
@@ -494,7 +496,7 @@ class struct():
         self._iter_ = 0
         raise StopIteration(f"Maximum {self._ftype} iteration reached {len(self)}")
 
-    def __add__(self,s,sortdefinitions=False,raiseerror=True):
+    def __add__(self,s,sortdefinitions=False,raiseerror=True, silentmode=True):
         """ add a structure
             set sortdefintions=True to sort definitions (to maintain executability)
         """
@@ -502,17 +504,17 @@ class struct():
             raise TypeError(f"the second operand must be {self._type}")
         dup = duplicate(self)
         dup.__dict__.update(s.__dict__)
-        if sortdefinitions: dup.sortdefinitions(raiseerror=raiseerror)
+        if sortdefinitions: dup.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
         return dup
 
-    def __iadd__(self,s,sortdefinitions=False,raiseerror=False):
+    def __iadd__(self,s,sortdefinitions=False,raiseerror=False, silentmode=True):
         """ iadd a structure
             set sortdefintions=True to sort definitions (to maintain executability)
         """
         if not isinstance(s,struct):
             raise TypeError(f"the second operand must be {self._type}")
         self.__dict__.update(s.__dict__)
-        if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror)
+        if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
         return self
 
     def __sub__(self,s):
@@ -711,10 +713,14 @@ class struct():
                     s.setattr(k[i],True)
         return s
 
-    def sortdefinitions(self,raiseerror=True):
+    def sortdefinitions(self,raiseerror=True,silentmode=False):
         """ sortdefintions sorts all definitions
             so that they can be executed as param().
             If any inconsistency is found, an error message is generated.
+            
+            Flags = default values
+                raiseerror=True show erros of True
+                silentmode=False no warning if True
         """
         find = lambda xlist: [i for i, x in enumerate(xlist) if x]
         findnot = lambda xlist: [i for i, x in enumerate(xlist) if not x]
@@ -748,7 +754,7 @@ class struct():
                     raise KeyError('unable to interpret %d/%d expressions in "%ss"' % \
                                    (nmissing,len(self),self._ftype))
                 else:
-                    if not errorfound:
+                    if (not errorfound) and (not silentmode):
                         print('WARNING: unable to interpret %d/%d expressions in "%ss"' % \
                               (nmissing,len(self),self._ftype))
                     current = teststruct # we accept the new field (even if it cannot be interpreted)
@@ -957,6 +963,18 @@ class struct():
                 raise KeyError(f"{fulltype} does not contain the {ftype} '{key}'.")
     
         return sub_struct
+
+    
+    def __delattr__(self, key):
+        """ Delete an instance attribute if it exists and is not a class or excluded attribute. """
+        if key in self._excludedattr:
+            raise AttributeError(f"Cannot delete excluded attribute '{key}'")
+        elif key in self.__class__.__dict__:  # Check if it's a class attribute
+            raise AttributeError(f"Cannot delete class attribute '{key}'")
+        elif key in self.__dict__:  # Delete only if in instance's __dict__
+            del self.__dict__[key]
+        else:
+            raise AttributeError(f"{self._type} has no attribute '{key}'")
 
 # %% param class with scripting and evaluation capabilities
 class param(struct):
