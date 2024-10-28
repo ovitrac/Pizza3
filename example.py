@@ -65,7 +65,7 @@ classes to generate flexible LAMMPS scripts with minimal manual intervention. Us
 This example requires Pizza3 version 0.9976 or above. All scripts (`script`, `pipescript`, `scriptobject`, and `scriptobjectgroup`) exhibit sufficient compatibility to be combined with operators. The pipe operator (`|`) is preferred as it facilitates reordering and the inclusion of local variables.
 
 **Revision:**
-Last revision: 2024-10-22
+Last revision: 2024-10-28
 
 """
 
@@ -297,3 +297,291 @@ Dall.save("tmp/example.d.txt", overwrite=True)
 Dall2 = dscript.load("tmp/example.d.txt")
 Sall2 = Dall2.pipescript(verbose=False)
 print("\n\n# ALL SCRIPTS (from disk)", Sall2.do(printflag=False, verbose=False), sep="\n")
+
+
+# %% Repeat the whole code in DSCRIPT language
+"""
+**DSCRIPT File Example and Dynamic Re-conversion with Dall3**
+
+This example demonstrates how to leverage the DSCRIPT syntax in Pizza3 for defining complex simulation parameters dynamically. The `Dcode` variable contains the entire simulation configuration in the DSCRIPT syntax, enabling both persistent storage and later re-conversion into dynamic objects.
+
+**Key Concepts Illustrated in Dcode:**
+1. **Global and Local Definitions**:
+   - **Global Definitions**: Variables set globally at the beginning, such as `dumpfile`, `dumpdt`, `thermodt`, and `runtime`, are applied across multiple templates if not overridden locally. When saved, global values can be annotated, indicating if they're set externally.
+   - **Local Definitions**: Variables are defined with a specified "scope" per template section. This allows values to be overridden or dynamically updated only for certain steps in the simulation without affecting other sections.
+
+2. **Templates and Steps**:
+   - **Step-based Scripting**: Each section in the simulation corresponds to a numbered "step" that represents a unique template in the script. Local definitions for each step can be configured independently.
+   - **Special Syntax**: Local definitions leverage Pizza3's dynamic substitution, allowing variables such as `${ID}`, `${style}`, and `${args}` to be dynamically evaluated within each template.
+
+3. **Simulation Structure**:
+   - **Pipeline of Steps**: Dcode’s steps flow in sequence to establish each simulation stage: initialization, lattice setup, region definitions, group definitions, forcefield configurations, and more. This structure aligns with LAMMPS, ensuring reproducibility and compatibility with specific physical behaviors.
+   - **Comments and Header Sections**: Each step includes comments or headers for easy reading and reuse. Headers describe the purpose of each template, with inline comments highlighting variable options and expected parameter values.
+
+4. **Overrides in `Dall3`**:
+   - **Dynamic Updates and Local Precedence**: The `Dall3` instance, derived from Dcode, retains the entire sequence as a `dscript` object. The `dscript` format allows flexible adjustments, with both global and local values manageable at runtime.
+   - **Local Precedence**: When values are overridden locally, they take precedence in the final generated script, illustrating the control and precision available in the Pizza3 DSCRIPT system.
+
+**Usage**:
+- `Dall3.DEFINITIONS.runtime = 1e4`: Sets the global definition of `runtime` to `1e4`.
+- `Dall3[-1].definitions.runtime = 2e5`: Sets a local definition of `runtime` specifically for the final step in `Dall3`, giving it precedence over the global value.
+
+**Example Output**:
+- The last command, `print(Dall3[-1].do())`, demonstrates that `Dall3` reflects the local override by outputting `run 200000.0`, verifying the variable hierarchy and precedence.
+"""
+
+
+
+Dcode = """
+# DSCRIPT SAVE FILE
+
+# GLOBAL DEFINITIONS
+dumpfile = $dump.LAMMPS
+dumpdt = 50
+thermodt = 100
+runtime = 5000
+
+# LOCAL DEFINITIONS for step '0'
+dimension = 3
+units = $si
+boundary = ['f', 'f', 'f']
+atom_style = $smd
+atom_modify = ['map', 'array']
+comm_modify = ['vel', 'yes']
+neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
+newton = $off
+name = $SimulationBox
+
+0: [
+    % --------------[ Initialization Header (helper) for "${name}"   ]--------------
+    # set a parameter to None or "" to remove the definition
+    dimension    ${dimension}
+    units        ${units}
+    boundary     ${boundary}
+    atom_style   ${atom_style}
+    atom_modify  ${atom_modify}
+    comm_modify  ${comm_modify}
+    neigh_modify ${neigh_modify}
+    newton       ${newton}
+    # ------------------------------------------
+ ]
+
+# LOCAL DEFINITIONS for step '1'
+lattice_style = $sc
+lattice_scale = 0.0008271
+lattice_spacing = [0.0008271, 0.0008271, 0.0008271]
+
+1: [
+    % --------------[ LatticeHeader 'helper' for "${name}"   ]--------------
+    lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
+    # ------------------------------------------
+ ]
+
+# LOCAL DEFINITIONS for step '2'
+xmin = -0.03
+xmax = 0.03
+ymin = -0.01
+ymax = 0.01
+zmin = -0.03
+zmax = 0.03
+nbeads = 3
+
+2: [
+    % --------------[ Box Header 'helper' for "${name}"   ]--------------
+    region box block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax}
+    create_box	${nbeads} box
+    # ------------------------------------------
+ ]
+
+# LOCAL DEFINITIONS for step '3'
+ID = $LowerCylinder
+style = $cylinder
+
+3: [
+    % variables to be used for ${ID} ${style}
+ ]
+
+# LOCAL DEFINITIONS for step '4'
+ID = $CentralCylinder
+
+4: [
+    % variables to be used for ${ID} ${style}
+ ]
+
+# LOCAL DEFINITIONS for step '5'
+ID = $UpperCylinder
+
+5: [
+    % variables to be used for ${ID} ${style}
+ ]
+
+# LOCAL DEFINITIONS for step '6'
+args = ['z', 0.0, 0.0, 36.27130939426913, 0.0, 6.045218232378189]
+side = ""
+move = ""
+rotate = ""
+open = ""
+ID = $LowerCylinder
+units = ""
+
+6: [
+    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+ ]
+
+# LOCAL DEFINITIONS for step '7'
+ID = $CentralCylinder
+args = ['z', 0.0, 0.0, 36.27130939426913, 6.045218232378189, 18.135654697134566]
+
+7: [
+    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+ ]
+
+# LOCAL DEFINITIONS for step '8'
+ID = $UpperCylinder
+args = ['z', 0.0, 0.0, 36.27130939426913, 18.135654697134566, 24.180872929512756]
+
+8: [
+    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+ ]
+
+# LOCAL DEFINITIONS for step '9'
+ID = $LowerCylinder
+beadtype = 1
+
+9: [
+    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}
+ ]
+
+# LOCAL DEFINITIONS for step '10'
+ID = $CentralCylinder
+beadtype = 2
+
+10: [
+    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}
+ ]
+
+# LOCAL DEFINITIONS for step '11'
+ID = $UpperCylinder
+beadtype = 3
+
+11: [
+    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}
+ ]
+
+12: [
+    # ===== [ BEGIN GROUP SECTION ] =====================================================================================
+    group 	 lower 	type 	 1
+    group 	 solid 	type 	 1 2 3
+    group 	 fixed 	type 	 1
+    group 	 middle 	type 	 2
+    group 	 movable 	type 	 2 3
+    group 	 upper 	type 	 3
+    
+    # ===== [ END GROUP SECTION ] =======================================================================================
+    
+    
+    # [1:b1] PAIR STYLE SMD
+    pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
+    smd/tlsph smd/hertz 1.5
+    
+    # [1:b1 x 1:b1] Diagonal pair coefficient tlsph
+    pair_coeff      1 1 smd/tlsph *COMMON 1000 10000.0 0.3 1.0 2.0 10.0 1000.0 &
+    *STRENGTH_LINEAR_PLASTIC 1000.0 0 &
+    *EOS_LINEAR &
+    *END
+    
+    # [2:b2 x 2:b2] Diagonal pair coefficient tlsph
+    pair_coeff      2 2 smd/tlsph *COMMON 1000 5000.0 0.3 1.0 2.0 10.0 1000.0 &
+    *STRENGTH_LINEAR_PLASTIC 500.0 0 &
+    *EOS_LINEAR &
+    *END
+    
+    # [3:b3 x 3:b3] Diagonal pair coefficient tlsph
+    pair_coeff      3 3 smd/tlsph *COMMON 1000 40000.0 0.3 1.0 2.0 10.0 1000.0 &
+    *STRENGTH_LINEAR_PLASTIC 4000.0 0 &
+    *EOS_LINEAR &
+    *END
+    
+    # [1:b1 x 2:b2] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 2 smd/hertz 250.0000000000001
+    
+    # [1:b1 x 3:b3] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 3 smd/hertz 250.0000000000001
+    
+    # [2:b2 x 3:b3] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 3 smd/hertz 125.00000000000003
+    
+    # ===== [ END FORCEFIELD SECTION ] ==================================================================================
+ ]
+
+13: [
+    group all union lower middle upper
+    group external subtract all middle
+ ]
+
+14: [
+    velocity all set 0.0 0.0 0.0 units box
+ ]
+
+15: [
+    fix fix_lower lower setforce 0.0 0.0 0.0
+ ]
+
+16: [
+    fix move_upper upper move wiggle 0.0 0.0 ${amplitude} ${period} units box
+ ]
+
+17: [
+    fix dtfix tlsph smd/adjust_dt ${dt}
+ ]
+
+18: [
+    fix integration_fix tlsph smd/integrate_tlsph
+ ]
+
+19: [
+    compute S all smd/tlsph_stress
+    compute E all smd/tlsph_strain
+    compute nn all smd/tlsph_num_neighs
+ ]
+
+20: [
+    dump dump_id all custom ${dumpdt} ${dumpfile} id type x y z vx vy vz &
+    c_S[1] c_S[2] c_S[4] c_nn &
+    c_E[1] c_E[2] c_E[4] &
+    vx vy vz
+ ]
+
+21: [
+    dump_modify dump_id first yes
+ ]
+
+22: [
+    thermo ${thermodt}
+    thermo_style custom step dt f_dtfix v_strain
+ ]
+
+23: [
+    run ${runtime}
+ ]
+"""
+Dall3 = dscript.parsesyntax(Dcode)
+print(Dall3.do(verbose=False))
+
+
+# %% Illustration of overrides
+Dall3.DEFINITIONS.runtime = 1e4  # global definitions (note the uppercase)
+Dall3[-1].definitions.runtime = 2e5 # local definitions (higher precedence)
+print(Dall3[-1].do()) # the result is run 200000.0
