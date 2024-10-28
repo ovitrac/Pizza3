@@ -498,11 +498,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9979"
+__version__ = "0.9980"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-10-24 (community)
+# INRAE\Olivier Vitrac - rev. 2024-10-28 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -518,12 +518,14 @@ __version__ = "0.9979"
 # 2024-10-18 add add_dynamic_script() helper for adding a step to a dscript
 # 2024-10-19 better file management 
 # 2024-10-22 sophistication of ScriptTemplate to recognize defined variables at construction and to parse flags/conditions
-# 2024-10-24 dscript.save() and dscript.parsesyntax() manage well local definitions
+# 2024-10-24 management of locl definitions in dscript.save() and dscript.parsesyntax()
+# 2024-10-27 caching ScriptTemplate checks, improved dscript.save() methods
+# 2024-10-28 less redundancy beyween local and global variables in dscript.save()
 
 
 # Dependencies
-import os, getpass, socket, tempfile
-import re, string, random, copy
+import os, getpass, socket, time
+import re, string, random, copy, hashlib
 from datetime import datetime
 from pizza.private.struct import paramauto
 from pizza.script import script, scriptdata, pipescript, remove_comments, span
@@ -653,35 +655,49 @@ class lamdaScript(script):
     name = ""
     
     def __init__(self, dscriptobj, persistentfile=True, persistentfolder=None,
-                 printflag = False, verbose = True,
+                 printflag = False, verbose = True, softrun = True,
                  **userdefinitions):
         """
-        Initialize a new `lamdaScript` instance.
-        
-        This constructor creates a `lamdaScript` object based on an existing `dscriptobj`, allowing for persistent storage options and user-defined configurations.
-        
-        Parameters
-        ----------
-        dscriptobj : dscript
-            An existing `dscript` object to base the new instance on.
-        persistentfile : bool, optional
-            If `True`, the script will be saved to a persistent file. Defaults to `True`.
-        persistentfolder : str or None, optional
-            The folder where the persistent file will be saved. If `None`, a temporary location is used. Defaults to `None`.
-        **userdefinitions
-            Additional user-defined variables and configurations.
-        
-        Raises
-        ------
-        TypeError
-            If `dscriptobj` is not an instance of the `dscript` class.
-        
-        Example
-        -------
-        ```python
-        existing_dscript = dscript(name="ExistingScript")
-        ls = lamdaScript(existing_dscript, var3="3")
-        ```
+            Initialize a new `lambdaScript` instance.
+            
+            This constructor creates a `lambdaScript` object based on an existing `dscriptobj`, 
+            providing options for persistent storage, verbose output, and user-defined configurations.
+            A `lambdaScript` represents an anonymous or temporary script that can either preserve the 
+            original script structure or partially evaluate variable definitions based on the `softrun` flag.
+            
+            Parameters
+            ----------
+            dscriptobj : dscript
+                An existing `dscript` object to base the new instance on.
+            persistentfile : bool, optional
+                If `True`, the script will be saved to a persistent file. Defaults to `True`.
+            persistentfolder : str or None, optional
+                The folder where the persistent file will be saved. If `None`, a temporary location is used.
+                Defaults to `None`.
+            printflag : bool, optional
+                If `True`, enables printing of the script details during execution. Defaults to `False`.
+            verbose : bool, optional
+                If `True`, provides detailed output during script initialization and execution. Defaults to `True`.
+            softrun : bool, optional
+                Determines whether a pre-execution run is carried out to partially evaluate and substitute variables.
+                - If `True` (default), the variable definitions and original script content are preserved without full 
+                  evaluation, meaning no substitution is carried out on the `dscript`'s templates or definitions.
+                - If `False`, performs an initial evaluation phase that substitutes available variables and captures
+                  the local definitions before creating the `lambdaScript` object.
+            **userdefinitions
+                Additional user-defined variables and configurations to be included in the `lambdaScript`.
+            
+            Raises
+            ------
+            TypeError
+                If `dscriptobj` is not an instance of the `dscript` class.
+            
+            Example
+            -------
+            ```python
+            existing_dscript = dscript(name="ExistingScript")
+            ls = lambdaScript(existing_dscript, var3="3", softrun=False)
+            ```
         """
         if not isinstance(dscriptobj, dscript):
             raise TypeError(f"The 'dscriptobj' object must be of class dscript not {type(dscriptobj).__name__}.")
@@ -698,8 +714,12 @@ class lamdaScript(script):
         self.verbose = verbose
         self.printflag = printflag
         self.DEFINITIONS = dscriptobj.DEFINITIONS
-        self.USER = lambdaScriptdata(**self.USER)
-        self.TEMPLATE = dscriptobj.do()
+        if softrun:
+            self.TEMPLATE,localdefinitions = dscriptobj.do(softrun=softrun,return_definitions=True)
+            self.USER = localdefinitions + lambdaScriptdata(**self.USER)
+        else:
+            self.TEMPLATE = dscriptobj.do(softrun=softrun)
+            self.USER = lambdaScriptdata(**self.USER)
         
     @property
     def role(self):
@@ -888,6 +908,14 @@ class ScriptTemplate:
                 (such as `${varname}`) within the `definitions` for substitution.
         """
         
+
+        # Initialize `_CACHE` with separate entries for each method
+        self._CACHE = {
+            'variables': {'result': None},
+            'check_variables': {'result': None}
+        }
+        # Constructor
+        self._content = content # # Store initial content
         self.definitions = definitions  # Reference to the DEFINITIONS object
         # Initialize attributes with default values
         self.attributes = self.default_attributes.copy()
@@ -919,7 +947,56 @@ class ScriptTemplate:
         # Assign userid (optional)
         self.userid = userid if userid is not None else autoname(3)
 
-    
+
+    def _calculate_content_hash(self, content):
+        """Generate hash for content."""
+        return hashlib.md5("\n".join(content).encode()).hexdigest() if isinstance(content, list) else hashlib.md5(content.encode()).hexdigest()
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, new_content):
+        """Set content and reinitialize cache if the content has changed."""
+        new_content_hash = self._calculate_content_hash(new_content)
+        if new_content_hash != self._content_hash:
+            self._content = new_content
+            self._content_hash = new_content_hash
+            self._invalidate_cache()  # Reset cache only if content changes
+
+
+    def _update_content(self, value):
+        """Helper to set _content and _content_hash, refreshing cache as necessary."""
+        # Check if content modification is allowed based on readonly attribute
+        if getattr(self, 'attributes', {}).get('readonly', False):
+            raise AttributeError("Cannot modify content. It is read-only.")
+        # Validate and process content as either a string or list of strings
+        if isinstance(value, str):
+            value = remove_comments(value, split_lines=True)
+        elif not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            raise TypeError("The 'content' attribute must be a string or a list of strings.")
+        # Set _content and calculate hash
+        super().__setattr__('_content', value)
+        new_hash = hash(tuple(value))
+        # If hash changes, reset cache
+        if new_hash != getattr(self, '_content_hash', None):
+            super().__setattr__('_content_hash', new_hash)
+            self._invalidate_cache()  # Invalidate cache due to content change
+            self.refreshvar()  # Refresh variables based on new content
+
+    def _invalidate_cache(self):
+        """Reset all cache entries."""
+        # Check if _CACHE is initialized
+        if not hasattr(self, '_CACHE'):
+            self._CACHE = {
+                'variables': {'result': None},
+                'check_variables': {'result': None}
+            }
+        for entry in self._CACHE.values():
+            entry['result'] = None
+
+
     @classmethod
     def parse_content(cls, content, verbose=False):
         """
@@ -1100,9 +1177,8 @@ class ScriptTemplate:
       return repr_str
 
 
-
     def __setattr__(self, name, value):
-        # Handle specific attributes that require validation
+        # Handle specific attributes with validation
         if name in ['facultative', 'eval', 'readonly']:
             if not isinstance(value, bool):
                 raise TypeError(f"The '{name}' attribute must be a Boolean, not {type(value).__name__}.")
@@ -1110,31 +1186,20 @@ class ScriptTemplate:
             if not isinstance(value, str) and value is not None:
                 raise TypeError(f"The 'condition' attribute must be a string or None, not {type(value).__name__}.")
         elif name == 'content':
-            if isinstance(value, str):
-                value = remove_comments(value, split_lines=True)  # Split string by newlines into list of strings
-            elif not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-                raise TypeError(f"The 'content' attribute must be a string or a list of strings, not {type(value).__name__}.")
-            # Check if attributes exist and respect the readonly flag
-            if getattr(self, 'attributes', {}).get('readonly', False):
-                raise AttributeError("Cannot modify content. It is read-only.")
+            # Use helper to manage content updates and cache invalidation
+            self._update_content(value)
+            return  # Exit to avoid further processing since _update_content handles the setting
         elif name == 'definitions':
             if not isinstance(value, (lambdaScriptdata, scriptdata)) and value is not None:
                 raise TypeError(f"The 'definitions' must be a lambdaScriptdata or scriptdata, not {type(value).__name__}.")
-        # Handle direct instance variables separately (userid, attributes, definitions, content)
-        if name in ['userid', 'attributes', 'definitions', 'content']:
-            # Ensure 'attributes' exists before assigning
-            if name == 'attributes' and not isinstance(value, dict):
-                raise TypeError(f"The 'attributes' must be a dictionary, not {type(value).__name__}.")
-            # Assign directly to the instance's dictionary (bypass __setattr__)
+    
+        # Set attributes directly for key fields and avoid recursion
+        if name in ['userid', 'attributes', 'definitions', '_content', '_content_hash']:
             super().__setattr__(name, value)
-            if name == 'content':
-                # If setting content, refresh the variables
-                self.refreshvar()
         else:
-            # Ensure 'attributes' is initialized before updating it
+            # Ensure 'attributes' is initialized before updating
             if not hasattr(self, 'attributes') or self.attributes is None:
                 self.attributes = {}
-            # All other attributes are handled in the 'attributes' dictionary
             self.attributes[name] = value
 
 
@@ -1148,48 +1213,93 @@ class ScriptTemplate:
         4. If attributes itself exists in __dict__, return the value from attributes if 'name' is found.
         5. If all previous checks fail, raise an AttributeError indicating that 'name' is not found.
         """
+        # Ensure '_CACHE' is always accessible without a KeyError
+        if name == '_CACHE':
+            # Initialize _CACHE if it does not exist
+            if '_CACHE' not in self.__dict__:
+                self.__dict__['_CACHE'] = {
+                    'variables': {'result': None},
+                    'check_variables': {'result': None}
+                }
+            return self.__dict__['_CACHE']  # Access _CACHE directly
         # Step 1: Check if 'name' is a valid attribute in default_attributes
         if name in self.default_attributes:
-            # Ensure 'attributes' exists and return its value or the default from default_attributes
-            if hasattr(self, 'attributes'):
-                return self.attributes.get(name, self.default_attributes[name])
-            else:
-                # If 'attributes' is not yet initialized, return the default value
-                return self.default_attributes[name]
-    
+            # Directly access __dict__ to avoid recursive lookup
+            attributes = self.__dict__.get('attributes', {})
+            return attributes.get(name, self.default_attributes[name])
         # Step 2: Special case for 'content'
         if name == 'content':
-            # Return the content or an empty string if content is not yet initialized
-            return self.__dict__.get('content', "")
-        # Step 3: Check if 'name' exists in 'attributes' and return its value
-        if hasattr(self, 'attributes') and name in self.attributes:
-            return self.attributes[name]
-        # Step 4: Check if 'attributes' exists in __dict__ and return 'name' from attributes
+            # Directly access __dict__ to avoid recursion
+            return self.__dict__.get('_content', "")
+        # Step 3: Check if 'name' exists in 'attributes' and return its value directly
+        attributes = self.__dict__.get('attributes', {})
+        if name in attributes:
+            return attributes[name]
+        # Step 4: Check if 'attributes' exists in __dict__ and retrieve 'name' if present
         if 'attributes' in self.__dict__ and name in self.__dict__['attributes']:
             return self.__dict__['attributes'][name]
         # Step 5: If none of the above conditions are met, raise an AttributeError
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
 
+
     
-    def do(self, protected=True):
-        """Executes the script template, processing its content based on the attributes."""
-        if self.attributes["facultative"]:
+    def do(self, protected=True, softrun=False):
+        """
+        Executes or prepares the script template content based on its attributes and the softrun flag.
+
+        Parameters
+        ----------
+        protected : bool, optional
+            If `True` (default), variable evaluation uses a protected environment, preventing changes 
+            to global definitions or system attributes during execution.
+        softrun : bool, optional
+            Determines if the script is evaluated in a preliminary mode:
+            - If `True`, returns the script content without full evaluation, allowing for a preview or 
+              an initial capture of local definitions without substitution of variables.
+            - If `False` (default), processes the script with full evaluation, applying all substitutions 
+              defined in `definitions`.
+
+        Returns
+        -------
+        str
+            The processed or original script content as a single string. 
+            - Returns an empty string if `facultative` is set to `True`, or if `condition` is `False` 
+              and does not satisfy any specified evaluation requirements.
+        
+        Notes
+        -----
+        - `facultative`: If `True`, the method returns an empty string, effectively skipping execution.
+        - `condition`: If specified, this attribute is evaluated to decide whether the content is processed 
+          (default `True` if `condition` is `None`). If `condeval` is `True`, the condition itself undergoes 
+          evaluation using Python's `eval`.
+        - `eval`: If `True` and `softrun` is `False`, performs evaluation for variable substitution on the 
+          content lines, transforming variables based on the `definitions`.
+        """
+
+        # If 'facultative' is set to True, return an empty string immediately
+        if self.attributes.get("facultative", False):
             return ""
-        if self.attributes["condition"] is not None:
-            cond = self.definitions.formateval(self.attributes["condition"], protected)
-            if self.attributes["condeval"]:
-                cond = eval(cond)
-        else:
-            cond = True
-    
+
+        # Evaluate condition if present
+        cond = True
+        if self.attributes.get("condition") is not None:
+            condition_expr = self.definitions.formateval(self.attributes["condition"], protected)
+            cond = eval(condition_expr) if self.attributes.get("condeval", False) else condition_expr
+
+        # Process based on softrun flag
+        if softrun:
+            return "\n".join(self.content) if cond else ""
+
+        # Perform full processing when softrun is False
         if cond:
-            if self.attributes["eval"]:
+            if self.attributes.get("eval", False):
                 return "\n".join([self.definitions.formateval(line, protected) for line in self.content])
             else:
                 return "\n".join(self.content)
-        else:
-            return ""
+
+        return ""
+
 
     
     def detect_variables(self):
@@ -1201,14 +1311,16 @@ class ScriptTemplate:
         list
             A list of unique variable names detected in the content.
         """
+        # Check cache first
+        cache_entry = self._CACHE['variables']         
+        if cache_entry['result'] is not None:
+            return cache_entry['result']
+        # Detect variables if cache miss or content changed
         variable_pattern = re.compile(r'\$\{(\w+)\}')
-        detected_vars = set()  # Using a set to avoid duplicates
-
-        # Iterate over each line of the content
-        for line in self.content:
-            detected_vars.update(variable_pattern.findall(line))  # Add all matches to the set
-
-        return list(detected_vars)  # Convert the set back to a list
+        detected_vars = {variable for line in self.content for variable in variable_pattern.findall(line)}
+        # Cache the result and return output
+        cache_entry['result'] = list(detected_vars)
+        return cache_entry['result']
 
 
 
@@ -1218,15 +1330,11 @@ class ScriptTemplate:
         This method ensures that variables like ${varname} are correctly detected
         and added to the definitions if they are missing.
         """
-        if self.attributes["detectvar"] and isinstance(self.content, list) and self.definitions is not None:
-            # Use the detect_variables method to find all variables in content
+        if self.attributes["detectvar"] and isinstance(self.content, list) and self.definitions:
             variables = self.detect_variables()
-            
-            # Add each variable to definitions if not already present
             for varname in variables:
                 if varname not in self.definitions:
                     self.definitions.setattr(varname, "${" + varname + "}")
-
 
 
     def check_variables(self, verbose=True, seteval=True):
@@ -1250,18 +1358,17 @@ class ScriptTemplate:
             - "setvalues": Variables defined with a specific value.
             - "undefined": Variables that are undefined.
         """
-        out = {"defaultvalues": [], "setvalues": [], "undefined": []}
-        
+        # Check cache first
+        cache_entry = self._CACHE['check_variables']
+        if cache_entry['result'] is not None:
+            return cache_entry['result']
+        # Main
+        out = {"defaultvalues": [], "setvalues": [], "undefined": []}        
         detected_vars = self.detect_variables()
         defined_vars = set(self.definitions.keys()) if self.definitions else set()
-
-        set_values = []
-        default_values = []
-        undefined_vars = []
-        
+        set_values, default_values, undefined_vars = [], [], []
         if verbose:
             print(f"\nTEMPLATE {self.userid} variables:")
-
         for var in detected_vars:
             if var in defined_vars:
                 if self.definitions[var] == f"${{{var}}}":  # Check for default value
@@ -1276,17 +1383,80 @@ class ScriptTemplate:
                 undefined_vars.append(var)
                 if verbose:
                     print(f"[ ] {var}")  # Variable is not defined
-        
         # If seteval is True, set eval to True if at least one variable is defined or set to its default
         if seteval and (set_values or default_values):
             self.attributes['eval'] = True  # Set eval in the attributes dictionary
-
         # Update the output dictionary
         out["defaultvalues"].extend(default_values)
         out["setvalues"].extend(set_values)
         out["undefined"].extend(undefined_vars)
-
+        # update Cache and return output
+        cache_entry['result'] = out
         return out
+
+
+    def is_variable_defined(self, var_name):
+        """
+        Checks if a specified variable is defined (either as a default value or a set value).
+    
+        Parameters:
+        -----------
+        var_name : str
+            The name of the variable to check.
+    
+        Returns:
+        --------
+        bool
+            True if the variable is defined (either as a default or a set value), False if not.
+    
+        Raises:
+        -------
+        ValueError
+            If `var_name` is invalid or undefined in the template.
+        """
+        if not isinstance(var_name, str):
+            raise ValueError("Variable name must be a string.")
+        
+        variable_status = self.check_variables(verbose=False, seteval=False)
+        
+        # Check if the variable is in default values or set values
+        if var_name in variable_status["defaultvalues"] or var_name in variable_status["setvalues"]:
+            return True
+        else:
+            raise ValueError(f"Variable '{var_name}' is undefined in the template.")
+    
+    
+    def is_variable_set_value_only(self, var_name):
+        """
+        Checks if a specified variable is defined and set to a specific (non-default) value.
+    
+        Parameters:
+        -----------
+        var_name : str
+            The name of the variable to check.
+    
+        Returns:
+        --------
+        bool
+            True if the variable is defined with a set (non-default) value, False if not.
+    
+        Raises:
+        -------
+        ValueError
+            If `var_name` is invalid or not defined in the template.
+        """
+        if not isinstance(var_name, str):
+            raise ValueError("Variable name must be a string.")
+        
+        variable_status = self.check_variables(verbose=False, seteval=False)
+        
+        # Check if the variable is in set values only (not default values)
+        if var_name in variable_status["setvalues"]:
+            return True
+        elif var_name in variable_status["defaultvalues"]:
+            return False  # Defined but only at its default value
+        else:
+            raise ValueError(f"Variable '{var_name}' is undefined in the template.")
 
 
 class dscript:
@@ -1551,6 +1721,7 @@ class dscript:
         -----------
         key : int, slice, list, or str
             - If `key` is an int, returns the corresponding template at that index.
+              Supports negative indices to retrieve templates from the end.
             - If `key` is a slice, returns a new `dscript` object containing the templates in the specified range.
             - If `key` is a list, reorders the TEMPLATE based on the list of indices or keys.
             - If `key` is a string, treats it as a key and returns the corresponding template.
@@ -1572,19 +1743,23 @@ class dscript:
                 new_dscript.TEMPLATE[k] = self.TEMPLATE[k]
             return new_dscript
     
-        # Handle integer indexing
+        # Handle integer indexing with support for negative indices
         elif isinstance(key, int):
             keys = list(self.TEMPLATE.keys())
             if key in self.TEMPLATE:  # Check if the integer exists as a key
                 return self.TEMPLATE[key]
+            if key < 0:  # Support negative indices
+                key += len(keys)
             if key < 0 or key >= len(keys):  # Check for index out of range
-                raise IndexError(f"Index {key} is out of range")
+                raise IndexError(f"Index {key - len(keys)} is out of range")
             # Return the template corresponding to the integer index
             return self.TEMPLATE[keys[key]]
     
         # Handle key-based access (string keys)
-        else:
-            return self.TEMPLATE[key]
+        elif isinstance(key, str):
+            if key in self.TEMPLATE:
+                return self.TEMPLATE[key]
+            raise KeyError(f"Key '{key}' does not exist in TEMPLATE.")
 
 
     def __setitem__(self, key, value):
@@ -1601,11 +1776,11 @@ class dscript:
     def __iter__(self):
         return iter(self.TEMPLATE.items())
 
-    def keys(self):
-        return self.TEMPLATE.keys()
+    # def keys(self):
+    #     return self.TEMPLATE.keys()
 
-    def values(self):
-        return (s.content for s in self.TEMPLATE.values())
+    # def values(self):
+    #     return (s.content for s in self.TEMPLATE.values())
     
     def __contains__(self, key):
         return key in self.TEMPLATE
@@ -1819,31 +1994,78 @@ class dscript:
         for varname in vars:
             if varname not in self.DEFINITIONS:
                 self.DEFINITIONS.setattr(varname,"${" + varname + "}")
+
     
-    def do(self,printflag=None,verbose=None):
+    def do(self, printflag=None, verbose=None, softrun=False, return_definitions=False):
         """
-        Executes all ScriptTemplate instances in TEMPLATE and concatenates the results.
-        Includes a pretty header and footer.
+        Executes or previews all `ScriptTemplate` instances in `TEMPLATE`, concatenating the results.
+        Includes optional headers and footers based on verbosity settings and allows for a preliminary run with `softrun`.
+        Can also return accumulated definitions across all templates if `return_definitions=True`.
+
+        Parameters
+        ----------
+        printflag : bool, optional
+            If `True`, enables print output during execution. If `None`, uses the instance's default print flag.
+        verbose : bool, optional
+            If `True`, includes headers and footers in the output. If `None`, uses the instance's verbosity setting.
+        softrun : bool, optional
+            If `True`, executes the script in a preliminary mode, bypassing full variable substitution for a preview
+            of the content. If `False` (default), performs full processing of templates.
+        return_definitions : bool, optional
+            If `True`, returns a tuple where the second element contains all accumulated definitions across templates.
+            Default is `False`, returning only the concatenated output.
+
+        Returns
+        -------
+        str or tuple
+            The concatenated output of all `ScriptTemplate` instances, including optional headers, footers,
+            and execution summary details based on verbosity. If `return_definitions=True`, returns a tuple of
+            (output, accumulated_definitions).
+
+        Notes
+        -----
+        - Each `ScriptTemplate` in `TEMPLATE` is processed individually with its own `do()` method.
+        - `softrun` allows for a preliminary content preview, which is useful for validating script structure or 
+          gathering local definitions without substituting variables.
+        - Verbose mode provides headers, footers, and a summary of processed and ignored items.
         """
         printflag = self.printflag if printflag is None else printflag
         verbose = self.verbose if verbose is None else verbose
         header = f"# --------------[ TEMPLATE \"{self.name}\" ]--------------" if verbose else ""
-        footer = "# --------------------------------------------"  if verbose else ""
+        footer = "# --------------------------------------------" if verbose else ""
+        
+        # Initialize output, counters, and optional definitions accumulator
         output = [header]
         non_empty_lines = 0
         ignored_lines = 0
-        for key, s in self.TEMPLATE.items():
-            result = s.do() if verbose else remove_comments(s.do())
-            if result:  # Only count and include non-empty results
-                output.append(result)
+        accumulated_definitions = lambdaScriptdata() if return_definitions else None
+        
+        for key, template in self.TEMPLATE.items():
+            # Process each template with softrun if enabled, otherwise use full processing
+            result = template.do(softrun=softrun)
+            if result:
+                # Apply comment removal based on verbosity
+                final_result = result if verbose else remove_comments(result)
+                output.append(final_result)
                 non_empty_lines += 1
+                
+                # Accumulate definitions if return_definitions is enabled
+                if return_definitions:
+                    accumulated_definitions += template.definitions
             else:
                 ignored_lines += 1
-        nel_word = 'items' if non_empty_lines>1 else 'item'
-        il_word = 'items' if ignored_lines>1 else 'item'
-        footer += f"\n# ---> Total {nel_word}: {non_empty_lines} - Ignored {il_word}: {ignored_lines}"  if verbose else ""
+
+        # Add footer summary if verbose
+        nel_word = 'items' if non_empty_lines > 1 else 'item'
+        il_word = 'items' if ignored_lines > 1 else 'item'
+        footer += f"\n# ---> Total {nel_word}: {non_empty_lines} - Ignored {il_word}: {ignored_lines}" if verbose else ""
         output.append(footer)
-        return "\n".join(output)
+        
+        # Concatenate output and determine return type based on return_definitions
+        output_content = "\n".join(output)
+        return (output_content, accumulated_definitions) if return_definitions else output_content
+
+
     
     def script(self,printflag=None,verbose=None,**USER):
         """
@@ -1897,8 +2119,8 @@ class dscript:
             # Create a new dscript object with only the current key in TEMPLATE
             focused_dscript = dscript(name=f"{self.name}:{key}")
             focused_dscript.TEMPLATE[key] = self.TEMPLATE[key]
-            focused_dscript.TEMPLATE[key].definitions = copy.deepcopy(self.TEMPLATE[key].definitions)
-            focused_dscript.DEFINITIONS = copy.deepcopy(self.DEFINITIONS)
+            focused_dscript.TEMPLATE[key].definitions = scriptdata(self.TEMPLATE[key].definitions)
+            focused_dscript.DEFINITIONS = scriptdata(**self.DEFINITIONS)
             focused_dscript.SECTIONS = self.SECTIONS[:]
             focused_dscript.section = self.section
             focused_dscript.position = self.position
@@ -1939,7 +2161,7 @@ class dscript:
 
     # Save Method -- added on 2024-09-04
     # -----------
-    def save(self, filename=None, foldername=None, overwrite=False, generatoronly=False):
+    def save(self, filename=None, foldername=None, overwrite=False, generatoronly=False, onlyusedvariables=True):
         """
         Save the current script instance to a text file.
     
@@ -1948,7 +2170,7 @@ class dscript:
         filename : str, optional
             The name of the file to save the script to. If not provided, `self.name` is used.
             The extension ".txt" is automatically appended if not included.
-        
+    
         foldername : str, optional
             The directory where the file will be saved. If not provided, it defaults to the system's
             temporary directory. If the filename does not include a full path, this folder will be used.
@@ -1956,6 +2178,14 @@ class dscript:
         overwrite : bool, default=True
             Whether to overwrite the file if it already exists. If set to False, an exception is raised
             if the file exists.
+    
+        generatoronly : bool, default=False
+            If True, the method returns the generated content string without saving to a file.
+    
+        onlyusedvariables : bool, default=True
+            If True, local definitions are only saved if they are used within the template content. 
+            If False, all local definitions are saved, regardless of whether they are referenced in 
+            the template.
     
         Raises
         ------
@@ -1977,12 +2207,14 @@ class dscript:
             # DEFINITIONS (number of definitions=...)
             key=value
             
-            # TEMPLATE (number of items=...)
+            # TEMPLATES (number of items=...)
             key: template_content
             
             # ATTRIBUTES (number of items with explicit attributes=...)
             key:{attr1=value1, attr2=value2, ...}
         """
+        # At the beginning of the save method
+        start_time = time.time()  # Start the timer
         
         if not generatoronly:
             # Use self.name if filename is not provided
@@ -1995,14 +2227,8 @@ class dscript:
             
             # Construct the full path
             if foldername in [None, ""]:  # Handle cases where foldername is None or an empty string
-                if not os.path.isabs(filename):
-                    # If filename is relative, combine it with the current working directory
-                    filepath = os.path.join(os.getcwd(), filename)
-                else:
-                    # If filename is absolute, use it as is
-                    filepath = filename
+                filepath = os.path.abspath(filename)
             else:
-                # If foldername is provided, join it with filename (absolute or relative)
                 filepath = os.path.join(foldername, filename)
             
             # Check if the file already exists, and raise an exception if it does and overwrite is False
@@ -2021,7 +2247,7 @@ class dscript:
             header += f'\n#\tpath = "{filepath}"\n\n'
         
         # Global parameters in strict Python syntax
-        global_params = "# GLOBAL PARAMETERS\n"
+        global_params = "# GLOBAL PARAMETERS (8 parameters)\n"
         global_params += "{\n"
         global_params += f"    SECTIONS = {self.SECTIONS},\n"
         global_params += f"    section = {self.section},\n"
@@ -2036,56 +2262,108 @@ class dscript:
         # Initialize definitions with self.DEFINITIONS
         allvars = self.DEFINITIONS
     
-        # Accumulate definitions for output
-        definitions = f"\n# GLOBAL DEFINITIONS (number of definitions={len(allvars)})\n" if len(allvars) else ""
-        for key, value in allvars.items():
-            if isinstance(value, str):
-                if value == "":
-                    # If the value is an empty string, format it as ""
-                    definitions += f'{key}=""\n'
-                else:
-                    safe_value = value.replace('\\', '\\\\').replace('\n', '\\n')
-                    definitions += f"{key}={safe_value}\n"
-            else:
-                definitions += f"{key}={value}\n"
+        # Temporary dictionary to track global variable information
+        global_var_info = {}
+    
+        # Loop over each template item to detect and record variable usage and overrides
+        # Loop over each template item to detect and record variable usage and overrides
+        for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
+            # Detect variables used in this template
+            used_variables = script_template.detect_variables()
         
+            # Check each variable used in this template
+            for var in used_variables:
+                # Determine if the variable is defined in global_var_info and initialize tracking if not
+                if var not in global_var_info:
+                    global_value = getattr(allvars, var, None)
+                    local_value = getattr(script_template.definitions, var, None)
+                    is_global = var in allvars  # Flag to track if the variable was originally global
+                    is_default = is_global and (
+                        global_value is None or global_value == "" or global_value == f"${{{var}}}"
+                    )
+        
+                    # Initialize tracking information
+                    global_var_info[var] = {
+                        "value": global_value,       # Initial value from allvars if exists
+                        "is_default": is_default,    # Check if it’s set to a default value
+                        "first_use": template_index, # First time the variable is used in a template
+                        "override_index": template_index if is_global and local_value != global_value else None,
+                        "is_global": is_global       # Track if the variable originates as global
+                    }
+                else:
+                    # Update the override_index only if it's not set and the local value differs from global
+                    global_value = global_var_info[var]["value"]
+                    local_value = getattr(script_template.definitions, var, None)
+                    
+                    if (
+                        global_var_info[var]["override_index"] is None  # Ensure we only set the first override
+                        and local_value != global_value  # Local value must differ from global
+                    ):
+                        global_var_info[var]["override_index"] = template_index
+        
+        # Prepare the global definitions for output, filtering based on usage and overrides
+        # Count only global values that meet criteria for being printed
+        filtered_globals = {
+            var: info for var, info in global_var_info.items()
+            if info["is_global"] and info["first_use"] is not None and (
+                info["override_index"] is None or info["first_use"] < info["override_index"]
+            )
+        }
+        
+        # Generate the definitions output based on filtered globals
+        definitions = f"\n# GLOBAL DEFINITIONS (number of definitions={len(filtered_globals)})\n"
+        for var, info in filtered_globals.items():
+            if info["is_default"]:
+                definitions += f"{var} = ${{{var}}}  # value assumed to be defined outside this DSCRIPT file\n"
+            else:
+                value = info["value"]
+                if value in ["", None]:
+                    definitions += f'{var} = ""\n'
+                elif isinstance(value, str):
+                    safe_value = value.replace('\\', '\\\\').replace('\n', '\\n')
+                    definitions += f"{var} = {safe_value}\n"
+                else:
+                    definitions += f"{var} = {value}\n"
+
         # Template (number of lines/items)
         template = f"\n# TEMPLATES (number of items={len(self.TEMPLATE)})\n"
         for key, script_template in self.TEMPLATE.items():
-            # Get local template definitions
+            # Get local template definitions and detected variables
             template_vars = script_template.definitions
-            # Write the template definition if the variable is either undefined or its value has changed
+            used_variables = script_template.detect_variables()
             islocal = False
+            # Temporary dictionary to accumulate variables to add to allvars
+            valid_local_vars = lambdaScriptdata()
+            # Write template-specific definitions only if they meet the updated conditions
             for var in template_vars.keys():
-                if var not in allvars or getattr(template_vars, var) != getattr(allvars, var):
-                    # If the variable is not in allvars or the value differs, write it out
+                # Conditions for adding a variable to the local template and to `allvars`
+                if (var in used_variables or not onlyusedvariables) and (
+                    script_template.is_variable_set_value_only(var) and
+                    (var not in allvars or getattr(template_vars, var) != getattr(allvars, var))
+                ):
+                    # Start local definitions section if this is the first local variable for the template
                     if not islocal:
                         template += f"\n# LOCAL DEFINITIONS for key '{key}'\n"
                         islocal = True
-                    # Get the value of the variable
+                    # Retrieve and process the variable value
                     value = getattr(template_vars, var)
-                    
-                    # If value is a string, handle escaping
-                    if isinstance(value, str):
-                        if value == "":
-                            template += f'{var} = ""\n'  # Handle empty string values
-                        else:
-                            # Escape newlines in the value
-                            safe_value = value.replace('\\', '\\\\').replace('\n', '\\n')
-                            template += f"{var} = {safe_value}\n"
+                    if value in ["", None]:
+                        template += f'{var} = ""\n'  # Set empty or None values as ""
+                    elif isinstance(value, str):
+                        safe_value = value.replace('\\', '\\\\').replace('\n', '\\n')
+                        template += f"{var} = {safe_value}\n"
                     else:
-                        # If value is not a string, write it directly
                         template += f"{var} = {value}\n"
-        
-            # Update allvars with local definitions after writing
-            allvars += template_vars
-            
+                    # Add the variable to valid_local_vars for selective update of allvars
+                    valid_local_vars.setattr(var, value)
+            # Update allvars only with filtered, valid local variables
+            allvars += valid_local_vars
+    
+            # Write the template content
             if isinstance(script_template.content, list):
-                # If content is a list of strings, join the lines with '\n' and indent each line
                 content_str = '\n    '.join(script_template.content)
                 template += f"\n{key}: [\n    {content_str}\n ]\n"
             else:
-                # Handle single-line content (string)
                 template += f"{key}: {script_template.content}\n"
     
         # Attributes (number of lines/items with explicit attributes)
@@ -2096,7 +2374,14 @@ class dscript:
             attributes += f"{key}:{{{attr_str}}}\n"
         
         # Combine all sections into one content
-        content = header + "\n" + global_params + "\n" + definitions + "\n" + template + "\n" + attributes
+        content = header + "\n" + global_params + "\n" + definitions + "\n" + template + "\n" + attributes + "\n"
+        
+        # Append footer information to the content
+        non_empty_lines = sum(1 for line in content.splitlines() if line.strip())  # Count non-empty lines
+        execution_time = time.time() - start_time  # Calculate the execution time in seconds        
+        footer = f"\n# Footer: Non-empty lines of content = {non_empty_lines}\n"
+        footer += f"# Execution time (seconds): {execution_time:.4f}\n"
+        content += footer  # Add the footer to the content
         
         if generatoronly:
             return content
@@ -2107,7 +2392,8 @@ class dscript:
             print(f"\nScript saved to {filepath}")
             return filepath
 
-    
+        
+        
     # Write Method -- added on 2024-09-05
     # ------------
     @staticmethod

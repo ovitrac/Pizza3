@@ -2266,19 +2266,16 @@ class pipescript:
     def dscript(self, name=None, verbose=None, **USER):
         """
         Convert the current pipescript object to a dscript object.
-    
+        
         This method merges the STATIC, GLOBAL, and LOCAL variable spaces from each step
-        in the pipescript into a single dynamic script per step in the dscript. 
+        in the pipescript into a single dynamic script per step in the dscript.
         Each step in the pipescript is transformed into a dynamic script in the dscript,
         where variable spaces are combined using the following order:
         
         1. STATIC: Definitions specific to each script in the pipescript.
         2. GLOBAL: User variables shared across steps from a specific point onwards.
         3. LOCAL: User variables for each individual step.
-    
-        The resulting dscript object will have the combined templates and definitions 
-        transferred from the pipescript.
-    
+        
         Parameters:
         -----------
         verbose : bool, optional
@@ -2288,60 +2285,74 @@ class pipescript:
         **USER : scriptobjectdata(), optional
             Additional user-defined variables that can override existing static variables
             in the dscript object or be added to it.
-    
+        
         Returns:
         --------
         outd : dscript
             A dscript object that contains all steps of the pipescript as dynamic scripts.
             Each step from the pipescript is added as a dynamic script with the same content
             and combined variable spaces.
-    
-        Notes:
-        ------
-        - Each step in the pipescript is assigned a unique key in the dscript TEMPLATE,
-          based on the step's index (`i`).
-        - Static variables (STATIC), global variables (GLOBAL), and local variables (LOCAL)
-          are merged using the `+` operator and are passed to the dscript.
-        - The `add_dynamic_script` method of the dscript class is used to create each step.
         """
-        # local import
+        # Local imports
         from pizza.dscript import dscript, ScriptTemplate, lambdaScriptdata
-        # adjust name
+    
+        # Adjust name
         if name is None:
-            if isinstance(self.name,str):
+            if isinstance(self.name, str):
                 name = self.name
-            elif isinstance(self.name,list):
-                if len(self.name)<1:
-                    name = "undefined name"
-                elif len(self.name)==1:
-                    name = self.name[0]
-                else:
-                    name = self.name[0] + "..." + self.name[-1]
-                    
+            elif isinstance(self.name, list):
+                name = (
+                    self.name[0] if len(self.name) == 1 else self.name[0] + "..." + self.name[-1]
+                )
+    
         # Create the dscript container with the pipescript name as the userid
         outd = dscript(userid=name, verbose=self.verbose, **USER)
-        # Loop over each step (i) in the pipescript
-        for i in range(len(self.listscript)):
+    
+        # Initialize static merged definitions
+        staticmerged_definitions = lambdaScriptdata()
+    
+        # Loop over each step in the pipescript
+        for i, script in enumerate(self.listscript):
             # Merge STATIC, GLOBAL, and LOCAL variables for the current step
-            static_vars = self.listscript[i].DEFINITIONS
+            static_vars = script.DEFINITIONS
             global_vars = self.scripts[i].USER
             local_vars = self.USER[i]
-            merged_definitions = static_vars + global_vars + local_vars
-
+    
+            # Copy all static variables to local_static_updates and remove matching variables from staticmerged_definitions
+            local_static_updates = lambdaScriptdata(**static_vars)
+            for var, value in static_vars.items():
+                if var in staticmerged_definitions and getattr(staticmerged_definitions, var) == value:
+                    delattr(local_static_updates, var)
+    
+            # Accumulate unique static variables into staticmerged_definitions
+            staticmerged_definitions.update(**static_vars) # += static_vars
+    
+            # Merge global and local variables for dynamic definitions
+            merged_definitions = global_vars + local_vars
+    
             # Create the dynamic script for this step using the method in dscript
             key_name = i  # Use the index 'i' as the key in TEMPLATE
-            content = self.listscript[i].TEMPLATE
+            content = script.TEMPLATE
+    
             # Use the helper method in dscript to add this dynamic script
             outd.add_dynamic_script(
                 key=key_name,
                 content=content,
-                definitions=merged_definitions,
+                definitions = local_static_updates + merged_definitions,
                 verbose=self.verbose if verbose is None else verbose,
-                userid = self.name[i]
+                userid=self.name[i]
             )
-            # Force evaluation for each dynamic script in the dscript
-            outd.TEMPLATE[key_name].eval = True
+    
+            # Set eval=True only if variables are detected in the template
+            if outd.TEMPLATE[key_name].detect_variables():
+                outd.TEMPLATE[key_name].eval = True
+    
+        # Assign the accumulated static merged definitions along with USER variables to outd.DEFINITIONS
+        outd.DEFINITIONS = staticmerged_definitions + lambdaScriptdata(**USER)
+    
         return outd
+
+
 
 # %% Child classes of script sessions (to be derived)
 # navigate with the outline tab through the different classes
