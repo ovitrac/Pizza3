@@ -323,6 +323,7 @@ Load and Save features:
 -----------------------
 use dscript.load() and dscript.save() methods
 
+
 DSCRIPT SAVE FILE Syntax:
 --------------------------
 
@@ -468,6 +469,254 @@ readonly=False, condition=None, condeval=False, detectvar=True}.
 - **Template** and **Attributes** lines can be mixed together.
                                                             
 
+Production example (using last features)
+------------------
+```python
+mydscriptfile = '''
+            # GLOBAL DEFINITIONS (number of definitions=4)
+            dumpfile = $dump.LAMMPS
+            dumpdt = 50
+            thermodt = 100
+            runtime = 5000
+            
+            
+            # TEMPLATES (number of items=24)
+            
+            # LOCAL DEFINITIONS for key '0'
+            dimension = 3
+            units = $si
+            boundary = ['f', 'f', 'f']
+            atom_style = $smd
+            atom_modify = ['map', 'array']
+            comm_modify = ['vel', 'yes']
+            neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
+            newton = $off
+            name = $SimulationBox
+            
+            0: [
+                % --------------[ Initialization Header (helper) for "${name}"   ]--------------
+                # set a parameter to None or "" to remove the definition
+                dimension    ${dimension}
+                units        ${units}
+                boundary     ${boundary}
+                atom_style   ${atom_style}
+                atom_modify  ${atom_modify}
+                comm_modify  ${comm_modify}
+                neigh_modify ${neigh_modify}
+                newton       ${newton}
+                # ------------------------------------------
+             ]
+            
+            # LOCAL DEFINITIONS for key '1'
+            lattice_style = $sc
+            lattice_scale = 0.0008271
+            lattice_spacing = [0.0008271, 0.0008271, 0.0008271]
+            
+            1: [
+                % --------------[ LatticeHeader 'helper' for "${name}"   ]--------------
+                lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
+                # ------------------------------------------
+             ]
+            
+            # LOCAL DEFINITIONS for key '2'
+            xmin = -0.03
+            xmax = 0.03
+            ymin = -0.01
+            ymax = 0.01
+            zmin = -0.03
+            zmax = 0.03
+            nbeads = 3
+            
+            2: [
+                % --------------[ Box Header 'helper' for "${name}"   ]--------------
+                region box block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax}
+                create_box	${nbeads} box
+                # ------------------------------------------
+             ]
+            
+            # LOCAL DEFINITIONS for key '3'
+            ID = $LowerCylinder
+            style = $cylinder
+            
+            3: % variables to be used for ${ID} ${style}             ]
+            
+            # LOCAL DEFINITIONS for key '4'
+            ID = $CentralCylinder
+            
+            4: % variables to be used for ${ID} ${style}
+            
+            # LOCAL DEFINITIONS for key '5'
+            ID = $UpperCylinder
+            
+            5: % variables to be used for ${ID} ${style}
+            
+            # LOCAL DEFINITIONS for key '6'
+            args = ['z', 0.0, 0.0, 36.27130939426913, 0.0, 6.045218232378189]
+            side = ""
+            move = ""
+            rotate = ""
+            open = ""
+            ID = $LowerCylinder
+            units = ""
+            
+            6: [
+                % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+                # keywords: side, units, move, rotate, open
+                # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+                region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+             ]
+            
+            # LOCAL DEFINITIONS for key '7'
+            ID = $CentralCylinder
+            args = ['z', 0.0, 0.0, 36.27130939426913, 6.045218232378189, 18.135654697134566]
+            
+            7: [
+                % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+                # keywords: side, units, move, rotate, open
+                # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+                region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+             ]
+            
+            # LOCAL DEFINITIONS for key '8'
+            ID = $UpperCylinder
+            args = ['z', 0.0, 0.0, 36.27130939426913, 18.135654697134566, 24.180872929512756]
+            
+            8: [
+                % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+                # keywords: side, units, move, rotate, open
+                # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+                region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+             ]
+            
+            # LOCAL DEFINITIONS for key '9'
+            ID = $LowerCylinder
+            beadtype = 1
+            
+            9: [
+                % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+                create_atoms ${beadtype} region ${ID}
+             ]
+            
+            # LOCAL DEFINITIONS for key '10'
+            ID = $CentralCylinder
+            beadtype = 2
+            
+            10: [
+                % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+                create_atoms ${beadtype} region ${ID}
+             ]
+            
+            # LOCAL DEFINITIONS for key '11'
+            ID = $UpperCylinder
+            beadtype = 3
+            
+            11: [
+                % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+                create_atoms ${beadtype} region ${ID}
+             ]
+            
+            12: [
+                # ===== [ BEGIN GROUP SECTION ] =====================================================================================
+                group 	 lower 	type 	 1
+                group 	 solid 	type 	 1 2 3
+                group 	 fixed 	type 	 1
+                group 	 middle 	type 	 2
+                group 	 movable 	type 	 2 3
+                group 	 upper 	type 	 3
+                
+                # ===== [ END GROUP SECTION ] =======================================================================================
+                
+                
+                # [1:b1] PAIR STYLE SMD
+                pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
+                smd/tlsph smd/hertz 1.5
+                
+                # [1:b1 x 1:b1] Diagonal pair coefficient tlsph
+                pair_coeff      1 1 smd/tlsph *COMMON 1000 10000.0 0.3 1.0 2.0 10.0 1000.0 &
+                *STRENGTH_LINEAR_PLASTIC 1000.0 0 &
+                *EOS_LINEAR &
+                *END
+                
+                # [2:b2 x 2:b2] Diagonal pair coefficient tlsph
+                pair_coeff      2 2 smd/tlsph *COMMON 1000 5000.0 0.3 1.0 2.0 10.0 1000.0 &
+                *STRENGTH_LINEAR_PLASTIC 500.0 0 &
+                *EOS_LINEAR &
+                *END
+                
+                # [3:b3 x 3:b3] Diagonal pair coefficient tlsph
+                pair_coeff      3 3 smd/tlsph *COMMON 1000 40000.0 0.3 1.0 2.0 10.0 1000.0 &
+                *STRENGTH_LINEAR_PLASTIC 4000.0 0 &
+                *EOS_LINEAR &
+                *END
+                
+                # [1:b1 x 2:b2] Off-diagonal pair coefficient (generic)
+                pair_coeff      1 2 smd/hertz 250.0000000000001
+                
+                # [1:b1 x 3:b3] Off-diagonal pair coefficient (generic)
+                pair_coeff      1 3 smd/hertz 250.0000000000001
+                
+                # [2:b2 x 3:b3] Off-diagonal pair coefficient (generic)
+                pair_coeff      2 3 smd/hertz 125.00000000000003
+                
+                # ===== [ END FORCEFIELD SECTION ] ==================================================================================
+             ]
+            
+            13: [
+                group all union lower middle upper
+                group external subtract all middle
+             ]
+            
+            14: velocity all set 0.0 0.0 0.0 units box
+            15: fix fix_lower lower setforce 0.0 0.0 0.0
+            16: fix move_upper upper move wiggle 0.0 0.0 ${amplitude} ${period} units box
+            17: fix dtfix tlsph smd/adjust_dt ${dt}
+            18: fix integration_fix tlsph smd/integrate_tlsph
+            
+            19: [
+                compute S all smd/tlsph_stress
+                compute E all smd/tlsph_strain
+                compute nn all smd/tlsph_num_neighs
+             ]
+            
+            20: [
+                dump dump_id all custom ${dumpdt} ${dumpfile} id type x y z vx vy vz &
+                c_S[1] c_S[2] c_S[4] c_nn &
+                c_E[1] c_E[2] c_E[4] &
+                vx vy vz
+             ]
+            
+            21: dump_modify dump_id first yes
+            
+            22: [
+                thermo ${thermodt}
+                thermo_style custom step dt f_dtfix v_strain
+             ]
+            
+            23: run ${runtime}
+        '''
+mydscript = dscript.parsesyntax(mydscriptfile,verbose=False,authentification=False)
+mydscript[-1].definitions.runtime = 1000 # change local definitions of $runtime at the last step
+print(mydscript.do(verbose=True))
+```
+
+Note that mydscript[-1].runtime = 1000 would have created the attribute runtime. Use definitions instead.
+
+print(repr(mydscript[-1])) gives all details
+--------------------------------------------------
+Template Content | id:23        (1 line, 31 defs)   <--- all variables have be created also locally
+--------------------------------------------------
+run ${runtime}                                    
+--------------------------------------------------
+Detected Variable                  (1 / +1 / -0)
+--------------------------------------------------
+[+] runtime                                         <--- this runtime is a variable
+--------------------------------------------------
+Template Attributes                (7 attributes)
+--------------------------------------------------
+[ ] facultativ   [x] eval         [ ] readonly     
+[ ] condition    [ ] condeval     [x] detectvar    
+[x] runtime                                        <--- this runtime is an attribute
+
 
 Dependencies
 ------------
@@ -498,11 +747,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9980"
+__version__ = "0.9983"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-10-28 (community)
+# INRAE\Olivier Vitrac - rev. 2024-11-08 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -521,6 +770,8 @@ __version__ = "0.9980"
 # 2024-10-24 management of locl definitions in dscript.save() and dscript.parsesyntax()
 # 2024-10-27 caching ScriptTemplate checks, improved dscript.save() methods
 # 2024-10-28 less redundancy beyween local and global variables in dscript.save()
+# 2024-10-07 new parsesyntax accepting [ ] at any position, improved doc, parsesyntax_legacy holds the old parser method
+# 2024-10-08 fix single line templates
 
 
 # Dependencies
@@ -2326,6 +2577,7 @@ class dscript:
                     definitions += f"{var} = {value}\n"
 
         # Template (number of lines/items)
+        printsinglecontent = False
         template = f"\n# TEMPLATES (number of items={len(self.TEMPLATE)})\n"
         for key, script_template in self.TEMPLATE.items():
             # Get local template definitions and detected variables
@@ -2361,10 +2613,20 @@ class dscript:
     
             # Write the template content
             if isinstance(script_template.content, list):
-                content_str = '\n    '.join(script_template.content)
-                template += f"\n{key}: [\n    {content_str}\n ]\n"
+                if len(script_template.content) == 1:
+                    # Single-line template saved as a single line
+                    content_str = script_template.content[0].strip()
+                    template += "" if printsinglecontent else "\n"
+                    template += f"{key}: {content_str}\n"
+                    printsinglecontent = True
+                else:
+                    content_str = '\n    '.join(script_template.content)
+                    template += f"\n{key}: [\n    {content_str}\n ]\n"
+                    printsinglecontent = False
             else:
+                template += "" if printsinglecontent else "\n"
                 template += f"{key}: {script_template.content}\n"
+                printsinglecontent = True
     
         # Attributes (number of lines/items with explicit attributes)
         attributes = f"# ATTRIBUTES (number of items with explicit attributes={len(self.TEMPLATE)})\n"
@@ -2551,9 +2813,491 @@ class dscript:
     # Load Method and its Parsing Rules -- added on 2024-09-04
     # ---------------------------------
     @classmethod
-    def parsesyntax(cls, content, name=None, numerickeys=True):
+    def parsesyntax(cls, content, name=None, numerickeys=True, verbose=False, authentification=True):
+        """
+        Parse a DSCRIPT script from a string content.
+    
+        Parameters
+        ----------
+        content : str
+            The string content of the DSCRIPT script to be parsed.
+    
+        name : str, optional
+            The name of the dscript project. If `None`, a random name is generated.
+    
+        numerickeys : bool, default=True
+            If `True`, numeric string keys in the template section are automatically converted into integers.
+    
+        verbose : bool, default=False
+            If `True`, the parser will output warnings for unrecognized lines outside of blocks.
+            
+        authentification : bool, default=True
+            If `True`, the parser is expected that the first non empty line is # DSCRIPT SAVE FILE
+    
+        Returns
+        -------
+        dscript
+            A new `dscript` instance populated with the content of the loaded file.
+    
+        Raises
+        ------
+        ValueError
+            If content does not start with the correct DSCRIPT header or the file format is invalid.
+    
+        Notes
+        -----
+        **DSCRIPT SAVE FILE FORMAT**
+    
+        This script syntax is designed for creating dynamic and customizable input files, where variables, templates, 
+        and control attributes can be defined in a flexible manner.
+    
+        **Mandatory First Line:**
+    
+        Every DSCRIPT file must begin with the following line:
+    
+        ```plaintext
+        # DSCRIPT SAVE FILE
+        ```
+    
+        **Structure Overview:**
+    
+        1. **Global Parameters Section (Optional):**
+    
+            - This section defines global script settings, enclosed within curly braces `{}`.
+            - Properties include:
+                - `SECTIONS`: List of section names to be considered (e.g., `["DYNAMIC"]`).
+                - `section`: Current section index (e.g., `0`).
+                - `position`: Current script position in the order.
+                - `role`: Defines the role of the script instance (e.g., `"dscript instance"`).
+                - `description`: A short description of the script (e.g., `"dynamic script"`).
+                - `userid`: Identifier for the user (e.g., `"dscript"`).
+                - `version`: Script version (e.g., `0.1`).
+                - `verbose`: Verbosity flag, typically a boolean (e.g., `False`).
+    
+            **Example:**
+    
+            ```plaintext
+            {
+                SECTIONS = ['INITIALIZATION', 'SIMULATION']  # Global script parameters
+            }
+            ```
+    
+        2. **Definitions Section:**
+    
+            - Variables are defined in Python-like syntax, allowing for dynamic variable substitution.
+            - Variables can be numbers, strings, or lists, and they can include placeholders using `$` 
+              to delay execution or substitution.
+    
+            **Example:**
+    
+            ```plaintext
+            d = 3                               # Define a number
+            periodic = "$p"                     # '$' prevents immediate evaluation of 'p'
+            units = "$metal"                    # '$' prevents immediate evaluation of 'metal'
+            dimension = "${d}"                  # Variable substitution
+            boundary = ['p', 'p', 'p']          # List with a mix of variables and values
+            atom_style = "$atomic"              # String variable with delayed evaluation
+            ```
+    
+        3. **Templates Section:**
+    
+            - This section provides a mapping between keys and their corresponding commands or instructions.
+            - The templates reference variables defined in the **Definitions** section or elsewhere.
+            - **Syntax:**
+    
+                ```plaintext
+                KEY: INSTRUCTION
+                ```
+    
+                where:
+                - `KEY` can be numeric or alphanumeric.
+                - `INSTRUCTION` represents a command template, often referring to variables using `${variable}` notation.
+    
+            **Example:**
+    
+            ```plaintext
+            units: units ${units}               # Template uses the 'units' variable
+            dim: dimension ${dimension}         # Template for setting the dimension
+            bound: boundary ${boundary}         # Template for boundary settings
+            lattice: lattice ${lattice}         # Lattice template
+            ```
+    
+        4. **Attributes Section:**
+    
+            - Each template line can have customizable attributes to control behavior and conditions.
+            - Default attributes include:
+                - `facultative`: If `True`, the line is optional and can be removed if needed.
+                - `eval`: If `True`, the line will be evaluated with Python's `eval()` function.
+                - `readonly`: If `True`, the line cannot be modified later in the script.
+                - `condition`: An expression that must be satisfied for the line to be included.
+                - `condeval`: If `True`, the condition will be evaluated using `eval()`.
+                - `detectvar`: If `True`, this creates variables in the **Definitions** section if they do not exist.
+    
+            **Example:**
+    
+            ```plaintext
+            units: {facultative=False, eval=False, readonly=False, condition="${units}", condeval=False, detectvar=True}
+            dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+            ```
+    
+        **Note on Multiple Definitions**
+    
+        This example demonstrates how variables defined in the **Definitions** section are handled for each template.
+        Each template retains its own snapshot of the variable definitions at the time it is created, ensuring that templates
+        can use different values for the same variable if redefined.
+    
+        **Example:**
+    
+        ```plaintext
+        # DSCRIPT SAVE FILE
+    
+        # Definitions
+        var = 10
+    
+        # Template key1
+        key1: Template content with ${var}
+    
+        # Definitions
+        var = 20
+    
+        # Template key2
+        key2: Template content with ${var}
+    
+        # Template key3
+        key3:[
+            this is an undefined variable ${var31}
+            this is another undefined variable ${var32}
+            this variable is defined  ${var}
+        ]
+        ```
+    
+        **Parsing and Usage:**
+    
+        ```python
+        # Parse content using parsesyntax()
+        ds = dscript.parsesyntax(content)
+    
+        # Accessing templates and their variables
+        print(ds.TEMPLATE['key1'].text)  # Output: Template content with 10
+        print(ds.TEMPLATE['key2'].text)  # Output: Template content with 20
+        ```
+    
+        **Handling Undefined Variables:**
+    
+        Variables like `${var31}` and `${var32}` in `key3` are undefined. The parser will handle them based on your substitution logic or raise an error if they are required.
+    
+        **Important Notes:**
+    
+        - The parser processes the script sequentially. Definitions must appear before the templates that use them.
+        - Templates capture the variable definitions at the time they are parsed. Redefining a variable affects only subsequent templates.
+        - Comments outside of blocks are allowed and ignored by the parser.
+        - Content within templates is treated as-is, allowing for any syntax required by the target system (e.g., LAMMPS commands).
+        
+        
+    **Advanced Example**
+
+        Here's a more advanced example demonstrating the use of global definitions, local definitions, templates, and how to parse and render the template content.
+    
+        ```python
+        content = '''
+            # GLOBAL DEFINITIONS
+            dumpfile = $dump.LAMMPS
+            dumpdt = 50
+            thermodt = 100
+            runtime = 5000
+    
+            # LOCAL DEFINITIONS for step '0'
+            dimension = 3
+            units = $si
+            boundary = ['f', 'f', 'f']
+            atom_style = $smd
+            atom_modify = ['map', 'array']
+            comm_modify = ['vel', 'yes']
+            neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
+            newton = $off
+            name = $SimulationBox
+    
+            # This is a comment line outside of blocks
+            # ------------------------------------------
+    
+            0: [    % --------------[ Initialization Header (helper) for "${name}" ]--------------
+                # set a parameter to None or "" to remove the definition
+                dimension    ${dimension}
+                units        ${units}
+                boundary     ${boundary}
+                atom_style   ${atom_style}
+                atom_modify  ${atom_modify}
+                comm_modify  ${comm_modify}
+                neigh_modify ${neigh_modify}
+                newton       ${newton}
+                # ------------------------------------------
+             ]
+        '''
+        # Parse the content
+        ds = dscript.parsesyntax(content, verbose=True, authentification=False)
+    
+        # Access and print the rendered template
+        print("Template 0 content:")
+        print(ds.TEMPLATE[0].do())
+        ```
+    
+        **Explanation:**
+    
+        - **Global Definitions:** Define variables that are accessible throughout the script.
+        - **Local Definitions for Step '0':** Define variables specific to a particular step or template.
+        - **Template Block:** Identified by `0: [ ... ]`, it contains the content where variables will be substituted.
+        - **Comments:** Lines starting with `#` are comments and are ignored by the parser outside of template blocks.
+    
+        **Expected Output:**
+    
+        ```
+        Template 0 content:
+        # --------------[ Initialization Header (helper) for "SimulationBox" ]--------------
+        # set a parameter to None or "" to remove the definition
+        dimension    3
+        units        si
+        boundary     ['f', 'f', 'f']
+        atom_style   smd
+        atom_modify  ['map', 'array']
+        comm_modify  ['vel', 'yes']
+        neigh_modify ['every', 10, 'delay', 0, 'check', 'yes']
+        newton       off
+        # ------------------------------------------
+        ```
+    
+        **Notes:**
+    
+        - The `do()` method renders the template, substituting variables with their defined values.
+        - Variables like `${dimension}` are replaced with their corresponding values defined in the local or global definitions.
+        - The parser handles comments and blank lines appropriately, ensuring they don't interfere with the parsing logic.
+
+        
+        """
+
+        # Split the content into lines
+        lines = content.splitlines()
+        if not lines:
+            raise ValueError("File/Content is empty or only contains blank lines.")
+    
+        # Initialize containers
+        global_params = {}
+        definitions = lambdaScriptdata()
+        template = {}
+        attributes = {}
+    
+        # State variables
+        inside_global_params = False
+        global_params_content = ""
+        inside_template_block = False
+        current_template_key = None
+        current_template_content = []
+    
+        # Step 1: Authenticate the file
+        if authentification:
+            auth_line_found = False
+            max_header_lines = 10
+            for idx, line in enumerate(lines[:max_header_lines]):
+                stripped_line = line.strip()
+                if not stripped_line:
+                    continue
+                if stripped_line.startswith("# DSCRIPT SAVE FILE"):
+                    auth_line_found = True
+                    header_end_idx = idx
+                    break
+                elif stripped_line.startswith("#") or stripped_line.startswith("%"):
+                    continue
+                else:
+                    raise ValueError(f"Unexpected content before authentication line (# DSCRIPT SAVE FILE) at line {idx + 1}:\n{line}")
+            if not auth_line_found:
+                raise ValueError("File/Content is not a valid DSCRIPT file.")
+    
+            # Remove header lines
+            lines = lines[header_end_idx + 1:]
+    
+            # Initialize line number
+            line_number = header_end_idx + 1
+            last_successful_line = line_number - 1
+        else:
+            # No authentication required
+            line_number = 0  # Start from the first line
+            last_successful_line = 0
+    
+        # Process each line
+        for idx, line in enumerate(lines):
+            line_number += 1  # Increment line number at the start
+            line_content = line.rstrip('\n')
+    
+            # Remove trailing comments
+            stripped_no_comments = remove_comments(line_content)
+    
+            # Ignore empty lines
+            if not stripped_no_comments.strip():
+                continue
+    
+            # If the original line is a comment line, skip it
+            if line_content.strip().startswith("#") or line_content.strip().startswith("%"):
+                continue
+    
+            stripped = stripped_no_comments.strip()
+    
+            # Handle template blocks
+            if inside_template_block:
+                if stripped == ']':
+                    # End of the template block
+                    content = '\n'.join(current_template_content)
+                    template[current_template_key] = ScriptTemplate(
+                        content,
+                        definitions=lambdaScriptdata(**definitions.__dict__),
+                        verbose=verbose,
+                        userid=current_template_key)
+                    template[current_template_key].refreshvar()
+                    inside_template_block = False
+                    current_template_key = None
+                    current_template_content = []
+                    last_successful_line = line_number
+                else:
+                    # Accumulate all lines, including comments and indentation
+                    current_template_content.append(line_content)
+                continue
+    
+            # Handle global parameters inside {...}
+            if inside_global_params:
+                global_params_content += ' ' + stripped
+                if '}' in stripped:
+                    inside_global_params = False
+                    # Parse the global parameters
+                    cls._parse_global_params(global_params_content.strip(), global_params)
+                    global_params_content = ""
+                    last_successful_line = line_number
+                continue
+    
+            # Handle start of global parameters
+            if stripped.startswith('{') and not inside_global_params:
+                if '}' in stripped:
+                    # Single-line global parameters
+                    global_params_content = stripped
+                    cls._parse_global_params(global_params_content.strip(), global_params)
+                    global_params_content = ""
+                    last_successful_line = line_number
+                else:
+                    # Multi-line global parameters
+                    inside_global_params = True
+                    global_params_content = stripped
+                continue
+    
+            # Handle attributes
+            attribute_match = re.match(r'^(\w+)\s*:\s*\{(.+)\}', stripped)
+            if attribute_match:
+                key, attr_content = attribute_match.groups()
+                attributes[key] = {}
+                cls._parse_attributes(attributes[key], attr_content.strip())
+                last_successful_line = line_number
+                continue
+    
+            # Handle start of template block
+            template_block_match = re.match(r'^(\w+)\s*:\s*\[', stripped)
+            if template_block_match:
+                current_template_key = template_block_match.group(1)
+                # Check if the line ends with ']'
+                if stripped.endswith(']'):
+                    # Single-line template block
+                    content_inside_brackets = stripped[stripped.index('[') + 1:stripped.rindex(']')].strip()
+                    template[current_template_key] = ScriptTemplate(
+                        content_inside_brackets,
+                        definitions=lambdaScriptdata(**definitions.__dict__),
+                        verbose=verbose,
+                        userid=current_template_key)
+                    template[current_template_key].refreshvar()
+                    current_template_key = None
+                    last_successful_line = line_number
+                else:
+                    # Multi-line template block
+                    remainder = line_content[line_content.index('[') + 1:]
+                    current_template_content = [remainder]
+                    inside_template_block = True
+                continue
+    
+            # Handle definitions
+            definition_match = re.match(r'^(\w+)\s*=\s*(.+)', stripped)
+            if definition_match:
+                key, value = definition_match.groups()
+                definitions.setattr(key, cls._convert_value(value))
+                last_successful_line = line_number
+                continue
+    
+            # Handle single-line templates
+            template_match = re.match(r'^(\w+)\s*:\s*(.+)', stripped)
+            if template_match:
+                key, content = template_match.groups()
+                template[key] = ScriptTemplate(
+                    content.strip(),
+                    definitions=lambdaScriptdata(**definitions.__dict__),
+                    verbose=verbose,
+                    userid=key)
+                template[key].refreshvar()
+                last_successful_line = line_number
+                continue
+    
+            # Unrecognized line
+            if verbose:
+                print(f"Warning: Unrecognized line at {line_number}: {line_content}")
+            last_successful_line = line_number  # Update last successful line even if we skip
+            continue
+    
+        # Apply attributes to templates
+        for key in attributes:
+            if key in template:
+                for attr_name, attr_value in attributes[key].items():
+                    setattr(template[key], attr_name, attr_value)
+            else:
+                raise ValueError(f"Attributes found for undefined template key: {key}")
+    
+        # Create and return new instance
+        if name is None:
+            name = autoname(8)
+        instance = cls(
+            name=name,
+            SECTIONS=global_params.get('SECTIONS', ['DYNAMIC']),
+            section=global_params.get('section', 0),
+            position=global_params.get('position', 0),
+            role=global_params.get('role', 'dscript instance'),
+            description=global_params.get('description', 'dynamic script'),
+            userid=global_params.get('userid', 'dscript'),
+            version=global_params.get('version', 0.1),
+            verbose=global_params.get('verbose', False)
+        )
+    
+        # Convert numeric string keys to integers if numerickeys is True
+        if numerickeys:
+            numeric_template = {}
+            for key, value in template.items():
+                if key.isdigit():
+                    numeric_template[int(key)] = value
+                else:
+                    numeric_template[key] = value
+            template = numeric_template
+    
+        # Set definitions and template
+        instance.DEFINITIONS = definitions
+        instance.TEMPLATE = template
+    
+        # Refresh variables
+        instance.set_all_variables()
+    
+        # Check variables
+        instance.check_all_variables(verbose=False)
+    
+        # Return the new instance
+        return instance
+    
+    
+    @classmethod
+    def parsesyntax_legacy(cls, content, name=None, numerickeys=True):
         """
         Parse a script from a string content.
+        [ ------------------------------------------------------]
+        [ Legacy parsesyntax method for backward compatibility. ]
+        [ ------------------------------------------------------]
     
         Parameters
         ----------
@@ -2845,7 +3589,7 @@ class dscript:
                 cls._parse_attributes(attributes[current_attr_key], attr_content)
                 inside_attributes = not stripped.endswith("}")
 
-        # Step 6: Validation and Reconstruction
+        # Step 7: Validation and Reconstruction
         # Make sure there are no attributes without a template entry
         for key in attributes:
             if key not in template:
