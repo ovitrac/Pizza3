@@ -65,7 +65,7 @@ classes to generate flexible LAMMPS scripts with minimal manual intervention. Us
 This example requires Pizza3 version 0.9976 or above. All scripts (`script`, `pipescript`, `scriptobject`, and `scriptobjectgroup`) exhibit sufficient compatibility to be combined with operators. The pipe operator (`|`) is preferred as it facilitates reordering and the inclusion of local variables.
 
 **Revision:**
-Last revision: 2024-10-28
+Last revision: 2024-11-08
 
 """
 
@@ -352,8 +352,7 @@ neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
 newton = $off
 name = $SimulationBox
 
-0: [
-    % --------------[ Initialization Header (helper) for "${name}"   ]--------------
+0: [    % --------------[ Initialization Header (helper) for "${name}"   ]--------------
     # set a parameter to None or "" to remove the definition
     dimension    ${dimension}
     units        ${units}
@@ -363,7 +362,7 @@ name = $SimulationBox
     comm_modify  ${comm_modify}
     neigh_modify ${neigh_modify}
     newton       ${newton}
-    # ------------------------------------------
+    # ------------------------------------------ 
  ]
 
 # LOCAL DEFINITIONS for step '1'
@@ -397,23 +396,17 @@ nbeads = 3
 ID = $LowerCylinder
 style = $cylinder
 
-3: [
-    % variables to be used for ${ID} ${style}
- ]
+3: % variables to be used for ${ID} ${style}
 
 # LOCAL DEFINITIONS for step '4'
 ID = $CentralCylinder
 
-4: [
-    % variables to be used for ${ID} ${style}
- ]
+4: % variables to be used for ${ID} ${style}
 
 # LOCAL DEFINITIONS for step '5'
 ID = $UpperCylinder
 
-5: [
-    % variables to be used for ${ID} ${style}
- ]
+5: % variables to be used for ${ID} ${style}
 
 # LOCAL DEFINITIONS for step '6'
 args = ['z', 0.0, 0.0, 36.27130939426913, 0.0, 6.045218232378189]
@@ -531,25 +524,11 @@ beadtype = 3
     group external subtract all middle
  ]
 
-14: [
-    velocity all set 0.0 0.0 0.0 units box
- ]
-
-15: [
-    fix fix_lower lower setforce 0.0 0.0 0.0
- ]
-
-16: [
-    fix move_upper upper move wiggle 0.0 0.0 ${amplitude} ${period} units box
- ]
-
-17: [
-    fix dtfix tlsph smd/adjust_dt ${dt}
- ]
-
-18: [
-    fix integration_fix tlsph smd/integrate_tlsph
- ]
+14: velocity all set 0.0 0.0 0.0 units box
+15: fix fix_lower lower setforce 0.0 0.0 0.0
+16: fix move_upper upper move wiggle 0.0 0.0 ${amplitude} ${period} units box
+17: fix dtfix tlsph smd/adjust_dt ${dt}
+18: fix integration_fix tlsph smd/integrate_tlsph
 
 19: [
     compute S all smd/tlsph_stress
@@ -564,18 +543,14 @@ beadtype = 3
     vx vy vz
  ]
 
-21: [
-    dump_modify dump_id first yes
- ]
+21: dump_modify dump_id first yes
 
-22: [
+22: [ 
     thermo ${thermodt}
     thermo_style custom step dt f_dtfix v_strain
  ]
 
-23: [
-    run ${runtime}
- ]
+23: run ${runtime}
 """
 Dall3 = dscript.parsesyntax(Dcode)
 print(Dall3.do(verbose=False))
