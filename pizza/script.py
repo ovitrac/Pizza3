@@ -103,11 +103,11 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9978"
+__version__ = "0.9983"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-10-19 (community)
+# INRAE\Olivier Vitrac - rev. 2024-11-12 (community)
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -148,6 +148,7 @@ __version__ = "0.9978"
 # 2024-10-18 add dscript() method to generate a dscript object from a pipescript
 # 2024-10-19 script.do() convert literal \\n back to \n
 # 2024-10-22 fix | for non-native pipescript objects
+# 2024-11-12 add flexibility to remove_comments(), comment_chars="#%", continuation_marker="..."
 
 
 # %% Dependencies
@@ -177,9 +178,9 @@ BOM_UTF8 = b'\xef\xbb\xbf'
 
 
 # %% Private functions and classes
-def remove_comments(content, split_lines=False, emptylines=False):
+def remove_comments(content, split_lines=False, emptylines=False, comment_chars="#", continuation_marker="\\\\", remove_continuation_marker=False):
     """
-    Removes comments from a single or multi-line string. Handles quotes and escaped characters.
+    Removes comments from a single or multi-line string, handling quotes, escaped characters, and line continuation.
     
     Parameters:
     -----------
@@ -192,6 +193,16 @@ def remove_comments(content, split_lines=False, emptylines=False):
     emptylines : bool, optional (default: False)
         If True, empty lines will be preserved in the output. If False, empty lines 
         will be removed from the output.
+    comment_chars : str, optional (default: "#")
+        A string containing characters to identify the start of a comment. 
+        Any of these characters will mark the beginning of a comment unless within quotes.
+    continuation_marker : str or None, optional (default: "\\\\")
+        A string containing characters to indicate line continuation (use `\\` to specify).
+        Any characters after the continuation marker are ignored as a comment. If set to `None`
+        or an empty string, line continuation will not be processed.
+    remove_continuation_marker : bool, optional (default: False)
+        If True, the continuation marker itself is removed from the processed line, keeping
+        only the characters before it. If False, the marker is retained as part of the line.
     
     Returns:
     --------
@@ -200,21 +211,27 @@ def remove_comments(content, split_lines=False, emptylines=False):
         `split_lines` is True, or a single string if False.
     """
     def process_line(line):
-        """Remove comments from a single line while handling quotes and escapes."""
+        """Remove comments and handle line continuation within a single line while managing quotes and escapes."""
         in_single_quote = False
         in_double_quote = False
         escaped = False
         result = []
         
-        for i, char in enumerate(line):
+        i = 0
+        while i < len(line):
+            char = line[i]
+            
             if escaped:
                 result.append(char)
                 escaped = False
+                i += 1
                 continue
             
-            if char == '\\':  # Handle escape character
+            # Handle escape character within quoted strings
+            if char == '\\' and (in_single_quote or in_double_quote):
                 escaped = True
                 result.append(char)
+                i += 1
                 continue
             
             # Toggle state for single and double quotes
@@ -223,11 +240,23 @@ def remove_comments(content, split_lines=False, emptylines=False):
             elif char == '"' and not in_single_quote:
                 in_double_quote = not in_double_quote
             
-            # If we encounter a '#' and we're not inside quotes, it's a comment
-            if char == '#' and not in_single_quote and not in_double_quote:
+            # Check for line continuation marker if it's set and outside of quotes
+            if continuation_marker and not in_single_quote and not in_double_quote:
+                # Check if the remaining part of the line matches the continuation marker
+                if line[i:].startswith(continuation_marker):
+                    # Optionally remove the continuation marker
+                    if remove_continuation_marker:
+                        result.append(line[:i].rstrip())  # Keep everything before the marker
+                    else:
+                        result.append(line[:i + len(continuation_marker)].rstrip())  # Include the marker itself
+                    return ''.join(result).strip()
+            
+            # Check for comment start characters outside of quotes
+            if char in comment_chars and not in_single_quote and not in_double_quote:
                 break  # Stop processing the line when a comment is found
             
             result.append(char)
+            i += 1
         
         return ''.join(result).strip()
 
@@ -240,7 +269,7 @@ def remove_comments(content, split_lines=False, emptylines=False):
         stripped_line = line.strip()
         if not stripped_line and not emptylines:
             continue  # Skip empty lines if emptylines is False
-        if stripped_line.startswith('#'):
+        if any(stripped_line.startswith(c) for c in comment_chars):
             continue  # Skip lines that are pure comments
         processed_line = process_line(line)
         if processed_line or emptylines:  # Only add non-empty lines if emptylines is False
@@ -250,6 +279,8 @@ def remove_comments(content, split_lines=False, emptylines=False):
         return processed_lines  # Return list of processed lines
     else:
         return '\n'.join(processed_lines)  # Join lines back into a single string
+
+
 
 
 class CallableScript:

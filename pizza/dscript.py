@@ -747,7 +747,7 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9983"
+__version__ = "0.9984"
 
 
 
@@ -772,6 +772,7 @@ __version__ = "0.9983"
 # 2024-10-28 less redundancy beyween local and global variables in dscript.save()
 # 2024-10-07 new parsesyntax accepting [ ] at any position, improved doc, parsesyntax_legacy holds the old parser method
 # 2024-10-08 fix single line templates
+# 2024-10-12 several improvements and sophistication in the definition and execution of templates from dscript 
 
 
 # Dependencies
@@ -1108,7 +1109,7 @@ class ScriptTemplate:
         'detectvar': True
     }
     
-    def __init__(self, content="", definitions=lambdaScriptdata(), userid=None, verbose=False, **kwargs):
+    def __init__(self, content="", definitions=lambdaScriptdata(), userid=None, verbose=False, comment_chars="#%", **kwargs):
         """
         Initializes a new `ScriptTemplate` object.
         
@@ -1157,6 +1158,9 @@ class ScriptTemplate:
             - detectvar (True): 
                 If True, the content will automatically detect and register any variables 
                 (such as `${varname}`) within the `definitions` for substitution.
+            - comment_chars : str, optional (default: "#%")
+                A string containing characters to identify the start of a comment. 
+                Any of these characters will mark the beginning of a comment unless within quotes.
         """
         
 
@@ -1180,7 +1184,7 @@ class ScriptTemplate:
             if verbose:
                 content = content.split('\n')  # All comments are preserved during construction
             else:
-                content = remove_comments(content, split_lines=True)  # Split string by newlines into list of strings
+                content = remove_comments(content, split_lines=True,comment_chars=comment_chars)  # Split string by newlines into list of strings
         elif not isinstance(content, list) or not all(isinstance(item, str) for item in content):
             raise TypeError("The 'content' attribute must be a string or a list of strings.")
         # Assign content to the object
@@ -1495,37 +1499,64 @@ class ScriptTemplate:
 
 
     
-    def do(self, protected=True, softrun=False):
+    def do(self, protected=True, softrun=False, USER=lambdaScriptdata()):
         """
-        Executes or prepares the script template content based on its attributes and the softrun flag.
-
+        Executes or prepares the script template content based on its attributes and the `softrun` flag.
+    
         Parameters
         ----------
         protected : bool, optional
-            If `True` (default), variable evaluation uses a protected environment, preventing changes 
-            to global definitions or system attributes during execution.
+            If `True` (default), variable evaluation uses a protected environment, safeguarding global definitions 
+            and system attributes from modification during execution.
         softrun : bool, optional
             Determines if the script is evaluated in a preliminary mode:
             - If `True`, returns the script content without full evaluation, allowing for a preview or 
-              an initial capture of local definitions without substitution of variables.
+              an initial capture of local definitions without substituting variables.
             - If `False` (default), processes the script with full evaluation, applying all substitutions 
               defined in `definitions`.
-
+        USER : lambdaScriptdata, optional
+            A `lambdaScriptdata` instance with user-provided definitions, which supplement or override 
+            template-level definitions during execution.
+    
         Returns
         -------
         str
-            The processed or original script content as a single string. 
+            The processed or original script content as a single string.
             - Returns an empty string if `facultative` is set to `True`, or if `condition` is `False` 
-              and does not satisfy any specified evaluation requirements.
+              and does not meet any specified evaluation requirements.
         
         Notes
         -----
-        - `facultative`: If `True`, the method returns an empty string, effectively skipping execution.
-        - `condition`: If specified, this attribute is evaluated to decide whether the content is processed 
+        - `facultative`: If `True`, the method returns an empty string, effectively skipping execution of the content.
+        - `condition`: If specified, this attribute is evaluated to decide whether the content should be processed 
           (default `True` if `condition` is `None`). If `condeval` is `True`, the condition itself undergoes 
           evaluation using Python's `eval`.
         - `eval`: If `True` and `softrun` is `False`, performs evaluation for variable substitution on the 
-          content lines, transforming variables based on the `definitions`.
+          content lines, applying transformations based on both `definitions` and `USER` definitions if provided.
+          This allows variables to be dynamically substituted within the script content.
+    
+        Processing Workflow
+        -------------------
+        1. **Facultative Check**: If the `facultative` attribute is `True`, immediately returns an empty string.
+        2. **Condition Check**: If a `condition` is specified, it is evaluated:
+           - If `condeval` is `True`, the condition undergoes evaluation (using `eval`).
+           - If the evaluated `condition` is `False`, returns an empty string, skipping execution.
+        3. **Execution Based on `softrun`**:
+           - If `softrun` is `True`, returns the original content without variable substitution, providing a preview.
+           - If `softrun` is `False`, evaluates the content lines based on `definitions` and `USER` if applicable.
+        4. **Variable Formatting**: During evaluation, lists and tuples are formatted into strings with prefixed comments,
+           enhancing readability and handling complex data structures directly in the script.
+    
+        Example
+        -------
+        >>> template = ScriptTemplate(
+        ...     content=["variable x equal ${var1}", "print 'Value of x is ${var1}'"],
+        ...     definitions=lambdaScriptdata(var1=10),
+        ...     attributes={'eval': True}
+        ... )
+        >>> template.do()
+        "variable x equal 10\nprint 'Value of x is 10'"
+        
         """
 
         # If 'facultative' is set to True, return an empty string immediately
@@ -1545,7 +1576,15 @@ class ScriptTemplate:
         # Perform full processing when softrun is False
         if cond:
             if self.attributes.get("eval", False):
-                return "\n".join([self.definitions.formateval(line, protected) for line in self.content])
+                #return "\n".join([self.definitions.formateval(line, protected) for line in self.content])
+                inputs = self.definitions + USER
+                for k in inputs.keys():
+                    if isinstance(inputs.getattr(k),list):
+                        inputs.setattr(k,"% "+span(inputs.getattr(k)))
+                    elif isinstance(inputs.getattr(k),tuple):
+                        inputs.setattr(k,"% "+span(inputs.getattr(k),sep=","))
+                return "\n".join([inputs.formateval(line, protected) for line in self.content])
+                
             else:
                 return "\n".join(self.content)
 
@@ -2247,39 +2286,70 @@ class dscript:
                 self.DEFINITIONS.setattr(varname,"${" + varname + "}")
 
     
-    def do(self, printflag=None, verbose=None, softrun=False, return_definitions=False):
+    def do(self, printflag=None, verbose=None, softrun=False, return_definitions=False,comment_chars="#%", **USER):
         """
-        Executes or previews all `ScriptTemplate` instances in `TEMPLATE`, concatenating the results.
-        Includes optional headers and footers based on verbosity settings and allows for a preliminary run with `softrun`.
-        Can also return accumulated definitions across all templates if `return_definitions=True`.
-
+        Executes or previews all `ScriptTemplate` instances in `TEMPLATE`, concatenating their processed content.
+        Allows for optional headers and footers based on verbosity settings, and offers a preliminary preview mode with `softrun`.
+        Accumulates definitions across all templates if `return_definitions=True`.
+    
         Parameters
         ----------
         printflag : bool, optional
-            If `True`, enables print output during execution. If `None`, uses the instance's default print flag.
+            If `True`, enables print output during execution. Defaults to the instance's print flag if `None`.
         verbose : bool, optional
-            If `True`, includes headers and footers in the output. If `None`, uses the instance's verbosity setting.
+            If `True`, includes headers and footers in the output, providing additional detail.
+            Defaults to the instance's verbosity setting if `None`.
         softrun : bool, optional
-            If `True`, executes the script in a preliminary mode, bypassing full variable substitution for a preview
-            of the content. If `False` (default), performs full processing of templates.
+            If `True`, executes the script in a preliminary mode:
+            - Bypasses full variable substitution for a preview of the content, useful for validating structure.
+            - If `False` (default), performs full processing, including variable substitutions and evaluations.
         return_definitions : bool, optional
-            If `True`, returns a tuple where the second element contains all accumulated definitions across templates.
-            Default is `False`, returning only the concatenated output.
-
+            If `True`, returns a tuple where the second element contains accumulated definitions from all templates.
+            If `False` (default), returns only the concatenated output.
+        comment_chars : str, optional (default: "#%")
+            A string containing characters to identify the start of a comment. 
+            Any of these characters will mark the beginning of a comment unless within quotes.
+        **USER : keyword arguments
+            Allows for the provision of additional user-defined definitions, where each keyword represents a 
+            definition key and the associated value represents the definition's content. These definitions 
+            can override or supplement template-level definitions during execution.
+    
         Returns
         -------
         str or tuple
-            The concatenated output of all `ScriptTemplate` instances, including optional headers, footers,
-            and execution summary details based on verbosity. If `return_definitions=True`, returns a tuple of
-            (output, accumulated_definitions).
-
+            - If `return_definitions=False`, returns the concatenated output of all `ScriptTemplate` instances, 
+              with optional headers, footers, and execution summary based on verbosity.
+            - If `return_definitions=True`, returns a tuple of (`output`, `accumulated_definitions`), where
+              `accumulated_definitions` contains all definitions used across templates.
+    
         Notes
         -----
-        - Each `ScriptTemplate` in `TEMPLATE` is processed individually with its own `do()` method.
-        - `softrun` allows for a preliminary content preview, which is useful for validating script structure or 
-          gathering local definitions without substituting variables.
-        - Verbose mode provides headers, footers, and a summary of processed and ignored items.
+        - Each `ScriptTemplate` in `TEMPLATE` is processed individually using its own `do()` method.
+        - The `softrun` mode provides a preliminary content preview without full variable substitution,
+          helpful for inspecting the script structure or gathering local definitions.
+        - When `verbose` is enabled, the method includes detailed headers, footers, and a summary of processed and 
+          ignored items, providing insight into the script's construction and variable usage.
+        - Accumulated definitions from each `ScriptTemplate` are combined if `return_definitions=True`, which can be
+          useful for tracking all variables and definitions applied across the templates.
+    
+        Example
+        -------
+        >>> dscript_instance = dscript(name="ExampleScript")
+        >>> dscript_instance.TEMPLATE[0] = ScriptTemplate(
+        ...     content=["units ${units}", "boundary ${boundary}"],
+        ...     definitions=lambdaScriptdata(units="lj", boundary="p p p"),
+        ...     attributes={'eval': True}
+        ... )
+        >>> dscript_instance.do(verbose=True, units="real")
+        # Output:
+        # --------------
+        # TEMPLATE "ExampleScript"
+        # --------------
+        units real
+        boundary p p p
+        # ---> Total items: 2 - Ignored items: 0
         """
+
         printflag = self.printflag if printflag is None else printflag
         verbose = self.verbose if verbose is None else verbose
         header = f"# --------------[ TEMPLATE \"{self.name}\" ]--------------" if verbose else ""
@@ -2293,13 +2363,15 @@ class dscript:
         
         for key, template in self.TEMPLATE.items():
             # Process each template with softrun if enabled, otherwise use full processing
-            result = template.do(softrun=softrun)
+            result = template.do(softrun=softrun,USER=lambdaScriptdata(**USER))
             if result:
                 # Apply comment removal based on verbosity
-                final_result = result if verbose else remove_comments(result)
-                output.append(final_result)
-                non_empty_lines += 1
-                
+                final_result = result if verbose else remove_comments(result,comment_chars=comment_chars)
+                if final_result or verbose:
+                    output.append(final_result)
+                    non_empty_lines += 1
+                else:
+                    ignored_lines += 1
                 # Accumulate definitions if return_definitions is enabled
                 if return_definitions:
                     accumulated_definitions += template.definitions
@@ -2813,7 +2885,8 @@ class dscript:
     # Load Method and its Parsing Rules -- added on 2024-09-04
     # ---------------------------------
     @classmethod
-    def parsesyntax(cls, content, name=None, numerickeys=True, verbose=False, authentification=True):
+    def parsesyntax(cls, content, name=None, numerickeys=True, verbose=False, authentification=True,
+                    comment_chars="#%",continuation_marker="..."):
         """
         Parse a DSCRIPT script from a string content.
     
@@ -2833,6 +2906,16 @@ class dscript:
             
         authentification : bool, default=True
             If `True`, the parser is expected that the first non empty line is # DSCRIPT SAVE FILE
+            
+        comment_chars : str, optional (default: "#%")
+            A string containing characters to identify the start of a comment. 
+            Any of these characters will mark the beginning of a comment unless within quotes.
+            
+        continuation_marker : str, optional (default: "...")
+            A string containing characters to indicate line continuation
+            Any characters after the continuation marker are considered comment and are theorefore ignored
+            
+            
     
         Returns
         -------
@@ -2900,27 +2983,67 @@ class dscript:
             ```
     
         3. **Templates Section:**
-    
+        
             - This section provides a mapping between keys and their corresponding commands or instructions.
-            - The templates reference variables defined in the **Definitions** section or elsewhere.
-            - **Syntax:**
-    
-                ```plaintext
-                KEY: INSTRUCTION
-                ```
-    
-                where:
-                - `KEY` can be numeric or alphanumeric.
-                - `INSTRUCTION` represents a command template, often referring to variables using `${variable}` notation.
-    
-            **Example:**
-    
-            ```plaintext
-            units: units ${units}               # Template uses the 'units' variable
-            dim: dimension ${dimension}         # Template for setting the dimension
-            bound: boundary ${boundary}         # Template for boundary settings
-            lattice: lattice ${lattice}         # Lattice template
-            ```
+            - Each template can reference variables defined in the **Definitions** section or elsewhere, typically using the `${variable}` syntax.
+            - **Syntax Variations**:
+            
+                Templates can be defined in several ways, including without blocks, with single- or multi-line blocks, and with ellipsis (`...`) as a line continuation marker. 
+        
+                - **Single-line Template Without Block**:
+                    ```plaintext
+                    KEY: INSTRUCTION
+                    ```
+                    - `KEY` is the identifier for the template (numeric or alphanumeric).
+                    - `INSTRUCTION` is the command or template text, which may reference variables.
+                
+                - **Single-line Template With Block**:
+                    ```plaintext
+                    KEY: [INSTRUCTION]
+                    ```
+                    - Uses square brackets (`[ ]`) around the `INSTRUCTION`, indicating that all instructions are part of the block. 
+                
+                - **Multi-line Template With Block**:
+                    ```plaintext
+                    KEY: [
+                        INSTRUCTION1
+                        INSTRUCTION2
+                        ...
+                        ]
+                    ```
+                    - Begins with `KEY: [` and ends with a standalone `]` on a new line.
+                    - Instructions within the block can span multiple lines, and ellipses (`...`) at the end of a line are used to indicate that the line continues, ignoring any content following the ellipsis as comments.
+                    - Comments following ellipses are removed after parsing and do not become part of the block, preserving only the instructions.
+        
+                - **Multi-line Template With Continuation Marker (Ellipsis)**:
+                    - For templates with complex code containing square brackets (`[ ]`), the ellipsis (`...`) can be used to prevent `]` from prematurely closing the block. The ellipsis will keep the line open across multiple lines, allowing brackets in the instructions.
+        
+                    **Example:**
+                    ```plaintext
+                    example1: command ${value}       # Single-line template without block
+                    example2: [command ${value}]     # Single-line template with block
+                    
+                    # Multi-line template with block
+                    example3: [
+                        command1 ${var1}
+                        command2 ${var2} ...   # Line continues after ellipsis
+                        command3 ${var3} ...   # Additional instruction continues
+                        ]
+                    
+                    # Multi-line template with ellipsis (handling square brackets)
+                    example4: [
+                        A[0][1] ...            # Ellipsis allows [ ] within instructions
+                        B[2][3] ...            # Another instruction in the block
+                        ]
+                    ```
+        
+            - **Key Points**:
+                - **Blocks** allow grouping of multiple instructions for a single key, enclosed in square brackets.
+                - **Ellipsis (`...`)** at the end of a line keeps the line open, preventing premature closing by `]`, especially useful if the template code includes square brackets (`[ ]`).
+                - **Comments** placed after the ellipsis are removed after parsing and are not part of the final block content.
+            
+            This flexibility supports both simple and complex template structures, allowing instructions to be grouped logically while keeping code and comments distinct.
+
     
         4. **Attributes Section:**
     
@@ -3073,7 +3196,6 @@ class dscript:
 
         
         """
-
         # Split the content into lines
         lines = content.splitlines()
         if not lines:
@@ -3092,10 +3214,15 @@ class dscript:
         current_template_key = None
         current_template_content = []
     
+        # Initialize line number
+        line_number = 0
+        last_successful_line = 0
+    
         # Step 1: Authenticate the file
         if authentification:
             auth_line_found = False
             max_header_lines = 10
+            header_end_idx = -1
             for idx, line in enumerate(lines[:max_header_lines]):
                 stripped_line = line.strip()
                 if not stripped_line:
@@ -3113,24 +3240,67 @@ class dscript:
     
             # Remove header lines
             lines = lines[header_end_idx + 1:]
-    
-            # Initialize line number
             line_number = header_end_idx + 1
             last_successful_line = line_number - 1
         else:
-            # No authentication required
-            line_number = 0  # Start from the first line
+            line_number = 0
             last_successful_line = 0
     
         # Process each line
         for idx, line in enumerate(lines):
-            line_number += 1  # Increment line number at the start
+            line_number += 1
             line_content = line.rstrip('\n')
     
-            # Remove trailing comments
+            # Determine if we're inside a template block
+            if inside_template_block:
+                # Extract the code with its eventual continuation_marker
+                code_line = remove_comments(
+                        line_content,
+                        comment_chars=comment_chars,
+                        continuation_marker=continuation_marker,
+                        remove_continuation_marker=False,
+                        ).rstrip()
+                
+                # Check if line should continue
+                if code_line.endswith(continuation_marker):
+                    # Append line up to the continuation marker
+                    endofline_index = line_content.rindex(continuation_marker)
+                    trimmed_content = line_content[:endofline_index].rstrip()
+                    if trimmed_content:
+                        current_template_content.append(trimmed_content)
+                    continue
+                elif code_line.endswith("]"):  # End of multi-line block
+                    closing_index = code_line.rindex(']')
+                    trimmed_content = code_line[:closing_index].rstrip()
+                    
+                    # Append any valid content before `]`, if non-empty
+                    if trimmed_content:
+                        current_template_content.append(trimmed_content)
+                    
+                    # End of template block
+                    content = '\n'.join(current_template_content)
+                    template[current_template_key] = ScriptTemplate(
+                        content,
+                        definitions=lambdaScriptdata(**definitions.__dict__),
+                        verbose=verbose,
+                        userid=current_template_key)
+                    # Refresh variables definitions
+                    template[current_template_key].refreshvar()
+                    # Reset state for next block
+                    inside_template_block = False
+                    current_template_key = None
+                    current_template_content = []
+                    last_successful_line = line_number
+                    continue
+                else:
+                    # Append the entire original line content if not ending with `...` or `]`
+                    current_template_content.append(line_content)
+                continue
+    
+            # Not inside a template block
             stripped_no_comments = remove_comments(line_content)
     
-            # Ignore empty lines
+            # Ignore empty lines after removing comments
             if not stripped_no_comments.strip():
                 continue
     
@@ -3140,24 +3310,63 @@ class dscript:
     
             stripped = stripped_no_comments.strip()
     
-            # Handle template blocks
-            if inside_template_block:
-                if stripped == ']':
-                    # End of the template block
-                    content = '\n'.join(current_template_content)
-                    template[current_template_key] = ScriptTemplate(
-                        content,
-                        definitions=lambdaScriptdata(**definitions.__dict__),
-                        verbose=verbose,
-                        userid=current_template_key)
-                    template[current_template_key].refreshvar()
-                    inside_template_block = False
-                    current_template_key = None
-                    current_template_content = []
+            # Handle start of a new template block
+            template_block_match = re.match(r'^(\w+)\s*:\s*\[', stripped)
+            if template_block_match:
+                current_template_key = template_block_match.group(1)
+                if inside_template_block:
+                    # Collect error context
+                    context_start = max(0, last_successful_line - 3)
+                    context_end = min(len(lines), line_number + 2)
+                    error_context_lines = lines[context_start:context_end]
+                    error_context = ""
+                    for i, error_line in enumerate(error_context_lines):
+                        line_num = context_start + i + 1
+                        indicator = ">" if line_num == line_number else "*" if line_num == last_successful_line else " "
+                        error_context += f"{indicator} {line_num}: {error_line}\n"
+        
+                    raise ValueError(
+                        f"Template block '{current_template_key}' starting at line {last_successful_line} (*) was not properly closed before starting a new one at line {line_number} (>).\n\n"
+                        f"Error context:\n{error_context}"
+                    )
+                else:
+                    inside_template_block = True
+                    idx_open_bracket = line_content.index('[')
+                    remainder = line_content[idx_open_bracket + 1:].strip()
+                    if remainder:
+                        remainder_code = remove_comments(remainder, comment_chars=comment_chars).rstrip()
+                        if remainder_code.endswith("]"):
+                            closing_index = remainder_code.rindex(']')
+                            content_line = remainder_code[:closing_index].strip()
+                            if content_line:
+                                current_template_content.append(content_line)
+                            content = '\n'.join(current_template_content)
+                            template[current_template_key] = ScriptTemplate(
+                                content,
+                                definitions=lambdaScriptdata(**definitions.__dict__),
+                                verbose=verbose,
+                                userid=current_template_key)
+                            template[current_template_key].refreshvar()
+                            inside_template_block = False
+                            current_template_key = None
+                            current_template_content = []
+                            last_successful_line = line_number
+                            continue
+                        else:
+                            current_template_content.append(remainder)
+                    last_successful_line = line_number
+                continue
+    
+            # Handle start of global parameters
+            if stripped.startswith('{') and not inside_global_params:
+                if '}' in stripped:
+                    global_params_content = stripped
+                    cls._parse_global_params(global_params_content.strip(), global_params)
+                    global_params_content = ""
                     last_successful_line = line_number
                 else:
-                    # Accumulate all lines, including comments and indentation
-                    current_template_content.append(line_content)
+                    inside_global_params = True
+                    global_params_content = stripped
                 continue
     
             # Handle global parameters inside {...}
@@ -3165,24 +3374,9 @@ class dscript:
                 global_params_content += ' ' + stripped
                 if '}' in stripped:
                     inside_global_params = False
-                    # Parse the global parameters
                     cls._parse_global_params(global_params_content.strip(), global_params)
                     global_params_content = ""
                     last_successful_line = line_number
-                continue
-    
-            # Handle start of global parameters
-            if stripped.startswith('{') and not inside_global_params:
-                if '}' in stripped:
-                    # Single-line global parameters
-                    global_params_content = stripped
-                    cls._parse_global_params(global_params_content.strip(), global_params)
-                    global_params_content = ""
-                    last_successful_line = line_number
-                else:
-                    # Multi-line global parameters
-                    inside_global_params = True
-                    global_params_content = stripped
                 continue
     
             # Handle attributes
@@ -3192,29 +3386,6 @@ class dscript:
                 attributes[key] = {}
                 cls._parse_attributes(attributes[key], attr_content.strip())
                 last_successful_line = line_number
-                continue
-    
-            # Handle start of template block
-            template_block_match = re.match(r'^(\w+)\s*:\s*\[', stripped)
-            if template_block_match:
-                current_template_key = template_block_match.group(1)
-                # Check if the line ends with ']'
-                if stripped.endswith(']'):
-                    # Single-line template block
-                    content_inside_brackets = stripped[stripped.index('[') + 1:stripped.rindex(']')].strip()
-                    template[current_template_key] = ScriptTemplate(
-                        content_inside_brackets,
-                        definitions=lambdaScriptdata(**definitions.__dict__),
-                        verbose=verbose,
-                        userid=current_template_key)
-                    template[current_template_key].refreshvar()
-                    current_template_key = None
-                    last_successful_line = line_number
-                else:
-                    # Multi-line template block
-                    remainder = line_content[line_content.index('[') + 1:]
-                    current_template_content = [remainder]
-                    inside_template_block = True
                 continue
     
             # Handle definitions
@@ -3241,8 +3412,25 @@ class dscript:
             # Unrecognized line
             if verbose:
                 print(f"Warning: Unrecognized line at {line_number}: {line_content}")
-            last_successful_line = line_number  # Update last successful line even if we skip
+            last_successful_line = line_number
             continue
+    
+        # At the end, check if any template block was left unclosed
+        if inside_template_block:
+            # Collect error context
+            context_start = max(0, last_successful_line - 3)
+            context_end = min(len(lines), last_successful_line + 3)
+            error_context_lines = lines[context_start:context_end]
+            error_context = ""
+            for i, error_line in enumerate(error_context_lines):
+                line_num = context_start + i
+                indicator = ">" if line_num == last_successful_line else " "
+                error_context += f"{indicator} {line_num}: {error_line}\n"
+    
+            raise ValueError(
+                f"Template block '{current_template_key}' starting at line {last_successful_line} was not properly closed.\n\n"
+                f"Error context:\n{error_context}"
+            )
     
         # Apply attributes to templates
         for key in attributes:
@@ -3287,9 +3475,10 @@ class dscript:
         # Check variables
         instance.check_all_variables(verbose=False)
     
-        # Return the new instance
         return instance
-    
+
+
+        
     
     @classmethod
     def parsesyntax_legacy(cls, content, name=None, numerickeys=True):
@@ -4312,8 +4501,7 @@ initialize: [
     atom_modify map array
     comm_modify vel yes
     neigh_modify every 10 delay 0 check yes
-    newton off
-]
+    newton off ]
 
 # set region dimensions
 boxlength = 10  # variables can be defined and changed any time (only the last definition is retained)
@@ -4324,15 +4512,13 @@ create: [
     region box block ${boxlength} ${boxlength} ${boxlength} ${boxlength} ${boxdepth} ${boxdepth} units box
     create_box 1 box
     create_atoms 1 box
-    group tlsph type 1
-]
+    group tlsph type 1 ]
 
 discretization: [
     neighbor ${skin} bin
     set group all volume ${vol_one}
     set group all smd_mass_density ${rho}
-    set group all diameter ${h}
-]
+    set group all diameter ${h} ]
 
 boundary_conditions: [
     region top block EDGE EDGE 9.0 EDGE EDGE EDGE units box
@@ -4342,16 +4528,14 @@ boundary_conditions: [
     variable vel_up equal ${vel0} * (1.0 exp(0.01 * time))
     variable vel_down equal v_vel_up
     fix veltop_fix top smd/setvelocity 0 v_vel_up 0
-    fix velbot_fix bot smd/setvelocity 0 v_vel_down 0
-]
+    fix velbot_fix bot smd/setvelocity 0 v_vel_down 0 ]
 
 physics: [
     pair_style smd/tlsph
     pair_coeff 1 1 *COMMON ${rho} ${E} ${nu} ${q1} ${q2} ${hg} ${cp} &
     *STRENGTH_LINEAR &
     *EOS_LINEAR &
-    *END
-]
+    *END ]
 
 output: [
     compute S all smd/tlsph_stress
@@ -4361,8 +4545,7 @@ output: [
     c_S[1] c_S[2] c_S[4] c_nn &
     c_E[1] c_E[2] c_E[4] &
     vx vy vz
-    dump_modify dump_id first yes
-]
+    dump_modify dump_id first yes ]
 
 # add filename
 outputfilename = "$stress_strain.dat" # variables can be defined and changed any time
@@ -4373,8 +4556,7 @@ status_output: [
     variable strain equal (v_length - ${length}) / ${length}
     fix stress_curve all print 10 "${strain} ${stress}" file ${outputfilename} screen no
     thermo 100
-    thermo_style custom step dt f_dtfix v_strain
-]
+    thermo_style custom step dt f_dtfix v_strain ]
 
 # add runtime
 runtime = 2000  # variables can be defined and changed any time
