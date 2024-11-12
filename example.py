@@ -62,10 +62,111 @@ classes to generate flexible LAMMPS scripts with minimal manual intervention. Us
    - **Syntax Info**: Use `Sx.run = "..."` to define the run command, and you can force evaluation with `Sx.run.eval = True`.
 
 **Compatibility:**
-This example requires Pizza3 version 0.9976 or above. All scripts (`script`, `pipescript`, `scriptobject`, and `scriptobjectgroup`) exhibit sufficient compatibility to be combined with operators. The pipe operator (`|`) is preferred as it facilitates reordering and the inclusion of local variables.
+This example requires Pizza3 version 0.9983 or above. All scripts (`script`, `pipescript`, `scriptobject`, and `scriptobjectgroup`) exhibit sufficient compatibility to be combined with operators. The pipe operator (`|`) is preferred as it facilitates reordering and the inclusion of local variables.
+
+
+---------------------------------------
+DSCRIPT LANGUAGE SHORT DOCUMENTATION
+(This documentation ignore attributes)
+--------------------------------------
+
+    Parses a DSCRIPT script to generate a configured LAMMPS simulation instance.
+
+    DSCRIPT is a domain-specific language designed to simplify and structure the creation of LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator) scripts. It allows users to define global and local parameters, utilize templates for repetitive commands, and manage complex multi-line instructions with continuation markers. This function processes the DSCRIPT content, handling comments, line continuations, and template blocks to produce a fully configured simulation instance.
+
+    ### Fundamentals of DSCRIPT Syntax
+
+    1. **Global Definitions:**
+        - Define parameters that apply globally across all templates and steps.
+        - Syntax:
+            ```plaintext
+            key = value
+            ```
+        - Example:
+            ```plaintext
+            dumpfile = $dump.LAMMPS
+            dumpdt = 50
+            thermodt = 100
+            runtime = 5000
+            ```
+
+    2. **Local Definitions:**
+        - Define parameters specific to a particular step or template.
+        - Syntax:
+            ```plaintext
+            key = value
+            ```
+        - Example:
+            ```plaintext
+            dimension = 3
+            units = $si
+            boundary = ['f', 'f', 'f']
+            ```
+
+    3. **Templates Section:**
+
+        - This section maps keys to their corresponding commands or instructions. Templates can reference variables defined in the **Global** or **Local Definitions** sections using the `${variable}` syntax.
+
+        - **Syntax Variations:**
+
+            Templates can be defined in multiple ways to accommodate different scripting needs:
+
+            - **Single-line Template Without Block:**
+                ```plaintext
+                KEY: INSTRUCTION
+                ```
+                - `KEY`: Identifier for the template (numeric or alphanumeric).
+                - `INSTRUCTION`: Command or template text, potentially referencing variables.
+                - *Example:*
+                    ```plaintext
+                    lattice: lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
+                    ```
+
+            - **Single-line Template With Block:**
+                ```plaintext
+                KEY: [INSTRUCTION]
+                ```
+                - Encloses the instruction within square brackets (`[ ]`), indicating a block even if it's a single line.
+                - *Example:*
+                    ```plaintext
+                    0: [dimension ${dimension}]
+                    ```
+
+            - **Multi-line Template With Block:**
+                ```plaintext
+                KEY: [
+                    INSTRUCTION1
+                    INSTRUCTION2
+                    ...
+                    ]
+                ```
+                - Begins with `KEY: [` and ends with a standalone `]` on a new line.
+                - Supports multiple instructions within the block.
+                - **Ellipsis (`...`)** can be used at the end of a line to indicate that the line continues, which is particularly useful if the instruction includes characters like square brackets (`[ ]`).
+                - Comments following ellipses are stripped and not part of the block content.
+                - *Example:*
+                    ```plaintext
+                    6: [ 
+                        # Create region with continuation
+                        region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}  ...
+                        ]
+                    ```
+
+        - **Key Points:**
+            - **Blocks:** Group multiple instructions under a single key, enclosed in square brackets.
+            - **Continuation Markers (`...`):** Indicate that the current line continues onto the next, allowing complex instructions that include characters like `[` and `]` without prematurely closing the block.
+            - **Comments:** 
+                - Placed after instructions or continuation markers.
+                - Comments following continuation markers are removed during parsing and do not become part of the template block.
+                - Inline comments are preserved only if they are outside of quoted strings and not part of the instruction syntax.
+
+    4. **Comments:**
+        - Lines starting with comment characters (`#`, `%`) are ignored unless they are within quotes.
+        - Inline comments can be added after instructions for clarity.
+
 
 **Revision:**
-Last revision: 2024-11-08
+Last revision: 2024-11-12
 
 """
 
@@ -370,11 +471,10 @@ lattice_style = $sc
 lattice_scale = 0.0008271
 lattice_spacing = [0.0008271, 0.0008271, 0.0008271]
 
-1: [
-    % --------------[ LatticeHeader 'helper' for "${name}"   ]--------------
+1: [% --------------[ LatticeHeader 'helper' for "${name}"   ]--------------
     lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
-    # ------------------------------------------
- ]
+    # ------------------------------------------ 
+    ]
 
 # LOCAL DEFINITIONS for step '2'
 xmin = -0.03
@@ -385,12 +485,11 @@ zmin = -0.03
 zmax = 0.03
 nbeads = 3
 
-2: [
-    % --------------[ Box Header 'helper' for "${name}"   ]--------------
+2: [ % --------------[ Box Header 'helper' for "${name}"   ]--------------
     region box block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax}
     create_box	${nbeads} box
-    # ------------------------------------------
- ]
+    # ------------------------------------------   
+    ]
 
 # LOCAL DEFINITIONS for step '3'
 ID = $LowerCylinder
@@ -417,61 +516,49 @@ open = ""
 ID = $LowerCylinder
 units = ""
 
-6: [
-    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+6: [ % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
     # keywords: side, units, move, rotate, open
     # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
-    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
- ]
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}  ]
 
 # LOCAL DEFINITIONS for step '7'
 ID = $CentralCylinder
 args = ['z', 0.0, 0.0, 36.27130939426913, 6.045218232378189, 18.135654697134566]
 
-7: [
-    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+7: [ % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
     # keywords: side, units, move, rotate, open
     # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
-    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
- ]
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}  ]
 
 # LOCAL DEFINITIONS for step '8'
 ID = $UpperCylinder
 args = ['z', 0.0, 0.0, 36.27130939426913, 18.135654697134566, 24.180872929512756]
 
-8: [
-    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+8: [ % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
     # keywords: side, units, move, rotate, open
     # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
-    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
- ]
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}  ]
 
 # LOCAL DEFINITIONS for step '9'
 ID = $LowerCylinder
 beadtype = 1
 
-9: [
-    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
-    create_atoms ${beadtype} region ${ID}
- ]
+9: [ % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}  ]
 
 # LOCAL DEFINITIONS for step '10'
 ID = $CentralCylinder
 beadtype = 2
 
-10: [
-    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
-    create_atoms ${beadtype} region ${ID}
- ]
+10: [ % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}  ]
 
 # LOCAL DEFINITIONS for step '11'
 ID = $UpperCylinder
 beadtype = 3
 
-11: [
-    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
-    create_atoms ${beadtype} region ${ID}
- ]
+11: [ % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}  ]
 
 12: [
     # ===== [ BEGIN GROUP SECTION ] =====================================================================================
@@ -519,10 +606,8 @@ beadtype = 3
     # ===== [ END FORCEFIELD SECTION ] ==================================================================================
  ]
 
-13: [
-    group all union lower middle upper
-    group external subtract all middle
- ]
+13: [ group all union lower middle upper
+      group external subtract all middle  ]
 
 14: velocity all set 0.0 0.0 0.0 units box
 15: fix fix_lower lower setforce 0.0 0.0 0.0
@@ -530,33 +615,31 @@ beadtype = 3
 17: fix dtfix tlsph smd/adjust_dt ${dt}
 18: fix integration_fix tlsph smd/integrate_tlsph
 
-19: [
-    compute S all smd/tlsph_stress
-    compute E all smd/tlsph_strain
-    compute nn all smd/tlsph_num_neighs
- ]
+19: [ compute S all smd/tlsph_stress
+      compute E all smd/tlsph_strain
+      compute nn all smd/tlsph_num_neighs  ]
 
-20: [
-    dump dump_id all custom ${dumpdt} ${dumpfile} id type x y z vx vy vz &
+20: [    dump dump_id all custom ${dumpdt} ${dumpfile} id type x y z vx vy vz &
     c_S[1] c_S[2] c_S[4] c_nn &
     c_E[1] c_E[2] c_E[4] &
-    vx vy vz
- ]
+    vx vy vz  ]
 
 21: dump_modify dump_id first yes
 
-22: [ 
-    thermo ${thermodt}
-    thermo_style custom step dt f_dtfix v_strain
- ]
+22: [     thermo ${thermodt}
+    thermo_style custom step dt f_dtfix v_strain    ]
 
 23: run ${runtime}
 """
-Dall3 = dscript.parsesyntax(Dcode)
-print(Dall3.do(verbose=False))
+Dall3 = dscript.parsesyntax(Dcode,verbose=True)
+print("\nDSCRIPT str -> do()",Dall3.do(verbose=False),sep="\n")
 
 
 # %% Illustration of overrides
 Dall3.DEFINITIONS.runtime = 1e4  # global definitions (note the uppercase)
 Dall3[-1].definitions.runtime = 2e5 # local definitions (higher precedence)
-print(Dall3[-1].do()) # the result is run 200000.0
+print("\nlast step revised:",Dall3[-1].do(),sep="\n") # the result is run 200000.0
+
+# %% Override with do
+Dlast4 = Dall3(20,21,22,23) # take the last four steps 20,21,22,23 only
+print("\nlast 4 steps revised:",Dlast4.do(runtime=12345.0),sep="\n") # the result is run 200000.0
