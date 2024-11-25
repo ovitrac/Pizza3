@@ -103,11 +103,11 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9983"
+__version__ = "0.9996"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-11-12 (community)
+# INRAE\Olivier Vitrac - rev. 2024-11-25 (community)
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -149,14 +149,16 @@ __version__ = "0.9983"
 # 2024-10-19 script.do() convert literal \\n back to \n
 # 2024-10-22 fix | for non-native pipescript objects
 # 2024-11-12 add flexibility to remove_comments(), comment_chars="#%", continuation_marker="..."
+# 2024-11-23 improve write and do() methods (the old pipescript.do() method is available as pipescript.do_legacy() )
+# 2024-11-25 clear distinction between pipescript and scrupt headers
 
 
 # %% Dependencies
-import types
+import os, datetime, socket, getpass, tempfile, types
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate
 from shutil import copy as copyfile
-import datetime, os, socket, getpass, tempfile
+
 
 # All forcefield parameters are stored à la Matlab in a structure
 from pizza.private.struct import param,struct
@@ -281,8 +283,174 @@ def remove_comments(content, split_lines=False, emptylines=False, comment_chars=
         return '\n'.join(processed_lines)  # Join lines back into a single string
 
 
+# returns the metadata
+def get_metadata():
+    """Return a dictionary of explicitly defined metadata."""
+    import pizza.script as script # Ensure script is imported to access its globals
+    # Define the desired metadata keys
+    metadata_keys = [
+        "__project__",
+        "__author__",
+        "__copyright__",
+        "__credits__",
+        "__license__",
+        "__maintainer__",
+        "__email__",
+        "__version__",
+    ]
+    # Filter only the desired keys from the module's variables
+    return {key.strip("_"): getattr(script, key) for key in metadata_keys if hasattr(script, key)}
 
 
+# frames headers
+def frame_header(
+    lines,
+    padding=2,
+    style=1,
+    corner_symbols=None,  # Can be a string or a tuple
+    horizontal_symbol=None,
+    vertical_symbol=None,
+    empty_line_symbol=None,
+    line_fill_symbol=None
+):
+    """
+    Format the header content into an ASCII framed box with customizable properties.
+
+    Parameters:
+        lines (list or tuple): The lines to include in the header.
+            - Empty strings "" are replaced with lines of `line_fill_symbol`.
+            - None values are treated as empty lines.
+
+        padding (int, optional): Number of spaces to pad on each side of the content. Default is 2.
+        style (int, optional): Style index (1 to 6) for predefined frame styles. Default is 1.
+        corner_symbols (str or tuple, optional): Symbols for the corners (top-left, top-right, bottom-left, bottom-right).
+                                                 Can be a string (e.g., "+") for uniform corners.
+        horizontal_symbol (str, optional): Symbol to use for horizontal lines.
+        vertical_symbol (str, optional): Symbol to use for vertical lines.
+        empty_line_symbol (str, optional): Symbol to use for empty lines inside the frame.
+        line_fill_symbol (str, optional): Symbol to fill lines that replace empty strings.
+
+    Returns:
+        str: The formatted header as a string.
+
+    Raises:
+        ValueError: If the specified style is undefined.
+    """
+
+    # Predefined styles
+    styles = {
+        1: {
+            "corner_symbols": ("+", "+", "+", "+"),
+            "horizontal_symbol": "-",
+            "vertical_symbol": "|",
+            "empty_line_symbol": " ",
+            "line_fill_symbol": "-"
+        },
+        2: {
+            "corner_symbols": ("╔", "╗", "╚", "╝"),
+            "horizontal_symbol": "═",
+            "vertical_symbol": "║",
+            "empty_line_symbol": " ",
+            "line_fill_symbol": "═"
+        },
+        3: {
+            "corner_symbols": (".", ".", "'", "'"),
+            "horizontal_symbol": "-",
+            "vertical_symbol": "|",
+            "empty_line_symbol": " ",
+            "line_fill_symbol": "-"
+        },
+        4: {
+            "corner_symbols": ("#", "#", "#", "#"),
+            "horizontal_symbol": "=",
+            "vertical_symbol": "#",
+            "empty_line_symbol": " ",
+            "line_fill_symbol": "="
+        },
+        5: {
+            "corner_symbols": ("┌", "┐", "└", "┘"),
+            "horizontal_symbol": "─",
+            "vertical_symbol": "│",
+            "empty_line_symbol": " ",
+            "line_fill_symbol": "─"
+        },
+        6: {
+            "corner_symbols": (".", ".", ".", "."),
+            "horizontal_symbol": ".",
+            "vertical_symbol": ":",
+            "empty_line_symbol": " ",
+            "line_fill_symbol": "."
+        }
+    }
+
+    # Validate style and set defaults
+    if style not in styles:
+        raise ValueError(f"Undefined style {style}. Valid styles are {list(styles.keys())}.")
+
+    selected_style = styles[style]
+
+    # Convert corner_symbols to a tuple of 4 values
+    if isinstance(corner_symbols, str):
+        corner_symbols = (corner_symbols,) * 4
+    elif isinstance(corner_symbols, (list, tuple)) and len(corner_symbols) == 1:
+        corner_symbols = tuple(corner_symbols * 4)
+    elif isinstance(corner_symbols, (list, tuple)) and len(corner_symbols) == 2:
+        corner_symbols = (corner_symbols[0], corner_symbols[1], corner_symbols[0], corner_symbols[1])
+    elif corner_symbols is None:
+        corner_symbols = selected_style["corner_symbols"]
+    elif not isinstance(corner_symbols, (list, tuple)) or len(corner_symbols) != 4:
+        raise ValueError("corner_symbols must be a string or a tuple/list of 1, 2, or 4 elements.")
+
+    # Apply overrides or defaults
+    horizontal_symbol = horizontal_symbol or selected_style["horizontal_symbol"]
+    vertical_symbol = vertical_symbol or selected_style["vertical_symbol"]
+    empty_line_symbol = empty_line_symbol or selected_style["empty_line_symbol"]
+    line_fill_symbol = line_fill_symbol or selected_style["line_fill_symbol"]
+
+    # Process lines: Replace "" with a placeholder, None with actual empty lines
+    processed_lines = []
+    max_content_width = 0
+    for line in lines:
+        if line == "":
+            processed_lines.append("<LINE_FILL>")
+        elif line is None:
+            processed_lines.append(None)
+        else:
+            processed_line = str(line)
+            processed_lines.append(processed_line)
+            max_content_width = max(max_content_width, len(processed_line))
+
+    # Adjust width for padding
+    frame_width = max_content_width + padding * 2
+
+    # Build the top border
+    top_border = corner_symbols[0] + horizontal_symbol * frame_width + corner_symbols[1]
+
+    # Process content lines
+    framed_lines = [top_border]
+    for line in processed_lines:
+        if line is None:
+            empty_line = vertical_symbol + empty_line_symbol * frame_width + vertical_symbol
+            framed_lines.append(empty_line)
+        elif line == "<LINE_FILL>":
+            fill_line = vertical_symbol + line_fill_symbol * frame_width + vertical_symbol
+            framed_lines.append(fill_line)
+        else:
+            line_content = line.center(frame_width)
+            framed_line = vertical_symbol + line_content + vertical_symbol
+            framed_lines.append(framed_line)
+
+    # Build the bottom border
+    bottom_border = corner_symbols[2] + horizontal_symbol * frame_width + corner_symbols[3]
+
+    framed_lines.append(bottom_border)
+    framed_lines.append("")  # Add an empty line at the end
+
+    return "\n".join(framed_lines)
+
+
+
+# descriptor for callable script
 class CallableScript:
     """
     A descriptor that allows the method Interactions to be accessed both as a property and as a callable function.
@@ -1321,13 +1489,19 @@ class script:
 
     """
     
+    # metadata
+    metadata = get_metadata()               # retrieve all metadata
+    
     type = "script"                         # type (class name)
     name = "empty script"                   # name
     description = "it is an empty script"   # description
     position = 0                            # 0 = root
     section = 0                             # section (0=undef)
     userid = "undefined"                    # user name
-    version = 0.40                          # version
+    version = metadata["version"]           # version
+    license = metadata["license"]
+    email = metadata["email"]               # email
+    
     verbose = False                         # set it to True to force verbosity
     _contact = ("INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr",
                 "INRAE\SAYFOOD\william.jenkinson@agroparistech.fr",
@@ -1550,66 +1724,173 @@ class script:
         else:
             raise ValueError("the argument in | must a pipescript, a scriptobject or a scriptobjectgroup not {type(s)}")
 
-    # header
-    @staticmethod
-    def header():
-        return   f"# Automatic LAMMPS script (version {script.version})\n" + \
-                 f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
-                 f'# {datetime.datetime.now().strftime("%c")}\n\n'
+
+    def header(self, verbosity=None, style=2):
+        """
+        Generate a formatted header for the script file.
+
+        Parameters:
+            verbosity (bool, optional): If specified, overrides the instance's `verbose` setting.
+                                        Defaults to the instance's `verbose`.
+            style (int from 1 to 6, optional): ASCII style to frame the header (default=2)
+
+        Returns:
+            str: A formatted string representing the script's metadata and initialization details.
+                 Returns an empty string if verbosity is False.
+
+        The header includes:
+            - Script version, license, and contact email.
+            - User ID and the number of initialized definitions.
+            - Current system user, hostname, and working directory.
+            - Persistent filename and folder path.
+            - Timestamp of the header generation.
+        """
+        verbosity = self.verbose if verbosity is None else verbosity
+        if not verbosity:
+            return ""
+
+        # Prepare the header content
+        lines = [
+            f"PIZZA.SCRIPT FILE v{script.version} | License: {script.license} | Email: {script.email}",
+            "",
+            f"<{str(self)}>",
+            f"Initialized with {len(self.USER)} definitions | Verbosity: {verbosity}",
+            f"Persistent file: \"{self.persistentfile}\" | Folder: \"{self.persistentfolder}\"",
+            "",
+            f"Generated on: {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}",
+            f"{datetime.datetime.now().strftime('%A, %B %d, %Y at %H:%M:%S')}",
+        ]
+
+        # Use the shared method to format the header
+        return frame_header(lines,style=style)
+
 
     # write file
-    def write(self, file, printflag=True, verbose=False):
-        """ write file """
-        f = open(file, "w")
-        print(script.header(),"\n"*3,file=f)
-        print(self.do(printflag=printflag,verbose=verbose),file=f)
-        f.close()
+    def write(self, file, printflag=True, verbose=False, overwrite=False, style=2):
+        """Write the script to a file.
+        
+        Parameters:
+            - file (str): The file path where the script will be saved.
+            - printflag (bool): Flag to enable/disable printing of details.
+            - verbose (bool): Flag to enable/disable verbose mode.
+            - overwrite (bool): Whether to overwrite the file if it already exists.
+            - style (int, optional): 
+                Defines the ASCII frame style for the header.
+                Valid values are integers from 1 to 6, corresponding to predefined styles:
+                    1. Basic box with `+`, `-`, and `|`
+                    2. Double-line frame with `╔`, `═`, and `║`
+                    3. Rounded corners with `.`, `'`, `-`, and `|`
+                    4. Thick outer frame with `#`, `=`, and `#`
+                    5. Box drawing characters with `┌`, `─`, and `│`
+                    6. Minimalist dotted frame with `.`, `:`, and `.`
+                Default is `2` (frame with rounded corners).
+            
+        Raises:
+            FileExistsError: If the file already exists and overwrite is False.
+        """
+        if os.path.exists(file) and not overwrite:
+            raise FileExistsError(f"The file '{file}' already exists. Use overwrite=True to overwrite it.")
+        if os.path.exists(file) and overwrite and verbose:
+            print(f"Warning: Overwriting the existing file '{file}'.")
+        cmd = self.do(printflag=printflag, verbose=verbose)
+        with open(file, "w") as f:
+            print(self.header(verbosity=verbose,style=style), "\n", file=f)
+            print(cmd, file=f)
 
-    # tempfile
-    def tmpwrite(self):
-        """ write file """
+
+    def tmpwrite(self, verbose=False, style=1):
+        """
+        Write the script to a temporary file and create optional persistent copies.
+    
+        Parameters:
+            verbose (bool, optional): Controls verbosity during script generation. Defaults to False.
+    
+        The method:
+            - Creates a temporary file for the script, with platform-specific behavior:
+                - On Windows (`os.name == 'nt'`), the file is not automatically deleted.
+                - On other systems, the file is temporary and deleted upon closure.
+            - Writes a header and the script content into the temporary file.
+            - Optionally creates a persistent copy in the `self.persistentfolder` directory:
+                - `script.preview.<suffix>`: A persistent copy of the temporary file.
+                - `script.preview.clean.<suffix>`: A clean copy with comments and empty lines removed.
+            - Handles cleanup and exceptions gracefully to avoid leaving orphaned files.
+            - style (int, optional): 
+                Defines the ASCII frame style for the header.
+                Valid values are integers from 1 to 6, corresponding to predefined styles:
+                    1. Basic box with `+`, `-`, and `|`
+                    2. Double-line frame with `╔`, `═`, and `║`
+                    3. Rounded corners with `.`, `'`, `-`, and `|`
+                    4. Thick outer frame with `#`, `=`, and `#`
+                    5. Box drawing characters with `┌`, `─`, and `│`
+                    6. Minimalist dotted frame with `.`, `:`, and `.`
+                Default is `1` (basic box).
+    
+        Returns:
+            TemporaryFile: The temporary file handle (non-Windows systems only).
+            None: On Windows, the file is closed and not returned.
+    
+        Raises:
+            Exception: If there is an error creating or writing to the temporary file.
+        """
         try:
-            # Handle OS-specific behavior for temporary files
-            if os.name == 'nt':  # nt indicates Windows
+            # OS-specific temporary file behavior
+            if os.name == 'nt':  # Windows
                 ftmp = tempfile.NamedTemporaryFile(mode="w+b", prefix="script_", suffix=".txt", delete=False)
-            else:
+            else:  # Other platforms
                 ftmp = tempfile.NamedTemporaryFile(mode="w+b", prefix="script_", suffix=".txt")
-            header = f"# PIZZA.SCRIPT() TEMPORARY FILE\n # " + '-'*40 +'\n' + \
-                     f"# {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}\n" + \
-                     f"# <-- {str(datetime.datetime.now())} -->\n"
-            content =  header + \
-                       "# This is a temporary file (it will be deleted automatically)" + \
-                       "\n"*2 + script.header() + "\n"*3 +self.do(printflag=False,verbose=False)
-            ftmp.write(BOM_UTF8+content.encode('utf-8'))
-            ftmp.seek(0)
+    
+            # Generate header and content
+            header = (
+                f"# TEMPORARY PIZZA.SCRIPT FILE\n"
+                f"# {'-' * 40}\n"
+                f"{self.header(verbosity=verbose, style=style)}"
+            )
+            content = (
+                header
+                + "\n# This is a temporary file (it will be deleted automatically)\n\n"
+                + self.do(printflag=False, verbose=verbose)
+            )
+    
+            # Write content to the temporary file
+            ftmp.write(BOM_UTF8 + content.encode('utf-8'))
+            ftmp.seek(0)  # Reset file pointer to the beginning
+    
         except Exception as e:
-            ftmp.close()  # Ensure the file is closed in case of an error
+            # Handle errors gracefully
+            ftmp.close()
             os.remove(ftmp.name)  # Clean up the temporary file
-            error_msg = f"Failed to write to or handle the temporary file: {e}. Check file permissions and disk space."
-            raise Exception(error_msg) from None
-        print("\n"*2,header,'\n',"A temporary file has been generated here:\n",ftmp.name)
+            raise Exception(f"Failed to write to or handle the temporary file: {e}") from None
+    
+        print("\nTemporary File Header:\n", header, "\n")
+        print("A temporary file has been generated here:\n", ftmp.name)
+    
+        # Persistent copy creation
         if self.persistentfile:
-            # make a persistent copy in /tmp
             ftmpname = os.path.basename(ftmp.name)
-            fcopyname = os.path.join(self.persistentfolder, "script.preview." \
-                                     + ftmpname.rsplit('_', 1)[1])
+            fcopyname = os.path.join(self.persistentfolder, f"script.preview.{ftmpname.rsplit('_', 1)[1]}")
             copyfile(ftmp.name, fcopyname)
-            print("The persistent copy has been created here:\n", fcopyname)
-            # create a clean copy without empty lines and lines starting with #
-            with open(ftmp.name, 'r') as f:lines = f.readlines()
-            # remove empty lines and lines that start with #
-            bom_utf8_str = BOM_UTF8.decode('utf-8')
-            clean_lines = [line for line in lines if line.strip() \
-                           and not line.lstrip().startswith('#') \
-                           and not line.startswith(bom_utf8_str)]
-            fcleanname = os.path.join(self.persistentfolder, "script.preview.clean." + ftmpname.rsplit('_', 1)[1])
-            with open(fcleanname, 'w') as f: f.writelines(clean_lines)
-            print("The clean copy has been created here:\n", fcleanname)
+            print("A persistent copy has been created here:\n", fcopyname)
+    
+            # Create a clean copy without empty lines or comments
+            with open(ftmp.name, "r") as f:
+                lines = f.readlines()
+            bom_utf8_str = BOM_UTF8.decode("utf-8")
+            clean_lines = [
+                line for line in lines
+                if line.strip() and not line.lstrip().startswith("#") and not line.startswith(bom_utf8_str)
+            ]
+            fcleanname = os.path.join(self.persistentfolder, f"script.preview.clean.{ftmpname.rsplit('_', 1)[1]}")
+            with open(fcleanname, "w") as f:
+                f.writelines(clean_lines)
+            print("A clean copy has been created here:\n", fcleanname)
+    
+            # Handle file closure for Windows
             if os.name == 'nt':
-                ftmp.close()  # Close the file manually on Windows to avoid access issues
-                return None  # Return None on Windows since the file is closed
+                ftmp.close()
+                return None
             else:
-                return ftmp  # Return the open file handle on other systems
+                return ftmp
+
             
     # Note that it was not the original intent to copy scripts
     def __copy__(self):
@@ -1626,7 +1907,8 @@ class script:
         memo[id(self)] = copie
         for k, v in self.__dict__.items():
             setattr(copie, k, deepduplicate(v, memo))
-        return copie 
+        return copie
+
 
 # %% pipe script
 class pipescript:
@@ -2112,7 +2394,128 @@ class pipescript:
                 self.cmd = ""
 
 
+
     def do(self, idx=None, printflag=True, verbosity=2, verbose=None, forced=False):
+        """
+        Execute the pipeline or a part of the pipeline and generate the LAMMPS script.
+    
+        Parameters:
+            idx (list, range, or int, optional): Specifies which steps of the pipeline to execute.
+            printflag (bool, optional): Whether to print the script for each step. Default is True.
+            verbosity (int, optional): Level of verbosity for the output.
+            verbose (bool, optional): Override for verbosity. If False, sets verbosity to 0.
+            forced (bool, optional): If True, forces the pipeline to regenerate all scripts.
+    
+        Returns:
+            str: Combined LAMMPS script for the specified pipeline steps.
+            
+            Execute the pipeline or a part of the pipeline and generate the LAMMPS script.
+        
+            This method processes the pipeline of script objects, executing each step to generate
+            a combined LAMMPS-compatible script. The execution can be done for the entire pipeline 
+            or for a specified range of indices. The generated script can include comments and 
+            metadata based on the verbosity level.       
+            
+        
+        Method Workflow:
+            - The method first checks if there are any script objects in the pipeline.
+              If the pipeline is empty, it returns a message indicating that there is nothing to execute.
+            - It determines the start and stop indices for the range of steps to execute.
+              If idx is not provided, it defaults to executing all steps from the last executed position.
+            - If a specific index or list of indices is provided, it executes only those steps.
+            - The pipeline steps are executed in order, combining the scripts using the 
+              >> operator for sequential execution.
+            - The generated script includes comments indicating the current run step and pipeline range,
+              based on the specified verbosity level.
+            - The final combined script is returned as a string.
+        
+        Example Usage:
+        --------------
+            >>> p = pipescript()
+            >>> # Execute the entire pipeline
+            >>> full_script = p.do()
+            >>> # Execute steps 0 and 2 only
+            >>> partial_script = p.do([0, 2])
+            >>> # Execute step 1 with minimal verbosity
+            >>> minimal_script = p.do(idx=1, verbosity=0)
+        
+            Notes:
+            - The method uses modular arithmetic to handle index wrapping, allowing 
+              for cyclic execution of pipeline steps.
+            - If the pipeline is empty, the method returns the string "# empty pipe - nothing to do".
+            - The globalscript is initialized or updated with each step's script, 
+              and the USER definitions are accumulated across the steps.
+            - The command string self.cmd is updated with the generated script for 
+              each step in the specified range.
+        
+            Raises:
+            - None: The method does not raise exceptions directly, but an empty pipeline will 
+                    result in the return of "# empty pipe - nothing to do".
+        """
+        verbosity = 0 if verbose is False else verbosity
+        if len(self) == 0:
+            return "# empty pipe - nothing to do"
+            
+        # Check if not all steps are executed or if there are gaps
+        not_all_executed = not all(self.executed[:self.nrun])  # Check up to the last executed step
+
+        # Determine pipeline range
+        total_steps = len(self)
+        if self.globalscript is None or forced or not_all_executed:
+            start = 0
+            self.cmd = ""
+        else:
+            start = self.nrun
+            self.cmd = self.cmd.rstrip("\n") + "\n\n"
+    
+        if idx is None:
+            idx = range(start, total_steps)
+        if isinstance(idx, int):
+            idx = [idx]
+        if isinstance(idx, range):
+            idx = list(idx)
+    
+        idx = [i % total_steps for i in idx]
+        start, stop = min(idx), max(idx)
+    
+        # Prevent re-executing already completed steps
+        if not forced:
+            idx = [step for step in idx if not self.executed[step]]
+    
+        # Execute pipeline steps
+        for step in idx:
+            step_wrapped = step % total_steps
+    
+            # Combine scripts
+            if step_wrapped == 0:
+                self.globalscript = self.listscript[step_wrapped]
+            else:
+                self.globalscript = self.globalscript >> self.listscript[step_wrapped]
+    
+            # Step label
+            step_name = f"<{self.name[step]}>"
+            step_label = f"# [{step+1} of {total_steps} from {start}:{stop}] {step_name}"
+    
+            # Get script content for the step
+            step_output = self.globalscript.do(printflag=printflag, verbose=verbosity > 1)
+    
+            # Add comments and content
+            if step_output.strip():
+                self.cmd += f"{step_label}\n{step_output.strip()}\n\n"
+            elif verbosity > 0:
+                self.cmd += f"{step_label} :: no content\n\n"
+    
+            # Update USER definitions
+            self.globalscript.USER += self.listUSER[step]
+            self.executed[step] = True
+    
+        # Clean up and finalize script
+        self.cmd = self.cmd.replace("\\n", "\n").strip()  # Remove literal \\n and extra spaces
+        self.cmd += "\n"  # Ensure trailing newline
+        return remove_comments(self.cmd) if verbosity == 0 else self.cmd
+
+
+    def do_legacy(self, idx=None, printflag=True, verbosity=2, verbose=None, forced=False):
         """
         Execute the pipeline or a part of the pipeline and generate the LAMMPS script.
     
@@ -2144,10 +2547,10 @@ class pipescript:
         - The method first checks if there are any script objects in the pipeline.
           If the pipeline is empty, it returns a message indicating that there is nothing to execute.
         - It determines the start and stop indices for the range of steps to execute.
-          If `idx` is not provided, it defaults to executing all steps from the last executed position.
+          If idx is not provided, it defaults to executing all steps from the last executed position.
         - If a specific index or list of indices is provided, it executes only those steps.
         - The pipeline steps are executed in order, combining the scripts using the 
-          `>>` operator for sequential execution.
+          >> operator for sequential execution.
         - The generated script includes comments indicating the current run step and pipeline range,
           based on the specified verbosity level.
         - The final combined script is returned as a string.
@@ -2166,9 +2569,9 @@ class pipescript:
         - The method uses modular arithmetic to handle index wrapping, allowing 
           for cyclic execution of pipeline steps.
         - If the pipeline is empty, the method returns the string "# empty pipe - nothing to do".
-        - The `globalscript` is initialized or updated with each step's script, 
-          and the `USER` definitions are accumulated across the steps.
-        - The command string `self.cmd` is updated with the generated script for 
+        - The globalscript is initialized or updated with each step's script, 
+          and the USER definitions are accumulated across the steps.
+        - The command string self.cmd is updated with the generated script for 
           each step in the specified range.
     
         Raises:
@@ -2213,7 +2616,7 @@ class pipescript:
             return "# empty pipe - nothing to do"
 
 
-    def script(self,idx=None, printflag=True, verbosity=2, verbose=None, forced=False):
+    def script(self,idx=None, printflag=True, verbosity=2, verbose=None, forced=False, style=4):
         """
             script the pipeline or parts of the pipeline
                 s = p.script()
@@ -2234,6 +2637,16 @@ class pipescript:
                                      - 2: Detailed comments with additional information.
                                      Default is 2.
         - forced (bool, optional): If True, all scripts are regenerated 
+        - style (int, optional): 
+            Defines the ASCII frame style for the header.
+            Valid values are integers from 1 to 6, corresponding to predefined styles:
+                1. Basic box with `+`, `-`, and `|`
+                2. Double-line frame with `╔`, `═`, and `║`
+                3. Rounded corners with `.`, `'`, `-`, and `|`
+                4. Thick outer frame with `#`, `=`, and `#`
+                5. Box drawing characters with `┌`, `─`, and `│`
+                6. Minimalist dotted frame with `.`, `:`, and `.`
+            Default is `4` (thick outer frame).
         
         """
         verbosity=0 if verbose is False else verbosity
@@ -2246,7 +2659,8 @@ class pipescript:
             s.userid = self.name[0]
         else:
             s.userid = "empty pipeline"
-        s.TEMPLATE = script.header()+self.do(idx, printflag=printflag, verbosity=verbosity, verbose=verbose, forced=forced)
+        s.TEMPLATE = self.header(verbosity=verbosity, style=style) + "\n" +\
+            self.do(idx, printflag=printflag, verbosity=verbosity, verbose=verbose, forced=forced)
         s.DEFINITIONS = duplicate(self.globalscript.DEFINITIONS)
         s.USER = duplicate(self.globalscript.USER)
         return s
@@ -2289,10 +2703,32 @@ class pipescript:
         return copie 
 
     # write file
-    def write(self, file, printflag=True, verbosity=2, verbose=None):
-        """ write file """
-        myscript = self.script(printflag=printflag, verbosity=verbosity, verbose=verbose, forced=True)
-        myscript.write(file, printflag=printflag, verbose=verbose)
+    def write(self, file, printflag=True, verbosity=2, verbose=None, overwrite=False):
+       """
+       Write the combined script to a file.
+   
+       Parameters:
+           file (str): The file path where the script will be saved.
+           printflag (bool): Flag to enable/disable printing of details.
+           verbosity (int): Level of verbosity for the script generation.
+           verbose (bool or None): If True, enables verbose mode; if None, defaults to the instance's verbosity.
+           overwrite (bool): Whether to overwrite the file if it already exists. Default is False.
+   
+       Raises:
+           FileExistsError: If the file already exists and overwrite is False.
+   
+       Notes:
+           - This method combines the individual scripts within the `pipescript` object
+             and saves the resulting script to the specified file.
+           - If `overwrite` is False and the file exists, an error is raised.
+           - If `verbose` is True and the file is overwritten, a warning is displayed.
+       """
+       # Generate the combined script
+       myscript = self.script(printflag=printflag, verbosity=verbosity, verbose=verbose, forced=True)
+   
+       # Call the script's write method with the overwrite parameter
+       myscript.write(file, printflag=printflag, verbose=verbose, overwrite=overwrite)
+
         
     def dscript(self, name=None, verbose=None, **USER):
         """
@@ -2382,6 +2818,40 @@ class pipescript:
         outd.DEFINITIONS = staticmerged_definitions + lambdaScriptdata(**USER)
     
         return outd
+
+
+    def header(self, verbosity=None, style=4):
+        """
+        Generate a formatted header for the pipescript file.
+
+        Parameters:
+            verbosity (bool, optional): If specified, overrides the instance's `verbose` setting.
+                                        Defaults to the instance's `verbose`.
+            style (int from 1 to 6, optional): ASCII style to frame the header (default=4)
+
+        Returns:
+            str: A formatted string representing the pipescript object.
+                 Returns an empty string if verbosity is False.
+
+        The header includes:
+            - Total number of scripts in the pipeline.
+            - The verbosity setting.
+            - The range of scripts from the first to the last script.
+            - All enclosed within an ASCII frame that adjusts to the content.
+        """
+        verbosity = self.verbose if verbosity is None else verbosity
+        if not verbosity:
+            return ""
+
+        # Prepare the header content
+        lines = [
+            f"PIPESCRIPT with {self.n} scripts | Verbosity: {verbosity}",
+            "",
+            f"From: <{str(self.scripts[0])}> To: <{str(self.scripts[-1])}>",
+        ]
+
+        # Use the shared method to format the header
+        return frame_header(lines,style=style)
 
 
 
