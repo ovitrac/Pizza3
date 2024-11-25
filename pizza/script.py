@@ -311,7 +311,8 @@ def frame_header(
     horizontal_symbol=None,
     vertical_symbol=None,
     empty_line_symbol=None,
-    line_fill_symbol=None
+    line_fill_symbol=None,
+    comment="#"
 ):
     """
     Format the header content into an ASCII framed box with customizable properties.
@@ -329,14 +330,14 @@ def frame_header(
         vertical_symbol (str, optional): Symbol to use for vertical lines.
         empty_line_symbol (str, optional): Symbol to use for empty lines inside the frame.
         line_fill_symbol (str, optional): Symbol to fill lines that replace empty strings.
+        comment (str, optional): Comment symbol to prefix each line. Can be multiple characters. Default is "#".
 
     Returns:
         str: The formatted header as a string.
 
     Raises:
-        ValueError: If the specified style is undefined.
+        ValueError: If the specified style is undefined or `corner_symbols` is invalid.
     """
-
     # Predefined styles
     styles = {
         1: {
@@ -407,7 +408,7 @@ def frame_header(
     empty_line_symbol = empty_line_symbol or selected_style["empty_line_symbol"]
     line_fill_symbol = line_fill_symbol or selected_style["line_fill_symbol"]
 
-    # Process lines: Replace "" with a placeholder, None with actual empty lines
+    # Process lines: Replace "" with line_fill placeholders, None with empty lines
     processed_lines = []
     max_content_width = 0
     for line in lines:
@@ -416,37 +417,39 @@ def frame_header(
         elif line is None:
             processed_lines.append(None)
         else:
-            processed_line = str(line)
-            processed_lines.append(processed_line)
-            max_content_width = max(max_content_width, len(processed_line))
+            processed_lines.append(line)
+            max_content_width = max(max_content_width, len(line))
 
     # Adjust width for padding
     frame_width = max_content_width + padding * 2
 
     # Build the top border
-    top_border = corner_symbols[0] + horizontal_symbol * frame_width + corner_symbols[1]
+    top_border = f"{corner_symbols[0]}{horizontal_symbol * frame_width}{corner_symbols[1]}"
 
-    # Process content lines
+    # Build content lines with vertical borders
     framed_lines = [top_border]
     for line in processed_lines:
         if line is None:
-            empty_line = vertical_symbol + empty_line_symbol * frame_width + vertical_symbol
+            empty_line = f"{vertical_symbol}{empty_line_symbol * frame_width}{vertical_symbol}"
             framed_lines.append(empty_line)
         elif line == "<LINE_FILL>":
-            fill_line = vertical_symbol + line_fill_symbol * frame_width + vertical_symbol
+            fill_line = f"{vertical_symbol}{line_fill_symbol * frame_width}{vertical_symbol}"
             framed_lines.append(fill_line)
         else:
-            line_content = line.center(frame_width)
-            framed_line = vertical_symbol + line_content + vertical_symbol
+            content = line.center(frame_width)
+            framed_line = f"{vertical_symbol}{content}{vertical_symbol}"
             framed_lines.append(framed_line)
 
     # Build the bottom border
-    bottom_border = corner_symbols[2] + horizontal_symbol * frame_width + corner_symbols[3]
-
+    bottom_border = f"{corner_symbols[2]}{horizontal_symbol * frame_width}{corner_symbols[3]}"
     framed_lines.append(bottom_border)
-    framed_lines.append("")  # Add an empty line at the end
 
-    return "\n".join(framed_lines)
+    # Ensure all lines start with the comment symbol
+    commented_lines = [
+        line if line.startswith(comment) else f"{comment} {line}" for line in framed_lines
+    ]
+
+    return "\n".join(commented_lines)+"\n"
 
 
 
