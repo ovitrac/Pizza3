@@ -166,7 +166,7 @@ DSCRIPT LANGUAGE SHORT DOCUMENTATION
 
 
 **Revision:**
-Last revision: 2024-11-12
+Last revision: 2024-11-25
 
 """
 
@@ -321,8 +321,8 @@ print("\n# MOVABLE OBJECTS", move.do(printflag=False, verbose=True), sep="\n")
 #         There is no need to force: integration.intinit.eval = True
 
 integration = dscript(name="S4b:timeintegration", dt=0.1)
-integration.intinit = "fix dtfix tlsph smd/adjust_dt ${dt}"
-integration.intset = "fix integration_fix tlsph smd/integrate_tlsph"
+integration.intinit = "fix dtfix all smd/adjust_dt ${dt}"
+integration.intset = "fix integration_fix all smd/integrate_tlsph"
 print("\n# TIME INTEGRATION", integration.do(printflag=False, verbose=False), sep="\n")
 
 
@@ -379,11 +379,11 @@ S7.run = "run ${runtime}"
 
 # %% Combine All Sections (S1, S2, S3, S4, S5, S6, S7)
 Sall = S1 | S2 | S3 | S4 | S5 | S6 | S7  # Pipe all sections together
-print("\n\n# ALL SCRIPTS", Sall.do(printflag=False, verbose=False), sep="\n")
+print("\n\n# ALL SCRIPTS\n", Sall.do(printflag=False, verbose=True), sep="\n")
 
 
 # %% Write the final LAMMPS script to file
-Sall.write("tmp/example.txt", verbosity=1)
+Sall.write("tmp/example.txt", verbosity=1,overwrite=True)
 
 
 # %% Convert the full script back to a dynamic dscript
