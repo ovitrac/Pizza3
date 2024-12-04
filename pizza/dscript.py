@@ -747,11 +747,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9984"
+__version__ = "0.9999"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-11-08 (community)
+# INRAE\Olivier Vitrac - rev. 2024-12-04 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -773,14 +773,16 @@ __version__ = "0.9984"
 # 2024-10-07 new parsesyntax accepting [ ] at any position, improved doc, parsesyntax_legacy holds the old parser method
 # 2024-10-08 fix single line templates
 # 2024-10-12 several improvements and sophistication in the definition and execution of templates from dscript 
-
+# 2024-12-01 standarize scripting features, automatically call script/pscript methods
+# 2024-12-02 add dscript.header() and implement it in dscript.save() and dscript.write()
+# 2024-12-03 improve the logics of dscript.parse(), dscript.save() on real cases
+# 2024-12-04 preparation for major release
 
 # Dependencies
-import os, getpass, socket, time
+import os, getpass, socket, time, datetime
 import re, string, random, copy, hashlib
-from datetime import datetime
 from pizza.private.struct import paramauto
-from pizza.script import script, scriptdata, pipescript, remove_comments, span
+from pizza.script import script, scriptdata, pipescript, remove_comments, span, frame_header
 
 # %% Private Functions
 
@@ -788,6 +790,24 @@ def autoname(numChars=8):
     """ generate automatically names """
     return ''.join(random.choices(string.ascii_letters, k=numChars))  # Generates a random name of numChars letters
 
+
+# returns the metadata
+def get_metadata():
+    """Return a dictionary of explicitly defined metadata."""
+    import pizza.dscript as dscript # Ensure dscript is imported to access its globals
+    # Define the desired metadata keys
+    metadata_keys = [
+        "__project__",
+        "__author__",
+        "__copyright__",
+        "__credits__",
+        "__license__",
+        "__maintainer__",
+        "__email__",
+        "__version__",
+    ]
+    # Filter only the desired keys from the module's variables
+    return {key.strip("_"): getattr(dscript, key) for key in metadata_keys if hasattr(dscript, key)}
 
 # %% Low-level Classes (wrappers for pizza.script)
 
@@ -1109,7 +1129,7 @@ class ScriptTemplate:
         'detectvar': True
     }
     
-    def __init__(self, content="", definitions=lambdaScriptdata(), userid=None, verbose=False, comment_chars="#%", **kwargs):
+    def __init__(self, content="", definitions=lambdaScriptdata(), autorefresh=True, userid=None, verbose=False, comment_chars="#%", **kwargs):
         """
         Initializes a new `ScriptTemplate` object.
         
@@ -1132,8 +1152,11 @@ class ScriptTemplate:
             If `definitions` is not provided, variable substitution will rely on local 
             or inline definitions.
         
-        verbose : flag (default value=False)
+        verbose : flag (default value=True)
             If True the comments are preserved (applied when str is a string).
+            
+        autorefresh : flag (default=False)
+            If True, new variables are automatically detected when the content is changed
     
         **kwargs : 
             Additional keyword arguments to set specific attributes for the script line.
@@ -1170,8 +1193,9 @@ class ScriptTemplate:
             'check_variables': {'result': None}
         }
         # Constructor
+        self._autorefresh = autorefresh
         self._content = content # # Store initial content
-        self.definitions = definitions  # Reference to the DEFINITIONS object
+        self.definitions = lambdaScriptdata(**definitions)  # Reference to the DEFINITIONS object
         # Initialize attributes with default values
         self.attributes = self.default_attributes.copy()
         # Convert single string content to a list for consistent processing
@@ -1238,7 +1262,8 @@ class ScriptTemplate:
         if new_hash != getattr(self, '_content_hash', None):
             super().__setattr__('_content_hash', new_hash)
             self._invalidate_cache()  # Invalidate cache due to content change
-            self.refreshvar()  # Refresh variables based on new content
+            if self._autorefresh:
+                self.refreshvar()  # Refresh variables based on new content
 
     def _invalidate_cache(self):
         """Reset all cache entries."""
@@ -1449,7 +1474,7 @@ class ScriptTemplate:
                 raise TypeError(f"The 'definitions' must be a lambdaScriptdata or scriptdata, not {type(value).__name__}.")
     
         # Set attributes directly for key fields and avoid recursion
-        if name in ['userid', 'attributes', 'definitions', '_content', '_content_hash']:
+        if name in ['userid', 'attributes', 'definitions', '_content', '_content_hash', '_autorefresh']:
             super().__setattr__(name, value)
         else:
             # Ensure 'attributes' is initialized before updating
@@ -1486,6 +1511,8 @@ class ScriptTemplate:
         if name == 'content':
             # Directly access __dict__ to avoid recursion
             return self.__dict__.get('_content', "")
+        if name == "_autorefresh":
+            return self.__dict__.get('_autorefresh', True)
         # Step 3: Check if 'name' exists in 'attributes' and return its value directly
         attributes = self.__dict__.get('attributes', {})
         if name in attributes:
@@ -1551,8 +1578,7 @@ class ScriptTemplate:
         -------
         >>> template = ScriptTemplate(
         ...     content=["variable x equal ${var1}", "print 'Value of x is ${var1}'"],
-        ...     definitions=lambdaScriptdata(var1=10),
-        ...     attributes={'eval': True}
+        ...     definitions=lambdaScriptdata(var1=10)
         ... )
         >>> template.do()
         "variable x equal 10\nprint 'Value of x is 10'"
@@ -1614,16 +1640,19 @@ class ScriptTemplate:
 
 
 
-    def refreshvar(self):
+    def refreshvar(self,globaldefinitions = lambdaScriptdata()):
         """
         Detects variables in the content and adds them to definitions if needed.
         This method ensures that variables like ${varname} are correctly detected
         and added to the definitions if they are missing.
+        
+        use globaldefinitions to add a list of global variables/definitions
+        
         """
         if self.attributes["detectvar"] and isinstance(self.content, list) and self.definitions:
             variables = self.detect_variables()
             for varname in variables:
-                if varname not in self.definitions:
+                if (varname not in self.definitions) and (varname not in globaldefinitions):
                     self.definitions.setattr(varname, "${" + varname + "}")
 
 
@@ -1898,10 +1927,11 @@ class dscript:
     DEFINITIONS : lambdaScriptdata
         Stores the variables and parameters used within the script lines/items.
     """
-
+    
     # Class variable to list attributes that should not be treated as TEMPLATE entries
     construction_attributes = {'name', 'SECTIONS', 'section', 'position', 'role', 'description',
-                               'userid', 'version', 'verbose', 'printflag', 'DEFINITIONS', 'TEMPLATE'
+                               'userid', 'verbose', 'printflag', 'DEFINITIONS', 'TEMPLATE',
+                               'version','license','email'
                                }
     
     def __init__(self,  name=None,
@@ -1911,9 +1941,12 @@ class dscript:
                         role = "dscript instance",
                         description = "dynamic script",
                         userid = "dscript",
-                        version = 0.1,
+                        version = None,
+                        license = None,
+                        email = None,
                         printflag = False,
                         verbose = False,
+                        verbosity = None,
                         **userdefinitions
                         ):
         """
@@ -1946,6 +1979,12 @@ class dscript:
             self.name = autoname()
         else:
             self.name = name
+            
+        if (version is None) or (license is None) or (email is None):
+            metadata = get_metadata()               # retrieve all metadata
+            version = metadata["version"] if version is None else version
+            license = metadata["license"] if license is None else license
+            email = metadata["email"] if email is None else email
         self.SECTIONS = SECTIONS if isinstance(SECTIONS,(list,tuple)) else [SECTIONS]
         self.section = section
         self.position = position if position is not None else 0
@@ -1953,11 +1992,13 @@ class dscript:
         self.description = description
         self.userid = userid
         self.version = version
-        self.verbose = verbose
+        self.license = license
+        self.email = email
         self.printflag = printflag
+        self.verbose = verbose if verbosity is None else verbosity>0
+        self.verbosity = 0 if not verbose else verbosity
         self.DEFINITIONS = lambdaScriptdata(**userdefinitions)
         self.TEMPLATE = {}
-
 
     def __getattr__(self, attr):
         # During construction phase, we only access the predefined attributes
@@ -2390,17 +2431,18 @@ class dscript:
 
 
     
-    def script(self,printflag=None,verbose=None,**USER):
+    def script(self,printflag=None, verbose=None, verbosity=None, **USER):
         """
         returns the corresponding script
         """
         printflag = self.printflag if printflag is None else printflag
-        verbose = self.verbose if verbose is None else verbose
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity
         return lamdaScript(self,persistentfile=True, persistentfolder=None,
                            printflag=printflag, verbose=verbose,
                            **USER)
     
-    def pipescript(self, *keys, printflag=None, verbose=None, **USER):
+    def pipescript(self, *keys, printflag=None, verbose=None, verbosity=None, **USER):
         """
         Returns a pipescript object by combining script objects corresponding to the given keys.
         
@@ -2435,14 +2477,17 @@ class dscript:
         # if combined_pipescript is None:
         #     ValueError('The conversion to pipescript from {type{self}} falled')
         # return combined_pipescript
-        combined_pipescript = None
-        
+        printflag = self.printflag if printflag is None else printflag
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity
+
         # Loop over all keys in TEMPLATE and combine them
+        combined_pipescript = None
         for key in self.keys():
             # Create a new dscript object with only the current key in TEMPLATE
             focused_dscript = dscript(name=f"{self.name}:{key}")
             focused_dscript.TEMPLATE[key] = self.TEMPLATE[key]
-            focused_dscript.TEMPLATE[key].definitions = scriptdata(self.TEMPLATE[key].definitions)
+            focused_dscript.TEMPLATE[key].definitions = scriptdata(**self.TEMPLATE[key].definitions)
             focused_dscript.DEFINITIONS = scriptdata(**self.DEFINITIONS)
             focused_dscript.SECTIONS = self.SECTIONS[:]
             focused_dscript.section = self.section
@@ -2451,8 +2496,8 @@ class dscript:
             focused_dscript.description = self.description
             focused_dscript.userid = self.userid
             focused_dscript.version = self.version
-            focused_dscript.verbose = self.verbose
-            focused_dscript.printflag = self.printflag
+            focused_dscript.verbose = verbose
+            focused_dscript.printflag = printflag
     
             # Convert the focused dscript object to a script object
             script_obj = focused_dscript.script(printflag=printflag, verbose=verbose, **USER)
@@ -2466,6 +2511,71 @@ class dscript:
         if combined_pipescript is None:
             ValueError('The conversion to pipescript from {type{self}} falled')
         return combined_pipescript
+
+
+    @staticmethod
+    def header(name=None, verbose=True, verbosity=None, style=2, filepath=None, version=None, license=None, email=None):
+        """
+        Generate a formatted header for the DSCRIPT file.
+    
+        ### Parameters:
+            name (str, optional): The name of the script. If None, "Unnamed" is used.
+            verbose (bool, optional): Whether to include the header. Default is True.
+            verbosity (int, optional): Verbosity level. Overrides `verbose` if specified.
+            style (int, optional): ASCII style for the header (default=2).
+            filepath (str, optional): Full path to the file being saved. If None, the line mentioning the file path is excluded.
+            version (str, optional): DSCRIPT version. If None, it is omitted from the header.
+            license (str, optional): License type. If None, it is omitted from the header.
+            email (str, optional): Contact email. If None, it is omitted from the header.
+    
+        ### Returns:
+            str: A formatted string representing the script's metadata and initialization details.
+                 Returns an empty string if `verbose` is False.
+    
+        ### The header includes:
+            - DSCRIPT version, license, and contact email, if provided.
+            - The name of the script.
+            - Filepath, if provided.
+            - Information on where and when the script was generated.
+    
+        ### Notes:
+            - If `verbosity` is specified, it overrides `verbose`.
+            - Omits metadata lines if `version`, `license`, or `email` are not provided.
+        """
+        # Resolve verbosity
+        verbose = verbosity > 0 if verbosity is not None else verbose
+        if not verbose:
+            return ""    
+        # Validate inputs
+        if name is None:
+            name = "Unnamed"
+        # Prepare metadata line
+        metadata = []
+        if version:
+            metadata.append(f"v{version}")
+        if license:
+            metadata.append(f"License: {license}")
+        if email:
+            metadata.append(f"Email: {email}")
+        metadata_line = " | ".join(metadata)
+        # Prepare the framed header content
+        lines = []
+        if metadata_line:
+            lines.append(f"PIZZA.DSCRIPT FILE {metadata_line}")
+        lines += [
+            "",
+            f"Name: {name}",
+        ]
+        # Add the filepath line if filepath is not None
+        if filepath:
+            lines.append(f"Path: {filepath}")
+        lines += [
+            "",
+            f"Generated on: {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}",
+            f"{datetime.datetime.now().strftime('%A, %B %d, %Y at %H:%M:%S')}",
+        ]
+        # Use the shared frame_header function to format the framed content
+        return frame_header(lines, style=style)
 
 
 
@@ -2559,15 +2669,15 @@ class dscript:
                 raise FileExistsError(f"The file '{filepath}' already exists.")
     
         # Header with current date, username, and host
-        user = getpass.getuser()
-        host = socket.gethostname()
-        date = datetime.now().strftime('%Y-%m-%d')
-        header = f"# DSCRIPT SAVE FILE\n# generated on {date} on {user}@{host}\n"
+        header = "# DSCRIPT SAVE FILE\n"
+        header += "\n"*2
         if generatoronly:
-            header += 'dynamic code generation (no file)\n'
+            header += dscript.header(verbose=True,filepath='dynamic code generation (no file)', 
+                                     name = self.name, version=self.version, license=self.license, email=self.email)
         else:
-            header += f'\n#\tname = "{self.name}"\n'
-            header += f'\n#\tpath = "{filepath}"\n\n'
+            header += dscript.header(verbose=True,filepath=filepath,
+                                     name = self.name, version=self.version, license=self.license, email=self.email)
+        header += "\n"*2
         
         # Global parameters in strict Python syntax
         global_params = "# GLOBAL PARAMETERS (8 parameters)\n"
@@ -2589,57 +2699,70 @@ class dscript:
         global_var_info = {}
     
         # Loop over each template item to detect and record variable usage and overrides
-        # Loop over each template item to detect and record variable usage and overrides
         for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
             # Detect variables used in this template
             used_variables = script_template.detect_variables()
         
-            # Check each variable used in this template
-            for var in used_variables:
-                # Determine if the variable is defined in global_var_info and initialize tracking if not
-                if var not in global_var_info:
+            # Loop over each template item to detect and record variable usage and overrides
+            for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
+                # Detect variables used in this template
+                used_variables = script_template.detect_variables()
+                
+                # Check each variable used in this template
+                for var in used_variables:
+                    # Get global and local values for the variable
                     global_value = getattr(allvars, var, None)
                     local_value = getattr(script_template.definitions, var, None)
-                    is_global = var in allvars  # Flag to track if the variable was originally global
+                    is_global = var in allvars  # Check if the variable originates in global space
                     is_default = is_global and (
                         global_value is None or global_value == "" or global_value == f"${{{var}}}"
                     )
-        
-                    # Initialize tracking information
-                    global_var_info[var] = {
-                        "value": global_value,       # Initial value from allvars if exists
-                        "is_default": is_default,    # Check if it’s set to a default value
-                        "first_use": template_index, # First time the variable is used in a template
-                        "override_index": template_index if is_global and local_value != global_value else None,
-                        "is_global": is_global       # Track if the variable originates as global
-                    }
-                else:
-                    # Update the override_index only if it's not set and the local value differs from global
-                    global_value = global_var_info[var]["value"]
-                    local_value = getattr(script_template.definitions, var, None)
-                    
-                    if (
-                        global_var_info[var]["override_index"] is None  # Ensure we only set the first override
-                        and local_value != global_value  # Local value must differ from global
-                    ):
-                        global_var_info[var]["override_index"] = template_index
-        
-        # Prepare the global definitions for output, filtering based on usage and overrides
-        # Count only global values that meet criteria for being printed
+            
+                    # If the variable is not yet tracked, initialize its info
+                    if var not in global_var_info:
+                        global_var_info[var] = {
+                            "value": global_value,       # Initial value from allvars if exists
+                            "updatedvalue": global_value,# Initial value from allvars if exists
+                            "is_default": is_default,    # Check if it’s set to a default value
+                            "first_def": None,           # First definition (to be updated later)
+                            "first_use": template_index, # First time the variable is used
+                            "first_val": global_value,   
+                            "override_index": template_index if local_value is not None else None,  # Set override if defined locally
+                            "is_global": is_global       # Track if the variable originates as global
+                        }
+                    else:
+                        # Update `override_index` if the variable is defined locally and its value changes
+                        if local_value is not None:
+                            # Check if the local value differs from the tracked value in global_var_info
+                            current_value = global_var_info[var]["value"]
+                            if current_value != local_value:
+                                global_var_info[var]["override_index"] = template_index
+                                global_var_info[var]["updatedvalue"] = local_value  # Update the tracked value
+
+
+            # Second loop: Update `first_def` for all variables
+            for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
+                local_definitions = script_template.definitions.keys()
+                for var in local_definitions:
+                    if var in global_var_info and global_var_info[var]["first_def"] is None:
+                        global_var_info[var]["first_def"] = template_index
+                        global_var_info[var]["first_val"] = getattr(script_template.definitions, var)
+
+
+        # Filter global definitions based on usage, overrides, and first_def
         filtered_globals = {
             var: info for var, info in global_var_info.items()
-            if info["is_global"] and info["first_use"] is not None and (
-                info["override_index"] is None or info["first_use"] < info["override_index"]
-            )
-        }
-        
+            if (info["is_global"] or info["is_default"]) and (info["override_index"] is None)
+            }
+
+
         # Generate the definitions output based on filtered globals
         definitions = f"\n# GLOBAL DEFINITIONS (number of definitions={len(filtered_globals)})\n"
         for var, info in filtered_globals.items():
-            if info["is_default"]:
+            if info["is_default"] and (info["first_def"]>info["first_use"] if info["first_def"] else True):
                 definitions += f"{var} = ${{{var}}}  # value assumed to be defined outside this DSCRIPT file\n"
             else:
-                value = info["value"]
+                value = info["first_val"] #info["value"]
                 if value in ["", None]:
                     definitions += f'{var} = ""\n'
                 elif isinstance(value, str):
@@ -2710,12 +2833,26 @@ class dscript:
         # Combine all sections into one content
         content = header + "\n" + global_params + "\n" + definitions + "\n" + template + "\n" + attributes + "\n"
         
+
         # Append footer information to the content
         non_empty_lines = sum(1 for line in content.splitlines() if line.strip())  # Count non-empty lines
-        execution_time = time.time() - start_time  # Calculate the execution time in seconds        
-        footer = f"\n# Footer: Non-empty lines of content = {non_empty_lines}\n"
-        footer += f"# Execution time (seconds): {execution_time:.4f}\n"
-        content += footer  # Add the footer to the content
+        execution_time = time.time() - start_time  # Calculate the execution time in seconds
+        # Prepare the footer content
+        footer_lines = [
+            ["Non-empty lines", str(non_empty_lines)],
+            ["Execution time (seconds)", f"{execution_time:.4f}"],
+        ]
+        # Format footer into tabular style
+        footer_content = [
+            f"{row[0]:<25} {row[1]:<15}" for row in footer_lines
+        ]
+        # Use frame_header to format footer
+        footer = frame_header(
+            lines=["DSCRIPT SAVE FILE generator"] + footer_content,
+            style=1
+        )
+        # Append footer to the content
+        content += f"\n{footer}"
         
         if generatoronly:
             return content
@@ -2731,6 +2868,7 @@ class dscript:
     # Write Method -- added on 2024-09-05
     # ------------
     @staticmethod
+    @staticmethod
     def write(scriptcontent, filename=None, foldername=None, overwrite=False):
         """
         Writes the provided script content to a specified file in a given folder, with a header if necessary.
@@ -2741,13 +2879,19 @@ class dscript:
             The content to be written to the file.
         
         filename : str, optional
-            The name of the file. If not provided, `self.name` will be used. The extension `.txt` will be appended if not already present.
+            The name of the file. If not provided, a random name will be generated. 
+            The extension `.txt` will be appended if not already present.
         
         foldername : str, optional
-            The folder where the file will be saved. If not provided, the system's temporary directory is used.
+            The folder where the file will be saved. If not provided, the current working directory is used.
         
         overwrite : bool, optional
             If False (default), raises a `FileExistsError` if the file already exists. If True, the file will be overwritten if it exists.
+    
+        Returns
+        -------
+        str
+            The full path to the written file.
     
         Raises
         ------
@@ -2756,10 +2900,9 @@ class dscript:
         
         Notes
         -----
-        - The first line of the file will be a header (`# DSCRIPT SAVE FILE`). If this header does not already exist in `scriptcontent`, it will be added.
-        - The header also includes the current date, username, hostname, the value of `self.name`, and the full file path.
+        - A header is prepended to the content if it does not already exist, using the `header` method.
+        - The header includes metadata such as the current date, username, hostname, and file details.
         """
-    
         # Generate a random name if filename is not provided
         if filename is None:
             filename = autoname(8)  # Generates a random name of 8 letters
@@ -2784,25 +2927,34 @@ class dscript:
     
         # Check if file already exists, raise exception if it does and overwrite is False
         if os.path.exists(filepath) and not overwrite:
-            raise FileExistsError(f"The file '{filepath}' already exists.")
+            raise FileExistsError(f"The file '{filepath}' already exists.")   
+        
+        # Count total and non-empty lines in the content
+        total_lines = len(scriptcontent.splitlines())
+        non_empty_lines = sum(1 for line in scriptcontent.splitlines() if line.strip())
     
         # Prepare header if not already present
         if not scriptcontent.startswith("# DSCRIPT SAVE FILE"):
             fname = os.path.basename(filepath)  # Extracts the filename (e.g., "myscript.txt")
-            name, _ = os.path.splitext(fname)   # Removes the extension, e.g., "myscript
-            user = getpass.getuser()
-            host = socket.gethostname()
-            date = datetime.now().strftime('%Y-%m-%d')
-            header = f"# DSCRIPT SAVE FILE\n# written on {date} by {user}@{host}\n"
-            header += f'\n#\tname = "{name}"\n'
-            header += f'\n#\tpath = "{filepath}"\n\n'
-            scriptcontent = header + scriptcontent
+            name, _ = os.path.splitext(fname)   # Removes the extension, e.g., "myscript"
+            metadata = get_metadata()           # retrieve all metadata (statically)
+            header = dscript.header(name=name, verbosity=True,style=1,filepath=filepath,
+                    version = metadata["version"], license = metadata["license"], email = metadata["email"])
+            # Add line count information to the header
+            footer = frame_header(
+                lines=[
+                    f"Total lines written: {total_lines}",
+                    f"Non-empty lines: {non_empty_lines}"
+                ],
+                style=1
+            )
+            scriptcontent = header + "\n" + scriptcontent + "\n" + footer
     
         # Write the content to the file
         with open(filepath, 'w') as file:
             file.write(scriptcontent)
-    
-        return filepath   
+        return filepath
+
 
 
     # Load Method and its Parsing Rules -- added on 2024-09-04
@@ -3203,7 +3355,8 @@ class dscript:
     
         # Initialize containers
         global_params = {}
-        definitions = lambdaScriptdata()
+        GLOBALdefinitions = lambdaScriptdata()
+        LOCALdefinitions = lambdaScriptdata()
         template = {}
         attributes = {}
     
@@ -3213,6 +3366,7 @@ class dscript:
         inside_template_block = False
         current_template_key = None
         current_template_content = []
+        current_var_value = lambdaScriptdata()
     
         # Initialize line number
         line_number = 0
@@ -3280,12 +3434,14 @@ class dscript:
                     # End of template block
                     content = '\n'.join(current_template_content)
                     template[current_template_key] = ScriptTemplate(
-                        content,
-                        definitions=lambdaScriptdata(**definitions.__dict__),
+                        content=content,
+                        autorefresh=False,
+                        definitions=LOCALdefinitions,
                         verbose=verbose,
                         userid=current_template_key)
                     # Refresh variables definitions
-                    template[current_template_key].refreshvar()
+                    template[current_template_key].refreshvar(globaldefinitions=GLOBALdefinitions)
+                    LOCALdefinitions = lambdaScriptdata()
                     # Reset state for next block
                     inside_template_block = False
                     current_template_key = None
@@ -3342,11 +3498,13 @@ class dscript:
                                 current_template_content.append(content_line)
                             content = '\n'.join(current_template_content)
                             template[current_template_key] = ScriptTemplate(
-                                content,
-                                definitions=lambdaScriptdata(**definitions.__dict__),
+                                content=content,
+                                autorefresh=False,
+                                definitions=LOCALdefinitions,
                                 verbose=verbose,
                                 userid=current_template_key)
-                            template[current_template_key].refreshvar()
+                            template[current_template_key].refreshvar(globaldefinitions=GLOBALdefinitions)
+                            LOCALdefinitions = lambdaScriptdata()
                             inside_template_block = False
                             current_template_key = None
                             current_template_content = []
@@ -3392,8 +3550,15 @@ class dscript:
             definition_match = re.match(r'^(\w+)\s*=\s*(.+)', stripped)
             if definition_match:
                 key, value = definition_match.groups()
-                definitions.setattr(key, cls._convert_value(value))
+                convertedvalue = cls._convert_value(value)
+                if key in GLOBALdefinitions:
+                    if (GLOBALdefinitions.getattr(key) != convertedvalue) or \
+                        (getattr(current_var_value, key) != convertedvalue):
+                        LOCALdefinitions.setattr(key, convertedvalue)
+                else:
+                    GLOBALdefinitions.setattr(key, convertedvalue)
                 last_successful_line = line_number
+                setattr(current_var_value, key, convertedvalue)
                 continue
     
             # Handle single-line templates
@@ -3401,11 +3566,13 @@ class dscript:
             if template_match:
                 key, content = template_match.groups()
                 template[key] = ScriptTemplate(
-                    content.strip(),
-                    definitions=lambdaScriptdata(**definitions.__dict__),
+                    content = content.strip(),
+                    autorefresh = False,
+                    definitions=LOCALdefinitions,
                     verbose=verbose,
                     userid=key)
-                template[key].refreshvar()
+                template[key].refreshvar(globaldefinitions=GLOBALdefinitions)
+                LOCALdefinitions = lambdaScriptdata()
                 last_successful_line = line_number
                 continue
     
@@ -3437,6 +3604,7 @@ class dscript:
             if key in template:
                 for attr_name, attr_value in attributes[key].items():
                     setattr(template[key], attr_name, attr_value)
+                template[key]._autorefresh = True # restore the default behavior for the end-user
             else:
                 raise ValueError(f"Attributes found for undefined template key: {key}")
     
@@ -3466,7 +3634,7 @@ class dscript:
             template = numeric_template
     
         # Set definitions and template
-        instance.DEFINITIONS = definitions
+        instance.DEFINITIONS = GLOBALdefinitions
         instance.TEMPLATE = template
     
         # Refresh variables
@@ -3830,19 +3998,35 @@ class dscript:
 
     @classmethod
     def _parse_global_params(cls, content, global_params):
-        """Parses global parameters from the accumulated content between {}."""
-        # Split by commas, ignoring any commas inside brackets, parentheses, or quotes
-        lines = re.split(r',(?![^(){}\[\]]*[\)\}\]])', content)
+        """
+        Parses global parameters from the accumulated content enclosed in `{}`.
+    
+        ### Parameters:
+            content (str): The content string containing global parameters.
+            global_params (dict): A dictionary to populate with parsed parameters.
+    
+        ### Raises:
+            ValueError: If invalid lines or key-value pairs are encountered.
+        """
+        # Remove braces from the content
+        content = content.strip().strip("{}")
+    
+        # Split the content into lines by commas
+        lines = re.split(r',(?![^(){}\[\]]*[\)\}\]])', content.strip())
+    
         for line in lines:
-            line = line.strip()  # Remove leading/trailing whitespace
-            # Ensure it's a valid key-value pair
+            line = line.strip()
+            # Match key-value pairs
             match = re.match(r'([\w_]+)\s*=\s*(.+)', line)
             if match:
                 key, value = match.groups()
                 key = key.strip()
                 value = value.strip()
-                # Convert the value to the appropriate type and store in global_params
+                # Convert the value to the appropriate Python type and store it
                 global_params[key] = cls._convert_value(value)
+            else:
+                raise ValueError(f"Invalid parameter line: '{line}'")
+
 
     @classmethod
     def _parse_attributes(cls, attr_dict, content):
@@ -3855,21 +4039,19 @@ class dscript:
     def _convert_value(cls, value):
         """Converts a string representation of a value to the appropriate Python type."""
         value = value.strip()
-
-        # Boolean conversion
+        # Boolean and None conversion
         if value.lower() == 'true':
             return True
         elif value.lower() == 'false':
             return False
-
+        elif value.lower() == 'none':
+            return None
         # Handle quoted strings
         if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
             return value[1:-1]
-
         # Handle lists (Python syntax inside the file)
         if value.startswith('[') and value.endswith(']'):
             return eval(value)  # Using eval to parse lists safely in this controlled scenario
-
         # Handle numbers
         try:
             if '.' in value:

@@ -103,11 +103,11 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9996"
+__version__ = "0.9999"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-11-25 (community)
+# INRAE\Olivier Vitrac - rev. 2024-12-01 (community)
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -151,10 +151,13 @@ __version__ = "0.9996"
 # 2024-11-12 add flexibility to remove_comments(), comment_chars="#%", continuation_marker="..."
 # 2024-11-23 improve write and do() methods (the old pipescript.do() method is available as pipescript.do_legacy() )
 # 2024-11-25 clear distinction between pipescript and scrupt headers
+# 2024-11-29 improved save features
+# 2024-12-01 standarize scripting features, automatically call script/pscript methods
+# 2024-12-02 standardize script.header(), pscript.header() and dscript.header()
 
 
 # %% Dependencies
-import os, datetime, socket, getpass, tempfile, types
+import os, datetime, socket, getpass, tempfile, types, re
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate
 from shutil import copy as copyfile
@@ -651,6 +654,7 @@ class scriptobject(struct):
                 filename = "/path/to/your/inputfile"
                 style = "smd"
                 forcefield = any valid forcefield instance (default = rigidwall())
+                mass = 1.0
 
         note: use a forcefield instance with the keywork USER to pass user FF parameters
         examples:   rigidwall(USER=scriptdata(...))
@@ -668,14 +672,18 @@ class scriptobject(struct):
 
     def __init__(self,
                  beadtype = 1,
-                 name = "undefined",
+                 name = None,
                  fullname="",
                  filename="",
                  style="smd",
+                 mass=1.0, # added on 2024-11-29
                  forcefield=rigidwall(),
                  group=[],
                  USER = scriptdata()
                  ):
+        name = f"beadtype={beadtype}" if name is None else name
+        if not isinstance(name,str):
+            TypeError(f"name must a string or None got {type(name)}")
         if fullname=="": fullname = name + " object definition"
         if not isinstance(group,list): group = [group]
         forcefield.beadtype = beadtype
@@ -688,6 +696,7 @@ class scriptobject(struct):
               filename = filename,
                  style = style,
             forcefield = forcefield,
+                  mass = mass,
                  group = group,
                   USER = USER
                  )
@@ -717,11 +726,11 @@ class scriptobject(struct):
             raise ValueError("the argument must a pipescript, a scriptobject or a scriptobjectgroup")
 
     def __eq__(self, SO):
-        return isinstance(SO,scriptobject) and (self.beadtype == SO.beadtype) \
+        return isinstance(SO,scriptobject) and (self.beadtype == SO.beadtype) and (self.mass == SO.mass) \
             and (self.name == SO.name)
 
     def __ne__(self, SO):
-        return not isinstance(SO,scriptobject) or (self.beadtype != SO.beadtype) or (self.name != SO.name)
+        return not isinstance(SO,scriptobject) or (self.beadtype != SO.beadtype) or (self.mass != SO.mass) or (self.name != SO.name)
 
     def __lt__(self, SO):
         return self.beadtype < SO.beadtype
@@ -1100,7 +1109,7 @@ class scriptobjectgroup(struct):
         return FF
 
     @CallableScript
-    def script(self, printflag=False, verbosity=2, verbose=None):
+    def script(self, printflag=False, verbosity=None, verbose=None):
         """
             Generate a script based on the current collection of script objects
 
@@ -1119,10 +1128,12 @@ class scriptobjectgroup(struct):
             script
                 The generated script describing the interactions between script objects.
         """
+        printflag = self.printflag if printflag is None else printflag
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if verbose is False else verbosity
         TEMPFILES = ""
         isfirst = True
         files_added = False
-        verbosity = 0 if verbose is False else verbosity
         if self.filename:
             for fn, cfn in self.filename.items():
                 if fn and cfn:
@@ -1179,15 +1190,104 @@ class scriptobjectgroup(struct):
             A newly created `group` object with criteria set based on the existing groups.
         """
         from pizza.group import group
-    
         # Use the provided name or generate a default name using the span function
         G = group(name=name if name is not None else span(self.name, ",", "[", "]"))
-        
         # Add criteria for each group in self.group
         for g in self.group:
             G.add_group_criteria(g.groupidname, type=g.beadtype)
-        
         return G
+    
+    
+    def mass(self, name=None, default_mass="${mass}", printflag=False, verbosity=2, verbose=True):
+        """
+        Generates LAMMPS mass commands for each unique beadtype in the collection.
+
+        The method iterates through all `scriptobjectgroup` instances in the collection,
+        collects unique beadtypes, and ensures that each beadtype has a consistent mass.
+        If a beadtype has `mass=None`, it assigns a default mass as specified by `default_mass`.
+
+        ### Parameters:
+            name (str, optional): 
+                The name to assign to the resulting `script` object. Defaults to a generated name.
+            default_mass (str, int, or float, optional): 
+                The default mass value to assign when a beadtype's mass is `None`. 
+                Can be a string, integer, or floating-point value. Defaults to `"${mass}"`.
+            printflag (bool, optional): 
+                If `True`, prints the representation of the resulting `script` object. Defaults to `False`.
+            verbosity (int, optional): 
+                The verbosity level for logging or debugging. Higher values indicate more detailed output. 
+                Defaults to `2`.
+            verbose (bool, optional): 
+                If `True`, includes a comment header in the output. Overrides `verbosity` when `False`.
+                Defaults to `True`.
+
+        ### Returns:
+            script: A `script` object containing the mass commands for each beadtype, formatted as follows:
+                     ```
+                     mass 1 1.0
+                     mass 2 ${mass}
+                     mass 3 2.5
+                     ```
+                     The `TEMPLATE` attribute of the `script` object holds the formatted mass commands as a single string.
+
+        ### Raises:
+            ValueError: If a beadtype has inconsistent mass values across different `scriptobjectgroup` instances.
+
+        ### Example:
+            ```python
+            # Create scriptobjectgroup instances
+            obj1 = scriptobjectgroup(beadtype=1, group=["all", "A"], mass=1.0)
+            obj2 = scriptobjectgroup(beadtype=2, group=["all", "B", "C"])
+            obj3 = scriptobjectgroup(beadtype=3, group="C", mass=2.5)
+
+            # Initialize a script group with the scriptobjectgroup instances
+            G = scriptobjectgroup([obj1, obj2, obj3])
+
+            # Generate mass commands
+            M = G.mass()
+            print(M.do())
+            ```
+
+            **Output:**
+            ```
+            # <script:group:mass> definitions for 3 beads
+            mass 1 1.0
+            mass 2 ${mass}
+            mass 3 2.5
+            ```
+        """
+        verbosity = 0 if verbose is False else verbosity
+        beadtype_mass = {}
+        for iobj in range(0,len(self)):
+            obj = self[iobj]
+            bt = obj.beadtype
+            mass = obj.mass if obj.mass is not None else default_mass
+            if bt in beadtype_mass:
+                if beadtype_mass[bt] != mass:
+                    raise ValueError(
+                        f"Inconsistent masses for beadtype {bt}: {beadtype_mass[bt]} vs {mass}"
+                    )
+            else:
+                beadtype_mass[bt] = mass
+        # Sort beadtypes for consistent ordering
+        sorted_beadtypes = sorted(beadtype_mass.keys())
+        # Generate mass commands
+        lines = [f"mass {bt} {beadtype_mass[bt]}" for bt in sorted_beadtypes]
+        # return a script object
+        nameid = f"<script:group:{self.name}:mass>"
+        description = f"{nameid} definitions for {len(self)} beads"
+        if verbose:
+            lines.insert(0, "# "+description)
+        mscript = script(printflag=False,verbose=verbosity>1)
+        mscript.name = nameid if name is None else name
+        mscript.description = description
+        mscript.userid = "scriptobject"             # user name
+        mscript.TEMPLATE = "\n".join(lines)
+        mscript.DEFINITIONS.mass = default_mass
+        if printflag:
+            repr(mscript)
+        return mscript
+        
 
 # %% script core class
 # note: please derive this class when you use it, do not alter it
@@ -1525,13 +1625,15 @@ class script:
                  persistentfolder = None,
                  printflag = False,
                  verbose = False,
+                 verbosity = None,
                  **userdefinitions):
         """ constructor adding instance definitions stored in USER """
         if persistentfolder is None: persistentfolder = get_tmp_location()
         self.persistentfile = persistentfile
         self.persistentfolder = persistentfolder
-        self.printflag = printflag # for internal operations
-        self.verbose = verbose     # for internal operations
+        self.printflag = printflag
+        self.verbose = verbose if verbosity is None else verbosity>0
+        self.verbosity = 0 if not verbose else verbosity
         self.USER = scriptdata(**userdefinitions)
 
     # print method for headers (static, no implicit argument)
@@ -1651,6 +1753,8 @@ class script:
     def __add__(self,s):
         """ overload addition operator """
         from pizza.dscript import dscript
+        from pizza.group import group, groupcollection
+        from pizza.region import region
         if isinstance(s,script):
             dup = duplicate(self)
             dup.DEFINITIONS = dup.DEFINITIONS + s.DEFINITIONS
@@ -1658,10 +1762,18 @@ class script:
             dup.TEMPLATE = "\n".join([dup.TEMPLATE,s.TEMPLATE])
             return dup
         elif isinstance(s,pipescript):
-            return pipescript(self) | s
+            return pipescript(self, printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity) | s
         elif isinstance(s,dscript):
-            return self + s.script()
-        raise TypeError(f"the second operand in + must a script object not {type(s)}")
+            return self + s.script(printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)
+        elif isinstance(s, scriptobjectgroup):
+            return self + s.script(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
+        elif isinstance(s, group):
+            return self + s.script(printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)
+        elif isinstance(s, groupcollection):
+            return self + s.script(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
+        elif isinstance(s,region):
+            return self + s.script(printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)
+        raise TypeError(f"the second operand in + must a script, pipescript, scriptobjectgroup,\n group, groupcollection or region object not {type(s)}")
 
     # override +=
     def _iadd__(self,s):
@@ -1718,17 +1830,25 @@ class script:
     def __or__(self,pipe):
         """ overload | or for pipe """
         from pizza.dscript import dscript
+        from pizza.group import group, groupcollection
+        from pizza.region import region
         if isinstance(pipe, dscript):
-            rightarg = pipe.pipescript(printflag=False,verbose=False)
+            rightarg = pipe.pipescript(printflag=pipe.printflag,verbose=pipe.verbose,verbosity=pipe.verbosity)
+        elif isinstance(pipe,group):
+            rightarg = pipe.script(printflag=pipe.printflag,verbose=pipe.verbose,verbosity=pipe.verbosity)
+        elif isinstance(pipe,groupcollection):
+            rightarg = pipe.script(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
+        elif isinstance(pipe,region):
+            rightarg = pipe.pscript(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)            
         else:
             rightarg = pipe
         if isinstance(rightarg,(pipescript,script,scriptobject,scriptobjectgroup)):
-            return pipescript(self) | rightarg
+            return pipescript(self,printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity) | rightarg
         else:
             raise ValueError("the argument in | must a pipescript, a scriptobject or a scriptobjectgroup not {type(s)}")
 
 
-    def header(self, verbosity=None, style=2):
+    def header(self, verbose=True, verbosity=None, style=2):
         """
         Generate a formatted header for the script file.
 
@@ -1748,10 +1868,10 @@ class script:
             - Persistent filename and folder path.
             - Timestamp of the header generation.
         """
-        verbosity = self.verbose if verbosity is None else verbosity
-        if not verbosity:
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity
+        if not verbose:
             return ""
-
         # Prepare the header content
         lines = [
             f"PIZZA.SCRIPT FILE v{script.version} | License: {script.license} | Email: {script.email}",
@@ -1763,14 +1883,14 @@ class script:
             f"Generated on: {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}",
             f"{datetime.datetime.now().strftime('%A, %B %d, %Y at %H:%M:%S')}",
         ]
-
         # Use the shared method to format the header
         return frame_header(lines,style=style)
 
 
     # write file
     def write(self, file, printflag=True, verbose=False, overwrite=False, style=2):
-        """Write the script to a file.
+        """
+        Write the script to a file.
         
         Parameters:
             - file (str): The file path where the script will be saved.
@@ -1787,19 +1907,26 @@ class script:
                     5. Box drawing characters with `┌`, `─`, and `│`
                     6. Minimalist dotted frame with `.`, `:`, and `.`
                 Default is `2` (frame with rounded corners).
+
+        Returns:
+            str: The full absolute path of the file written.
             
         Raises:
             FileExistsError: If the file already exists and overwrite is False.
         """
-        if os.path.exists(file) and not overwrite:
-            raise FileExistsError(f"The file '{file}' already exists. Use overwrite=True to overwrite it.")
-        if os.path.exists(file) and overwrite and verbose:
-            print(f"Warning: Overwriting the existing file '{file}'.")
+        # Resolve full path
+        full_path = os.path.abspath(file)
+        if os.path.exists(full_path) and not overwrite:
+            raise FileExistsError(f"The file '{full_path}' already exists. Use overwrite=True to overwrite it.")
+        if os.path.exists(full_path) and overwrite and verbose:
+            print(f"Warning: Overwriting the existing file '{full_path}'.")
+        # Generate the script and write to the file
         cmd = self.do(printflag=printflag, verbose=verbose)
-        with open(file, "w") as f:
-            print(self.header(verbosity=verbose,style=style), "\n", file=f)
+        with open(full_path, "w") as f:
+            print(self.header(verbosity=verbose, style=style), "\n", file=f)
             print(cmd, file=f)
-
+        # Return the full path of the written file
+        return full_path
 
     def tmpwrite(self, verbose=False, style=1):
         """
@@ -1912,6 +2039,28 @@ class script:
             setattr(copie, k, deepduplicate(v, memo))
         return copie
 
+    def detect_variables(self):
+        """
+        Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'.
+
+        Returns:
+        --------
+        list
+            A list of unique variable names detected in the content.
+        """
+        # Regular expression to match variables in the format ${varname}
+        variable_pattern = re.compile(r'\$\{(\w+)\}')
+        # Ensure TEMPLATE is iterable (split string into lines if needed)
+        if isinstance(self.TEMPLATE, str):
+            lines = self.TEMPLATE.splitlines()  # Split string into lines
+        elif isinstance(self.TEMPLATE, list):
+            lines = self.TEMPLATE
+        else:
+            raise TypeError("TEMPLATE must be a string or a list of strings.")
+        # Detect variables from all lines
+        detected_vars = {variable for line in lines for variable in variable_pattern.findall(line)}
+        # Return the list of unique variables
+        return list(detected_vars)
 
 # %% pipe script
 class pipescript:
@@ -2103,12 +2252,14 @@ class pipescript:
             Pending: mechanism to store LAMMPS results (dump3) in the pipeline
     """
 
-    def __init__(self,s=None, name=None):
+    def __init__(self,s=None, name=None, printflag=False, verbose=True, verbosity = None):
         """ constructor """
         self.globalscript = None
         self.listscript = []
         self.listUSER = []
-        self.verbose = True # set it to False to reduce verbosity
+        self.printflag = printflag
+        self.verbose = verbose if verbosity is None else verbosity>0
+        self.verbosity = 0 if not verbose else verbosity
         self.cmd = ""
         if isinstance(s,script):
             self.listscript = [duplicate(s)]
@@ -2195,19 +2346,34 @@ class pipescript:
         leftarg = deepduplicate(self)  # Make a deep copy of the current object
         # Local import only when dscript type needs to be checked
         from pizza.dscript import dscript
+        from pizza.group import group, groupcollection
+        from pizza.region import region
         # Convert rightarg to pipescript if needed
         if isinstance(s, dscript):
-            rightarg = s.pipescript(printflag=False,verbose=False)  # Convert the dscript object to a pipescript
+            rightarg = s.pipescript(printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)  # Convert the dscript object to a pipescript
             native = False
-        elif isinstance(s,(script,scriptobject,scriptobjectgroup)):
-            rightarg = pipescript(s)  # Convert the script-like object into a pipescript
-            rightname = str(s)
+        elif isinstance(s,script):
+            rightarg = pipescript(s,printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)  # Convert the script-like object into a pipescript
+            native = False
+        elif isinstance(s,(scriptobject,scriptobjectgroup)):
+            rightarg = pipescript(s,printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)  # Convert the script-like object into a pipescript
+            native = False
+        elif isinstance(s, group):
+            stmp = s.script(printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)
+            rightarg = pipescript(stmp,printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)  # Convert the script-like object into a pipescript
+            native = False
+        elif isinstance(s, groupcollection):
+            stmp = s.script(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
+            rightarg = pipescript(stmp,printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)  # Convert the script-like object into a pipescript
+            native = False
+        elif isinstance(s, region):
+            rightarg = s.pipescript(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)  # Convert the script-like object into a pipescript
             native = False
         elif isinstance(s,pipescript):
             rightarg = s
             native = True
         else:
-            raise TypeError(f"The operand should be a pipescript, dscript, script, scriptobject, or scriptobjectgroup not {type(s)}")
+            raise TypeError(f"The operand should be a pipescript, dscript, script, scriptobject, scriptobjectgroup, group or groupcollection not {type(s)}")
         # Native piping
         if native:
             leftarg.listscript = leftarg.listscript + rightarg.listscript
@@ -2652,6 +2818,8 @@ class pipescript:
             Default is `4` (thick outer frame).
         
         """
+        printflag = self.printflag if printflag is None else printflag
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
         verbosity=0 if verbose is False else verbosity
         s = script(printflag=printflag, verbose=verbosity>0)
         s.name = "pipescript"
@@ -2706,7 +2874,7 @@ class pipescript:
         return copie 
 
     # write file
-    def write(self, file, printflag=True, verbosity=2, verbose=None, overwrite=False):
+    def write(self, file, printflag=False, verbosity=2, verbose=None, overwrite=False):
        """
        Write the combined script to a file.
    
@@ -2717,6 +2885,9 @@ class pipescript:
            verbose (bool or None): If True, enables verbose mode; if None, defaults to the instance's verbosity.
            overwrite (bool): Whether to overwrite the file if it already exists. Default is False.
    
+        Returns:
+            str: The full absolute path of the file written.
+
        Raises:
            FileExistsError: If the file already exists and overwrite is False.
    
@@ -2728,12 +2899,11 @@ class pipescript:
        """
        # Generate the combined script
        myscript = self.script(printflag=printflag, verbosity=verbosity, verbose=verbose, forced=True)
-   
        # Call the script's write method with the overwrite parameter
-       myscript.write(file, printflag=printflag, verbose=verbose, overwrite=overwrite)
+       return myscript.write(file, printflag=printflag, verbose=verbose, overwrite=overwrite)
 
         
-    def dscript(self, name=None, verbose=None, **USER):
+    def dscript(self, name=None, printflag=None, verbose=None, verbosity=None, **USER):
         """
         Convert the current pipescript object to a dscript object.
         
@@ -2765,6 +2935,11 @@ class pipescript:
         """
         # Local imports
         from pizza.dscript import dscript, ScriptTemplate, lambdaScriptdata
+
+        # verbosity
+        printflag = self.printflag if printflag is None else printflag
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity
     
         # Adjust name
         if name is None:
@@ -2780,27 +2955,33 @@ class pipescript:
     
         # Initialize static merged definitions
         staticmerged_definitions = lambdaScriptdata()
+        
+        # Track used variables per step
+        step_used_variables = []
     
         # Loop over each step in the pipescript
         for i, script in enumerate(self.listscript):
             # Merge STATIC, GLOBAL, and LOCAL variables for the current step
-            static_vars = script.DEFINITIONS
-            global_vars = self.scripts[i].USER
-            local_vars = self.USER[i]
+            static_vars = self.listUSER[i] # script.DEFINITIONS
+            global_vars = script.DEFINITIONS # self.scripts[i].USER
+            local_vars = script.USER # self.USER[i]
+            refreshed_globalvars = static_vars + global_vars
     
-            # Copy all static variables to local_static_updates and remove matching variables from staticmerged_definitions
-            local_static_updates = lambdaScriptdata(**static_vars)
-            for var, value in static_vars.items():
-                if var in staticmerged_definitions and getattr(staticmerged_definitions, var) == value:
-                    delattr(local_static_updates, var)
+            # Detect variables used in the current template
+            used_variables = set(script.detect_variables())
+            step_used_variables.append(used_variables)  # Track used variables for this step
+
+            # Copy all current variables to local_static_updates and remove matching variables from staticmerged_definitions
+            local_static_updates = lambdaScriptdata(**local_vars)
+                        
+            for var, value in refreshed_globalvars.items():
+                if var in staticmerged_definitions:
+                    if (getattr(staticmerged_definitions, var) != value) and (var not in local_vars):
+                        setattr(local_static_updates, var, value)
+                else:
+                    setattr(staticmerged_definitions, var, value)
     
-            # Accumulate unique static variables into staticmerged_definitions
-            staticmerged_definitions.update(**static_vars) # += static_vars
-    
-            # Merge global and local variables for dynamic definitions
-            merged_definitions = global_vars + local_vars
-    
-            # Create the dynamic script for this step using the method in dscript
+           # Create the dynamic script for this step using the method in dscript
             key_name = i  # Use the index 'i' as the key in TEMPLATE
             content = script.TEMPLATE
     
@@ -2808,7 +2989,7 @@ class pipescript:
             outd.add_dynamic_script(
                 key=key_name,
                 content=content,
-                definitions = local_static_updates + merged_definitions,
+                definitions = lambdaScriptdata(**local_static_updates),
                 verbose=self.verbose if verbose is None else verbose,
                 userid=self.name[i]
             )
@@ -2816,14 +2997,22 @@ class pipescript:
             # Set eval=True only if variables are detected in the template
             if outd.TEMPLATE[key_name].detect_variables():
                 outd.TEMPLATE[key_name].eval = True
+
+        # Compute the union of all used variables across all steps
+        global_used_variables = set().union(*step_used_variables)
+
+        # Filter staticmerged_definitions to keep only variables that are used
+        filtered_definitions = {
+            var: value for var, value in staticmerged_definitions.items() if var in global_used_variables
+        }
     
-        # Assign the accumulated static merged definitions along with USER variables to outd.DEFINITIONS
-        outd.DEFINITIONS = staticmerged_definitions + lambdaScriptdata(**USER)
+        # Assign the filtered definitions along with USER variables to outd.DEFINITIONS
+        outd.DEFINITIONS = lambdaScriptdata(**filtered_definitions)
     
         return outd
 
 
-    def header(self, verbosity=None, style=4):
+    def header(self, verbose=True,verbosity=None, style=4):
         """
         Generate a formatted header for the pipescript file.
 
@@ -2842,7 +3031,8 @@ class pipescript:
             - The range of scripts from the first to the last script.
             - All enclosed within an ASCII frame that adjusts to the content.
         """
-        verbosity = self.verbose if verbosity is None else verbosity
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity
         if not verbosity:
             return ""
 
@@ -2855,8 +3045,6 @@ class pipescript:
 
         # Use the shared method to format the header
         return frame_header(lines,style=style)
-
-
 
 # %% Child classes of script sessions (to be derived)
 # navigate with the outline tab through the different classes

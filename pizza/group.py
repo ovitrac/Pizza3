@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9972"
+__version__ = "0.9999"
 
 
 """
@@ -186,20 +186,538 @@ Created on Wed Aug 16 16:25:19 2023
 # 2024-10-08 code finalization (flexible initialization), updated documentation
 # 2024-10-11 advanced indexing and scripting
 # 2024-10-12 add copy and deepcopy features
+# 2024-11-29 add groupobjects, groupcollection
+# 2024-12-01 standarize scripting features, automatically call script/pscript methods
 
 # %% Dependencies
 # pizza.group is independent of region and can performs only static operations.
 # It is designed to be compatible with region via G.script()
+from typing import List, Union, Optional, Tuple
 import hashlib, random, string, copy
 from pizza.script import span, pipescript
 from pizza.dscript import dscript
 
-# %% Private classes and functions
+# %% Private functions
 
 # Helper function that generates a random string of a specified length using uppercase and lowercase letters.
 def generate_random_name(length=8):
     letters = string.ascii_letters  # 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
     return ''.join(random.choice(letters) for _ in range(length))
+
+# Helper function that truncates text
+def truncate_text(txt, maxwidth):
+    """
+    Truncates the input text to fit within the specified maximum width.
+    If the text is longer than `maxwidth`, it is shortened by keeping
+    the beginning and trailing parts, separated by " [...] ".
+
+    ### Parameters:
+        txt (str): The text to truncate.
+        maxwidth (int): The maximum allowed width for the text.
+
+    ### Returns:
+        str: The truncated text with " [...] " in the middle if truncation occurs.
+
+    ### Example:
+        >>> truncate_text("This is a long string that needs truncation.", 20)
+        'This is [...] truncation.'
+    """
+    # If the text fits within maxwidth, return it as is
+    if len(txt) <= maxwidth:
+        return txt
+    # Calculate the part lengths for beginning and end
+    ellipsis = " [...] "
+    split_length = (maxwidth - len(ellipsis)) // 2
+    beginning = txt[:split_length]
+    trailing = txt[-split_length:]
+    return f"{beginning}{ellipsis}{trailing}"
+
+
+# Helper function that generate a pretty table
+def format_table(
+    headers: List[str],
+    rows: List[List[str]],
+    col_max_widths: List[int],
+    align: Union[str, List[str]] = "C",
+) -> str:
+    """
+    Formats a table with given headers and rows, truncating text based on maximum column widths
+    and aligning content based on the specified alignment.
+
+    ### Parameters:
+        headers (List[str]): List of column headers.
+        rows (List[List[str]]): List of rows, where each row is a list of column values.
+        col_max_widths (List[int]): List of maximum widths for each column.
+        align (str or List[str], optional): Alignment for each column. Can be a single string
+                                            (applies to all columns) or a list of strings (one for each column).
+                                            Options are:
+                                            - "C" or "center" for centered alignment (default).
+                                            - "L" or "left" for left alignment.
+                                            - "R" or "right" for right alignment.
+                                            Case insensitive.
+
+    ### Returns:
+        str: A formatted table as a string.
+
+    ### Raises:
+        ValueError: If `align` is a list but its length does not match the number of columns.
+
+    ### Example:
+        >>> headers = ["Idx", "Name", "Value"]
+        >>> rows = [[1, "Example", "12345"], [2, "LongerName", "67890"]]
+        >>> col_max_widths = [5, 10, 8]
+        >>> align = ["R", "C", "L"]
+        >>> print(format_table(headers, rows, col_max_widths, align))
+        Idx   |   Name    | Value   
+        ----- | ---------- | --------
+          1   |  Example  | 12345   
+          2   | LongerName | 67890   
+    """
+    # Normalize alignment input
+    if isinstance(align, str):
+        align = [align.upper()] * len(headers)
+    elif isinstance(align, list):
+        align = [a.upper() for a in align]
+        if len(align) != len(headers):
+            raise ValueError("The length of `align` must match the number of columns.")
+    else:
+        raise TypeError("`align` must be a string or a list of strings.")
+
+    # Determine actual column widths based on headers and max widths
+    col_widths = [
+        min(max(len(header), *(len(str(row[i])) for row in rows)), max_w)
+        for i, header in enumerate(headers)
+        for max_w in [col_max_widths[i]]
+    ]
+    # Prepare alignment formatting
+    alignments = []
+    for a in align:
+        if a in ("C", "CENTER"):
+            alignments.append("^")
+        elif a in ("L", "LEFT"):
+            alignments.append("<")
+        elif a in ("R", "RIGHT"):
+            alignments.append(">")
+        else:
+            raise ValueError(f"Invalid alignment value: {a}")
+    # Prepare header line
+    header_line = " | ".join(
+        f"{headers[i]:{alignments[i]}{col_widths[i]}}" for i in range(len(headers))
+    )
+    # Prepare separator
+    separator = " | ".join("-" * col_widths[i] for i in range(len(col_widths)))
+    # Prepare rows
+    formatted_rows = []
+    for row in rows:
+        formatted_row = [
+            f"{str(row[i]):{alignments[i]}{col_widths[i]}}" for i in range(len(row))
+        ]
+        formatted_rows.append(" | ".join(formatted_row))
+    # Combine all parts
+    table = [header_line, separator] + formatted_rows + [separator]
+    return "\n".join(table)
+
+
+# %% Low-level classes groupobjects, groupcollection
+
+# groupobject class for groups defined based on a collection of groupobjects
+class groupobject:
+    """
+    Represents an object with a bead type, associated groups, and an optional mass.
+
+    ### Attributes:
+        beadtype (int or float): The bead type identifier. Must be an integer or a real scalar.
+        group (List[str]): List of group names the object belongs to.
+        mass (Optional[float]): The mass of the bead. Must be a real scalar or None.
+        name (Optional[str]): Name of the object
+
+    ### Examples:
+        >>> o1 = groupobject(beadtype=1, group=["all", "A"], mass=1.0)
+        >>> o2 = groupobject(beadtype=2, group=["all", "B", "C"])
+        >>> o3 = groupobject(beadtype=3, group="C", mass=2.5)
+    """
+
+    def __init__(self, beadtype: Union[int, float], group: Union[str, List[str], Tuple[str, ...]], \
+                 mass: Optional[Union[int, float]] = None, name: Optional[str]=None, ):
+        """
+        Initializes a new instance of the groupobject class.
+
+        ### Parameters:
+            beadtype (int or float): The bead type identifier.
+            group (str, list of str, or tuple of str): Group names the object belongs to.
+            mass (float or int, optional): The mass of the bead.
+
+        ### Raises:
+            TypeError: If `beadtype` is not an int or float.
+            TypeError: If `group` is not a str, list of str, or tuple of str.
+            TypeError: If `mass` is not a float, int, or None.
+        """
+        # Validate beadtype
+        if not isinstance(beadtype, (int, float)):
+            raise TypeError(f"'beadtype' must be an integer or float, got {type(beadtype).__name__} instead.")
+        self.beadtype = beadtype
+        # Validate group
+        if isinstance(group, str):
+            self.group = [group]
+        elif isinstance(group, (list, tuple)):
+            if not all(isinstance(g, str) for g in group):
+                raise TypeError("All elements in 'group' must be strings.")
+            self.group = list(group)
+        else:
+            raise TypeError(f"'group' must be a string, list of strings, or tuple of strings, got {type(group).__name__} instead.")
+        # Validate mass
+        if mass is not None and not isinstance(mass, (int, float)):
+            raise TypeError(f"'mass' must be a real scalar (int or float) or None, got {type(mass).__name__} instead.")
+        self.mass = mass
+        # Validate name
+        self.name = f"beadtype={beadtype}" if name is None else name
+
+    def __str__(self) -> str:
+        """
+        Returns a readable string representation of the groupobject.
+        """
+        return f"groupobject | type={self.beadtype} | name={self.group} | mass={self.mass}"
+
+    def __repr__(self) -> str:
+        """
+        Returns an unambiguous string representation of the groupobject.
+
+        ### Returns:
+            str: String representation including beadtype, group, and mass (if not None).
+        """
+        return f"groupobject(beadtype={self.beadtype}, group={span(self.group,',','[',']')}, name={self.name}, mass={self.mass})"
+    
+
+    def __add__(self, other: Union['groupobject', 'groupcollection']) -> 'groupcollection':
+        """
+        Adds this groupobject to another groupobject or a groupcollection.
+
+        ### Parameters:
+            other (groupobject or groupcollection): The object to add.
+
+        ### Returns:
+            groupcollection: A new groupcollection instance containing the combined objects.
+
+        ### Raises:
+            TypeError: If `other` is neither a `groupobject` nor a `groupcollection`.
+        """
+        if isinstance(other, groupobject):
+            return groupcollection([self, other])
+        elif isinstance(other, groupcollection):
+            return groupcollection([self] + other.collection)
+        else:
+            raise TypeError("Addition only supported between `groupobject` or `groupcollection` instances.")
+
+    def __radd__(self, other: Union['groupobject', 'groupcollection']) -> 'groupcollection':
+        """
+        Adds this groupobject to another groupobject or a groupcollection from the right.
+
+        ### Parameters:
+            other (groupobject or groupcollection): The object to add.
+
+        ### Returns:
+            groupcollection: A new groupcollection instance containing the combined objects.
+
+        ### Raises:
+            TypeError: If `other` is neither a `groupobject` nor a `groupcollection`.
+        """
+        if isinstance(other, groupobject):
+            return groupcollection([other, self])
+        elif isinstance(other, groupcollection):
+            return groupcollection(other.collection + [self])
+        else:
+            raise TypeError("Addition only supported between `groupobject` or `groupcollection` instances.")
+
+
+class groupcollection:
+    """
+    Represents a collection of `groupobject` instances, typically formed by combining them.
+
+    ### Attributes:
+        collection (List[groupobject]): The list of `groupobject` instances in the collection.
+        name (str): The name of the collection, generated automatically if not provided.
+
+    ### Examples:
+        >>> o1 = groupobject(beadtype=1, group=["all", "A"], mass=1.0)
+        >>> o2 = groupobject(beadtype=2, group=["all", "B", "C"])
+        >>> G = groupcollection([o1, o2])
+        >>> print(G.name)
+        beadtype=1,2
+    """
+    def __init__(self, collection: List['groupobject'], name: Optional[str] = None):
+        """
+        Initializes a new instance of the groupcollection class.
+
+        ### Parameters:
+            collection (List[groupobject]): A list of `groupobject` instances to include in the collection.
+            name (str, optional): The name of the collection. If not provided, a default name is generated.
+
+        ### Raises:
+            ValueError: If the `collection` is empty or contains invalid elements.
+        """
+        if not isinstance(collection, list) or not all(isinstance(obj, groupobject) for obj in collection):
+            raise ValueError("`collection` must be a list of `groupobject` instances.")
+        if not collection:
+            raise ValueError("`collection` cannot be empty.")
+
+        self.collection = collection
+
+        # Automatically assign a name if not provided
+        if name is None:
+            # Extract names or "beadtype=X" patterns
+            beadtype_names = [
+                obj.name if obj.name.startswith("beadtype=") else None for obj in collection
+            ]
+
+            # If all objects have beadtype names, use "beadtype=1,2,3" pattern
+            if all(beadtype_names):
+                beadtypes = [obj.beadtype for obj in collection]
+                self.name = "beadtype={}".format(",".join(map(str, sorted(beadtypes))))
+            else:
+                # Fall back to concatenating names
+                self.name = ",".join(obj.name for obj in collection)
+        else:
+            self.name = name
+
+
+    def __add__(self, other: Union[groupobject, 'groupcollection']) -> 'groupcollection':
+        """
+        Adds a `groupobject` or another `groupcollection` to this collection.
+
+        ### Parameters:
+            other (groupobject or groupcollection): The object to add.
+
+        ### Returns:
+            groupcollection: A new `groupcollection` instance containing the combined objects.
+
+        ### Raises:
+            TypeError: If `other` is neither a `groupobject` nor a `groupcollection`.
+        """
+        if isinstance(other, groupobject):
+            return groupcollection(self.collection + [other])
+        elif isinstance(other, groupcollection):
+            return groupcollection(self.collection + other.collection)
+        else:
+            raise TypeError("Addition only supported between `groupobject` or `groupcollection` instances.")
+
+    def __iadd__(self, other: Union[groupobject, List[groupobject], Tuple[groupobject, ...]]) -> 'groupcollection':
+        """
+        In-place addition of a `groupobject` or a list/tuple of `groupobject` instances.
+
+        ### Parameters:
+            other (groupobject or list/tuple of groupobject): The object(s) to add.
+
+        ### Returns:
+            groupcollection: The updated `groupcollection` instance.
+
+        ### Raises:
+            TypeError: If `other` is not a `groupobject` or a list/tuple of `groupobject` instances.
+        """
+        if isinstance(other, groupobject):
+            self.collection.append(other)
+        elif isinstance(other, (list, tuple)):
+            for obj in other:
+                if not isinstance(obj, groupobject):
+                    raise TypeError("All items to add must be `groupobject` instances.")
+            self.collection.extend(other)
+        else:
+            raise TypeError("In-place addition only supported with `groupobject` instances or lists/tuples of `groupobject` instances.")
+        return self
+
+    def __repr__(self) -> str:
+        """
+        Returns a neatly formatted string representation of the groupcollection.
+
+        The representation includes a table of `beadtype`, `group` (max width 50 characters), and `mass`.
+        It also provides a summary of the total number of `groupobject` instances.
+
+        ### Returns:
+            str: Formatted string representation of the collection.
+        """
+        headers = ["Beadtype", 'Name', "Group", "Mass"]
+        col_max_widths = [10, 20, 30, 10]
+        # Prepare rows
+        rows = []
+        for obj in self.collection:
+            beadtype_str = str(obj.beadtype)
+            group_str = ", ".join(obj.group)
+            mass_str = f"{obj.mass}" if obj.mass is not None else "None"
+            rows.append([beadtype_str, obj.name, group_str, mass_str])
+        # Generate the table
+        table = format_table(headers, rows, col_max_widths)
+        # Add summary
+        summary = f"Total groupobjects: {len(self)}"
+        return f"{table}\n{summary}"
+
+    def __str__(self) -> str:
+        """
+        Returns the same representation as `__repr__`.
+
+        ### Returns:
+            str: Formatted string representation of the collection.
+        """
+        return f"groupcollection including {len(self)} groupobjects"
+
+    def __len__(self) -> int:
+        """
+        Returns the number of `groupobject` instances in the collection.
+
+        ### Returns:
+            int: Number of objects in the collection.
+        """
+        return len(self.collection)
+
+    def __getitem__(self, index: int) -> groupobject:
+        """
+        Retrieves a `groupobject` by its index.
+
+        ### Parameters:
+            index (int): The index of the `groupobject` to retrieve.
+
+        ### Returns:
+            groupobject: The `groupobject` at the specified index.
+
+        ### Raises:
+            IndexError: If the index is out of range.
+        """
+        return self.collection[index]
+
+    def __iter__(self):
+        """
+        Returns an iterator over the `groupobject` instances in the collection.
+
+        ### Returns:
+            Iterator[groupobject]: An iterator over the collection.
+        """
+        return iter(self.collection)
+
+    def append(self, obj: groupobject):
+        """
+        Appends a `groupobject` to the collection.
+
+        ### Parameters:
+            obj (groupobject): The object to append.
+
+        ### Raises:
+            TypeError: If `obj` is not a `groupobject` instance.
+        """
+        if not isinstance(obj, groupobject):
+            raise TypeError("Only `groupobject` instances can be appended.")
+        self.collection.append(obj)
+
+    def extend(self, objs: Union[List[groupobject], Tuple[groupobject, ...]]):
+        """
+        Extends the collection with a list or tuple of `groupobject` instances.
+
+        ### Parameters:
+            objs (list or tuple of groupobject): The objects to extend the collection with.
+
+        ### Raises:
+            TypeError: If `objs` is not a list or tuple.
+            TypeError: If any item in `objs` is not a `groupobject` instance.
+        """
+        if not isinstance(objs, (list, tuple)):
+            raise TypeError("`objs` must be a list or tuple of `groupobject` instances.")
+        for obj in objs:
+            if not isinstance(obj, groupobject):
+                raise TypeError("All items to extend must be `groupobject` instances.")
+        self.collection.extend(objs)
+
+    def remove(self, obj: groupobject):
+        """
+        Removes a `groupobject` from the collection.
+
+        ### Parameters:
+            obj (groupobject): The object to remove.
+
+        ### Raises:
+            ValueError: If `obj` is not found in the collection.
+        """
+        self.collection.remove(obj)
+
+    def clear(self):
+        """
+        Clears all `groupobject` instances from the collection.
+        """
+        self.collection.clear()
+
+
+    def mass(self, name: Optional[str] = None, default_mass: Optional[Union[str, int, float]] = "${mass}", verbose: Optional[bool] = True) -> 'dscript':
+        """
+        Generates LAMMPS mass commands for each unique beadtype in the collection.
+        
+        The method iterates through all `groupobject` instances in the collection,
+        collects unique beadtypes, and ensures that each beadtype has a consistent mass.
+        If a beadtype has `mass=None`, it assigns a default mass as specified by `default_mass`.
+        
+        ### Parameters:
+            name (str, optional): The name to assign to the resulting `dscript` object. Defaults to a generated name.
+            default_mass (str, optional): The default mass value to assign when a beadtype's mass is `None`.
+                                          Defaults to `"${mass}"`.
+            verbose (bool, optional): If `True`, includes a comment header in the output. Defaults to `True`.
+        
+        ### Returns:
+            dscript: A `dscript` object containing the mass commands for each beadtype, formatted as follows:
+                     ```
+                     mass 1 1.0
+                     mass 2 1.0
+                     mass 3 2.5
+                     ```
+                     The `collection` attribute of the `dscript` object holds the formatted mass commands as a single string.
+     
+        ### Raises:
+            ValueError: If a beadtype has inconsistent mass values across different `groupobject` instances.
+    
+        ### Example:
+            ```python
+            # Create groupobject instances
+            o1 = groupobject(beadtype=1, group=["all", "A"], mass=1.0)
+            o2 = groupobject(beadtype=2, group=["all", "B", "C"])
+            o3 = groupobject(beadtype=3, group="C", mass=2.5)
+    
+            # Initialize a groupcollection with the groupobjects
+            G = groupcollection([o1, o2, o3])
+    
+            # Generate mass commands
+            M = G.mass()
+            print(M.do())
+            ```
+            **Output:**
+            ```
+            mass 1 1.0
+            mass 2 ${mass}
+            mass 3 2.5
+            ```
+        """
+        beadtype_mass = {}
+        for obj in self.collection:
+            bt = obj.beadtype
+            mass = obj.mass if obj.mass is not None else "${mass}"
+            if bt in beadtype_mass:
+                if beadtype_mass[bt] != mass:
+                    raise ValueError(
+                        f"Inconsistent masses for beadtype {bt}: {beadtype_mass[bt]} vs {mass}"
+                    )
+            else:
+                beadtype_mass[bt] = mass
+        # Sort beadtypes for consistent ordering
+        sorted_beadtypes = sorted(beadtype_mass.keys())
+        # Generate mass commands
+        lines = [f"mass {bt} {beadtype_mass[bt]}" for bt in sorted_beadtypes]
+        # return a dscript object
+        idD = f"<dscript:group:{self.name}:mass>"
+        description = f"{idD} definitions for {len(self)} beads"
+        if verbose:
+            lines.insert(0, "# "+description)
+        D = dscript(name=idD if name is None else name, description=f"{idD} with {len(self)} beads")
+        D.collection = "\n".join(lines)
+        D.DEFINITIONS.mass = default_mass
+        return D
+
+
+
+
+# %% Main classes Operation, group
 
 # Class for binary and unary operators
 class Operation:
@@ -636,8 +1154,6 @@ class Operation:
 
 
 
-
-# %% Main class group
 class group:
     """
     A class for managing LAMMPS group operations and generating LAMMPS scripts.
@@ -670,7 +1186,7 @@ class group:
       resulting operations.
     - **Integration with Scripting Tools**: Convert group operations into
       `dscript` or `pipescript` objects for advanced script management.
-
+      
     ### LAMMPS Context
 
     In LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator),
@@ -682,6 +1198,7 @@ class group:
     This `group` class abstracts the complexity of managing group definitions
     and operations, providing a high-level interface to define and manipulate
     groups programmatically.
+    
 
     ### Usage Examples
 
@@ -729,6 +1246,36 @@ class group:
     G.add_group_criteria(group_definitions)
     ```
 
+    **Creating a Group from a Collection of `groupobject` Instances**
+
+    ```python
+    # Import the classes
+    # from groupobject import groupobject
+    # from group import group
+
+    # Create groupobject instances
+    o1 = groupobject(beadtype=1, group=["all", "A"], mass=1.0)
+    o2 = groupobject(beadtype=2, group=["all", "B", "C"])
+    o3 = groupobject(beadtype=3, group="C", mass=2.5)
+
+    # Create a group instance with the collection
+    G = group(name="mycollection", collection=[o1, o2, o3])
+    # or
+    G = group(name=None, collection=[o1, o2, o3])  # Name will be generated as "1+2+3"
+
+    # Generate the LAMMPS script
+    script_content = G.code()
+    print(script_content)
+    ```
+
+    **Expected Output:**
+    ```
+    group all type 1 2 3
+    group A type 1
+    group B type 2
+    group C type 2 3
+    ```
+
     **Accessing Groups and Performing Operations**
 
     ```python
@@ -742,6 +1289,7 @@ class group:
     # Evaluate the operation and store the result
     G.evaluate('combined_group', complex_op)
     ```
+    
 
     **Subindexing with Callable Syntax**
 
@@ -773,6 +1321,8 @@ class group:
       - `name` (str): Optional name for the group instance.
       - `groups` (dict): Dictionary of group definitions to create upon initialization.
       - `group_names` (list): List of group names to create empty groups upon initialization.
+      - `collection` (list or tuple of groupobject, optional): Collection of groupobject instances.
+      
       - `printflag` (bool): If True, enables printing of script generation.
       - `verbose` (bool): If True, enables verbose output.
 
@@ -894,25 +1444,64 @@ class group:
     """
 
     
-    def __init__(self, name=None, groups=None, group_names=None, printflag=False, verbose=True):
-        self._in_construction = True  # Indicate that the object is under construction
+    def __init__(self, name=None, groups=None, group_names=None, collection=None, printflag=False, verbose=True, verbosity=None):
+        """
+        Initializes a new instance of the group class.
+        
+        ### Parameters:
+            name (str, optional): Name for the group instance. If `None` or empty and `collection` is provided,
+                                  generates a name based on beadtypes (e.g., "1+2+3").
+            groups (dict, optional): Dictionary of group definitions to create upon initialization.
+            group_names (list or tuple, optional): List of group names to create empty groups upon initialization.
+            collection (list, tuple, or groupcollection, optional): 
+                - If a list or tuple, it should contain `groupobject` instances.
+                - If a `groupcollection` object, it will extract the `groupobject` instances from it.
+            printflag (bool, optional): If `True`, enables printing of script generation.
+            verbose (bool, optional): If `True`, enables verbose output.
+        
+        ### Raises:
+            TypeError: 
+                - If `groups` is not a dictionary.
+                - If `group_names` is not a list or tuple.
+                - If `collection` is not a list, tuple, or `groupcollection` object.
+                - If any item in `collection` (when it's a list or tuple) is not a `groupobject` instance.
+        """
+        self._in_construction = True  # Indicate that the object is under construction        
+        # Handle 'name' parameter
         if not name:
             name = generate_random_name()
         self._name = name
+        
+        # Initialize other attributes
         self._operations = []
         self.printflag = printflag
-        self.verbose = verbose
+        self.verbose = verbose if verbosity is None else verbosity>0
+        self.verbosity = verbosity
         self._in_construction = False  # Set the flag to indicate construction is finished
-
-        # Create groups based on provided parameters
+        # Handle 'groups' parameter
         if groups:
             if not isinstance(groups, dict):
                 raise TypeError("Parameter 'groups' must be a dictionary.")
             self.add_group_criteria(groups)
+        # Handle 'group_names' parameter
         if group_names:
             if not isinstance(group_names, (list, tuple)):
                 raise TypeError("Parameter 'group_names' must be a list or tuple of group names.")
             self.create_groups(*group_names)
+        # Handle 'collection' parameter
+        if collection:
+            if isinstance(collection, groupcollection):
+                # Extract the list of groupobject instances from the groupcollection
+                collection = collection.collection
+            elif not isinstance(collection, (list, tuple)):
+                raise TypeError("Parameter 'collection' must be a list, tuple, or `groupcollection` object.")
+            # If collection is a list or tuple, validate its items
+            if isinstance(collection, (list, tuple)):
+                for obj in collection:
+                    if not isinstance(obj, groupobject):
+                        raise TypeError("All items in 'collection' must be `groupobject` instances.")
+                self.generate_group_definitions_from_collection(collection)
+
             
             
     def create_groups(self, *group_names):
@@ -924,6 +1513,7 @@ class group:
 
     def __str__(self):
         return f'Group "{self._name}" with {len(self._operations)} operations\n'
+    
 
     def format_cell_content(self, content, max_width):
         content = str(content) if content is not None else ''
@@ -933,37 +1523,35 @@ class group:
             content = f"{start} ... {end}"
         return content
 
+
     def __repr__(self):
-        max_width_guess = 20
-        idx_width = len(str(len(self._operations) - 1))
+        """
+        Returns a neatly formatted table representation of the group's operations.
+    
+        Each row represents an operation in the group, displaying its index, name,
+        operator, and operands. The table adjusts column widths dynamically and
+        truncates content based on maximum column widths.
+    
+        ### Returns:
+            str: A formatted string representation of the group operations.
+        """
+        # Define headers for the table
         headers = ["Idx", "Name", "Operator", "Operands"]
-        column_widths = [max(len(headers[0]), idx_width)] + [len(header) for header in headers[1:]]
-
-        for op in self._operations:
-            cells = [op.name, op.operator, span(op.operands)]
-            for i, cell_content in enumerate(cells):
-                cell_width = len(str(cell_content)) if cell_content is not None else 0
-                column_widths[i + 1] = min(max(column_widths[i + 1], cell_width), max_width_guess)
-
-        table = "\n| "
-        for header, width in zip(headers, column_widths):
-            table += f"{header:^{width}} | "
-        table += "\n|"
-        # Adapting horizontal separators to match the size of the columns
-        for width in column_widths:
-            table += "-" * (width + 2) + "|"
-        table += "\n"
+        col_max_widths = [5, 20, 20, 40]
+        align = ["R", "C", "C", "L"]
+        # Prepare rows by iterating over the operations
+        rows = []
         for idx, op in enumerate(self._operations):
-            formatted_idx = str(idx).rjust(idx_width)
-            formatted_name = str(op.name).rjust(column_widths[1])
-            formatted_operator = str(op.operator).rjust(column_widths[2])
-            formatted_operands = str(span(op.operands)).rjust(column_widths[3])
-            table += f"| {formatted_idx:^{column_widths[0]}} | {formatted_name:^{column_widths[1]}} | "
-            table += f"{formatted_operator:^{column_widths[2]}} | "
-            table += f"{formatted_operands:^{column_widths[3]}} |\n"
-        table += f"\n{str(self)}"
-
-        return table
+            rows.append([
+                str(idx),                    # Index
+                str(op.name),                # Name
+                str(op.operator),            # Operator
+                str(span(op.operands)),      # Operands
+            ])
+        # Use the helper to format the table
+        table = format_table(headers, rows, col_max_widths, align)
+        # Append the string representation of the group itself
+        return f"{table}\n\n{str(self)}"
 
 
     def __len__(self):
@@ -1654,8 +2242,24 @@ class group:
         return criteria
 
 
+    def generate_group_definitions_from_collection(self,collection):
+        """
+        Generates group definitions based on the collection of groupobject instances.
 
-    def dscript(self, name=None, printflag=None, verbose=None):
+        This method populates the groups based on beadtypes and associated group names.
+        """
+        group_defs = {}
+        for obj in collection:
+            for group_name in obj.group:
+                if group_name not in group_defs:
+                    group_defs[group_name] = {'type': []}
+                if obj.beadtype not in group_defs[group_name]['type']:
+                    group_defs[group_name]['type'].append(obj.beadtype)
+        # Now, add these group definitions
+        self.add_group_criteria(group_defs)
+
+
+    def dscript(self, name=None, printflag=None, verbose=None, verbosity=None):
         """
         Generates a dscript object containing the group's LAMMPS commands.
 
@@ -1670,20 +2274,18 @@ class group:
         if name is None:
             name = self._name
         printflag = self.printflag if printflag is None else printflag
-        verbose = self.verbose if verbose is None else verbose
-
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity
         # Create a new dscript object
-        dscript_obj = dscript(name=name,printflag=printflag, verbose=verbose)
-
+        dscript_obj = dscript(name=name,printflag=printflag, verbose=verbose, verbosity=verbosity)
         # Add each line of the group's code to the script object
         for idx, op in enumerate(self._operations):
             # Use the index as the key for the script line
            dscript_obj[idx] = op.code
-
         return dscript_obj
         
     
-    def script(self, name=None, printflag=None, verbose=None):
+    def script(self, name=None, printflag=None, verbose=None, verbosity=None):
         """
         Generates a script object containing the group's LAMMPS commands.
         
@@ -1698,13 +2300,13 @@ class group:
         if name is None:
             name = self._name
         printflag = self.printflag if printflag is None else printflag
-        verbose = self.verbose if verbose is None else verbose
-            
-        script_obj = self.dscript(name=name,printflag=printflag, verbose=verbose).script(printflag=printflag, verbose=verbose)
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity
+        script_obj = self.dscript(name=name,printflag=printflag, verbose=verbose, verbosity=verbosity).script(printflag=printflag, verbose=verbose, verbosity=verbosity)
         return script_obj
     
     
-    def pipescript(self, printflag=None, verbose=None):
+    def pipescript(self, printflag=None, verbose=None, verbosity=None):
         """
         Generates a pipescript object containing the group's LAMMPS commands.
                 
@@ -1716,18 +2318,19 @@ class group:
         - pipescript: A pipescript object containing the group's code lines as individual scripts in the pipeline.
         """
         printflag = self.printflag if printflag is None else printflag
-        verbose = self.verbose if verbose is None else verbose
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity
         # Create a list to hold script objects
         script_list = []
 
         # For each operation, create a script object and add it to the list
         for op in self._operations:
             # Create a dscript object with the code line
-            dscript_obj = dscript(printflag=printflag, verbose=verbose)
+            dscript_obj = dscript(printflag=printflag, verbose=verbose, verbosity=verbosity)
             dscript_obj["dummy"] = op.code
 
             # Convert the dscript to a script object
-            script_obj = dscript_obj.script(printflag=printflag, verbose=verbose)
+            script_obj = dscript_obj.script(printflag=printflag, verbose=verbose, verbosity=verbosity)
 
             # Add the script object to the list
             script_list.append(script_obj)
@@ -1756,6 +2359,120 @@ class group:
         for k, v in self.__dict__.items():
             setattr(copie, k, copy.deepcopy(v, memo))
         return copie 
+    
+    
+    def count(self,name=None, selection: Optional[List[str]] = None) -> 'dscript':
+        """
+        Generates DSCRIPT counters for specified groups with LAMMPS variable definitions and print commands.
+        
+        The method retrieves the list of group names using `self.list()`. If `selection` is provided, it
+        filters the groups to include only those specified. It then creates a variable for each selected
+        group that counts the number of atoms in that group and generates corresponding print commands.
+        The commands are encapsulated within a `dscript` object for execution.
+        
+        ### Parameters:
+            selection (list of str, optional): 
+                - List of group names to be numbered.
+                - If `None`, all groups in the collection are numbered.
+        
+        ### Returns:
+            dscript: A `dscript` object containing the variable definitions and print commands, formatted as follows:
+                     ```
+                     variable n_lower equal "count(lower)"
+                     variable n_middle equal "count(middle)"
+                     variable n_upper equal "count(upper)"
+                     
+                     print "Number of atoms in lower: ${n_lower}" 
+                     print "Number of atoms in middle: ${n_middle}" 
+                     print "Number of atoms in upper: ${n_upper}"
+                     ```
+                     The `variables` attribute holds the variable definitions, and the `printvariables` attribute
+                     holds the print commands, each separated by a newline.
+        
+        ### Raises:
+            ValueError: 
+                - If any group specified in `selection` does not exist in the collection.
+                - If `selection` contains duplicate group names.
+            TypeError:
+                - If `selection` is not a list of strings.
+        
+        ### Example:
+            ```python
+            # Create groupobject instances
+            g1 = groupobject(beadtype=1,group = 'lower')
+            g2 = groupobject(beadtype=2,group = 'middle')
+            g3 = groupobject(beadtype=3,group = 'upper')
+
+            # Initialize a group with the groupobjects
+            G = group(name="1+2+3",collection=(g1,g2,g3)) or collection=g1+g2+g3
+            
+            # add other groups
+            G.evaluate("all", G.lower + G.middle + G.upper)
+            G.evaluate("external", G.all - G.middle)
+            
+            # Generate number commands for all groups
+            N = G.count(selection=["all","lower","middle","lower"])
+            print(N.do())
+            ```
+            
+            **Output:**
+            ```
+            variable n_all equal "count(all)"
+            variable n_lower equal "count(lower)"
+            variable n_middle equal "count(middle)"
+            variable n_upper equal "count(upper)"
+            print "Number of atoms in all: ${n_all}"
+            print "Number of atoms in lower: ${n_lower}"
+            print "Number of atoms in middle: ${n_middle}"
+            print "Number of atoms in upper: ${n_upper}"
+            ```
+        """
+        # Retrieve the list of all group names
+        all_group_names = self.list()
+        
+        # If selection is provided, validate it
+        if selection is not None:
+            if not isinstance(selection, (list, tuple)):
+                raise TypeError("Parameter 'selection' must be a list of group names.")
+            if not all(isinstance(gitem, str) for gitem in selection):
+                raise TypeError("All items in 'selection' must be strings representing group names.")
+            if len(selection) != len(set(selection)):
+                raise ValueError("Duplicate group names found in 'selection'. Each group should be unique.")
+            # Check that all selected groups exist
+            missing_groups = set(selection) - set(all_group_names)
+            if missing_groups:
+                raise ValueError(f"The following groups are not present in the collection: {', '.join(missing_groups)}")
+            # Use the selected groups
+            target_groups = selection
+        else:
+            # If no selection, target all groups
+            target_groups = all_group_names
+        
+        # Initialize lists to hold variable definitions and print commands
+        variable_definitions = []
+        print_commands = []
+        for gitem in target_groups:
+            # Validate group name
+            if not gitem:
+                raise ValueError("Group names must be non-empty strings.")
+            # Create a valid variable name by replacing any non-alphanumeric characters with underscores
+            variable_name = f"n_{gitem}".replace(" ", "_").replace("-", "_")
+            # Define the variable to count the number of atoms in the group
+            variable_definitions.append(f'variable {variable_name} equal "count({gitem})"')
+            # Define the corresponding print command
+            print_commands.append(f'print "Number of atoms in {gitem}: ${{{variable_name}}}"')
+        # Create a dscript object with the generated commands
+        idD = f"<dscript:group:{self._name}:count>"
+        D = dscript(
+            name=idD if name is None else name,
+            description=f"{idD} for group counts"
+        )
+        D.variables = "\n".join(variable_definitions)
+        D.printvariables = "\n".join(print_commands)
+        D.set_all_variables()
+        return D
+
+
 
 # %% debug section - generic code to test methods (press F5)
 if __name__ == '__main__':

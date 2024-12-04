@@ -14,7 +14,7 @@ Credits: Olivier Vitrac, Han Chen
 License: GPLv3
 Maintainer: Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Version: 0.995
+Version: 0.9999
 
 Overview
 --------
@@ -186,12 +186,12 @@ __credits__ = ["Olivier Vitrac", "Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.995"
+__version__ = "0.9999"
 
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-09-07 (community)
+# INRAE\Olivier Vitrac - rev. 2024-12-01 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -236,6 +236,8 @@ __version__ = "0.995"
 # 2024-08-31 add method R.beadtypes(), class headerbox(), method R.headerbox()
 # 2024-08-01 more robust implementation via method: scriptHeaders() and headersData object
 # 2024-10-08 add lattice_scale
+# 2024-12-01 standarize scripting features, automatically call script/pscript methods
+
 
 # %% Imports and private library
 import os, sys, math
@@ -262,7 +264,7 @@ from pizza.forcefield import *
 protectedregionkeys = ('name', 'live', 'nbeads' 'volume', 'mass', 'radius', 'contactradius', 'velocities', \
                         'forces', 'filename', 'index', 'objects', 'nobjects', 'counter','_iter_',\
                         'livelammps','copy', 'hasfixmove', 'spacefilling', 'isspacefilled', 'spacefillingbeadtype','mass','density',
-                        'units','center','separationdistance',
+                        'units','center','separationdistance','regionunits',
                         'lattice_scale','lattice_style','lattice_scale_siunits', 'lattice_spacing',
                         'geometry', 'natoms', 'headersData'
                             )
@@ -698,7 +700,7 @@ class LammpsHeaderInit(LammpsGeneric): # --- helper script ---
     def generate_template(self):
         """Generate the TEMPLATE based on USER definitions."""
         self.TEMPLATE = """
-% --------------[ Initialization Header (helper) for "${name}"   ]--------------
+% --------------[ Initialization for <${name}:${boxid}>   ]--------------
     """
         self.TEMPLATE += '# set a parameter to None or "" to remove the definition\n'
         if self.USER.dimension:   self.TEMPLATE += "dimension    ${dimension}\n"
@@ -745,9 +747,7 @@ class LammpsHeaderLattice(LammpsGeneric): # --- helper script ---
 
     def generate_template(self):
         """Generate the TEMPLATE based on USER definitions."""
-        self.TEMPLATE = """
-% --------------[ LatticeHeader 'helper' for "${name}"   ]--------------
-    """
+        self.TEMPLATE = "\n% --------------[ Lattice for <${name}:${boxid}>, style=${lattice_style}, scale=${lattice_scale} ]--------------\n"
         if self.USER.lattice_spacing is None:
             self.TEMPLATE += "lattice ${lattice_style} ${lattice_scale}\n"
         else:
@@ -776,6 +776,9 @@ class LammpsHeaderBox(LammpsGeneric): # --- helper script ---
     # are not needed but this explicits the requirements.
     # All fields are stored in R.headersData with R a region object.
     # Use R.headersData.property = value to assign a value
+    # Extra arguments
+    #   ${boxid_arg} is by default "box"
+    #   ${boxunits_arg} can be "", "units lattice", "units box"
     DEFINITIONS = scriptdata(
                       name = "${name}",
                       xmin = "${xmin}",
@@ -785,14 +788,129 @@ class LammpsHeaderBox(LammpsGeneric): # --- helper script ---
                       zmin = "${zmin}",
                       zmax = "${zmax}",
                     nbeads = "${nbeads}",
+                     boxid = "${boxid}",
+              boxunits_arg = "",     # default units
             hasvariables = False
                     )
 
     # Template
     TEMPLATE = """
-% --------------[ Box Header 'helper' for "${name}"   ]--------------
-region box block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax}
-create_box	${nbeads} box
+% --------------[ Box for <${name}:${boxid}> incl. ${nbeads} bead types ]--------------
+region ${boxid} block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax} ${boxunits_arg}
+create_box	${nbeads} ${boxid}
+# ------------------------------------------
+"""
+
+class LammpsHeaderMass(LammpsGeneric):
+    """
+    Mass assignment header for pizza.region.
+
+    Use R.headersData.property = value to assign a value
+    with R a pizza.region object.
+    """
+    name = "LammpsHeaderMass"
+    SECTIONS = ["HEADER"]
+    position = 2  # Positioned after other headers like Box and Lattice
+    role = "mass assignment header for pizza.region"
+    description = "Assigns masses to bead types based on nbeads and default mass."
+    userid = "headermass"  # User identifier
+    version = 0.1
+    verbose = False
+
+    # DEFINITIONS USED IN TEMPLATE
+    # All fields are stored in R.headersData with R a region object.
+    # Use R.headersData.property = value to assign a value.
+    # Mass overrides are provided via the 'mass' keyword argument as a list or tuple.
+    DEFINITIONS = scriptdata(
+        nbeads="${nbeads}",  # these default values are not used
+        mass="${mass}",      # but reported for records
+        hasvariables=False
+    )
+
+    def __init__(self, persistentfile=True, persistentfolder=None, **userdefinitions):
+        """
+            Constructor adding instance definitions stored in USER.
+    
+            Parameters:
+                persistentfile (bool, optional): Whether to use a persistent file. Defaults to True.
+                persistentfolder (str, optional): Folder path for persistent files. Defaults to None.
+                **userdefinitions: Arbitrary keyword arguments for user definitions.
+                    - mass (list or tuple, optional): List or tuple to override masses for specific bead types.
+                      Example: mass=[1.2, 1.0, 0.8] assigns mass 1.2 to bead type 1, 1.0 to bead type 2,
+                      and 0.8 to bead type 3.
+        """
+        super().__init__(persistentfile, persistentfolder, **userdefinitions)
+        self.generate_template()
+
+    def generate_template(self):
+        """
+            Generate the TEMPLATE for mass assignments based on USER definitions.
+    
+            The method constructs mass assignments for each bead type. If `mass` overrides
+            are provided as a list or tuple, it assigns the specified mass to the corresponding
+            bead types. Otherwise, it uses the default `mass` value from `USER.headersData.mass`.
+        """
+        # Retrieve user-defined parameters
+        nbeads = self.USER.nbeads
+        mass = self.USER.mass
+        # Validate mass
+        if not isinstance(mass, (list, tuple)): mass = [mass]  # Convert single value to a list
+        if len(mass) > nbeads: 
+            mass = mass[:nbeads]  # Truncate excess entries
+        elif len(mass) < nbeads:
+            last_mass = mass[-1]  # Repeat the last value for missing entries
+            mass += [last_mass] * (nbeads - len(mass))
+        # Initialize TEMPLATE with header comment
+        self.TEMPLATE = "\n% --------------[ Mass Assignments for <${name}:${boxid}>" + f" (nbeads={nbeads}) " +" ]--------------\n"
+        # Iterate over bead types and assign masses
+        for bead_type in range(1, nbeads + 1):
+            bead_mass = mass[bead_type - 1]
+            if isinstance(bead_mass, str):
+                # If mass is a string (e.g., formula), ensure proper formatting
+                mass_str = f"({bead_mass})"
+            else:
+                # If mass is a numeric value, convert to string
+                mass_str = f"{bead_mass}"
+            self.TEMPLATE += f"mass {bead_type} {mass_str}\n"
+        # Close the TEMPLATE with a comment
+        self.TEMPLATE += "# ------------------------------------------\n"
+
+
+class LammpsFooterPreview(LammpsGeneric): # --- helper script ---
+    """
+        Box header for pizza.region
+
+        Use R.headersData.property = value to assign a value
+        with R a pizza.region object
+    """
+    name = "LammpsFooterPreview"
+    SECTIONS = ["Footer"]
+    position = 0
+    role = "box footer for pizza.region"
+    description = "helper method"
+    userid = "footerpreview"       # user name
+    version = 0.1                  # version
+    verbose = False
+
+    # DEFINITIONS USED IN TEMPLATE
+    # circular references (the variable is defined by its field in USER of class regiondata)
+    # are not needed but this explicits the requirements.
+    # All fields are stored in R.headersData with R a region object.
+    # Use R.headersData.property = value to assign a value
+    # Extra arguments
+    #   ${boxid_arg} is by default "box"
+    #   ${boxunits_arg} can be "", "units lattice", "units box"
+    DEFINITIONS = scriptdata(
+                filename = "${previewfilename}",
+            hasvariables = False
+                    )
+
+    # Template
+    TEMPLATE = """
+% --------------[ Preview for <${name}:${boxid}> incl. ${nbeads} bead types ]--------------
+% Output the initial geometry to a dump file "${previewfilename}" for visualization
+dump initial_dump all custom 1 ${previewfilename} id type x y z
+run 0
 # ------------------------------------------
 """
 
@@ -2176,7 +2294,7 @@ class region:
         Constructor method to initialize all the attributes of the `region` class.
     """
    
-    _version = "0.995"
+    _version = "0.9997"
     __custom_documentations__ = "pizza.region.region class"
 
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
@@ -2198,7 +2316,7 @@ class region:
 
     # CONSTRUCTOR ----------------------------
     def __init__(self,
-                 # region properties
+                 # container properties
                  name="region container",
                  dimension = 3,
                  boundary = None,
@@ -2206,24 +2324,25 @@ class region:
                  units = "",
                  
                  # particle properties
-                 mass=1,
-                 volume=1,
-                 density=1,
+                 mass=1.0,
+                 volume=1.0,
+                 density=1.0,
                  radius=1.5,
                  contactradius=0.5,
-                 velocities=[0,0,0],
-                 forces=[0,0,0],
+                 velocities=[0.0,0.0,0.0],
+                 forces=[0.0,0.0,0.0],
                  
                  # other properties
                  filename="",
+                 previewfilename="",
                  index = None,
                  run=1,
 
                  # Box lengths
-                 center = [0,0,0],    # center of the box for coordinates scaling
-                 width = 10,
-                 height = 10,
-                 depth = 10,
+                 center = [0.0,0.0,0.0],    # center of the box for coordinates scaling
+                 width = 10.0,  # along x
+                 height = 10.0, # along y
+                 depth = 10.0,  # along z
                  hasfixmove = False, # by default no fix move
 
                  # Spacefilling design (added on 2023-08-10)
@@ -2231,6 +2350,7 @@ class region:
                  fillingbeadtype = 1,
 
                  # Lattice properties
+                 boxid = "box",             # default value for ${boxid_arg}
                  regionunits = "lattice",   # units ("lattice" or "si")
                  separationdistance = 5e-6, # SI units
                  lattice_scale = 0.8442,    # LJ units (for visualization)
@@ -2252,13 +2372,17 @@ class region:
                  livepreview_options = {
                      'static':{'run':1},
                      'dynamic':{'run':100}
-                     }
+                     },
+                 
+                 # common flags (for scripting)
+                 printflag = False,
+                 verbose = True,
+                 verbosity = None
 
                  ):
         """ constructor """
         self.name = name
         
-
         # Ensure dimension is an integer (must be 2 or 3 for LAMMPS)
         if not isinstance(dimension, int) or dimension not in (2, 3):
             raise ValueError("dimension must be either 2 or 3.")
@@ -2308,7 +2432,7 @@ class region:
         self.velocities = velocities
         self.forces = forces
         if filename == "":
-            self.filename = "region (%s)" % self.name
+            self.filename = f"region_{self.name}"
         else:
             self.filename = filename
         self.index = index
@@ -2348,9 +2472,10 @@ class region:
            "fillingdepth": depth,
            "fillingunits": units
                }
+        # region object units
+        self.regionunits = regionunits
         # lattice
-        self.units = units
-        self.regionunits = units
+        self.units = units       
         self.center = center
         self.separationdistance = separationdistance
         self.lattice_scale = lattice_scale
@@ -2358,10 +2483,11 @@ class region:
         self.lattice_scale_siunits = lattice_scale_siunits
         self.lattice_style = lattice_style 
         # headers for header scripts (added 2024-09-01)
-        # geometry is assumed to be in lattive units (add lattice first)
+        # geometry is assumed to be units set by ${boxunits_arg} (new standard 2024-11-26)
         self.headersData = headersRegiondata(
             # use $ and [] to prevent execution
             name = "$"+name,
+            previewfilename = "$dump.initial."+self.filename if previewfilename=="" else "$"+previewfilename,
             # Initialize Lammps
             dimension = dimension,
             units = "$"+units,
@@ -2371,6 +2497,9 @@ class region:
             comm_modify = comm_modify,
             neigh_modify = neigh_modify,
             newton ="$" + newton,
+            # Box (added 2024-11-26)
+            boxid = "$"+boxid,
+            boxunits_arg = "$units box" if regionunits=="si" else "", # standard on 2025-11-26
             # Lattice
             lattice_style = "$"+lattice_style,
             lattice_scale = lattice_scale,
@@ -2382,33 +2511,64 @@ class region:
             ymax = +(height/2) +center[1],
             zmin = -(depth/2)  +center[2],
             zmax = +(depth/2)  +center[2],
-            nbeads = nbeads
+            nbeads = nbeads,
+            mass = mass
             )
-       
+        self.printflag = printflag
+        self.verbose = verbose if verbosity is None else verbosity>0
+        self.verbosity = 0 if not verbose else verbosity
 
-    # Method to for coordinate/length scaling and translation including with formula embedded strings (added 2024-07-03, fixed 2024-07-04)
-    # note that the translation is not fully required since the scaling applies also to full cordinates.
+    # Method for coordinate/length scaling and translation including with formula embedded strings (updated 2024-07-03, fixed 2024-07-04)
+    # Note that the translation is not fully required since the scaling applies also to full coordinates.
     # However, an implementation is provided for arbitrary offset.
     def scale_and_translate(self, value, offset=0):
-        """Scale and translate a value or encapsulate the formula within a string."""
-        if isinstance(value, str):
-            if offset:
-                translated = f"({value}) - {offset}"
+        """
+        Scale and translate a value or encapsulate the formula within a string.
+        
+        If self.regionunits is "si", only the offset is applied without scaling.
+        Otherwise, scaling and translation are performed based on self.units ("si" or "lattice").
+        
+        Parameters:
+            value (str or float): The value or formula to be scaled and translated.
+            offset (float, optional): The offset to apply. Defaults to 0.
+        
+        Returns:
+            str or float: The scaled and translated value or formula.
+        """
+        if self.regionunits == "si":
+            # Only apply offset without scaling
+            if isinstance(value, str):
+                if offset:
+                    translated = f"({value}) - {offset}"
+                else:
+                    translated = f"{value}"
+                return translated
             else:
-                translated = f"{value}"
-            if self.units == "si":
-                return f"({translated}) / {self.lattice_scale} + {offset / self.lattice_scale}"
-            else:  # "lattice"
-                return f"({translated}) * {self.lattice_scale} + {offset * self.lattice_scale}"
+                if offset:
+                    return value - offset
+                else:
+                    return value
         else:
-            if offset:
-                translated = value - offset
+            # Existing behavior based on self.units
+            if isinstance(value, str):
+                if offset:
+                    translated = f"({value}) - {offset}"
+                else:
+                    translated = f"{value}"
+                if self.units == "si":
+                    return f"({translated}) / {self.lattice_scale} + {offset / self.lattice_scale}"
+                else:  # "lattice"
+                    return f"({translated}) * {self.lattice_scale} + {offset * self.lattice_scale}"
             else:
-                translated = value
-            if self.units == "si":
-                return translated / self.lattice_scale + (offset / self.lattice_scale)
-            else:  # "lattice"
-                return translated * self.lattice_scale + (offset * self.lattice_scale)
+                if offset:
+                    translated = value - offset
+                else:
+                    translated = value
+                if self.units == "si":
+                    return translated / self.lattice_scale + (offset / self.lattice_scale)
+                else:  # "lattice"
+                    return translated * self.lattice_scale + (offset * self.lattice_scale)
+
         
 
     # space filling attributes (cannot be changed)
@@ -2538,7 +2698,7 @@ class region:
 
             Extra properties
                 side = "in|out"
-               units = "lattice|box"
+               units = "lattice|box" ("box" is forced if regionunits=="si")
                 move = "[${v1} ${v2} ${v3}]" or [v1,v2,v3] as a list
                        with v1,v2,v3 equal-style variables for x,y,z displacement
                        of region over time (distance units)
@@ -2554,6 +2714,7 @@ class region:
         kind = "block"
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
+        units = "box" if self.regionunits=="si" and units is None else units  # force box units of regionunits=="si"
         # create the object B with B for block
         obj_mass = mass if mass is not None else self.mass
         obj_density = density if density is not None else self.density
@@ -2644,7 +2805,7 @@ class region:
 
             Extra properties
                 side = "in|out"
-               units = "lattice|box"
+               units = "lattice|box" ("box" is forced if regionunits=="si")
                 move = "[${v1} ${v2} ${v3}]" or [v1,v2,v3] as a list
                        with v1,v2,v3 equal-style variables for x,y,z displacement
                        of region over time (distance units)
@@ -2660,6 +2821,7 @@ class region:
         kind = "cone"
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
+        units = "box" if self.regionunits=="si" and units is None else units  # force box units of regionunits=="si"
         # create the object C with C for cone
         obj_mass = mass if mass is not None else self.mass
         obj_density = density if density is not None else self.density
@@ -2778,7 +2940,7 @@ class region:
 
             Extra properties
                 side = "in|out"
-               units = "lattice|box"
+               units = "lattice|box" ("box" is forced if regionunits=="si")
                 move = "[${v1} ${v2} ${v3}]" or [v1,v2,v3] as a list
                        with v1,v2,v3 equal-style variables for x,y,z displacement
                        of region over time (distance units)
@@ -2794,6 +2956,7 @@ class region:
         kind = "cylinder"
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
+        units = "box" if self.regionunits=="si" and units is None else units  # force box units of regionunits=="si"
         # create the object C with C for cylinder
         obj_mass = mass if mass is not None else self.mass
         obj_density = density if density is not None else self.density
@@ -2903,7 +3066,7 @@ class region:
 
             Extra properties
                 side = "in|out"
-               units = "lattice|box"
+               units = "lattice|box" ("box" is forced if regionunits=="si")
                 move = "[${v1} ${v2} ${v3}]" or [v1,v2,v3] as a list
                        with v1,v2,v3 equal-style variables for x,y,z displacement
                        of region over time (distance units)
@@ -2934,6 +3097,7 @@ class region:
         kind = "ellipsoid"
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
+        units = "box" if self.regionunits=="si" and units is None else units  # force box units of regionunits=="si"
         # create the object E with E for Ellipsoid
         obj_mass = mass if mass is not None else self.mass
         obj_density = density if density is not None else self.density
@@ -3019,7 +3183,7 @@ class region:
 
             Extra properties
                 side = "in|out"
-               units = "lattice|box"
+               units = "lattice|box" ("box" is forced if regionunits=="si")
                 move = "[${v1} ${v2} ${v3}]" or [v1,v2,v3] as a list
                        with v1,v2,v3 equal-style variables for x,y,z displacement
                        of region over time (distance units)
@@ -3035,6 +3199,7 @@ class region:
         kind = "plane"
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
+        units = "box" if self.regionunits=="si" and units is None else units  # force box units of regionunits=="si"
         # create the object P with P for plane
         P = Plane((self.counter["all"]+1,self.counter[kind]+1),
                       spacefilling=self.isspacefilled, # added on 2023-08-11
@@ -3121,7 +3286,7 @@ class region:
 
             Extra properties
                 side = "in|out"
-               units = "lattice|box"
+               units = "lattice|box" ("box" is forced if regionunits=="si")
                 move = "[${v1} ${v2} ${v3}]" or [v1,v2,v3] as a list
                        with v1,v2,v3 equal-style variables for x,y,z displacement
                        of region over time (distance units)
@@ -3137,6 +3302,7 @@ class region:
         kind = "prism"
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
+        units = "box" if self.regionunits=="si" and units is None else units  # force box units of regionunits=="si"
         # create the object P with P for prism
         obj_mass = mass if mass is not None else self.mass
         obj_density = density if density is not None else self.density
@@ -3226,7 +3392,7 @@ class region:
 
             Extra properties
                 side = "in|out"
-               units = "lattice|box"
+               units = "lattice|box" ("box" is forced if regionunits=="si")
                 move = "[${v1} ${v2} ${v3}]" or [v1,v2,v3] as a list
                        with v1,v2,v3 equal-style variables for x,y,z displacement
                        of region over time (distance units)
@@ -3242,6 +3408,7 @@ class region:
         kind = "sphere"
         if index is None: index = self.counter["all"]+1
         if subindex is None: subindex = self.counter[kind]+1
+        units = "box" if self.regionunits=="si" and units is None else units  # force box units of regionunits=="si"
         # create the object S with S for sphere
         obj_mass = mass if mass is not None else self.mass
         obj_density = density if density is not None else self.density
@@ -3796,7 +3963,10 @@ class region:
             return None
 
     # PIPESCRIPT method generates a pipe for all objects and sections
-    def pipescript(self,printflag=False,verbosity=0):
+    def pipescript(self,printflag=False,verbose=False,verbosity=0):
+        printflag = self.printflag if printflag is None else printflag
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity
         """ pipescript all objects in the region """
         if len(self)<1: return pipescript()
         # execute all objects
@@ -3819,9 +3989,12 @@ class region:
         return pipescript.join(liste)
 
     # SCRIPT add header and footer to PIPECRIPT
-    def script(self,live=False):
+    def script(self,live=False, printflag=None, verbose=None, verbosity=None):
         """ script all objects in the region """
-        s = self.pipescript().script()
+        printflag = self.printflag if printflag is None else printflag
+        verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
+        verbosity = 0 if not verbose else verbosity        
+        s = self.pipescript(printflag=printflag,verbose=verbose,verbosity=verbosity).script(printflag=printflag,verbose=verbose,verbosity=verbosity)
         if self.isspacefilled:
             USERspacefilling =regiondata(**self.spacefilling)
             s = LammpsSpacefilling(**USERspacefilling)+s
@@ -3848,65 +4021,69 @@ class region:
         return s
     
     # SCRIPTHEADERS add header scripts for initializing script, lattice, box for region
-    def scriptHeaders(self, what=["init", "lattice", "box"], nbeads=1, pipescript=False):
+    def scriptHeaders(self, what=["init", "lattice", "box"], pipescript=False, **userdefinitions):
         """
-        Generate and return LAMMPS header scripts for initializing the simulation, defining the lattice, 
-        and specifying the simulation box for all region objects.
-    
-        Parameters:
-        - what (list of str): Specifies which scripts to generate. Options are "init", "lattice", and "box".
-                              Multiple scripts can be generated by passing a list of these options. 
-                              Default is ["init", "lattice", "box"].
-        - nbeads (int): Specifies the number of beads, overriding the default if larger than `self.nbeads`.
-                        Default is 1.
-        - pipescript (bool): If True, the generated scripts are combined with `|` instead of `+`. Default is False.
-    
-        Returns:
-        - object: The combined header scripts as a single object. 
-                  Header values can be overridden by updating `self.headersData`.
-    
-        Raises:
-        - Exception: If no valid script options are provided in `what`.
-    
-        Example usage:
-        sRheader = R.scriptHeaders("box").do()  # Generate the box header script.
-        sRallheaders = R.scriptHeaders(["init", "lattice", "box"])  # Generate all headers.
-    
-        Example usage without naming parameters:
-        sRheader = R.scriptHeaders("box")  # "what" specified as "box", nbeads defaults to 1.
-    
-        Example of overriding values with headersData:
-        R.headersData.lattice_style = "$sq"  # Override the lattice style.
-        sRheader = R.scriptHeaders("lattice")  # Generate the lattice header script with the overridden value.
-        """
-        USERregion = self.headersData
-        USERregion.nbeads = max(nbeads, self.nbeads)
+            Generate and return LAMMPS header scripts for initializing the simulation, defining the lattice, 
+            and specifying the simulation box for all region objects.
         
+            Parameters:
+            - what (list of str): Specifies which scripts to generate. Options are "init", "lattice", "box", "mass" and "preview".
+                                  Multiple scripts can be generated by passing a list of these options. 
+                                  Default is ["init", "lattice", "box"].
+            - pipescript (bool): If True, the generated scripts are combined with `|` instead of `+`. Default is False.
+            
+            Property/pair value
+            - nbeads (int): Specifies the number of beads, overriding the default if larger than `self.nbeads`.
+                            Default is 1.
+            - mass (real value or list): Sets the mass for each bead, overrriding `self.mass`
+                            Default is 1.0.
+    
+        
+            Returns:
+            - object: The combined header scripts as a single object. 
+                      Header values can be overridden by updating `self.headersData`.
+        
+            Raises:
+            - Exception: If no valid script options are provided in `what`.
+        
+            Example usage:
+                sRheader = R.scriptHeaders("box").do()  # Generate the box header script.
+                sRallheaders = R.scriptHeaders(["init", "lattice", "box"])  # Generate all headers.
+            
+                Example usage without naming parameters:
+                sRheader = R.scriptHeaders("box")  # "what" specified as "box", nbeads defaults to 1.
+            
+                Example of overriding values
+                sRheader = R.scriptHeaders("lattice",lattice_style = "$sq")  # Generate the lattice header script with the overridden value.
+        """
+        # handle overrides
+        USERregion = self.headersData + regiondata(**userdefinitions)
+        # Fix singletons
         if not isinstance(what, list):
             what = [what]
-    
-        scripts = []  # Store all generated script objects here
-    
         # Generate the initialization script
+        scripts = []  # Store all generated script objects here
         if "init" in what:
             scripts.append(LammpsHeaderInit(**USERregion))
-    
         # Generate the lattice script
         if "lattice" in what:
             scripts.append(LammpsHeaderLattice(**USERregion))
-    
         # Generate the box script
         if "box" in what:
             scripts.append(LammpsHeaderBox(**USERregion))
             if self.isspacefilled:
                 scripts.append(LammpsSpacefilling(**self.spacefilling))
-    
+        # Generate the mass script
+        if "mass" in what:
+            scripts.append(LammpsHeaderMass(**USERregion))
+        # Generate the preview script
+        if "preview" in what:
+            scripts.append(LammpsFooterPreview(**USERregion))
         if not scripts:
-            raise Exception('nothing to do (use: "init", "lattice", and "box" within [ ])')
+            raise Exception('nothing to do (use: "init", "lattice", "box", "mass" or "preview" within [ ])')
     
         # Combine the scripts based on the pipescript flag
-        combined_script = scripts[0]  # Initialize the combined script with the first element
-        
+        combined_script = scripts[0]  # Initialize the combined script with the first element    
         for script in scripts[1:]:
             if pipescript:
                 # Combine scripts using the | operator, maintaining pipescript format
@@ -3914,11 +4091,10 @@ class region:
             else:
                 # Combine scripts using the + operator, maintaining regular script format
                 combined_script = combined_script + script  # s_ab = s_a + s_b
-    
         return combined_script
     
 
-    def pscriptHeaders(self, what=["init", "lattice", "box"], nbeads=1):
+    def pscriptHeaders(self, what=["init", "lattice", "box"], **userdefinitions):
         """
         Surrogate method for generating LAMMPS pipescript headers.
         Calls the `scriptHeaders` method with `pipescript=True`.
@@ -3927,14 +4103,16 @@ class region:
         - what (list of str): Specifies which scripts to generate. Options are "init", "lattice", and "box".
                               Multiple scripts can be generated by passing a list of these options. 
                               Default is ["init", "lattice", "box"].
+        Property/pair value
         - nbeads (int): Specifies the number of beads, overriding the default if larger than `self.nbeads`.
                         Default is 1.
-    
+        - mass (real value or list): Sets the mass for each bead, overrriding `self.mass`
+                        Default is 1.0.
         Returns:
         - object: The combined pipescript header scripts as a single object.
         """
         # Call scriptHeaders with pipescript=True
-        return self.scriptHeaders(what=what, nbeads=nbeads, pipescript=True)
+        return self.scriptHeaders(what=what, pipescript=True, **userdefinitions)
 
 
     # DO METHOD = main static compiler
