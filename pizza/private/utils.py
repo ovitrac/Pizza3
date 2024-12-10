@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    
+
     Utilities to update modules
         updatepptx()
 
@@ -14,12 +14,14 @@ Created on Wed Mar 30 20:59:25 2022
 import os, fnmatch
 from pathlib import Path
 
+__all__ = ['list', 'replaceall', 'updatepptx']
+
 # %% replacement in several files
 def replaceall(directory=".",
                 find="string to find",
                 replace="newstring",
                 filePattern="*.py"):
-    """ 
+    """
         replaceall("some_dir", "find this", "replace with this", "*.txt")
     """
     nprocessedfiles = nrevisedfiles = 0
@@ -37,7 +39,7 @@ def replaceall(directory=".",
             if s==s0:
                 print("\t no modification done")
             else:
-                try: 
+                try:
                     with open(filepath, "w") as f:
                         f.write(s)
                 except IOError:
@@ -49,7 +51,7 @@ def replaceall(directory=".",
     else:
         print(f'\n{nprocessedfiles} files matched "{filePattern}" in "{directory}"')
         print(f'\t==> {nrevisedfiles} files have been modified')
-                
+
 def list(directory="."):
     """ list folders and files  """
     for root, dirs, files in os.walk(directory, topdown=False):
@@ -67,27 +69,27 @@ def updatepptx():
     prefix = f"{rootmodule}.private"
     module = "pptx"
     fullmodule = f"{prefix}.{module}"
-    
+
     directory = Path(os.path.join(os.path.abspath(rootmodule), "pptx")).as_posix()
     directory = "./pptx"
     find = f"from {module}"
     replace = f"from {fullmodule}"
     filepattern = "*.py"
     replaceall(directory,find,replace,filepattern)
-    
+
     find = f"import {module}"
     replace = f"import {fullmodule}"
     replaceall(directory,find,replace,filepattern)
-    
+
     find = f'["{module}.exceptions"]'
     replace = f'["{fullmodule}.exceptions"]'
     replaceall(directory,find,replace,filepattern)
 
 
 # %% DEBUG
-# ===================================================   
+# ===================================================
 # main()
-# ===================================================   
+# ===================================================
 # for debugging purposes (code called as a script)
 # the code is called from here
 # ===================================================

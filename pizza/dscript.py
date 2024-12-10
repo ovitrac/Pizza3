@@ -6,10 +6,10 @@
 PIZZA.DSCRIPT Module Documentation
 ================================================================================
 
-The **PIZZA.DSCRIPT** module is a versatile tool for dynamically generating and managing 
-**pizza.scripts**, especially in conjunction with **LAMMPS** (Large-scale Atomic/Molecular 
-Massively Parallel Simulator). This module provides powerful features to create complex, 
-parameterized scripts, manage multiple sections, and flexibly concatenate scripts to form 
+The **PIZZA.DSCRIPT** module is a versatile tool for dynamically generating and managing
+**pizza.scripts**, especially in conjunction with **LAMMPS** (Large-scale Atomic/Molecular
+Massively Parallel Simulator). This module provides powerful features to create complex,
+parameterized scripts, manage multiple sections, and flexibly concatenate scripts to form
 pipelines. It offers advanced control over script execution and generation.
 
 Overview:
@@ -18,33 +18,33 @@ Overview:
 - **pizza.dscript**: Use this to dynamically generate codelets or scriptlets directly in your code,
    allowing for flexible, runtime script generation.
 
-The output of `pizza.dscript.script()` is a complete script instance, similar to a standard pizza.script. 
-These scripts can be managed like any pizza.script, allowing you to combine them using the `+` or `|` 
+The output of `pizza.dscript.script()` is a complete script instance, similar to a standard pizza.script.
+These scripts can be managed like any pizza.script, allowing you to combine them using the `+` or `|`
 operators and integrate them into **pizza.pipescripts** for building complex, multi-step workflows.
 
 Key Features:
 -------------
-1. **Dynamic Script Generation**: 
-   - `pizza.dscript` allows for the generation of scripts dynamically within your code. This means that codelets 
+1. **Dynamic Script Generation**:
+   - `pizza.dscript` allows for the generation of scripts dynamically within your code. This means that codelets
      and scriptlets can be constructed at runtime, offering flexibility in handling complex scenarios.
-   
-2. **Combining Scripts**: 
-   - The generated scripts can be combined using operators like `+` or `|`, enabling you to merge multiple 
-     script sections seamlessly. This is especially useful for creating modular scripts that can be 
+
+2. **Combining Scripts**:
+   - The generated scripts can be combined using operators like `+` or `|`, enabling you to merge multiple
+     script sections seamlessly. This is especially useful for creating modular scripts that can be
      reused across different contexts or experiments.
 
-3. **Saving and Loading Scripts**: 
-   - `pizza.dscript.save()` and `pizza.dscript.load()` enable you to save and load complex scripts as text templates, 
-     independent of both Python and LAMMPS. This functionality allows for the deployment of sophisticated scripts 
+3. **Saving and Loading Scripts**:
+   - `pizza.dscript.save()` and `pizza.dscript.load()` enable you to save and load complex scripts as text templates,
+     independent of both Python and LAMMPS. This functionality allows for the deployment of sophisticated scripts
      without requiring the full script class libraries (commonly referred to as "workshops" in Pizza3).
 
-4. **Leveraging AI for Rapid Template Generation**: 
-   - You can even leverage Large Language Models (LLMs) to generate templates quickly. This feature allows for 
+4. **Leveraging AI for Rapid Template Generation**:
+   - You can even leverage Large Language Models (LLMs) to generate templates quickly. This feature allows for
      automation and faster script generation, particularly useful for deploying templated workflows or codelets.
 
-5. **Non-linear Execution**: 
+5. **Non-linear Execution**:
    - It's important to note that **pizza.scripts** and **pizza.dscripts** are not directly equivalent to LAMMPS code.
-     They can be executed statically and non-linearly, without needing LAMMPS to be involved. This makes the 
+     They can be executed statically and non-linearly, without needing LAMMPS to be involved. This makes the
      framework particularly useful when managing large LAMMPS simulations that span multiple submodules.
 
 Applications:
@@ -52,40 +52,40 @@ Applications:
 The **PIZZA.DSCRIPT** module is particularly useful when you need to:
 - **Dynamically create and manage LAMMPS script sections**.
 - **Merge, manipulate, and execute multiple script sections** with predefined or user-defined variables.
-- **Generate scripts with conditional sections and custom execution logic**, enabling the handling of complex simulations 
+- **Generate scripts with conditional sections and custom execution logic**, enabling the handling of complex simulations
   and workflows.
 
-The modular nature of `pizza.dscript` makes it well-suited for scenarios where you need to reuse various submodules of 
+The modular nature of `pizza.dscript` makes it well-suited for scenarios where you need to reuse various submodules of
 LAMMPS code or mix them with pure Python logic for more advanced control.
 
 Key Classes:
 ------------
-- **`lambdaScriptdata`**: Holds parameters and definitions for script execution. This class encapsulates the data and 
+- **`lambdaScriptdata`**: Holds parameters and definitions for script execution. This class encapsulates the data and
   logic needed for the dynamic generation of script elements.
-  
-- **`lambdaScript`**: Wraps a `dscript` object to generate a `pizza.script instance` from its contents. This class 
+
+- **`lambdaScript`**: Wraps a `dscript` object to generate a `pizza.script instance` from its contents. This class
   is essential for converting dynamically generated `dscript` objects into reusable, executable script instances.
 
-- **`dscript`**: Manages and stores multiple script lines/items as `ScriptTemplate` objects, supporting dynamic execution 
-  and the concatenation of script sections. The `dscript` class allows for flexible script construction and execution, 
+- **`dscript`**: Manages and stores multiple script lines/items as `ScriptTemplate` objects, supporting dynamic execution
+  and the concatenation of script sections. The `dscript` class allows for flexible script construction and execution,
   making it a core component for generating dynamic LAMMPS scripts.
-  
+
 Notes:
 ------
-- **Script Composition**: Generated scripts can span several submodules, allowing for the reuse of script components 
+- **Script Composition**: Generated scripts can span several submodules, allowing for the reuse of script components
   in different contexts. This feature enables a modular approach to script generation.
-- **Execution Flexibility**: Since `pizza.dscript` scripts are not bound to LAMMPS directly, they can be executed 
-  independently, making them highly flexible for preprocessing, debugging, or running custom logic within a 
+- **Execution Flexibility**: Since `pizza.dscript` scripts are not bound to LAMMPS directly, they can be executed
+  independently, making them highly flexible for preprocessing, debugging, or running custom logic within a
   LAMMPS-related workflow.
 
 Important Distinction between **PIZZA.DSCRIPT** and **PIZZA.SCRIPT**: (with possible evolution in the future)
 ---------------------------------------------------------------------
-- **PIZZA.DSCRIPT** stores the DEFINITIONS in lambdaScriptdata objects based on pizza.private.struct.paramauto
+- **PIZZA.DSCRIPT** stores the DEFINITIONS in lambdaScriptdata objects based on pizza.private.mstruct.paramauto
   The practical consequence is that all variables should be within {} such as ${variable}.
   The definitions will be redordered to authorize execution
-- **PIZZA.SCRIPT** stores the DEFINITIONS in Scriptdata objects based on pizza.private.struct.param
+- **PIZZA.SCRIPT** stores the DEFINITIONS in Scriptdata objects based on pizza.private.mstruct.param
   The variables can be $myvar or ${myvar}. The definition order is important.
-   
+
 
 Practical Usage:
 ----------------
@@ -100,23 +100,23 @@ from dscript import dscript
         ```python
         # Create a dscript instance
         S = dscript(name="MyScript")
-        
+
         # Define script sections
         S[0] = "instruction 1"
         S[1] = "${var1} + ${var2}"
-        
+
         # Set definitions
         S.DEFINITIONS.var1 = "1"
         S.DEFINITIONS.var2 = "2"
-        
+
         # Enable evaluation
         S[1].eval = True
-        
+
         # Generate the script
         result = S.do()
         print(result)
-        
-        # convert it into pizza.script 
+
+        # convert it into pizza.script
         s=S.script()
         rs = s.do()
         print(rs)
@@ -172,9 +172,9 @@ Definitions can be dynamically substituted into the templates using `${}` notati
 Production Example: Dynamic LAMMPS Script Generation Using `dscript` and `script`
 ================================================================================
 
-This example illustrates how to dynamically generate and manage LAMMPS scripts 
-using the `dscript` and `script` classes. The goal is to demonstrate the flexibility 
-of these classes in handling script sections, overriding parameters, and generating 
+This example illustrates how to dynamically generate and manage LAMMPS scripts
+using the `dscript` and `script` classes. The goal is to demonstrate the flexibility
+of these classes in handling script sections, overriding parameters, and generating
 a script with conditions and dynamic content.
 
 Overview:
@@ -203,7 +203,7 @@ Example:
 --------
     # Initialize the dscript object
     R = dscript(name="ProductionExample")
-    
+
     # Define global variables (DEFINITIONS)
     R.DEFINITIONS.dimension = 3
     R.DEFINITIONS.units = "$si"
@@ -213,7 +213,7 @@ Example:
     R.DEFINITIONS.comm_modify = ["vel","yes"]
     R.DEFINITIONS.neigh_modify = ["every",10,"delay",0,"check","yes"]
     R.DEFINITIONS.newton = "$off"
-    
+
     # Define the script template, with each line identified by a key
     R[0]        = "% ${comment}"
     R["dim"]    = "dimension    ${dimension}"  # Line identified as 'dim'
@@ -224,29 +224,29 @@ Example:
     R["cmod"]   = "comm_modify  ${comm_modify}"
     R["nmod"]   = "neigh_modify ${neigh_modify}"
     R["newton"] = "newton       ${newton}"
-    
+
     # Apply a condition to the 'astyle' line; it will only be included if ${atom_style} is defined
     R["astyle"].condition = "${atom_style}"
-    
+
     # Revise the DEFINITIONS, making ${atom_style} undefined
     R.DEFINITIONS.atom_style = ""
-    
+
     # Generate a script instance, overwriting the 'units' variable and adding a comment
     sR = R.script(units="$lj",  # Use "$" to prevent immediate evaluation
                   comment="$my first dynamic script")
-    
+
     # Execute the script to get the final content
     ssR = sR.do()
-    
+
     # Print the generated script as text
     print(ssR)
-    
+
     # Save your script
     R.save("myscript.txt")
-    
+
     # Load again your script
     Rcopy = dsave.load("myscript.txt")
-    
+
 More Compact Example:
 ---------------------
     # Initialization
@@ -261,7 +261,7 @@ More Compact Example:
     R2.DEFINITIONS.newton = "$off"
     R2.DEFINITIONS.atom_style = "$smd"
     # Define the script template with a multiple line syntax
-    R2["code"] = "" "        
+    R2["code"] = "" "
         % ${comment}
         dimension    ${dimension}
         units        ${units}
@@ -271,16 +271,16 @@ More Compact Example:
         comm_modify  ${comm_modify}
         neigh_modify ${neigh_modify}
         newton       ${newton}
-    "" "    
+    "" "
     # Generate a script instance, overwriting the 'units' variable and adding a comment
     sR2 = R2.script(comment="$my first compact dscript")
-    ssR2 = sR2.do()    
+    ssR2 = sR2.do()
     # Print the generated script
     print(ssR2)
 
 Expected Output:
 ----------------
-    Depending on the conditions and overwritten variables, the output script should 
+    Depending on the conditions and overwritten variables, the output script should
     reflect the updated `DEFINITIONS` and the conditionally included lines.
 
 For instance:
@@ -375,10 +375,10 @@ An extended DSCRIPT file includes additional sections such as global parameters,
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # DSCRIPT SAVE FILE
     # generated on 20XX-XX-XX on user@localhost
-    
+
     #	name = "ProductionExample"
     #	path = "/your/path/ProductionExample.txt"
-    
+
     # GLOBAL PARAMETERS
     {
         SECTIONS = ['DYNAMIC'],
@@ -390,7 +390,7 @@ An extended DSCRIPT file includes additional sections such as global parameters,
         version = 0.1,
         verbose = False
     }
-    
+
     # DEFINITIONS (number of definitions=9)
     dimension=3
     units=$si
@@ -401,7 +401,7 @@ An extended DSCRIPT file includes additional sections such as global parameters,
     neigh_modify=['every', 10, 'delay', 0, 'check', 'yes']
     newton=$off
     comment=${comment}
-    
+
     # TEMPLATE (number of lines=9)
     0: % ${comment}
     dim: dimension    ${dimension}
@@ -412,7 +412,7 @@ An extended DSCRIPT file includes additional sections such as global parameters,
     cmod: comm_modify  ${comm_modify}
     nmod: neigh_modify ${neigh_modify}
     newton: newton       ${newton}
-    
+
     # ATTRIBUTES (number of lines with explicit attributes=9)
     0:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
     dim:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
@@ -467,7 +467,7 @@ readonly=False, condition=None, condeval=False, detectvar=True}.
 ### Flexible structure
 - **Global Parameters** can be defined anywhere but in a single block
 - **Template** and **Attributes** lines can be mixed together.
-                                                            
+
 
 Production example (using last features)
 ------------------
@@ -478,10 +478,10 @@ mydscriptfile = '''
             dumpdt = 50
             thermodt = 100
             runtime = 5000
-            
-            
+
+
             # TEMPLATES (number of items=24)
-            
+
             # LOCAL DEFINITIONS for key '0'
             dimension = 3
             units = $si
@@ -492,7 +492,7 @@ mydscriptfile = '''
             neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
             newton = $off
             name = $SimulationBox
-            
+
             0: [
                 % --------------[ Initialization Header (helper) for "${name}"   ]--------------
                 # set a parameter to None or "" to remove the definition
@@ -506,18 +506,18 @@ mydscriptfile = '''
                 newton       ${newton}
                 # ------------------------------------------
              ]
-            
+
             # LOCAL DEFINITIONS for key '1'
             lattice_style = $sc
             lattice_scale = 0.0008271
             lattice_spacing = [0.0008271, 0.0008271, 0.0008271]
-            
+
             1: [
                 % --------------[ LatticeHeader 'helper' for "${name}"   ]--------------
                 lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
                 # ------------------------------------------
              ]
-            
+
             # LOCAL DEFINITIONS for key '2'
             xmin = -0.03
             xmax = 0.03
@@ -526,30 +526,30 @@ mydscriptfile = '''
             zmin = -0.03
             zmax = 0.03
             nbeads = 3
-            
+
             2: [
                 % --------------[ Box Header 'helper' for "${name}"   ]--------------
                 region box block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax}
                 create_box	${nbeads} box
                 # ------------------------------------------
              ]
-            
+
             # LOCAL DEFINITIONS for key '3'
             ID = $LowerCylinder
             style = $cylinder
-            
+
             3: % variables to be used for ${ID} ${style}             ]
-            
+
             # LOCAL DEFINITIONS for key '4'
             ID = $CentralCylinder
-            
+
             4: % variables to be used for ${ID} ${style}
-            
+
             # LOCAL DEFINITIONS for key '5'
             ID = $UpperCylinder
-            
+
             5: % variables to be used for ${ID} ${style}
-            
+
             # LOCAL DEFINITIONS for key '6'
             args = ['z', 0.0, 0.0, 36.27130939426913, 0.0, 6.045218232378189]
             side = ""
@@ -558,63 +558,63 @@ mydscriptfile = '''
             open = ""
             ID = $LowerCylinder
             units = ""
-            
+
             6: [
                 % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
                 # keywords: side, units, move, rotate, open
                 # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
                 region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
              ]
-            
+
             # LOCAL DEFINITIONS for key '7'
             ID = $CentralCylinder
             args = ['z', 0.0, 0.0, 36.27130939426913, 6.045218232378189, 18.135654697134566]
-            
+
             7: [
                 % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
                 # keywords: side, units, move, rotate, open
                 # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
                 region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
              ]
-            
+
             # LOCAL DEFINITIONS for key '8'
             ID = $UpperCylinder
             args = ['z', 0.0, 0.0, 36.27130939426913, 18.135654697134566, 24.180872929512756]
-            
+
             8: [
                 % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
                 # keywords: side, units, move, rotate, open
                 # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
                 region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
              ]
-            
+
             # LOCAL DEFINITIONS for key '9'
             ID = $LowerCylinder
             beadtype = 1
-            
+
             9: [
                 % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
                 create_atoms ${beadtype} region ${ID}
              ]
-            
+
             # LOCAL DEFINITIONS for key '10'
             ID = $CentralCylinder
             beadtype = 2
-            
+
             10: [
                 % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
                 create_atoms ${beadtype} region ${ID}
              ]
-            
+
             # LOCAL DEFINITIONS for key '11'
             ID = $UpperCylinder
             beadtype = 3
-            
+
             11: [
                 % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
                 create_atoms ${beadtype} region ${ID}
              ]
-            
+
             12: [
                 # ===== [ BEGIN GROUP SECTION ] =====================================================================================
                 group 	 lower 	type 	 1
@@ -623,75 +623,75 @@ mydscriptfile = '''
                 group 	 middle 	type 	 2
                 group 	 movable 	type 	 2 3
                 group 	 upper 	type 	 3
-                
+
                 # ===== [ END GROUP SECTION ] =======================================================================================
-                
-                
+
+
                 # [1:b1] PAIR STYLE SMD
                 pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
                 smd/tlsph smd/hertz 1.5
-                
+
                 # [1:b1 x 1:b1] Diagonal pair coefficient tlsph
                 pair_coeff      1 1 smd/tlsph *COMMON 1000 10000.0 0.3 1.0 2.0 10.0 1000.0 &
                 *STRENGTH_LINEAR_PLASTIC 1000.0 0 &
                 *EOS_LINEAR &
                 *END
-                
+
                 # [2:b2 x 2:b2] Diagonal pair coefficient tlsph
                 pair_coeff      2 2 smd/tlsph *COMMON 1000 5000.0 0.3 1.0 2.0 10.0 1000.0 &
                 *STRENGTH_LINEAR_PLASTIC 500.0 0 &
                 *EOS_LINEAR &
                 *END
-                
+
                 # [3:b3 x 3:b3] Diagonal pair coefficient tlsph
                 pair_coeff      3 3 smd/tlsph *COMMON 1000 40000.0 0.3 1.0 2.0 10.0 1000.0 &
                 *STRENGTH_LINEAR_PLASTIC 4000.0 0 &
                 *EOS_LINEAR &
                 *END
-                
+
                 # [1:b1 x 2:b2] Off-diagonal pair coefficient (generic)
                 pair_coeff      1 2 smd/hertz 250.0000000000001
-                
+
                 # [1:b1 x 3:b3] Off-diagonal pair coefficient (generic)
                 pair_coeff      1 3 smd/hertz 250.0000000000001
-                
+
                 # [2:b2 x 3:b3] Off-diagonal pair coefficient (generic)
                 pair_coeff      2 3 smd/hertz 125.00000000000003
-                
+
                 # ===== [ END FORCEFIELD SECTION ] ==================================================================================
              ]
-            
+
             13: [
                 group all union lower middle upper
                 group external subtract all middle
              ]
-            
+
             14: velocity all set 0.0 0.0 0.0 units box
             15: fix fix_lower lower setforce 0.0 0.0 0.0
             16: fix move_upper upper move wiggle 0.0 0.0 ${amplitude} ${period} units box
             17: fix dtfix tlsph smd/adjust_dt ${dt}
             18: fix integration_fix tlsph smd/integrate_tlsph
-            
+
             19: [
                 compute S all smd/tlsph_stress
                 compute E all smd/tlsph_strain
                 compute nn all smd/tlsph_num_neighs
              ]
-            
+
             20: [
                 dump dump_id all custom ${dumpdt} ${dumpfile} id type x y z vx vy vz &
                 c_S[1] c_S[2] c_S[4] c_nn &
                 c_E[1] c_E[2] c_E[4] &
                 vx vy vz
              ]
-            
+
             21: dump_modify dump_id first yes
-            
+
             22: [
                 thermo ${thermodt}
                 thermo_style custom step dt f_dtfix v_strain
              ]
-            
+
             23: run ${runtime}
         '''
 mydscript = dscript.parsesyntax(mydscriptfile,verbose=False,authentification=False)
@@ -705,7 +705,7 @@ print(repr(mydscript[-1])) gives all details
 --------------------------------------------------
 Template Content | id:23        (1 line, 31 defs)   <--- all variables have be created also locally
 --------------------------------------------------
-run ${runtime}                                    
+run ${runtime}
 --------------------------------------------------
 Detected Variable                  (1 / +1 / -0)
 --------------------------------------------------
@@ -713,8 +713,8 @@ Detected Variable                  (1 / +1 / -0)
 --------------------------------------------------
 Template Attributes                (7 attributes)
 --------------------------------------------------
-[ ] facultativ   [x] eval         [ ] readonly     
-[ ] condition    [ ] condeval     [x] detectvar    
+[ ] facultativ   [x] eval         [ ] readonly
+[ ] condition    [ ] condeval     [x] detectvar
 [x] runtime                                        <--- this runtime is an attribute
 
 
@@ -747,11 +747,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9999"
+__version__ = "0.99991"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-12-04 (community)
+# INRAE\Olivier Vitrac - rev. 2024-12-09 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -765,24 +765,28 @@ __version__ = "0.9999"
 # 2024-10-14 finalization of the integration with scripts
 # 2024-10-17 fix __add__, improve repr()
 # 2024-10-18 add add_dynamic_script() helper for adding a step to a dscript
-# 2024-10-19 better file management 
+# 2024-10-19 better file management
 # 2024-10-22 sophistication of ScriptTemplate to recognize defined variables at construction and to parse flags/conditions
 # 2024-10-24 management of locl definitions in dscript.save() and dscript.parsesyntax()
 # 2024-10-27 caching ScriptTemplate checks, improved dscript.save() methods
 # 2024-10-28 less redundancy beyween local and global variables in dscript.save()
 # 2024-10-07 new parsesyntax accepting [ ] at any position, improved doc, parsesyntax_legacy holds the old parser method
 # 2024-10-08 fix single line templates
-# 2024-10-12 several improvements and sophistication in the definition and execution of templates from dscript 
+# 2024-10-12 several improvements and sophistication in the definition and execution of templates from dscript
 # 2024-12-01 standarize scripting features, automatically call script/pscript methods
 # 2024-12-02 add dscript.header() and implement it in dscript.save() and dscript.write()
 # 2024-12-03 improve the logics of dscript.parse(), dscript.save() on real cases
 # 2024-12-04 preparation for major release
+# 2024-12-09 get-metadata() use globals()
 
 # Dependencies
 import os, getpass, socket, time, datetime
 import re, string, random, copy, hashlib
-from pizza.private.struct import paramauto
+from pizza.private.mstruct import paramauto
 from pizza.script import script, scriptdata, pipescript, remove_comments, span, frame_header
+
+__all__ = ['ScriptTemplate', 'autoname', 'dscript', 'frame_header', 'get_metadata', 'lambdaScriptdata', 'lamdaScript', 'paramauto', 'pipescript', 'remove_comments', 'script', 'scriptdata', 'span']
+
 
 # %% Private Functions
 
@@ -794,7 +798,6 @@ def autoname(numChars=8):
 # returns the metadata
 def get_metadata():
     """Return a dictionary of explicitly defined metadata."""
-    import pizza.dscript as dscript # Ensure dscript is imported to access its globals
     # Define the desired metadata keys
     metadata_keys = [
         "__project__",
@@ -806,17 +809,18 @@ def get_metadata():
         "__email__",
         "__version__",
     ]
-    # Filter only the desired keys from the module's variables
-    return {key.strip("_"): getattr(dscript, key) for key in metadata_keys if hasattr(dscript, key)}
+    # Filter only the desired keys from the current module's globals
+    return {key.strip("_"): globals()[key] for key in metadata_keys if key in globals()}
+
 
 # %% Low-level Classes (wrappers for pizza.script)
 
 class lambdaScriptdata(paramauto):
     """
     Class to manage lambda script parameters.
-    
-    This class holds definitions and variables used within the script templates. 
-    These parameters are typically set up as global variables that can be accessed 
+
+    This class holds definitions and variables used within the script templates.
+    These parameters are typically set up as global variables that can be accessed
     by script sections for evaluation and substitution.
 
     Example Usage:
@@ -831,21 +835,21 @@ class lambdaScriptdata(paramauto):
         Full type description of the lambda script data.
     _ftype : str
         Short description of the type (parameter definition).
-    
+
     Methods:
     --------
-    This class inherits methods from the `paramauto` class, which allows automatic 
+    This class inherits methods from the `paramauto` class, which allows automatic
     handling of parameters and script data.
     """
-    
+
     _type = "LSD"
     _fulltype = "Lambda Script Parameters"
     _ftype = "parameter definition"
-    
+
     def __init__(self, _protection=False, _evaluation=True, sortdefinitions=False, **kwargs):
         """
         Constructor for lambdaScriptdata. It forces the parent's _returnerror parameter to False.
-    
+
         Parameters:
         -----------
         _protection : bool, optional
@@ -925,18 +929,18 @@ class lamdaScript(script):
     ```
     """
     name = ""
-    
+
     def __init__(self, dscriptobj, persistentfile=True, persistentfolder=None,
                  printflag = False, verbose = True, softrun = True,
                  **userdefinitions):
         """
             Initialize a new `lambdaScript` instance.
-            
-            This constructor creates a `lambdaScript` object based on an existing `dscriptobj`, 
+
+            This constructor creates a `lambdaScript` object based on an existing `dscriptobj`,
             providing options for persistent storage, verbose output, and user-defined configurations.
-            A `lambdaScript` represents an anonymous or temporary script that can either preserve the 
+            A `lambdaScript` represents an anonymous or temporary script that can either preserve the
             original script structure or partially evaluate variable definitions based on the `softrun` flag.
-            
+
             Parameters
             ----------
             dscriptobj : dscript
@@ -952,18 +956,18 @@ class lamdaScript(script):
                 If `True`, provides detailed output during script initialization and execution. Defaults to `True`.
             softrun : bool, optional
                 Determines whether a pre-execution run is carried out to partially evaluate and substitute variables.
-                - If `True` (default), the variable definitions and original script content are preserved without full 
+                - If `True` (default), the variable definitions and original script content are preserved without full
                   evaluation, meaning no substitution is carried out on the `dscript`'s templates or definitions.
                 - If `False`, performs an initial evaluation phase that substitutes available variables and captures
                   the local definitions before creating the `lambdaScript` object.
             **userdefinitions
                 Additional user-defined variables and configurations to be included in the `lambdaScript`.
-            
+
             Raises
             ------
             TypeError
                 If `dscriptobj` is not an instance of the `dscript` class.
-            
+
             Example
             -------
             ```python
@@ -992,7 +996,7 @@ class lamdaScript(script):
         else:
             self.TEMPLATE = dscriptobj.do(softrun=softrun)
             self.USER = lambdaScriptdata(**self.USER)
-        
+
     @property
     def role(self):
         """Override the role property to include a setter."""
@@ -1007,67 +1011,67 @@ class lamdaScript(script):
     @role.setter
     def role(self, value):
         """Allow setting the role."""
-        self._role = value    
+        self._role = value
 
 
 # %% Main Classes
 class ScriptTemplate:
     """
-     The `ScriptTemplate` class provides a mechanism to store, process, and dynamically substitute 
-     variables within script content. This class supports handling flags and conditions, allowing 
+     The `ScriptTemplate` class provides a mechanism to store, process, and dynamically substitute
+     variables within script content. This class supports handling flags and conditions, allowing
      for flexible and conditional execution of parts of the script.
-    
+
      Attributes:
      -----------
      default_attributes : dict (class-level)
-         A dictionary containing the default flags for each `ScriptTemplate` object. These attributes 
+         A dictionary containing the default flags for each `ScriptTemplate` object. These attributes
          are applied when initializing the object or when no flags are specified in the content.
          Flags include:
-         - facultative (bool): If True, the script line is optional and may be discarded if certain 
+         - facultative (bool): If True, the script line is optional and may be discarded if certain
              conditions are not met. (default: False)
-         - eval (bool): If True, the content is evaluated using `formateval`, which allows for variable 
+         - eval (bool): If True, the content is evaluated using `formateval`, which allows for variable
              substitution during execution. (default: False)
          - readonly (bool): If True, the content cannot be modified after initialization. (default: False)
          - condition (str or None): A string that specifies a condition for executing the content.
              If the condition is not met, the script line is skipped. (default: None)
          - condeval (bool): If True, the `condition` attribute is evaluated dynamically using variables.
              (default: False)
-         - detectvar (bool): If True, any variables in the content (e.g., `${varname}`) are automatically 
+         - detectvar (bool): If True, any variables in the content (e.g., `${varname}`) are automatically
              detected and registered in the definitions. (default: True)
-    
+
      Methods:
      --------
      __init__(self, content="", definitions=lambdaScriptdata(), userid=None, verbose=False, **kwargs):
-         Initializes the `ScriptTemplate` object with script content, optional variable definitions, 
-         and configurable attributes. Flags like `facultative`, `eval`, `readonly`, `condition`, 
+         Initializes the `ScriptTemplate` object with script content, optional variable definitions,
+         and configurable attributes. Flags like `facultative`, `eval`, `readonly`, `condition`,
          and others are set via content prefixes or passed directly as keyword arguments.
-     
+
      parse_content(cls, content, verbose=False):
-         A class method that parses content to detect special flags and condition tags, returning the 
+         A class method that parses content to detect special flags and condition tags, returning the
          cleaned content and a dictionary of attributes (flags).
-         
+
          The method processes the following flags and tags:
          - `!` : Sets `eval=True`, which forces evaluation of the content.
          - `?` : Sets `facultative=True`, marking the content as optional.
          - `^` : Sets `readonly=True`, preventing modifications to the content.
          - `~` : Sets `detectvar=False`, disabling automatic variable detection.
-         - `[if:condition]` : Defines a condition for executing the script. If the condition is met, 
+         - `[if:condition]` : Defines a condition for executing the script. If the condition is met,
            the script will be executed. Conditions can include `;eval` to trigger evaluation.
-    
+
          Parameters:
          -----------
          content : str
              The script content to be parsed. It may contain lines starting with special characters
              that set specific attributes for the script template.
-    
+
          verbose : bool (default: False)
              If True, preserves comments and does not remove comment lines during parsing.
-    
+
          Returns:
          --------
          cleaned_content : str
              The cleaned script content, with all flags and conditions removed.
-         
+
          attributes : dict
              A dictionary of parsed attributes (flags) including:
              - facultative (bool): Indicates if the content is optional.
@@ -1076,22 +1080,22 @@ class ScriptTemplate:
              - condition (str or None): Defines the condition for executing the script.
              - condeval (bool): If True, dynamically evaluates the condition.
              - detectvar (bool): If True, detects and registers variables in the content.
-         
+
      detect_variables(self):
-         Detects variables in the content using the pattern `${varname}`. It returns a list of 
+         Detects variables in the content using the pattern `${varname}`. It returns a list of
          variable names found in the script.
-    
+
      refreshvar(self):
          Ensures that any detected variables are added to the `definitions` if they are missing.
-    
+
      __setattr__(self, name, value):
          Sets the value of an attribute. The method performs validation on specific attributes
          (e.g., `eval`, `readonly`, `facultative`, etc.) to ensure the correct data types are assigned.
-    
+
      __getattr__(self, name):
-         Retrieves the value of an attribute. If the attribute is not set, it returns the default 
+         Retrieves the value of an attribute. If the attribute is not set, it returns the default
          value from `default_attributes`.
-            
+
 
     Example 1:
     ----------
@@ -1100,25 +1104,25 @@ class ScriptTemplate:
 
     # You can also pass in global definitions if needed
     global_definitions = lambdaScriptdata(dimension=3)
-    line_with_defs = ScriptTemplate("dimension    ${dimension}", 
+    line_with_defs = ScriptTemplate("dimension    ${dimension}",
                                     definitions=global_definitions)
 
-    After initialization, you can modify the line's attributes or use it as 
+    After initialization, you can modify the line's attributes or use it as
     part of a larger script managed by a `dscript` object.
-    
-    
+
+
      Example 2:
      ----------
      # Example of using flags and conditions in content
-     
+
      line = ScriptTemplate("!velocity all set 0.0 0.0 0.0 units box")
      # This will automatically set `eval=True` due to the '!' flag.
-    
+
      line_with_condition = ScriptTemplate("[if: ${condition};eval] fix upper move wiggle 0.0 0.0 1.0 1.0")
      # This content will only execute if `${condition}` is True, and `eval` will be applied to substitute variables.
 
     """
-    
+
     # Class-level attribute for default flags
     default_attributes = {
         'facultative': False,
@@ -1128,64 +1132,64 @@ class ScriptTemplate:
         'condeval': False,
         'detectvar': True
     }
-    
+
     def __init__(self, content="", definitions=lambdaScriptdata(), autorefresh=True, userid=None, verbose=False, comment_chars="#%", **kwargs):
         """
         Initializes a new `ScriptTemplate` object.
-        
+
         The constructor sets up a new script template with content, optional variable
         definitions, and a set of configurable attributes. This template is capable
         of dynamically substituting variables using a provided `lambdaScriptdata`
         object or internal definitions. You can also manage attributes like evaluation,
         facultative execution, and variable detection.
-    
+
         Parameters:
         -----------
         content : str or list of str
             The content of the script template, which can be a single string or a list of strings.
             If a single string is provided, it will automatically be converted to a list of lines.
             This ensures consistent handling of multi-line content.
-    
+
         definitions : lambdaScriptdata, optional
-            A reference to a `lambdaScriptdata` object that contains global variable 
+            A reference to a `lambdaScriptdata` object that contains global variable
             definitions. These definitions will be used to substitute variables within the content.
-            If `definitions` is not provided, variable substitution will rely on local 
+            If `definitions` is not provided, variable substitution will rely on local
             or inline definitions.
-        
+
         verbose : flag (default value=True)
             If True the comments are preserved (applied when str is a string).
-            
+
         autorefresh : flag (default=False)
             If True, new variables are automatically detected when the content is changed
-    
-        **kwargs : 
+
+        **kwargs :
             Additional keyword arguments to set specific attributes for the script line.
-            These attributes control the behavior of the script template during evaluation 
-            and execution. Any keyword argument passed here will update the default 
+            These attributes control the behavior of the script template during evaluation
+            and execution. Any keyword argument passed here will update the default
             attribute values.
-    
+
                 Default attributes (with default values):
-            - facultative (False): 
+            - facultative (False):
                 If True, the script line is optional and may be discarded if certain conditions are not met.
-            - eval (False): 
-                If True, the content will be evaluated using `formateval`, allowing variable 
+            - eval (False):
+                If True, the content will be evaluated using `formateval`, allowing variable
                 substitution during the execution.
-            - readonly (False): 
+            - readonly (False):
                 If True, the content of the script cannot be modified after initialization.
-            - condition (None): 
-                An optional condition that controls whether the content will be executed. 
+            - condition (None):
+                An optional condition that controls whether the content will be executed.
                 If the condition is not met, the script line will not be executed.
-            - condeval (False): 
-                If True, the `condition` attribute will be evaluated, allowing conditional 
+            - condeval (False):
+                If True, the `condition` attribute will be evaluated, allowing conditional
                 logic based on variable values.
-            - detectvar (True): 
-                If True, the content will automatically detect and register any variables 
+            - detectvar (True):
+                If True, the content will automatically detect and register any variables
                 (such as `${varname}`) within the `definitions` for substitution.
             - comment_chars : str, optional (default: "#%")
-                A string containing characters to identify the start of a comment. 
+                A string containing characters to identify the start of a comment.
                 Any of these characters will mark the beginning of a comment unless within quotes.
         """
-        
+
 
         # Initialize `_CACHE` with separate entries for each method
         self._CACHE = {
@@ -1380,7 +1384,7 @@ class ScriptTemplate:
       repr_str = "-" * 50 + "\n"
       repr_str += f"{content_label}{('(' + str(total_lines) + ' ' + line_word + ', ' + str(total_variables) + ' ' + variable_word + ')').rjust(available_space)}\n"
       repr_str += "-" * 50 + "\n"
-    
+
       if total_lines < 1:
           repr_str += "< empty content >\n"
       elif total_lines <= 12:
@@ -1403,7 +1407,7 @@ class ScriptTemplate:
           for line in self.content[-3:]:
               truncated_line = (line[:18] + '[...]' + line[-18:]) if len(line) > 40 else line
               repr_str += f"{truncated_line:<50}\n"
-    
+
       # Detected Variables section in 3-column format
       detected_variables = self.detect_variables()
       if detected_variables:
@@ -1418,7 +1422,7 @@ class ScriptTemplate:
           total_variables = len(detected_set)
           repr_str += f"Detected {variable_word}{('(' + str(total_variables) + ' / +' + str(defined_count) + ' / -' + str(missing_count) + ')').rjust(50 - len('Detected Variables') - 1)}\n"
           repr_str += "-" * 50 + "\n"
-    
+
           # Display variables with status:
           # [+] for defined variables with values other than "${varname}"
           # [-] for defined variables with default values "${varname}"
@@ -1438,12 +1442,12 @@ class ScriptTemplate:
                       flag = '[ ]'
                   line += f"{flag} {var_name}  "
               repr_str += f"{line}\n"
-    
+
       # Attribute section in 3 columns
       repr_str += "-" * 50 + "\n"
       repr_str += f"Template Attributes{('(' + str(len(self.attributes)) + ' attributes)').rjust(50 - len('Template Attributes') - 1)}\n"
       repr_str += "-" * 50 + "\n"
-    
+
       # Create a compact three-column layout for attributes with checkboxes
       attr_items = [(attr, '[x]' if value else '[ ]') for attr, value in self.attributes.items() if attr != 'definitions']
       for i in range(0, len(attr_items), 3):
@@ -1453,7 +1457,7 @@ class ScriptTemplate:
               attr_name = (attr[:10] + ' ') if len(attr) > 10 else attr.ljust(11)
               line += f"{value} {attr_name}  "
           repr_str += f"{line}\n"
-    
+
       return repr_str
 
 
@@ -1472,7 +1476,7 @@ class ScriptTemplate:
         elif name == 'definitions':
             if not isinstance(value, (lambdaScriptdata, scriptdata)) and value is not None:
                 raise TypeError(f"The 'definitions' must be a lambdaScriptdata or scriptdata, not {type(value).__name__}.")
-    
+
         # Set attributes directly for key fields and avoid recursion
         if name in ['userid', 'attributes', 'definitions', '_content', '_content_hash', '_autorefresh']:
             super().__setattr__(name, value)
@@ -1486,7 +1490,7 @@ class ScriptTemplate:
     def __getattr__(self, name):
         """
         Handles attribute retrieval, checking the following in order:
-        1. If 'name' is in default_attributes, return the value from attributes if it exists, 
+        1. If 'name' is in default_attributes, return the value from attributes if it exists,
            otherwise return the default value from default_attributes.
         2. If 'name' is 'content', return the content (or an empty string if content is not set).
         3. If 'name' exists in the attributes dictionary, return its value.
@@ -1525,43 +1529,43 @@ class ScriptTemplate:
 
 
 
-    
+
     def do(self, protected=True, softrun=False, USER=lambdaScriptdata()):
         """
         Executes or prepares the script template content based on its attributes and the `softrun` flag.
-    
+
         Parameters
         ----------
         protected : bool, optional
-            If `True` (default), variable evaluation uses a protected environment, safeguarding global definitions 
+            If `True` (default), variable evaluation uses a protected environment, safeguarding global definitions
             and system attributes from modification during execution.
         softrun : bool, optional
             Determines if the script is evaluated in a preliminary mode:
-            - If `True`, returns the script content without full evaluation, allowing for a preview or 
+            - If `True`, returns the script content without full evaluation, allowing for a preview or
               an initial capture of local definitions without substituting variables.
-            - If `False` (default), processes the script with full evaluation, applying all substitutions 
+            - If `False` (default), processes the script with full evaluation, applying all substitutions
               defined in `definitions`.
         USER : lambdaScriptdata, optional
-            A `lambdaScriptdata` instance with user-provided definitions, which supplement or override 
+            A `lambdaScriptdata` instance with user-provided definitions, which supplement or override
             template-level definitions during execution.
-    
+
         Returns
         -------
         str
             The processed or original script content as a single string.
-            - Returns an empty string if `facultative` is set to `True`, or if `condition` is `False` 
+            - Returns an empty string if `facultative` is set to `True`, or if `condition` is `False`
               and does not meet any specified evaluation requirements.
-        
+
         Notes
         -----
         - `facultative`: If `True`, the method returns an empty string, effectively skipping execution of the content.
-        - `condition`: If specified, this attribute is evaluated to decide whether the content should be processed 
-          (default `True` if `condition` is `None`). If `condeval` is `True`, the condition itself undergoes 
+        - `condition`: If specified, this attribute is evaluated to decide whether the content should be processed
+          (default `True` if `condition` is `None`). If `condeval` is `True`, the condition itself undergoes
           evaluation using Python's `eval`.
-        - `eval`: If `True` and `softrun` is `False`, performs evaluation for variable substitution on the 
+        - `eval`: If `True` and `softrun` is `False`, performs evaluation for variable substitution on the
           content lines, applying transformations based on both `definitions` and `USER` definitions if provided.
           This allows variables to be dynamically substituted within the script content.
-    
+
         Processing Workflow
         -------------------
         1. **Facultative Check**: If the `facultative` attribute is `True`, immediately returns an empty string.
@@ -1573,7 +1577,7 @@ class ScriptTemplate:
            - If `softrun` is `False`, evaluates the content lines based on `definitions` and `USER` if applicable.
         4. **Variable Formatting**: During evaluation, lists and tuples are formatted into strings with prefixed comments,
            enhancing readability and handling complex data structures directly in the script.
-    
+
         Example
         -------
         >>> template = ScriptTemplate(
@@ -1582,7 +1586,7 @@ class ScriptTemplate:
         ... )
         >>> template.do()
         "variable x equal 10\nprint 'Value of x is 10'"
-        
+
         """
 
         # If 'facultative' is set to True, return an empty string immediately
@@ -1610,14 +1614,14 @@ class ScriptTemplate:
                     elif isinstance(inputs.getattr(k),tuple):
                         inputs.setattr(k,"% "+span(inputs.getattr(k),sep=","))
                 return "\n".join([inputs.formateval(line, protected) for line in self.content])
-                
+
             else:
                 return "\n".join(self.content)
 
         return ""
 
 
-    
+
     def detect_variables(self):
         """
         Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'.
@@ -1628,7 +1632,7 @@ class ScriptTemplate:
             A list of unique variable names detected in the content.
         """
         # Check cache first
-        cache_entry = self._CACHE['variables']         
+        cache_entry = self._CACHE['variables']
         if cache_entry['result'] is not None:
             return cache_entry['result']
         # Detect variables if cache miss or content changed
@@ -1645,9 +1649,9 @@ class ScriptTemplate:
         Detects variables in the content and adds them to definitions if needed.
         This method ensures that variables like ${varname} are correctly detected
         and added to the definitions if they are missing.
-        
+
         use globaldefinitions to add a list of global variables/definitions
-        
+
         """
         if self.attributes["detectvar"] and isinstance(self.content, list) and self.definitions:
             variables = self.detect_variables()
@@ -1682,7 +1686,7 @@ class ScriptTemplate:
         if cache_entry['result'] is not None:
             return cache_entry['result']
         # Main
-        out = {"defaultvalues": [], "setvalues": [], "undefined": []}        
+        out = {"defaultvalues": [], "setvalues": [], "undefined": []}
         detected_vars = self.detect_variables()
         defined_vars = set(self.definitions.keys()) if self.definitions else set()
         set_values, default_values, undefined_vars = [], [], []
@@ -1717,17 +1721,17 @@ class ScriptTemplate:
     def is_variable_defined(self, var_name):
         """
         Checks if a specified variable is defined (either as a default value or a set value).
-    
+
         Parameters:
         -----------
         var_name : str
             The name of the variable to check.
-    
+
         Returns:
         --------
         bool
             True if the variable is defined (either as a default or a set value), False if not.
-    
+
         Raises:
         -------
         ValueError
@@ -1735,30 +1739,30 @@ class ScriptTemplate:
         """
         if not isinstance(var_name, str):
             raise ValueError("Variable name must be a string.")
-        
+
         variable_status = self.check_variables(verbose=False, seteval=False)
-        
+
         # Check if the variable is in default values or set values
         if var_name in variable_status["defaultvalues"] or var_name in variable_status["setvalues"]:
             return True
         else:
             raise ValueError(f"Variable '{var_name}' is undefined in the template.")
-    
-    
+
+
     def is_variable_set_value_only(self, var_name):
         """
         Checks if a specified variable is defined and set to a specific (non-default) value.
-    
+
         Parameters:
         -----------
         var_name : str
             The name of the variable to check.
-    
+
         Returns:
         --------
         bool
             True if the variable is defined with a set (non-default) value, False if not.
-    
+
         Raises:
         -------
         ValueError
@@ -1766,9 +1770,9 @@ class ScriptTemplate:
         """
         if not isinstance(var_name, str):
             raise ValueError("Variable name must be a string.")
-        
+
         variable_status = self.check_variables(verbose=False, seteval=False)
-        
+
         # Check if the variable is in set values only (not default values)
         if var_name in variable_status["setvalues"]:
             return True
@@ -1861,7 +1865,7 @@ class dscript:
 
     get_attributes_by_index(self, index):
         Returns the attributes of the script line at the specified index.
-        
+
     add_dynamic_script(self, key, content="", definitions=None, verbose=None, **USER):
         Add a dynamic script step to the `dscript` object.
 
@@ -1927,13 +1931,13 @@ class dscript:
     DEFINITIONS : lambdaScriptdata
         Stores the variables and parameters used within the script lines/items.
     """
-    
+
     # Class variable to list attributes that should not be treated as TEMPLATE entries
     construction_attributes = {'name', 'SECTIONS', 'section', 'position', 'role', 'description',
                                'userid', 'verbose', 'printflag', 'DEFINITIONS', 'TEMPLATE',
                                'version','license','email'
                                }
-    
+
     def __init__(self,  name=None,
                         SECTIONS = ["DYNAMIC"],
                         section = 0,
@@ -1952,16 +1956,16 @@ class dscript:
         """
         Initializes a new `dscript` object.
 
-        The constructor sets up a new `dscript` object, which allows you to 
-        define and manage a script composed of multiple lines/items. Each line is 
-        stored in the `TEMPLATE` dictionary, and variables used in the script 
+        The constructor sets up a new `dscript` object, which allows you to
+        define and manage a script composed of multiple lines/items. Each line is
+        stored in the `TEMPLATE` dictionary, and variables used in the script
         are stored in `DEFINITIONS`.
 
         Parameters:
         -----------
         name : str, optional
-            The name of the script. If no name is provided, a random name will 
-            be generated automatically. The name is useful for identifying the 
+            The name of the script. If no name is provided, a random name will
+            be generated automatically. The name is useful for identifying the
             script, especially when managing multiple scripts.
 
         Example:
@@ -1974,12 +1978,12 @@ class dscript:
 
         After initialization, you can start adding script lines/items and defining variables.
         """
-        
+
         if name is None:
             self.name = autoname()
         else:
             self.name = name
-            
+
         if (version is None) or (license is None) or (email is None):
             metadata = get_metadata()               # retrieve all metadata
             version = metadata["version"] if version is None else version
@@ -2006,7 +2010,7 @@ class dscript:
             if attr in self.__dict__:
                 return self.__dict__[attr]
             raise AttributeError(f"'dscript' object has no attribute '{attr}'")
-        
+
         # If TEMPLATE is initialized and attr is in TEMPLATE, return the corresponding ScriptTemplate entry
         if attr in self.TEMPLATE:
             return self.TEMPLATE[attr]
@@ -2016,8 +2020,8 @@ class dscript:
             return self.__dict__[attr]
 
         raise AttributeError(f"'dscript' object has no attribute '{attr}'")
-        
-        
+
+
     def __setattr__(self, attr, value):
         # Handle internal attributes during the construction phase
         if 'TEMPLATE' not in self.__dict__:
@@ -2042,12 +2046,12 @@ class dscript:
         else:
             # Default to internal attributes
             self.__dict__[attr] = value
-            
+
 
     def __getitem__(self, key):
         """
         Implements index-based retrieval, slicing, or reordering for dscript objects.
-    
+
         Parameters:
         -----------
         key : int, slice, list, or str
@@ -2056,7 +2060,7 @@ class dscript:
             - If `key` is a slice, returns a new `dscript` object containing the templates in the specified range.
             - If `key` is a list, reorders the TEMPLATE based on the list of indices or keys.
             - If `key` is a string, treats it as a key and returns the corresponding template.
-    
+
         Returns:
         --------
         dscript or ScriptTemplate : Depending on the type of key, returns either a new dscript object (for slicing or reordering)
@@ -2065,7 +2069,7 @@ class dscript:
         # Handle list-based reordering
         if isinstance(key, list):
             return self.reorder(key)
-    
+
         # Handle slicing
         elif isinstance(key, slice):
             new_dscript = dscript(name=f"{self.name}_slice_{key.start}_{key.stop}")
@@ -2073,7 +2077,7 @@ class dscript:
             for k in keys[key]:
                 new_dscript.TEMPLATE[k] = self.TEMPLATE[k]
             return new_dscript
-    
+
         # Handle integer indexing with support for negative indices
         elif isinstance(key, int):
             keys = list(self.TEMPLATE.keys())
@@ -2085,7 +2089,7 @@ class dscript:
                 raise IndexError(f"Index {key - len(keys)} is out of range")
             # Return the template corresponding to the integer index
             return self.TEMPLATE[keys[key]]
-    
+
         # Handle key-based access (string keys)
         elif isinstance(key, str):
             if key in self.TEMPLATE:
@@ -2112,10 +2116,10 @@ class dscript:
 
     # def values(self):
     #     return (s.content for s in self.TEMPLATE.values())
-    
+
     def __contains__(self, key):
         return key in self.TEMPLATE
-    
+
     def __len__(self):
         return len(self.TEMPLATE)
 
@@ -2151,11 +2155,11 @@ class dscript:
     def keys(self):
         """Return the keys of the TEMPLATE."""
         return self.TEMPLATE.keys()
-    
+
     def values(self):
         """Return the ScriptTemplate objects in TEMPLATE."""
         return self.TEMPLATE.values()
-    
+
     def reorder(self, order):
         """Reorder the TEMPLATE lines according to a list of indices."""
         # Get the original items as a list of (key, value) pairs
@@ -2166,12 +2170,12 @@ class dscript:
         reordered_script = dscript()
         reordered_script.TEMPLATE = new_scripts
         return reordered_script
-    
-    
+
+
     def get_content_by_index(self, index, do=True, protected=True):
         """
         Returns the content of the ScriptTemplate at the specified index.
-        
+
         Parameters:
         -----------
         index : int
@@ -2180,7 +2184,7 @@ class dscript:
             If True, the content will be processed based on conditions and evaluation flags.
         protected : bool, optional (default=True)
             Controls whether variable evaluation is protected (e.g., prevents overwriting certain definitions).
-        
+
         Returns:
         --------
         str or list of str
@@ -2188,7 +2192,7 @@ class dscript:
         """
         key = list(self.TEMPLATE.keys())[index]
         s = self.TEMPLATE[key].content
-        att = self.TEMPLATE[key].attributes        
+        att = self.TEMPLATE[key].attributes
         # Return an empty string if the facultative attribute is True and do is True
         if att["facultative"] and do:
             return ""
@@ -2219,24 +2223,24 @@ class dscript:
         """ Returns the attributes of the ScriptTemplate at the specified index."""
         key = list(self.TEMPLATE.keys())[index]
         return self.TEMPLATE[key].attributes
-    
-    
+
+
     def __add__(self, other):
         """
         Concatenates two dscript objects, creating a new dscript object that combines
-        the TEMPLATE and DEFINITIONS of both. This operation avoids deep copying 
+        the TEMPLATE and DEFINITIONS of both. This operation avoids deep copying
         of definitions by creating a new lambdaScriptdata instance from the definitions.
-    
+
         Parameters:
         -----------
         other : dscript
             The other dscript object to concatenate with the current one.
-    
+
         Returns:
         --------
         result : dscript
             A new dscript object with the concatenated TEMPLATE and merged DEFINITIONS.
-    
+
         Raises:
         -------
         TypeError:
@@ -2265,7 +2269,7 @@ class dscript:
                 # Copy the TEMPLATE's content and definitions from `other`
                 result.TEMPLATE[new_key] = value
                 # Merge the local TEMPLATE definitions from `other`
-                result.TEMPLATE[new_key].definitions = lambdaScriptdata(**other.TEMPLATE[key].definitions)    
+                result.TEMPLATE[new_key].definitions = lambdaScriptdata(**other.TEMPLATE[key].definitions)
             return result
         elif isinstance(other,script):
             return self.script() + script
@@ -2274,15 +2278,15 @@ class dscript:
         else:
             raise TypeError(f"Cannot concatenate 'dscript' with '{type(other).__name__}'")
 
-    
+
     def __call__(self, *keys):
         """
         Extracts subobjects from the dscript based on the provided keys.
-    
+
         Parameters:
         -----------
         *keys : one or more keys that correspond to the `TEMPLATE` entries.
-    
+
         Returns:
         --------
         A new `dscript` object that contains only the selected script lines/items, along with
@@ -2308,13 +2312,13 @@ class dscript:
         result.version = self.version
         result.verbose = self.verbose
         result.printflag = self.printflag
-    
+
         return result
-    
+
     def createEmptyVariables(self, vars):
         """
         Creates empty variables in DEFINITIONS if they don't already exist.
-        
+
         Parameters:
         -----------
         vars : str or list of str
@@ -2326,13 +2330,13 @@ class dscript:
             if varname not in self.DEFINITIONS:
                 self.DEFINITIONS.setattr(varname,"${" + varname + "}")
 
-    
+
     def do(self, printflag=None, verbose=None, softrun=False, return_definitions=False,comment_chars="#%", **USER):
         """
         Executes or previews all `ScriptTemplate` instances in `TEMPLATE`, concatenating their processed content.
         Allows for optional headers and footers based on verbosity settings, and offers a preliminary preview mode with `softrun`.
         Accumulates definitions across all templates if `return_definitions=True`.
-    
+
         Parameters
         ----------
         printflag : bool, optional
@@ -2348,31 +2352,31 @@ class dscript:
             If `True`, returns a tuple where the second element contains accumulated definitions from all templates.
             If `False` (default), returns only the concatenated output.
         comment_chars : str, optional (default: "#%")
-            A string containing characters to identify the start of a comment. 
+            A string containing characters to identify the start of a comment.
             Any of these characters will mark the beginning of a comment unless within quotes.
         **USER : keyword arguments
-            Allows for the provision of additional user-defined definitions, where each keyword represents a 
-            definition key and the associated value represents the definition's content. These definitions 
+            Allows for the provision of additional user-defined definitions, where each keyword represents a
+            definition key and the associated value represents the definition's content. These definitions
             can override or supplement template-level definitions during execution.
-    
+
         Returns
         -------
         str or tuple
-            - If `return_definitions=False`, returns the concatenated output of all `ScriptTemplate` instances, 
+            - If `return_definitions=False`, returns the concatenated output of all `ScriptTemplate` instances,
               with optional headers, footers, and execution summary based on verbosity.
             - If `return_definitions=True`, returns a tuple of (`output`, `accumulated_definitions`), where
               `accumulated_definitions` contains all definitions used across templates.
-    
+
         Notes
         -----
         - Each `ScriptTemplate` in `TEMPLATE` is processed individually using its own `do()` method.
         - The `softrun` mode provides a preliminary content preview without full variable substitution,
           helpful for inspecting the script structure or gathering local definitions.
-        - When `verbose` is enabled, the method includes detailed headers, footers, and a summary of processed and 
+        - When `verbose` is enabled, the method includes detailed headers, footers, and a summary of processed and
           ignored items, providing insight into the script's construction and variable usage.
         - Accumulated definitions from each `ScriptTemplate` are combined if `return_definitions=True`, which can be
           useful for tracking all variables and definitions applied across the templates.
-    
+
         Example
         -------
         >>> dscript_instance = dscript(name="ExampleScript")
@@ -2395,13 +2399,13 @@ class dscript:
         verbose = self.verbose if verbose is None else verbose
         header = f"# --------------[ TEMPLATE \"{self.name}\" ]--------------" if verbose else ""
         footer = "# --------------------------------------------" if verbose else ""
-        
+
         # Initialize output, counters, and optional definitions accumulator
         output = [header]
         non_empty_lines = 0
         ignored_lines = 0
         accumulated_definitions = lambdaScriptdata() if return_definitions else None
-        
+
         for key, template in self.TEMPLATE.items():
             # Process each template with softrun if enabled, otherwise use full processing
             result = template.do(softrun=softrun,USER=lambdaScriptdata(**USER))
@@ -2424,13 +2428,13 @@ class dscript:
         il_word = 'items' if ignored_lines > 1 else 'item'
         footer += f"\n# ---> Total {nel_word}: {non_empty_lines} - Ignored {il_word}: {ignored_lines}" if verbose else ""
         output.append(footer)
-        
+
         # Concatenate output and determine return type based on return_definitions
         output_content = "\n".join(output)
         return (output_content, accumulated_definitions) if return_definitions else output_content
 
 
-    
+
     def script(self,printflag=None, verbose=None, verbosity=None, **USER):
         """
         returns the corresponding script
@@ -2441,11 +2445,11 @@ class dscript:
         return lamdaScript(self,persistentfile=True, persistentfolder=None,
                            printflag=printflag, verbose=verbose,
                            **USER)
-    
+
     def pipescript(self, *keys, printflag=None, verbose=None, verbosity=None, **USER):
         """
         Returns a pipescript object by combining script objects corresponding to the given keys.
-        
+
         Parameters:
         -----------
         *keys : one or more keys that correspond to the `TEMPLATE` entries.
@@ -2455,10 +2459,10 @@ class dscript:
             Whether to run in verbose mode for debugging or detailed output.
         **USER : dict, optional
             Additional user-defined variables to pass into the script.
-    
+
         Returns:
         --------
-        A `pipescript` object that combines the script objects generated from the selected 
+        A `pipescript` object that combines the script objects generated from the selected
         dscript subobjects.
         """
         # Start with an empty pipescript
@@ -2498,16 +2502,16 @@ class dscript:
             focused_dscript.version = self.version
             focused_dscript.verbose = verbose
             focused_dscript.printflag = printflag
-    
+
             # Convert the focused dscript object to a script object
             script_obj = focused_dscript.script(printflag=printflag, verbose=verbose, **USER)
-    
+
             # Combine the script objects into a pipescript object using the pipe operator
             if combined_pipescript is None:
                 combined_pipescript = pipescript(script_obj)  # Initialize pipescript
             else:
                 combined_pipescript = combined_pipescript | pipescript(script_obj)  # Use pipe operator
-    
+
         if combined_pipescript is None:
             ValueError('The conversion to pipescript from {type{self}} falled')
         return combined_pipescript
@@ -2517,7 +2521,7 @@ class dscript:
     def header(name=None, verbose=True, verbosity=None, style=2, filepath=None, version=None, license=None, email=None):
         """
         Generate a formatted header for the DSCRIPT file.
-    
+
         ### Parameters:
             name (str, optional): The name of the script. If None, "Unnamed" is used.
             verbose (bool, optional): Whether to include the header. Default is True.
@@ -2527,17 +2531,17 @@ class dscript:
             version (str, optional): DSCRIPT version. If None, it is omitted from the header.
             license (str, optional): License type. If None, it is omitted from the header.
             email (str, optional): Contact email. If None, it is omitted from the header.
-    
+
         ### Returns:
             str: A formatted string representing the script's metadata and initialization details.
                  Returns an empty string if `verbose` is False.
-    
+
         ### The header includes:
             - DSCRIPT version, license, and contact email, if provided.
             - The name of the script.
             - Filepath, if provided.
             - Information on where and when the script was generated.
-    
+
         ### Notes:
             - If `verbosity` is specified, it overrides `verbose`.
             - Omits metadata lines if `version`, `license`, or `email` are not provided.
@@ -2545,7 +2549,7 @@ class dscript:
         # Resolve verbosity
         verbose = verbosity > 0 if verbosity is not None else verbose
         if not verbose:
-            return ""    
+            return ""
         # Validate inputs
         if name is None:
             name = "Unnamed"
@@ -2597,34 +2601,34 @@ class dscript:
     def save(self, filename=None, foldername=None, overwrite=False, generatoronly=False, onlyusedvariables=True):
         """
         Save the current script instance to a text file.
-    
+
         Parameters
         ----------
         filename : str, optional
             The name of the file to save the script to. If not provided, `self.name` is used.
             The extension ".txt" is automatically appended if not included.
-    
+
         foldername : str, optional
             The directory where the file will be saved. If not provided, it defaults to the system's
             temporary directory. If the filename does not include a full path, this folder will be used.
-    
+
         overwrite : bool, default=True
             Whether to overwrite the file if it already exists. If set to False, an exception is raised
             if the file exists.
-    
+
         generatoronly : bool, default=False
             If True, the method returns the generated content string without saving to a file.
-    
+
         onlyusedvariables : bool, default=True
-            If True, local definitions are only saved if they are used within the template content. 
-            If False, all local definitions are saved, regardless of whether they are referenced in 
+            If True, local definitions are only saved if they are used within the template content.
+            If False, all local definitions are saved, regardless of whether they are referenced in
             the template.
-    
+
         Raises
         ------
         FileExistsError
             If the file already exists and `overwrite` is set to False.
-    
+
         Notes
         -----
         - The script is saved in a plain text format, and each section (global parameters, definitions,
@@ -2633,52 +2637,52 @@ class dscript:
         - The file structure follows the format:
             # DSCRIPT SAVE FILE
             # generated on YYYY-MM-DD on user@hostname
-            
+
             # GLOBAL PARAMETERS
             { ... }
-            
+
             # DEFINITIONS (number of definitions=...)
             key=value
-            
+
             # TEMPLATES (number of items=...)
             key: template_content
-            
+
             # ATTRIBUTES (number of items with explicit attributes=...)
             key:{attr1=value1, attr2=value2, ...}
         """
         # At the beginning of the save method
         start_time = time.time()  # Start the timer
-        
+
         if not generatoronly:
             # Use self.name if filename is not provided
             if filename is None:
                 filename = span(self.name, sep="\n")
-            
+
             # Ensure the filename ends with '.txt'
             if not filename.endswith('.txt'):
                 filename += '.txt'
-            
+
             # Construct the full path
             if foldername in [None, ""]:  # Handle cases where foldername is None or an empty string
                 filepath = os.path.abspath(filename)
             else:
                 filepath = os.path.join(foldername, filename)
-            
+
             # Check if the file already exists, and raise an exception if it does and overwrite is False
             if os.path.exists(filepath) and not overwrite:
                 raise FileExistsError(f"The file '{filepath}' already exists.")
-    
+
         # Header with current date, username, and host
         header = "# DSCRIPT SAVE FILE\n"
         header += "\n"*2
         if generatoronly:
-            header += dscript.header(verbose=True,filepath='dynamic code generation (no file)', 
+            header += dscript.header(verbose=True,filepath='dynamic code generation (no file)',
                                      name = self.name, version=self.version, license=self.license, email=self.email)
         else:
             header += dscript.header(verbose=True,filepath=filepath,
                                      name = self.name, version=self.version, license=self.license, email=self.email)
         header += "\n"*2
-        
+
         # Global parameters in strict Python syntax
         global_params = "# GLOBAL PARAMETERS (8 parameters)\n"
         global_params += "{\n"
@@ -2691,23 +2695,23 @@ class dscript:
         global_params += f"    version = {self.version},\n"
         global_params += f"    verbose = {self.verbose}\n"
         global_params += "}\n"
-        
+
         # Initialize definitions with self.DEFINITIONS
         allvars = self.DEFINITIONS
-    
+
         # Temporary dictionary to track global variable information
         global_var_info = {}
-    
+
         # Loop over each template item to detect and record variable usage and overrides
         for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
             # Detect variables used in this template
             used_variables = script_template.detect_variables()
-        
+
             # Loop over each template item to detect and record variable usage and overrides
             for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
                 # Detect variables used in this template
                 used_variables = script_template.detect_variables()
-                
+
                 # Check each variable used in this template
                 for var in used_variables:
                     # Get global and local values for the variable
@@ -2717,7 +2721,7 @@ class dscript:
                     is_default = is_global and (
                         global_value is None or global_value == "" or global_value == f"${{{var}}}"
                     )
-            
+
                     # If the variable is not yet tracked, initialize its info
                     if var not in global_var_info:
                         global_var_info[var] = {
@@ -2726,7 +2730,7 @@ class dscript:
                             "is_default": is_default,    # Check if it’s set to a default value
                             "first_def": None,           # First definition (to be updated later)
                             "first_use": template_index, # First time the variable is used
-                            "first_val": global_value,   
+                            "first_val": global_value,
                             "override_index": template_index if local_value is not None else None,  # Set override if defined locally
                             "is_global": is_global       # Track if the variable originates as global
                         }
@@ -2805,7 +2809,7 @@ class dscript:
                     valid_local_vars.setattr(var, value)
             # Update allvars only with filtered, valid local variables
             allvars += valid_local_vars
-    
+
             # Write the template content
             if isinstance(script_template.content, list):
                 if len(script_template.content) == 1:
@@ -2822,17 +2826,17 @@ class dscript:
                 template += "" if printsinglecontent else "\n"
                 template += f"{key}: {script_template.content}\n"
                 printsinglecontent = True
-    
+
         # Attributes (number of lines/items with explicit attributes)
         attributes = f"# ATTRIBUTES (number of items with explicit attributes={len(self.TEMPLATE)})\n"
         for key, script_template in self.TEMPLATE.items():
             attr_str = ", ".join(f"{attr_name}={repr(attr_value)}"
                                  for attr_name, attr_value in script_template.attributes.items())
             attributes += f"{key}:{{{attr_str}}}\n"
-        
+
         # Combine all sections into one content
         content = header + "\n" + global_params + "\n" + definitions + "\n" + template + "\n" + attributes + "\n"
-        
+
 
         # Append footer information to the content
         non_empty_lines = sum(1 for line in content.splitlines() if line.strip())  # Count non-empty lines
@@ -2853,18 +2857,18 @@ class dscript:
         )
         # Append footer to the content
         content += f"\n{footer}"
-        
+
         if generatoronly:
             return content
         else:
             # Write the content to the file
             with open(filepath, 'w') as f:
-                f.write(content)        
+                f.write(content)
             print(f"\nScript saved to {filepath}")
             return filepath
 
-        
-        
+
+
     # Write Method -- added on 2024-09-05
     # ------------
     @staticmethod
@@ -2872,32 +2876,32 @@ class dscript:
     def write(scriptcontent, filename=None, foldername=None, overwrite=False):
         """
         Writes the provided script content to a specified file in a given folder, with a header if necessary.
-    
+
         Parameters
         ----------
         scriptcontent : str
             The content to be written to the file.
-        
+
         filename : str, optional
-            The name of the file. If not provided, a random name will be generated. 
+            The name of the file. If not provided, a random name will be generated.
             The extension `.txt` will be appended if not already present.
-        
+
         foldername : str, optional
             The folder where the file will be saved. If not provided, the current working directory is used.
-        
+
         overwrite : bool, optional
             If False (default), raises a `FileExistsError` if the file already exists. If True, the file will be overwritten if it exists.
-    
+
         Returns
         -------
         str
             The full path to the written file.
-    
+
         Raises
         ------
         FileExistsError
             If the file already exists and `overwrite` is set to False.
-        
+
         Notes
         -----
         - A header is prepended to the content if it does not already exist, using the `header` method.
@@ -2906,11 +2910,11 @@ class dscript:
         # Generate a random name if filename is not provided
         if filename is None:
             filename = autoname(8)  # Generates a random name of 8 letters
-    
+
         # Ensure the filename ends with '.txt'
         if not filename.endswith('.txt'):
             filename += '.txt'
-    
+
         # Handle foldername and relative paths
         if foldername is None or foldername == "":
             # If foldername is empty or None, use current working directory for relative paths
@@ -2924,15 +2928,15 @@ class dscript:
                 filepath = os.path.join(foldername, filename)
             else:
                 filepath = filename
-    
+
         # Check if file already exists, raise exception if it does and overwrite is False
         if os.path.exists(filepath) and not overwrite:
-            raise FileExistsError(f"The file '{filepath}' already exists.")   
-        
+            raise FileExistsError(f"The file '{filepath}' already exists.")
+
         # Count total and non-empty lines in the content
         total_lines = len(scriptcontent.splitlines())
         non_empty_lines = sum(1 for line in scriptcontent.splitlines() if line.strip())
-    
+
         # Prepare header if not already present
         if not scriptcontent.startswith("# DSCRIPT SAVE FILE"):
             fname = os.path.basename(filepath)  # Extracts the filename (e.g., "myscript.txt")
@@ -2949,7 +2953,7 @@ class dscript:
                 style=1
             )
             scriptcontent = header + "\n" + scriptcontent + "\n" + footer
-    
+
         # Write the content to the file
         with open(filepath, 'w') as file:
             file.write(scriptcontent)
@@ -2963,34 +2967,34 @@ class dscript:
     def load(cls, filename, foldername=None, numerickeys=True):
         """
         Load a script instance from a text file.
-    
+
         Parameters
         ----------
         filename : str
             The name of the file to load the script from. If the filename does not end with ".txt",
             the extension is automatically appended.
-        
+
         foldername : str, optional
             The directory where the file is located. If not provided, it defaults to the system's
             temporary directory. If the filename does not include a full path, this folder will be used.
-    
+
         numerickeys : bool, default=True
             If True, numeric string keys in the template section are automatically converted into integers.
             For example, the key "0" would be converted into the integer 0.
-    
+
         Returns
         -------
         dscript
             A new `dscript` instance populated with the content of the loaded file.
-    
+
         Raises
         ------
         ValueError
             If the file does not start with the correct DSCRIPT header or the file format is invalid.
-        
+
         FileNotFoundError
             If the specified file does not exist.
-    
+
         Notes
         -----
         - The file is expected to follow the same structured format as the one produced by the `save()` method.
@@ -3001,11 +3005,11 @@ class dscript:
           template, and attributes) is correctly parsed and assigned to the corresponding parts of the `dscript`
           instance.
         """
-        
+
         # Step 0 validate filepath
         if not filename.endswith('.txt'):
             filename += '.txt'
-        
+
         # Handle foldername and relative paths
         if foldername is None or foldername == "":
             # If the foldername is empty or None, use current working directory for relative paths
@@ -3019,19 +3023,19 @@ class dscript:
                 filepath = os.path.join(foldername, filename)
             else:
                 filepath = filename
-        
+
         if not os.path.exists(filepath):
             raise FileExistsError(f"The file '{filepath}' does not exist.")
-        
+
         # Read the file contents
         with open(filepath, 'r') as f:
             content = f.read()
-    
+
         # Call parsesyntax to parse the file content
         fname = os.path.basename(filepath)  # Extracts the filename (e.g., "myscript.txt")
         name, _ = os.path.splitext(fname)   # Removes the extension, e.g., "myscript
         return cls.parsesyntax(content, name, numerickeys)
-    
+
 
 
     # Load Method and its Parsing Rules -- added on 2024-09-04
@@ -3041,63 +3045,63 @@ class dscript:
                     comment_chars="#%",continuation_marker="..."):
         """
         Parse a DSCRIPT script from a string content.
-    
+
         Parameters
         ----------
         content : str
             The string content of the DSCRIPT script to be parsed.
-    
+
         name : str, optional
             The name of the dscript project. If `None`, a random name is generated.
-    
+
         numerickeys : bool, default=True
             If `True`, numeric string keys in the template section are automatically converted into integers.
-    
+
         verbose : bool, default=False
             If `True`, the parser will output warnings for unrecognized lines outside of blocks.
-            
+
         authentification : bool, default=True
             If `True`, the parser is expected that the first non empty line is # DSCRIPT SAVE FILE
-            
+
         comment_chars : str, optional (default: "#%")
-            A string containing characters to identify the start of a comment. 
+            A string containing characters to identify the start of a comment.
             Any of these characters will mark the beginning of a comment unless within quotes.
-            
+
         continuation_marker : str, optional (default: "...")
             A string containing characters to indicate line continuation
             Any characters after the continuation marker are considered comment and are theorefore ignored
-            
-            
-    
+
+
+
         Returns
         -------
         dscript
             A new `dscript` instance populated with the content of the loaded file.
-    
+
         Raises
         ------
         ValueError
             If content does not start with the correct DSCRIPT header or the file format is invalid.
-    
+
         Notes
         -----
         **DSCRIPT SAVE FILE FORMAT**
-    
-        This script syntax is designed for creating dynamic and customizable input files, where variables, templates, 
+
+        This script syntax is designed for creating dynamic and customizable input files, where variables, templates,
         and control attributes can be defined in a flexible manner.
-    
+
         **Mandatory First Line:**
-    
+
         Every DSCRIPT file must begin with the following line:
-    
+
         ```plaintext
         # DSCRIPT SAVE FILE
         ```
-    
+
         **Structure Overview:**
-    
+
         1. **Global Parameters Section (Optional):**
-    
+
             - This section defines global script settings, enclosed within curly braces `{}`.
             - Properties include:
                 - `SECTIONS`: List of section names to be considered (e.g., `["DYNAMIC"]`).
@@ -3108,23 +3112,23 @@ class dscript:
                 - `userid`: Identifier for the user (e.g., `"dscript"`).
                 - `version`: Script version (e.g., `0.1`).
                 - `verbose`: Verbosity flag, typically a boolean (e.g., `False`).
-    
+
             **Example:**
-    
+
             ```plaintext
             {
                 SECTIONS = ['INITIALIZATION', 'SIMULATION']  # Global script parameters
             }
             ```
-    
+
         2. **Definitions Section:**
-    
+
             - Variables are defined in Python-like syntax, allowing for dynamic variable substitution.
-            - Variables can be numbers, strings, or lists, and they can include placeholders using `$` 
+            - Variables can be numbers, strings, or lists, and they can include placeholders using `$`
               to delay execution or substitution.
-    
+
             **Example:**
-    
+
             ```plaintext
             d = 3                               # Define a number
             periodic = "$p"                     # '$' prevents immediate evaluation of 'p'
@@ -3133,28 +3137,28 @@ class dscript:
             boundary = ['p', 'p', 'p']          # List with a mix of variables and values
             atom_style = "$atomic"              # String variable with delayed evaluation
             ```
-    
+
         3. **Templates Section:**
-        
+
             - This section provides a mapping between keys and their corresponding commands or instructions.
             - Each template can reference variables defined in the **Definitions** section or elsewhere, typically using the `${variable}` syntax.
             - **Syntax Variations**:
-            
-                Templates can be defined in several ways, including without blocks, with single- or multi-line blocks, and with ellipsis (`...`) as a line continuation marker. 
-        
+
+                Templates can be defined in several ways, including without blocks, with single- or multi-line blocks, and with ellipsis (`...`) as a line continuation marker.
+
                 - **Single-line Template Without Block**:
                     ```plaintext
                     KEY: INSTRUCTION
                     ```
                     - `KEY` is the identifier for the template (numeric or alphanumeric).
                     - `INSTRUCTION` is the command or template text, which may reference variables.
-                
+
                 - **Single-line Template With Block**:
                     ```plaintext
                     KEY: [INSTRUCTION]
                     ```
-                    - Uses square brackets (`[ ]`) around the `INSTRUCTION`, indicating that all instructions are part of the block. 
-                
+                    - Uses square brackets (`[ ]`) around the `INSTRUCTION`, indicating that all instructions are part of the block.
+
                 - **Multi-line Template With Block**:
                     ```plaintext
                     KEY: [
@@ -3166,39 +3170,39 @@ class dscript:
                     - Begins with `KEY: [` and ends with a standalone `]` on a new line.
                     - Instructions within the block can span multiple lines, and ellipses (`...`) at the end of a line are used to indicate that the line continues, ignoring any content following the ellipsis as comments.
                     - Comments following ellipses are removed after parsing and do not become part of the block, preserving only the instructions.
-        
+
                 - **Multi-line Template With Continuation Marker (Ellipsis)**:
                     - For templates with complex code containing square brackets (`[ ]`), the ellipsis (`...`) can be used to prevent `]` from prematurely closing the block. The ellipsis will keep the line open across multiple lines, allowing brackets in the instructions.
-        
+
                     **Example:**
                     ```plaintext
                     example1: command ${value}       # Single-line template without block
                     example2: [command ${value}]     # Single-line template with block
-                    
+
                     # Multi-line template with block
                     example3: [
                         command1 ${var1}
                         command2 ${var2} ...   # Line continues after ellipsis
                         command3 ${var3} ...   # Additional instruction continues
                         ]
-                    
+
                     # Multi-line template with ellipsis (handling square brackets)
                     example4: [
                         A[0][1] ...            # Ellipsis allows [ ] within instructions
                         B[2][3] ...            # Another instruction in the block
                         ]
                     ```
-        
+
             - **Key Points**:
                 - **Blocks** allow grouping of multiple instructions for a single key, enclosed in square brackets.
                 - **Ellipsis (`...`)** at the end of a line keeps the line open, preventing premature closing by `]`, especially useful if the template code includes square brackets (`[ ]`).
                 - **Comments** placed after the ellipsis are removed after parsing and are not part of the final block content.
-            
+
             This flexibility supports both simple and complex template structures, allowing instructions to be grouped logically while keeping code and comments distinct.
 
-    
+
         4. **Attributes Section:**
-    
+
             - Each template line can have customizable attributes to control behavior and conditions.
             - Default attributes include:
                 - `facultative`: If `True`, the line is optional and can be removed if needed.
@@ -3207,37 +3211,37 @@ class dscript:
                 - `condition`: An expression that must be satisfied for the line to be included.
                 - `condeval`: If `True`, the condition will be evaluated using `eval()`.
                 - `detectvar`: If `True`, this creates variables in the **Definitions** section if they do not exist.
-    
+
             **Example:**
-    
+
             ```plaintext
             units: {facultative=False, eval=False, readonly=False, condition="${units}", condeval=False, detectvar=True}
             dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
             ```
-    
+
         **Note on Multiple Definitions**
-    
+
         This example demonstrates how variables defined in the **Definitions** section are handled for each template.
         Each template retains its own snapshot of the variable definitions at the time it is created, ensuring that templates
         can use different values for the same variable if redefined.
-    
+
         **Example:**
-    
+
         ```plaintext
         # DSCRIPT SAVE FILE
-    
+
         # Definitions
         var = 10
-    
+
         # Template key1
         key1: Template content with ${var}
-    
+
         # Definitions
         var = 20
-    
+
         # Template key2
         key2: Template content with ${var}
-    
+
         # Template key3
         key3:[
             this is an undefined variable ${var31}
@@ -3245,34 +3249,34 @@ class dscript:
             this variable is defined  ${var}
         ]
         ```
-    
+
         **Parsing and Usage:**
-    
+
         ```python
         # Parse content using parsesyntax()
         ds = dscript.parsesyntax(content)
-    
+
         # Accessing templates and their variables
         print(ds.TEMPLATE['key1'].text)  # Output: Template content with 10
         print(ds.TEMPLATE['key2'].text)  # Output: Template content with 20
         ```
-    
+
         **Handling Undefined Variables:**
-    
+
         Variables like `${var31}` and `${var32}` in `key3` are undefined. The parser will handle them based on your substitution logic or raise an error if they are required.
-    
+
         **Important Notes:**
-    
+
         - The parser processes the script sequentially. Definitions must appear before the templates that use them.
         - Templates capture the variable definitions at the time they are parsed. Redefining a variable affects only subsequent templates.
         - Comments outside of blocks are allowed and ignored by the parser.
         - Content within templates is treated as-is, allowing for any syntax required by the target system (e.g., LAMMPS commands).
-        
-        
+
+
     **Advanced Example**
 
         Here's a more advanced example demonstrating the use of global definitions, local definitions, templates, and how to parse and render the template content.
-    
+
         ```python
         content = '''
             # GLOBAL DEFINITIONS
@@ -3280,7 +3284,7 @@ class dscript:
             dumpdt = 50
             thermodt = 100
             runtime = 5000
-    
+
             # LOCAL DEFINITIONS for step '0'
             dimension = 3
             units = $si
@@ -3291,10 +3295,10 @@ class dscript:
             neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
             newton = $off
             name = $SimulationBox
-    
+
             # This is a comment line outside of blocks
             # ------------------------------------------
-    
+
             0: [    % --------------[ Initialization Header (helper) for "${name}" ]--------------
                 # set a parameter to None or "" to remove the definition
                 dimension    ${dimension}
@@ -3310,21 +3314,21 @@ class dscript:
         '''
         # Parse the content
         ds = dscript.parsesyntax(content, verbose=True, authentification=False)
-    
+
         # Access and print the rendered template
         print("Template 0 content:")
         print(ds.TEMPLATE[0].do())
         ```
-    
+
         **Explanation:**
-    
+
         - **Global Definitions:** Define variables that are accessible throughout the script.
         - **Local Definitions for Step '0':** Define variables specific to a particular step or template.
         - **Template Block:** Identified by `0: [ ... ]`, it contains the content where variables will be substituted.
         - **Comments:** Lines starting with `#` are comments and are ignored by the parser outside of template blocks.
-    
+
         **Expected Output:**
-    
+
         ```
         Template 0 content:
         # --------------[ Initialization Header (helper) for "SimulationBox" ]--------------
@@ -3339,27 +3343,27 @@ class dscript:
         newton       off
         # ------------------------------------------
         ```
-    
+
         **Notes:**
-    
+
         - The `do()` method renders the template, substituting variables with their defined values.
         - Variables like `${dimension}` are replaced with their corresponding values defined in the local or global definitions.
         - The parser handles comments and blank lines appropriately, ensuring they don't interfere with the parsing logic.
 
-        
+
         """
         # Split the content into lines
         lines = content.splitlines()
         if not lines:
             raise ValueError("File/Content is empty or only contains blank lines.")
-    
+
         # Initialize containers
         global_params = {}
         GLOBALdefinitions = lambdaScriptdata()
         LOCALdefinitions = lambdaScriptdata()
         template = {}
         attributes = {}
-    
+
         # State variables
         inside_global_params = False
         global_params_content = ""
@@ -3367,11 +3371,11 @@ class dscript:
         current_template_key = None
         current_template_content = []
         current_var_value = lambdaScriptdata()
-    
+
         # Initialize line number
         line_number = 0
         last_successful_line = 0
-    
+
         # Step 1: Authenticate the file
         if authentification:
             auth_line_found = False
@@ -3391,7 +3395,7 @@ class dscript:
                     raise ValueError(f"Unexpected content before authentication line (# DSCRIPT SAVE FILE) at line {idx + 1}:\n{line}")
             if not auth_line_found:
                 raise ValueError("File/Content is not a valid DSCRIPT file.")
-    
+
             # Remove header lines
             lines = lines[header_end_idx + 1:]
             line_number = header_end_idx + 1
@@ -3399,12 +3403,12 @@ class dscript:
         else:
             line_number = 0
             last_successful_line = 0
-    
+
         # Process each line
         for idx, line in enumerate(lines):
             line_number += 1
             line_content = line.rstrip('\n')
-    
+
             # Determine if we're inside a template block
             if inside_template_block:
                 # Extract the code with its eventual continuation_marker
@@ -3414,7 +3418,7 @@ class dscript:
                         continuation_marker=continuation_marker,
                         remove_continuation_marker=False,
                         ).rstrip()
-                
+
                 # Check if line should continue
                 if code_line.endswith(continuation_marker):
                     # Append line up to the continuation marker
@@ -3426,11 +3430,11 @@ class dscript:
                 elif code_line.endswith("]"):  # End of multi-line block
                     closing_index = code_line.rindex(']')
                     trimmed_content = code_line[:closing_index].rstrip()
-                    
+
                     # Append any valid content before `]`, if non-empty
                     if trimmed_content:
                         current_template_content.append(trimmed_content)
-                    
+
                     # End of template block
                     content = '\n'.join(current_template_content)
                     template[current_template_key] = ScriptTemplate(
@@ -3452,20 +3456,20 @@ class dscript:
                     # Append the entire original line content if not ending with `...` or `]`
                     current_template_content.append(line_content)
                 continue
-    
+
             # Not inside a template block
             stripped_no_comments = remove_comments(line_content)
-    
+
             # Ignore empty lines after removing comments
             if not stripped_no_comments.strip():
                 continue
-    
+
             # If the original line is a comment line, skip it
             if line_content.strip().startswith("#") or line_content.strip().startswith("%"):
                 continue
-    
+
             stripped = stripped_no_comments.strip()
-    
+
             # Handle start of a new template block
             template_block_match = re.match(r'^(\w+)\s*:\s*\[', stripped)
             if template_block_match:
@@ -3480,7 +3484,7 @@ class dscript:
                         line_num = context_start + i + 1
                         indicator = ">" if line_num == line_number else "*" if line_num == last_successful_line else " "
                         error_context += f"{indicator} {line_num}: {error_line}\n"
-        
+
                     raise ValueError(
                         f"Template block '{current_template_key}' starting at line {last_successful_line} (*) was not properly closed before starting a new one at line {line_number} (>).\n\n"
                         f"Error context:\n{error_context}"
@@ -3514,7 +3518,7 @@ class dscript:
                             current_template_content.append(remainder)
                     last_successful_line = line_number
                 continue
-    
+
             # Handle start of global parameters
             if stripped.startswith('{') and not inside_global_params:
                 if '}' in stripped:
@@ -3526,7 +3530,7 @@ class dscript:
                     inside_global_params = True
                     global_params_content = stripped
                 continue
-    
+
             # Handle global parameters inside {...}
             if inside_global_params:
                 global_params_content += ' ' + stripped
@@ -3536,7 +3540,7 @@ class dscript:
                     global_params_content = ""
                     last_successful_line = line_number
                 continue
-    
+
             # Handle attributes
             attribute_match = re.match(r'^(\w+)\s*:\s*\{(.+)\}', stripped)
             if attribute_match:
@@ -3545,7 +3549,7 @@ class dscript:
                 cls._parse_attributes(attributes[key], attr_content.strip())
                 last_successful_line = line_number
                 continue
-    
+
             # Handle definitions
             definition_match = re.match(r'^(\w+)\s*=\s*(.+)', stripped)
             if definition_match:
@@ -3560,7 +3564,7 @@ class dscript:
                 last_successful_line = line_number
                 setattr(current_var_value, key, convertedvalue)
                 continue
-    
+
             # Handle single-line templates
             template_match = re.match(r'^(\w+)\s*:\s*(.+)', stripped)
             if template_match:
@@ -3575,13 +3579,13 @@ class dscript:
                 LOCALdefinitions = lambdaScriptdata()
                 last_successful_line = line_number
                 continue
-    
+
             # Unrecognized line
             if verbose:
                 print(f"Warning: Unrecognized line at {line_number}: {line_content}")
             last_successful_line = line_number
             continue
-    
+
         # At the end, check if any template block was left unclosed
         if inside_template_block:
             # Collect error context
@@ -3593,12 +3597,12 @@ class dscript:
                 line_num = context_start + i
                 indicator = ">" if line_num == last_successful_line else " "
                 error_context += f"{indicator} {line_num}: {error_line}\n"
-    
+
             raise ValueError(
                 f"Template block '{current_template_key}' starting at line {last_successful_line} was not properly closed.\n\n"
                 f"Error context:\n{error_context}"
             )
-    
+
         # Apply attributes to templates
         for key in attributes:
             if key in template:
@@ -3607,7 +3611,7 @@ class dscript:
                 template[key]._autorefresh = True # restore the default behavior for the end-user
             else:
                 raise ValueError(f"Attributes found for undefined template key: {key}")
-    
+
         # Create and return new instance
         if name is None:
             name = autoname(8)
@@ -3622,7 +3626,7 @@ class dscript:
             version=global_params.get('version', 0.1),
             verbose=global_params.get('verbose', False)
         )
-    
+
         # Convert numeric string keys to integers if numerickeys is True
         if numerickeys:
             numeric_template = {}
@@ -3632,22 +3636,22 @@ class dscript:
                 else:
                     numeric_template[key] = value
             template = numeric_template
-    
+
         # Set definitions and template
         instance.DEFINITIONS = GLOBALdefinitions
         instance.TEMPLATE = template
-    
+
         # Refresh variables
         instance.set_all_variables()
-    
+
         # Check variables
         instance.check_all_variables(verbose=False)
-    
+
         return instance
 
 
-        
-    
+
+
     @classmethod
     def parsesyntax_legacy(cls, content, name=None, numerickeys=True):
         """
@@ -3655,15 +3659,15 @@ class dscript:
         [ ------------------------------------------------------]
         [ Legacy parsesyntax method for backward compatibility. ]
         [ ------------------------------------------------------]
-    
+
         Parameters
         ----------
         content : str
             The string content of the script to be parsed.
-        
+
         name : str
             The name of the dscript project (if None, it is set randomly)
-        
+
         numerickeys : bool, default=True
             If True, numeric string keys in the template section are automatically converted into integers.
 
@@ -3671,12 +3675,12 @@ class dscript:
         -------
         dscript
             A new `dscript` instance populated with the content of the loaded file.
-    
+
         Raises
         ------
         ValueError
             If content does not start with the correct DSCRIPT header or the file format is invalid.
-            
+
         Notes
         -----
         - The file is expected to follow the same structured format as the one produced by the `save()` method.
@@ -3686,19 +3690,19 @@ class dscript:
         - The script structure is dynamically rebuilt, and each section (global parameters, definitions,
           template, and attributes) is correctly parsed and assigned to the corresponding parts of the `dscript`
           instance.
-          
-          
+
+
         PIZZA.DSCRIPT SAVE FILE FORMAT
         -------------------------------
-        This script syntax is designed for creating dynamic and customizable input files, where variables, templates, 
-        and control attributes can be defined in a flexible manner. 
-        
+        This script syntax is designed for creating dynamic and customizable input files, where variables, templates,
+        and control attributes can be defined in a flexible manner.
+
         ### Mandatory First Line:
         Every DSCRIPT file must begin with the following line:
             # DSCRIPT SAVE FILE
-        
+
         ### Structure Overview:
-        
+
         1. **Global Parameters Section (Optional):**
             - This section defines global script settings, enclosed within curly braces `{ }`.
             - Properties include:
@@ -3710,19 +3714,19 @@ class dscript:
                 - `userid`: Identifier for the user (e.g., `"dscript"`).
                 - `version`: Script version (e.g., `0.1`).
                 - `verbose`: Verbosity flag, typically a boolean (e.g., `False`).
-        
+
             Example:
             ```
             {
                 SECTIONS = ['INITIALIZATION', 'SIMULATION']  # Global script parameters
             }
             ```
-        
+
         2. **Definitions Section:**
             - Variables are defined in Python-like syntax, allowing for dynamic variable substitution.
-            - Variables can be numbers, strings, or lists, and they can include placeholders using `$` 
+            - Variables can be numbers, strings, or lists, and they can include placeholders using `$`
               to delay execution or substitution.
-        
+
             Example:
             ```
             d = 3                               # Define a number
@@ -3732,18 +3736,18 @@ class dscript:
             boundary = ['p', 'p', 'p']  # List with a mix of variables and values
             atom_style = "$atomic"              # String variable with delayed evaluation
             ```
-        
+
         3. **Templates Section:**
-            - This section provides a mapping between keys and their corresponding commands or instructions. 
-            - The templates reference variables defined in the **Definitions** section or elsewhere. 
-            - Syntax: 
+            - This section provides a mapping between keys and their corresponding commands or instructions.
+            - The templates reference variables defined in the **Definitions** section or elsewhere.
+            - Syntax:
                 ```
                 KEY: INSTRUCTION
                 ```
                 where:
                 - `KEY` can be numeric or alphanumeric.
                 - `INSTRUCTION` represents a command template, often referring to variables using `${variable}` notation.
-        
+
             Example:
             ```
             units: units ${units}               # Template uses the 'units' variable
@@ -3751,7 +3755,7 @@ class dscript:
             bound: boundary ${boundary}         # Template for boundary settings
             lattice: lattice ${lattice}         # Lattice template
             ```
-        
+
         4. **Attributes Section:**
             - Each template line can have customizable attributes to control behavior and conditions.
             - Default attributes include:
@@ -3761,55 +3765,55 @@ class dscript:
                 - `condition`: An expression that must be satisfied for the line to be included.
                 - `condeval`: If `True`, the condition will be evaluated using `eval()`.
                 - `detectvar`: If `True`, this creates variables in the **Definitions** section if they do not exist.
-        
+
             Example:
             ```
             units: {facultative=False, eval=False, readonly=False, condition="${units}", condeval=False, detectvar=True}
             dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
             ```
-            
+
         Note on multiple definitions
         -----------------------------
         This example demonstrates how variables defined in the `Definitions` section are handled for each template.
         Each template retains its own snapshot of the variable definitions at the time it is created, ensuring that templates
         can use different values for the same variable if redefined.
-        
+
         content = "" "
         # DSCRIPT SAVE FILE
-        
+
         # Definitions
         var = 10
-        
+
         # Template ky1
         key1: Template content with ${var}
-        
+
         # Definitions
         var = 20
-        
+
         # Template key2
         key2: Template content with ${var}
-        
+
         # Template key3
         key3:[
             this is an underfined variable ${var31}
             this is an another underfined variable ${var32}
             this variables is defined  ${var}
             ]
-        
+
         "" "
-        
+
         # Parse content using parsesyntax()
         ds = dscript.parsesyntax(content)
-        
+
         # Key1 should use the first definition of 'var' (10)
         print(ds.key1.definitions.var)  # Output: Template content with 10
 
         # Key2 should use the updated definition of 'var' (20)
         print(ds.key2.definitions.var)  # Output: Template content with 10
-            
-        
+
+
         """
-        
+
         # Split the content into lines
         lines = content.splitlines()
         lines = [line for line in lines if line.strip()]  # Remove blank or empty lines
@@ -3831,7 +3835,7 @@ class dscript:
         inside_template_block = False  # Track if we are inside a multi-line template
         current_template_key = None    # Track the current template key
         current_template_content = []  # Store lines for the current template content
-        
+
         # Step 1: Authenticate the file
         if not lines[0].strip().startswith("# DSCRIPT SAVE FILE"):
             raise ValueError("File/Content is not a valid DSCRIPT file.")
@@ -3843,7 +3847,7 @@ class dscript:
             # Ignore empty lines and comments
             if not stripped or stripped.startswith("#"):
                 continue
-            
+
             # Remove trailing comments
             stripped = remove_comments(stripped)
 
@@ -3853,7 +3857,7 @@ class dscript:
                 inside_global_params = True
                 # Remove the opening { and accumulate the remaining content
                 global_params_content = stripped[stripped.index('{') + 1:].strip()
-                
+
                 # Check if the closing } is also on the same line
                 if '}' in global_params_content:
                     global_params_content = global_params_content[:global_params_content.index('}')].strip()
@@ -3869,7 +3873,7 @@ class dscript:
                     # Found the closing }, accumulate and process the entire block
                     global_params_content += " " + stripped[:stripped.index('}')].strip()
                     inside_global_params = False  # Finished reading global parameters block
-                    
+
                     # Now parse the entire global parameters block
                     cls._parse_global_params(global_params_content.strip(), global_params)
                     global_params_content = ""  # Reset for the next block if necessary
@@ -3877,7 +3881,7 @@ class dscript:
                     # Continue accumulating if } is not found
                     global_params_content += " " + stripped
                 continue
-            
+
             # Step 4: Detect the start of a multi-line template block inside [...]
             if not inside_template_block:
                 template_match = re.match(r'(\w+)\s*:\s*\[', stripped)
@@ -3886,15 +3890,15 @@ class dscript:
                     inside_template_block = True
                     current_template_content = []  # Reset content list
                     continue
-            
+
             # If inside a template block, accumulate lines until we find the closing ]
             if inside_template_block:
                 if stripped == "]":
                     # End of the template block, join the content and store it
                     template[current_template_key] = ScriptTemplate(
-                        current_template_content, 
+                        current_template_content,
                         definitions=lambdaScriptdata(**definitions),  # Clone current global definitions
-                        verbose=True, 
+                        verbose=True,
                         userid=current_template_key
                         )
                     template[current_template_key].refreshvar()
@@ -3970,7 +3974,7 @@ class dscript:
             verbose=global_params.get('verbose', False)
         )
 
-       
+
         # Convert numeric string keys to integers if numerickeys is True
         if numerickeys:
             numeric_template = {}
@@ -3991,29 +3995,29 @@ class dscript:
 
         # Check eval
         instance.check_all_variables(verbose=False)
-        
+
         # return the new instance
         return instance
-    
+
 
     @classmethod
     def _parse_global_params(cls, content, global_params):
         """
         Parses global parameters from the accumulated content enclosed in `{}`.
-    
+
         ### Parameters:
             content (str): The content string containing global parameters.
             global_params (dict): A dictionary to populate with parsed parameters.
-    
+
         ### Raises:
             ValueError: If invalid lines or key-value pairs are encountered.
         """
         # Remove braces from the content
         content = content.strip().strip("{}")
-    
+
         # Split the content into lines by commas
         lines = re.split(r',(?![^(){}\[\]]*[\)\}\]])', content.strip())
-    
+
         for line in lines:
             line = line.strip()
             # Match key-value pairs
@@ -4076,14 +4080,14 @@ class dscript:
         for k, v in self.__dict__.items():
             setattr(copie, k, copy.deepcopy(v, memo))
         return copie
-    
+
     def detect_all_variables(self):
         """
         Detects all variables across all templates in the dscript object.
-        
+
         This method iterates through all ScriptTemplate objects in the dscript and
         collects variables from each template using the detect_variables method.
-    
+
         Returns:
         --------
         list
@@ -4095,9 +4099,9 @@ class dscript:
             # Ensure the template is a ScriptTemplate and has the detect_variables method
             if isinstance(template, ScriptTemplate):
                 detected_vars = template.detect_variables()
-                all_variables.update(detected_vars)  # Add the detected variables to the set    
+                all_variables.update(detected_vars)  # Add the detected variables to the set
         return sorted(all_variables)  # Return a sorted list of unique variables
-    
+
     def add_dynamic_script(self, key, content="", userid=None, definitions=None, verbose=None, **USER):
         """
         Add a dynamic script step to the dscript object.
@@ -4126,8 +4130,8 @@ class dscript:
             verbose=verbose,
             userid = key if userid is None else userid,
             **USER
-        )    
-        
+        )
+
 
 
     def check_all_variables(self, verbose=True, seteval=True, output=False):
@@ -4139,10 +4143,10 @@ class dscript:
         verbose : bool, optional, default=True
             If True, prints information about variables for each TEMPLATE key.
             Shows [-] if the variable is set to its default value, [+] if it is defined, and [ ] if it is undefined.
-        
+
         seteval : bool, optional, default=True
             If True, sets the `eval` attribute to True if at least one variable is defined or set to its default value.
-        
+
         output : bool, optional, default=False
             If True, returns a dictionary with lists of default variables, set variables, and undefined variables.
 
@@ -4160,7 +4164,7 @@ class dscript:
             template = self.TEMPLATE[key]
             # Call the check_variables method of ScriptTemplate for each TEMPLATE key
             result = template.check_variables(verbose=verbose, seteval=seteval)
-            
+
             # Update the output dictionary if needed
             out["defaultvalues"].extend(result["defaultvalues"])
             out["setvalues"].extend(result["setvalues"])
@@ -4196,69 +4200,69 @@ if __name__ == '__main__':
     # -------------
     # Initialize a dscript object
     S = dscript()
-    
+
     # Add script lines/items with placeholders for variables
     S[3] = "instruction .... with substitution rules ${v1}+${var2}"
     S['alpha'] = "another script template ${v3}"
-    
+
     # Set a custom attribute for a specific line
     S[3].attribute1 = True
-    
+
     # Reorder script lines/items
     T = S[[1,0]]
-    
+
     # Define global variables in DEFINITIONS
     S.DEFINITIONS.a = 1
     S.DEFINITIONS.b = 2
-    
+
     # Update a script line and enable evaluation of its content
     S[0] = "$a+$b"
     S[0].eval = True
-    
+
     # Set a line as mandatory (not facultative)
     S[3].facultative = False
-    
+
     # Access and print the content of specific script lines/items
     print(S[3])       # Outputs: instruction .... with substitution rules ${v1}+${var2}
     print(S['alpha']) # Outputs: another script template ${v3}
-    
+
     # Access and print custom attributes
     print(S[3].attribute1)  # Outputs: True
-    
+
     # Iterate through all script lines, printing their keys and content
     for key, content in S.items():
         print(f"Key: {key}, Content: {content}")
-    
+
     # Retrieve and evaluate the content of a script line by its index
     S.get_content_by_index(0, False)  # Retrieve without evaluation
     S.get_content_by_index(0)         # Retrieve with evaluation
-    
+
     # Access attributes of a specific script line by index
     S.get_attributes_by_index(0)
-    
+
     # Apply conditions to the execution of a script line
     S[0].condition = "$a>1"
     S[0].condeval = True
     S.get_content_by_index(2)  # Condition not met, may result in an empty string
-    
+
     # Update the condition and evaluate again
     S[0].condition = "$a>0"
     S[0].do()  # Executes and evaluates the line content
-    
+
     # Create multiple variables in DEFINITIONS if they don't already exist
     S.createEmptyVariables(["a", "b", "c", "d", "e"])
-    
+
     # Access and print all current definitions
     S.DEFINITIONS
-    
-    
+
+
     # =====================================================
     # Production Example: LAMMPS Header Initialization
     #   closely related to pizza.region.LammpsHeaderInit
     # =====================================================
     # Initialize a dscript object with a custom name
     R = dscript(name="ProductionExample")
-    
+
     # Define global variables (DEFINITIONS) for the script
     R.DEFINITIONS.dimension = 3
     R.DEFINITIONS.units = "$si"
@@ -4268,7 +4272,7 @@ if __name__ == '__main__':
     R.DEFINITIONS.comm_modify = ["vel", "yes"]
     R.DEFINITIONS.neigh_modify = ["every", 10, "delay", 0, "check", "yes"]
     R.DEFINITIONS.newton = "$off"
-    
+
     # Define the script template, associating each line with a key
     R[0]        = "% ${comment}"               # line/item can be identied by numbers/names
     R["dim"]    = "dimension    ${dimension}"  # line/item identified as 'dim'
@@ -4279,41 +4283,41 @@ if __name__ == '__main__':
     R["cmod"]   = "comm_modify  ${comm_modify}"
     R["nmod"]   = "neigh_modify ${neigh_modify}"
     R["newton"] = "newton       ${newton}"
-    
+
     # Apply a condition to the 'astyle' line
     # it will only be included if ${atom_style} is defined
     R["astyle"].condition = "${atom_style}"
-    
+
     # Update DEFINITIONS to unset the atom_style variable
     R.DEFINITIONS.atom_style = ""
-    
+
     # Generate a script instance, overwriting the 'units' variable and adding a comment
     sR = R.script(units="$lj",  # Use "$" to prevent immediate evaluation
                   comment="$my first dynamic script")
-    
+
     # Execute the script to generate the final content
     ssR = sR.do()
-    
+
     # Print the generated script
     print(ssR)
-    
+
     # Save the current script
     R.save(overwrite=True)
-    
+
     # Load again the same script and show the script
     T = dscript.load(R.name)
     print(repr(T))
     ssT = R.script(units="$lj",  # Use "$" to prevent immediate evaluation
                   comment="$my second dynamic script").do()
     print(ssT)
-    
+
     # ========================================================
     # DSCRIPT SAVE FILE: Example: LAMMPS generic code
     #   This example is intended to illustrate the syntax
     #   Note that the script below does not include the header.
     #   It will be added with the write method
     # ========================================================
- 
+
     # The script is defined here within a string
     # note that the first line should be: # DSCRIPT SAVE FILE
     myscript = """# DSCRIPT SAVE FILE
@@ -4395,22 +4399,22 @@ thermo: thermo ${thermo}
 units: {facultative=False, eval=False, readonly=False, condition="${units}", condeval=False, detectvar=True}
 dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
     """
-    
+
     # write myscript to disk
     myscriptfile = dscript.write(myscript)
     print(f"DSCRIPT SAVE FILE: {myscriptfile}")
-    
+
     # load the script as a dscript object
     myS = dscript.load(myscriptfile)
-    
+
     # generate the corresponding script
     myS.units.do()
     smyS = myS.script()
-    
+
     # Ececute the script and print it
     ssmyS = smyS.do()
     print(ssmyS)
-    
+
     # The conversion of a string into a script
     # can be mediated via dscript.parsesyntax()
     # without using a temporary file
@@ -4448,7 +4452,7 @@ dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=Fa
     # =====================================================
 
     R2 = dscript(name="ProductionExample2")
-        
+
     # Define global variables (DEFINITIONS) for the script
     R2.DEFINITIONS.dimension = 3
     R2.DEFINITIONS.units = "$si"
@@ -4457,9 +4461,9 @@ dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=Fa
     R2.DEFINITIONS.comm_modify = ["vel", "yes"]
     R2.DEFINITIONS.neigh_modify = ["every", 10, "delay", 0, "check", "yes"]
     R2.DEFINITIONS.newton = "$off"
-    
+
     # Define the script template, associating each line with a key
-    R2["code"] = """        
+    R2["code"] = """
     % ${comment}               # this comment will be preserved as it starts with %
     dimension    ${dimension}  # this comment will be deleted
     units        ${units}
@@ -4470,37 +4474,37 @@ dim: {facultative=False, eval=False, readonly=False, condition=None, condeval=Fa
     neigh_modify ${neigh_modify}
     newton       ${newton}
     """
-    
+
     # Add missing defintion
-    R2.DEFINITIONS.atom_style = "$smd"        
-    
+    R2.DEFINITIONS.atom_style = "$smd"
+
     # Generate a script instance, overwriting the 'units' variable and adding a comment
     sR2 = R2.script(units="$lj",  # Use "$" to prevent immediate evaluation
                    comment="$my first dynamic script")
     ssR2 = sR2.do()
-    
+
     # Print the generated script
     print(ssR2)
-    
+
     # Save the current script
     R2.save(overwrite=True)
-    
+
     # Load again the same script and show the script
     T2 = dscript.load(R2.name)
     print(repr(T2))
     ssT2 = R2.script(units="$lj",  # Use "$" to prevent immediate evaluation
                   comment="$my second dynamic script").do()
     print(ssT2)
-        
+
     # ========================================================
     # DSCRIPT SAVE FILE: compact version
     # ========================================================
- 
+
     # The script is defined here within a string
     # note that the first line should be: # DSCRIPT SAVE FILE
-    
+
     myscript2 = """# DSCRIPT SAVE FILE
-    
+
 # Global Parameters:
 # ------------------
 { # a line starting with { indicates the begining of the section
@@ -4531,7 +4535,7 @@ thermo = 100
 # TEMPLATE:
 # ---------
 mytemplate1: [
-    # you can add comments inside templates   
+    # you can add comments inside templates
     units ${units}     # whereever you need
     dimension ${dimension}
     boundary ${boundary}
@@ -4558,44 +4562,44 @@ mytemplate2: [
 mytemplate1: {facultative=False, eval=False, readonly=False, condition="${units}", condeval=False, detectvar=True}
 mytemplate2: {facultative=False, eval=False, readonly=False, condition="", condeval=False, detectvar=True}
     """
-    
+
     # write myscript to disk
     myscriptfile2 = dscript.write(myscript2)
     print(f"DSCRIPT SAVE FILE: {myscriptfile2}")
-    
+
     # load the script as a dscript object
     myS2 = dscript.load(myscriptfile2)
-    
+
     # generate the corresponding script
     smyS2 = myS2.script()
-    
+
     # Ececute the script and print it
     ssmyS2 = smyS2.do()
     print(ssmyS2)
-    
+
     # The conversion of a string into a script
     # can be mediated via dscript.parsesyntax()
     # without using a temporary file
     mytemplate2 = dscript.parsesyntax(myscript2).script()
     mytemplatetxt2 = mytemplate2.do()
     print(mytemplatetxt2)
-    
-    
+
+
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     #                                        ADVANCED EXAMPLE
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         ################################################################################
-        # This Python script demonstrates the conversion of a LAMMPS input script 
-        # for a TLSPH (Total Lagrangian Smoothed Particle Hydrodynamics) simulation 
-        # into a `dscript` object. The `dscript` format allows for flexible manipulation 
+        # This Python script demonstrates the conversion of a LAMMPS input script
+        # for a TLSPH (Total Lagrangian Smoothed Particle Hydrodynamics) simulation
+        # into a `dscript` object. The `dscript` format allows for flexible manipulation
         # of variables, templates, and simulation parameters using Python.
         #
         # Example use case:
-        # - The script simulates elongation of a 2D strip of a linear elastic material 
+        # - The script simulates elongation of a 2D strip of a linear elastic material
         #   by pulling its ends apart, using LAMMPS USER.SMD package.
-        # - The units are set to GPa / mm / ms, and material properties such as 
+        # - The units are set to GPa / mm / ms, and material properties such as
         #   Young’s modulus, Poisson’s ratio, and density are defined.
-        # - The geometry, boundary conditions, material model, and output settings 
+        # - The geometry, boundary conditions, material model, and output settings
         #   are set up dynamically.
         #
         # Sections in the script:
@@ -4608,36 +4612,36 @@ mytemplate2: {facultative=False, eval=False, readonly=False, condition="", conde
         # 7. **STATUS_OUTPUT**: Defines how stress and strain are calculated and output.
         # 8. **RUN**: Executes the simulation for a specified number of steps.
         #
-        # The main variables such as Young’s modulus (E), Poisson’s ratio (nu), and density (rho) 
+        # The main variables such as Young’s modulus (E), Poisson’s ratio (nu), and density (rho)
         # are added to the `DEFINITIONS` section for dynamic use in the script.
         #
-        # The `TEMPLATE` section organizes each block of the LAMMPS script under different keys 
-        # (e.g., "initialize", "create", "discretization"), allowing easy manipulation or modification 
+        # The `TEMPLATE` section organizes each block of the LAMMPS script under different keys
+        # (e.g., "initialize", "create", "discretization"), allowing easy manipulation or modification
         # of individual parts of the script through Python code.
         #
-        # This approach facilitates parameter sweeps, automatic adjustments of simulation inputs, 
-        # and easy reconfiguration of simulation settings, making it suitable for high-throughput 
+        # This approach facilitates parameter sweeps, automatic adjustments of simulation inputs,
+        # and easy reconfiguration of simulation settings, making it suitable for high-throughput
         # or iterative simulations in LAMMPS.
         #
-        # The script can be saved, loaded, or executed in Python as a `dscript` object, providing 
+        # The script can be saved, loaded, or executed in Python as a `dscript` object, providing
         # a robust tool for dynamic LAMMPS input file generation and manipulation.
         ################################################################################
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    
+
+
     # This flexible approach enables dynamic manipulation of simulation parameters.
     # The full TLSPH template is defined as a multi-line script in DSCRIPT format.
-    # The following template was automatically generated by ChatGPT based on the 
-    # original LAMMPS TLSPH simulation script for elongating a 2D strip of linear 
-    # elastic material by pulling its ends apart. 
-    # 
-    # Key variables (such as Young's modulus, Poisson's ratio, and mass density) 
-    # have been added to the DEFINITIONS section for dynamic substitution in the 
+    # The following template was automatically generated by ChatGPT based on the
+    # original LAMMPS TLSPH simulation script for elongating a 2D strip of linear
+    # elastic material by pulling its ends apart.
+    #
+    # Key variables (such as Young's modulus, Poisson's ratio, and mass density)
+    # have been added to the DEFINITIONS section for dynamic substitution in the
     # template.
     #
-    # Read the synopsis of this module to learn how to instruct ChatGPT to generate 
+    # Read the synopsis of this module to learn how to instruct ChatGPT to generate
     # such templates.
-    
+
     TLSPH_template = """# DSCRIPT SAVE FILE
 # TENSILE SUMULATION
 ####################################################################################################
@@ -4647,7 +4651,7 @@ mytemplate2: {facultative=False, eval=False, readonly=False, condition="", conde
 # unit sytem: GPa / mm / ms
 #
 ####################################################################################################
-# Source: 
+# Source:
 # GLOBAL PARAMETERS
 {
     SECTIONS = ['INITIALIZE', 'CREATE_GEOMETRY', 'DISCRETIZATION', 'BOUNDARY_CONDITIONS', 'PHYSICS', 'OUTPUT', 'RUN'],
@@ -4753,7 +4757,7 @@ runtime = 2500  # variables can be defined and changed any time (only the last d
 # ATTRIBUTES (number of lines with explicit attributes=0)
 
     """
-    
+
     TLSPH = dscript.parsesyntax(TLSPH_template)  # this is a dscript instance
     TLSPH_script = TLSPH.script()                # this is a script instance
     TLSPH.code = TLSPH_script.do()               # this is the corresponding LAMMPS code

@@ -1,6 +1,168 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+# `dump` Class
+
+The `dump` class provides comprehensive tools for reading, writing, and manipulating LAMMPS dump files and particle attributes. It handles both static and dynamic properties of snapshots with robust methods for data selection, transformation, and visualization.
+
+---
+
+## Features
+
+- **Input Handling**:
+  - Supports single or multiple dump files, including gzipped files.
+  - Wildcard expansion for multiple files.
+  - Automatically removes incomplete and duplicate snapshots.
+
+- **Snapshot Management**:
+  - Read snapshots one at a time or all at once.
+  - Assign self-describing column names.
+  - Automatically unscale coordinates if stored as scaled.
+
+- **Selection**:
+  - Timesteps: Select specific timesteps, skip intervals, or test conditions.
+  - Atoms: Select atoms using Boolean expressions based on attributes.
+
+- **Output**:
+  - Write selected steps and atoms to a single or multiple dump files.
+  - Options to append data or include/exclude headers.
+
+- **Transformations**:
+  - Scale or unscale coordinates.
+  - Wrap/unwrap coordinates into periodic boxes.
+  - Sort atoms or timesteps by IDs or attributes.
+
+- **Analysis**:
+  - Compute min/max values for attributes.
+  - Define new columns with computed values or custom vectors.
+
+- **Visualization**:
+  - Extract atom, bond, and geometry data for external visualization tools.
+
+---
+
+## Usage
+
+### Initialization
+```python
+d = dump("dump.one")                # Read one or more dump files
+d = dump("dump.1 dump.2.gz")        # Gzipped files are supported
+d = dump("dump.*")                  # Use wildcard for multiple files
+d = dump("dump.*", 0)               # Store filenames without reading
+```
+
+### Snapshot Management
+- **Read Next Snapshot**:
+  ```python
+  time = d.next()                   # Read next snapshot
+  ```
+  Returns:
+  - Timestamp of the snapshot read.
+  - `-1` if no snapshots remain or the last snapshot is incomplete.
+
+- **Assign Column Names**:
+  ```python
+  d.map(1, "id", 3, "x")            # Assign names to columns (1-N)
+  ```
+
+### Selection Methods
+#### Timesteps
+- Select all or specific timesteps:
+  ```python
+  d.tselect.all()                   # Select all timesteps
+  d.tselect.one(N)                  # Select only timestep N
+  d.tselect.skip(M)                 # Select every Mth step
+  d.tselect.test("$t >= 100")       # Select timesteps matching condition
+  ```
+
+#### Atoms
+- Select atoms across timesteps:
+  ```python
+  d.aselect.all()                   # Select all atoms in all steps
+  d.aselect.test("$id > 100")       # Select atoms based on conditions
+  ```
+
+### Output
+- **Write to Files**:
+  ```python
+  d.write("file")                   # Write selected steps/atoms
+  d.write("file", head=0, app=1)    # Append to file without headers
+  d.scatter("tmp")                  # Scatter to multiple files
+  ```
+
+### Transformations
+- **Coordinate Operations**:
+  ```python
+  d.scale()                         # Scale coordinates to 0-1
+  d.unscale()                       # Unscale to box size
+  d.wrap()                          # Wrap coordinates into periodic box
+  d.unwrap()                        # Unwrap coordinates out of the box
+  ```
+
+- **Sorting**:
+  ```python
+  d.sort()                          # Sort by atom ID
+  d.sort("x")                       # Sort by x-coordinate
+  ```
+
+### Analysis
+- **Min/Max Values**:
+  ```python
+  min_val, max_val = d.minmax("type")
+  ```
+
+- **Define New Columns**:
+  ```python
+  d.set("$ke = $vx * $vx + $vy * $vy")   # Set a column using expressions
+  d.setv("type", vector)                 # Assign values from a vector
+  ```
+
+### Visualization
+- Extract visualization-ready data:
+  ```python
+  time, box, atoms, bonds, tris, lines = d.viz(index)
+  ```
+
+---
+
+## Properties
+- `atype`: Name of vector used as atom type for visualization (default: `"type"`).
+- `type`: Hash of column names, identifying the dump type.
+
+---
+
+## Examples
+### Basic Usage
+```python
+d = dump("dump.one")
+d.tselect.all()                       # Select all timesteps
+d.aselect.test("$id > 100")           # Select atoms with ID > 100
+d.write("output.dump")                # Write selected data
+```
+
+### Coordinate Transformations
+```python
+d.scale()                             # Scale coordinates
+d.unwrap()                            # Unwrap coordinates
+d.wrap()                              # Re-wrap into periodic box
+```
+
+### Visualization
+```python
+time, box, atoms, bonds, tris, lines = d.viz(0)
+```
+
+---
+
+## Notes
+- **Scaling**: Automatically unscales coordinates if snapshots are stored as scaled.
+- **Error Handling**: Snapshots with duplicate timestamps are automatically culled.
+- **Performance**: For large dump files, use incremental reading (`next()`).
+
+---
+"""
+
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
 __copyright__ = "Copyright 2022"
@@ -8,7 +170,7 @@ __credits__ = ["Steve Plimpton", "Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.43"
+__version__ = "0.99991"
 
 
 # Pizza.py toolkit, www.cs.sandia.gov/~sjplimp/pizza.html
@@ -30,6 +192,7 @@ __version__ = "0.43"
 # 2022-02-10 kind has 2 internal styles ("vxyz" and "xyz") and can be supplied with a user style
 # 2022-05-02 extend read_snapshot() to store additional ITEMS (realtime from TIME), store aselect as bool instead as float
 # 2022-05-02 add realtime() (relatime is based on ITEM tim if available)
+# 2024-12-08 updated help
 
 # ======================================
 # dump tool
@@ -44,7 +207,7 @@ d = dump("dump.*",0)		  two args = store filenames, but don't read
 
   incomplete and duplicate snapshots are deleted
   atoms will be unscaled if stored in files as scaled
-  self-describing column names assigned 
+  self-describing column names assigned
 
 time = d.next()             	  read next snapshot from dump files
 
@@ -57,7 +220,7 @@ time = d.next()             	  read next snapshot from dump files
 d.map(1,"id",3,"x")               assign names to columns (1-N)
 
   not needed if dump file is self-describing
-  
+
 d.tselect.all()			  select all timesteps
 d.tselect.one(N)		  select only timestep N
 d.tselect.none()		  deselect all timesteps
@@ -163,7 +326,7 @@ d.extra(obj)				   extract bond/tri/line info from obj
       if extra() used to define lines, else NULL
   atype is column name viz() will return as atom type (def = "type")
   extra() extracts bonds/tris/lines from obj each time viz() is called
-    obj can be data object for bonds, cdata object for tris and lines, 
+    obj can be data object for bonds, cdata object for tris and lines,
       bdump object for bonds, tdump object for tris, ldump object for lines.
       mdump object for tris
 """
@@ -214,6 +377,10 @@ d.extra(obj)				   extract bond/tri/line info from obj
 import sys, re, glob, types  # commands
 from os import popen
 from math import *  # any function could be used by set() - required for eval
+
+
+__all__ = ['Frame', 'Snap', 'aselect', 'dump', 'tselect']
+
 
 try:
     import numpy as np
@@ -269,7 +436,7 @@ class dump:
             self.eof = 0
 
     # --------------------------------------------------------------------
-    
+
     def __repr__(self):
         times = self.time();
         ntimes = len(times)
@@ -393,15 +560,15 @@ class dump:
 
     def read_snapshot(self, f):
         """ low-level method to read a snapshot from a file identifier """
-        
+
         # expand the list of keywords if needed (INRAE\Olivier Vitrac)
         # "keyname": ["name in snap","type"]
         itemkeywords = {"TIME": ["realtime","float"],
-                        "TIMESTEP": ["time","int"], 
+                        "TIMESTEP": ["time","int"],
                         "NUMBER OF ATOMS": ["natoms","int"]}
         try:
             snap = Snap()
-            
+
             # read and guess the first keywords based on itemkeywords
             found = True
             while found:
@@ -1047,7 +1214,7 @@ class dump:
             vec[i] = snap.realtime
             i += 1
         return vec
-    
+
     # --------------------------------------------------------------------
     # extract vector(s) of values for atom ID n at each selected timestep
 
@@ -1085,10 +1252,10 @@ class dump:
     # extract vector(s) of values for selected atoms at chosen timestep
 
     def vecs(self, n, *colname):
-        """ 
+        """
             vecs(timeste,columname1,columname2,...)
             Examples:
-                tab = vecs(timestep,"id","x","y") 
+                tab = vecs(timestep,"id","x","y")
                 tab = vecs(timestep,["id","x","y"],"z")
                 X.vecs(X.time()[50],"vx","vy")
         """
@@ -1395,7 +1562,7 @@ class dump:
             return 1
         else:
             return 0
-        
+
     # --------------------------------------------------------------------
 
     def frame(self,iframe):
@@ -1454,7 +1621,7 @@ class dump:
                 return None
             else:
                 return False
-        
+
     # --------------------------------------------------------------------
 
     @property
@@ -1463,7 +1630,7 @@ class dump:
         return hash(self.names2str())
 
     # --------------------------------------------------------------------
-    
+
     def __add__(self,o):
         """ merge dump objects of the same kind/type """
         if not isinstance(o,dump):
@@ -1472,9 +1639,9 @@ class dump:
             raise ValueError("the dumps are not of the same type")
         twofiles = self.flist[0] + " " + o.flist[0]
         return dump(twofiles)
-    
+
     # --------------------------------------------------------------------
-    
+
 
 # --------------------------------------------------------------------
 # one snapshot
@@ -1501,7 +1668,7 @@ class Snap:
 
     def __ge__(self, o):
         return self.time >= o.time
-    
+
     def __repr__(self):
         ret = "LAMMPS Snap object from dump for t=%0.4g" % self.time
         return ret
@@ -1632,7 +1799,7 @@ class aselect:
     # --------------------------------------------------------------------
 
     def all(self, *args):
-        """ 
+        """
             select all atoms:
                 aselect.all()
                 aselect.all(timestep)
@@ -1728,9 +1895,9 @@ class aselect:
 
 
 # %% DEBUG
-# ===================================================   
+# ===================================================
 # main()
-# ===================================================   
+# ===================================================
 # for debugging purposes (code called as a script)
 # the code is called from here
 # ===================================================

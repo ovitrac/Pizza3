@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>example API documentation</title>
+<meta name="description" content="Principles of Coding with Pizza3 in Python for LAMMPS …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>example</code></h1>
+</header>
+<section id="section-intro">
+<p>Principles of Coding with Pizza3 in Python for LAMMPS</p>
+<p>This script demonstrates how to use Pizza3 version 0.9976+ to construct a complete LAMMPS input file
+for the simulation of three stacked cylinders (lower, central, upper) modeled as hyperelastic materials.
+Each cylinder is represented by a distinct bead type (1, 2, and 3), and the simulation is dynamically
+scripted to avoid external code snippets.</p>
+<p><strong>Intent:</strong>
+The goal is to teach how to use Pizza3's <code>script</code>, <code>dscript</code>, <code>pipescript</code>, <code>scriptobject</code>, and <code>scriptobjectgroup</code>
+classes to generate flexible LAMMPS scripts with minimal manual intervention. Users will learn how to:
+- Define simulation boxes, regions, and lattice configurations.
+- Customize forcefields and apply them to specific materials.
+- Create and manage groups of atoms or particles.
+- Define and control movement for specific groups of particles.
+- Set up time integration, trajectory output, and dump instructions.
+- Pipe together multiple scripts into a final, executable LAMMPS input script.</p>
+<p><strong>What to Learn:</strong>
+1. <strong>Dynamic Scripting with Pizza3</strong>: Learn how to dynamically generate LAMMPS input files without manually coding every section.
+2. <strong>Piping Scripts Together</strong>: Explore the power of combining scripts using the pipe (<code>|</code>) operator, which allows for the inclusion of local variables and reordering of sections.
+3. <strong>LAMMPS-Specific Operations</strong>: Understand how to define regions, set up forcefields, and manage object groups in the context of a LAMMPS simulation.
+4. <strong>Script Objects</strong>: Learn how to use <code>scriptobject</code> and <code>scriptobjectgroup</code> to define and manage multiple physical entities with unique properties.</p>
+<p><strong>Script Sections:</strong>
+1. <strong>S1a, S1b: Simulation Box, Lattice, and Regions</strong><br>
+- Demonstrates the creation of the simulation box and cylindrical regions using the <code>region</code> class.
+- Involves the <code>pipescript</code> to handle initialization, lattice definition, and box setup.
+- <strong>What You Learn</strong>: How to create 3D simulation boxes and regions in LAMMPS, including the use of lattices and boundaries.
+- <strong>Syntax Info</strong>: You can access or modify sections either via <code>Sx.step = "..."</code> or <code>Sx["step"] = "..."</code>. Both are equivalent.</p>
+<ol>
+<li><strong>S2: Customized Forcefields</strong>
+</li>
+<li>Sets up a dynamic forcefield using the <code>dforcefield</code> class. </li>
+<li>Custom forcefield properties are applied to each of the three cylinders.</li>
+<li><strong>What You Learn</strong>: How to define and apply custom physical properties to different materials or objects in the simulation.</li>
+<li>
+<p><strong>Syntax Info</strong>: Use forcefield templates with dynamic variable substitution by setting custom definitions using <code>USER</code> or the shorthand <code>USER.variable</code>.</p>
+</li>
+<li>
+<p><strong>S3: Customized Groups</strong>
+</p>
+</li>
+<li>Demonstrates how to manage groups of particles and combine groups using operations like union (<code>+</code>) and subtraction (<code>-</code>).</li>
+<li><strong>What You Learn</strong>: How to create and manipulate groups of objects, which is critical for efficient simulation management.</li>
+<li>
+<p><strong>Syntax Info</strong>: Groups can be manipulated with <code>G.evaluate("group_name", G.lower + G.upper)</code> or by subtracting groups like <code>G.all - G.middle</code>.</p>
+</li>
+<li>
+<p><strong>S4a, S4b, S4c: Dynamics and Time Integration</strong>
+</p>
+</li>
+<li>Shows how to define movement for the upper cylinder and how to set up time integration using the <code>dscript</code> class.</li>
+<li><strong>What You Learn</strong>: How to control the movement of specific groups and integrate time dynamics into the simulation.</li>
+<li>
+<p><strong>Syntax Info</strong>: The <code>dscript</code> class supports shorthands like <code>Sx["step"] = "..."</code> and <code>Sx.step = "..."</code> for adding steps.</p>
+</li>
+<li>
+<p><strong>S5: Dump Instructions</strong>
+</p>
+</li>
+<li>Configures the trajectory dump, specifying which physical variables should be saved during the simulation.</li>
+<li><strong>What You Learn</strong>: How to set up trajectory dumps for capturing simulation data.</li>
+<li>
+<p><strong>Syntax Info</strong>: You can directly modify dumping parameters using shorthand assignment (e.g., <code>Sx.dumpinit = "..."</code>).</p>
+</li>
+<li>
+<p><strong>S6: Thermodynamic Output</strong>
+</p>
+</li>
+<li>Defines the thermodynamic output frequency and format using LAMMPS thermodynamic styles.</li>
+<li><strong>What You Learn</strong>: How to configure thermodynamic outputs for monitoring key simulation parameters.</li>
+<li>
+<p><strong>Syntax Info</strong>: Use <code>Sx.thermo = "..."</code> to define thermodynamic steps easily.</p>
+</li>
+<li>
+<p><strong>S7: Running the Simulation</strong>
+</p>
+</li>
+<li>Executes the LAMMPS simulation with the defined run time.</li>
+<li><strong>What You Learn</strong>: How to finalize and run a simulation with all defined steps.</li>
+<li><strong>Syntax Info</strong>: Use <code>Sx.run = "..."</code> to define the run command, and you can force evaluation with <code>Sx.run.eval = True</code>.</li>
+</ol>
+<p><strong>Compatibility:</strong>
+This example requires Pizza3 version 0.9983 or above. All scripts (<code>script</code>, <code>pipescript</code>, <code>scriptobject</code>, and <code>scriptobjectgroup</code>) exhibit sufficient compatibility to be combined with operators. The pipe operator (<code>|</code>) is preferred as it facilitates reordering and the inclusion of local variables.</p>
+<hr>
+<p>DSCRIPT LANGUAGE SHORT DOCUMENTATION
+(This documentation ignore attributes)</p>
+<hr>
+<pre><code>Parses a DSCRIPT script to generate a configured LAMMPS simulation instance.
+
+DSCRIPT is a domain-specific language designed to simplify and structure the creation of LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator) scripts. It allows users to define global and local parameters, utilize templates for repetitive commands, and manage complex multi-line instructions with continuation markers. This function processes the DSCRIPT content, handling comments, line continuations, and template blocks to produce a fully configured simulation instance.
+
+### Fundamentals of DSCRIPT Syntax
+
+1. **Global Definitions:**
+    - Define parameters that apply globally across all templates and steps.
+    - Syntax:
+        ```plaintext
+        key = value
+        ```
+    - Example:
+        ```plaintext
+        dumpfile = $dump.LAMMPS
+        dumpdt = 50
+        thermodt = 100
+        runtime = 5000
+        ```
+
+2. **Local Definitions:**
+    - Define parameters specific to a particular step or template.
+    - Syntax:
+        ```plaintext
+        key = value
+        ```
+    - Example:
+        ```plaintext
+        dimension = 3
+        units = $si
+        boundary = ['f', 'f', 'f']
+        ```
+
+3. **Templates Section:**
+
+    - This section maps keys to their corresponding commands or instructions. Templates can reference variables defined in the **Global** or **Local Definitions** sections using the `${variable}` syntax.
+
+    - **Syntax Variations:**
+
+        Templates can be defined in multiple ways to accommodate different scripting needs:
+
+        - **Single-line Template Without Block:**
+            ```plaintext
+            KEY: INSTRUCTION
+            ```
+            - &lt;code&gt;KEY&lt;/code&gt;: Identifier for the template (numeric or alphanumeric).
+            - &lt;code&gt;INSTRUCTION&lt;/code&gt;: Command or template text, potentially referencing variables.
+            - *Example:*
+                ```plaintext
+                lattice: lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
+                ```
+
+        - **Single-line Template With Block:**
+            ```plaintext
+            KEY: [INSTRUCTION]
+            ```
+            - Encloses the instruction within square brackets (&lt;code&gt;\[ ]&lt;/code&gt;), indicating a block even if it's a single line.
+            - *Example:*
+                ```plaintext
+                0: [dimension ${dimension}]
+                ```
+
+        - **Multi-line Template With Block:**
+            ```plaintext
+            KEY: [
+                INSTRUCTION1
+                INSTRUCTION2
+                ...
+                ]
+            ```
+            - Begins with `KEY: [` and ends with a standalone &lt;code&gt;]&lt;/code&gt; on a new line.
+            - Supports multiple instructions within the block.
+            - **Ellipsis (&lt;code&gt;...&lt;/code&gt;)** can be used at the end of a line to indicate that the line continues, which is particularly useful if the instruction includes characters like square brackets (&lt;code&gt;\[ ]&lt;/code&gt;).
+            - Comments following ellipses are stripped and not part of the block content.
+            - *Example:*
+                ```plaintext
+                6: [ 
+                    # Create region with continuation
+                    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}  ...
+                    ]
+                ```
+
+    - **Key Points:**
+        - **Blocks:** Group multiple instructions under a single key, enclosed in square brackets.
+        - **Continuation Markers (&lt;code&gt;...&lt;/code&gt;):** Indicate that the current line continues onto the next, allowing complex instructions that include characters like &lt;code&gt;\[&lt;/code&gt; and &lt;code&gt;]&lt;/code&gt; without prematurely closing the block.
+        - **Comments:** 
+            - Placed after instructions or continuation markers.
+            - Comments following continuation markers are removed during parsing and do not become part of the template block.
+            - Inline comments are preserved only if they are outside of quoted strings and not part of the instruction syntax.
+
+4. **Comments:**
+    - Lines starting with comment characters (`#`, `%`) are ignored unless they are within quotes.
+    - Inline comments can be added after instructions for clarity.
+</code></pre>
+<p><strong>Revision:</strong>
+Last revision: 2024-11-25</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+Principles of Coding with Pizza3 in Python for LAMMPS
+
+This script demonstrates how to use Pizza3 version 0.9976+ to construct a complete LAMMPS input file 
+for the simulation of three stacked cylinders (lower, central, upper) modeled as hyperelastic materials. 
+Each cylinder is represented by a distinct bead type (1, 2, and 3), and the simulation is dynamically 
+scripted to avoid external code snippets.
+
+**Intent:**
+The goal is to teach how to use Pizza3&#39;s `script`, `dscript`, `pipescript`, `scriptobject`, and `scriptobjectgroup` 
+classes to generate flexible LAMMPS scripts with minimal manual intervention. Users will learn how to:
+- Define simulation boxes, regions, and lattice configurations.
+- Customize forcefields and apply them to specific materials.
+- Create and manage groups of atoms or particles.
+- Define and control movement for specific groups of particles.
+- Set up time integration, trajectory output, and dump instructions.
+- Pipe together multiple scripts into a final, executable LAMMPS input script.
+
+**What to Learn:**
+1. **Dynamic Scripting with Pizza3**: Learn how to dynamically generate LAMMPS input files without manually coding every section.
+2. **Piping Scripts Together**: Explore the power of combining scripts using the pipe (`|`) operator, which allows for the inclusion of local variables and reordering of sections.
+3. **LAMMPS-Specific Operations**: Understand how to define regions, set up forcefields, and manage object groups in the context of a LAMMPS simulation.
+4. **Script Objects**: Learn how to use `scriptobject` and `scriptobjectgroup` to define and manage multiple physical entities with unique properties.
+
+**Script Sections:**
+1. **S1a, S1b: Simulation Box, Lattice, and Regions**  
+   - Demonstrates the creation of the simulation box and cylindrical regions using the `region` class.
+   - Involves the `pipescript` to handle initialization, lattice definition, and box setup.
+   - **What You Learn**: How to create 3D simulation boxes and regions in LAMMPS, including the use of lattices and boundaries.
+   - **Syntax Info**: You can access or modify sections either via `Sx.step = &#34;...&#34;` or `Sx[&#34;step&#34;] = &#34;...&#34;`. Both are equivalent.
+   
+2. **S2: Customized Forcefields**  
+   - Sets up a dynamic forcefield using the `dforcefield` class. 
+   - Custom forcefield properties are applied to each of the three cylinders.
+   - **What You Learn**: How to define and apply custom physical properties to different materials or objects in the simulation.
+   - **Syntax Info**: Use forcefield templates with dynamic variable substitution by setting custom definitions using `USER` or the shorthand `USER.variable`.
+   
+3. **S3: Customized Groups**  
+   - Demonstrates how to manage groups of particles and combine groups using operations like union (`+`) and subtraction (`-`).
+   - **What You Learn**: How to create and manipulate groups of objects, which is critical for efficient simulation management.
+   - **Syntax Info**: Groups can be manipulated with `G.evaluate(&#34;group_name&#34;, G.lower + G.upper)` or by subtracting groups like `G.all - G.middle`.
+
+4. **S4a, S4b, S4c: Dynamics and Time Integration**  
+   - Shows how to define movement for the upper cylinder and how to set up time integration using the `dscript` class.
+   - **What You Learn**: How to control the movement of specific groups and integrate time dynamics into the simulation.
+   - **Syntax Info**: The `dscript` class supports shorthands like `Sx[&#34;step&#34;] = &#34;...&#34;` and `Sx.step = &#34;...&#34;` for adding steps.
+
+5. **S5: Dump Instructions**  
+   - Configures the trajectory dump, specifying which physical variables should be saved during the simulation.
+   - **What You Learn**: How to set up trajectory dumps for capturing simulation data.
+   - **Syntax Info**: You can directly modify dumping parameters using shorthand assignment (e.g., `Sx.dumpinit = &#34;...&#34;`).
+
+6. **S6: Thermodynamic Output**  
+   - Defines the thermodynamic output frequency and format using LAMMPS thermodynamic styles.
+   - **What You Learn**: How to configure thermodynamic outputs for monitoring key simulation parameters.
+   - **Syntax Info**: Use `Sx.thermo = &#34;...&#34;` to define thermodynamic steps easily.
+
+7. **S7: Running the Simulation**  
+   - Executes the LAMMPS simulation with the defined run time.
+   - **What You Learn**: How to finalize and run a simulation with all defined steps.
+   - **Syntax Info**: Use `Sx.run = &#34;...&#34;` to define the run command, and you can force evaluation with `Sx.run.eval = True`.
+
+**Compatibility:**
+This example requires Pizza3 version 0.9983 or above. All scripts (`script`, `pipescript`, `scriptobject`, and `scriptobjectgroup`) exhibit sufficient compatibility to be combined with operators. The pipe operator (`|`) is preferred as it facilitates reordering and the inclusion of local variables.
+
+
+---------------------------------------
+DSCRIPT LANGUAGE SHORT DOCUMENTATION
+(This documentation ignore attributes)
+--------------------------------------
+
+    Parses a DSCRIPT script to generate a configured LAMMPS simulation instance.
+
+    DSCRIPT is a domain-specific language designed to simplify and structure the creation of LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator) scripts. It allows users to define global and local parameters, utilize templates for repetitive commands, and manage complex multi-line instructions with continuation markers. This function processes the DSCRIPT content, handling comments, line continuations, and template blocks to produce a fully configured simulation instance.
+
+    ### Fundamentals of DSCRIPT Syntax
+
+    1. **Global Definitions:**
+        - Define parameters that apply globally across all templates and steps.
+        - Syntax:
+            ```plaintext
+            key = value
+            ```
+        - Example:
+            ```plaintext
+            dumpfile = $dump.LAMMPS
+            dumpdt = 50
+            thermodt = 100
+            runtime = 5000
+            ```
+
+    2. **Local Definitions:**
+        - Define parameters specific to a particular step or template.
+        - Syntax:
+            ```plaintext
+            key = value
+            ```
+        - Example:
+            ```plaintext
+            dimension = 3
+            units = $si
+            boundary = [&#39;f&#39;, &#39;f&#39;, &#39;f&#39;]
+            ```
+
+    3. **Templates Section:**
+
+        - This section maps keys to their corresponding commands or instructions. Templates can reference variables defined in the **Global** or **Local Definitions** sections using the `${variable}` syntax.
+
+        - **Syntax Variations:**
+
+            Templates can be defined in multiple ways to accommodate different scripting needs:
+
+            - **Single-line Template Without Block:**
+                ```plaintext
+                KEY: INSTRUCTION
+                ```
+                - `KEY`: Identifier for the template (numeric or alphanumeric).
+                - `INSTRUCTION`: Command or template text, potentially referencing variables.
+                - *Example:*
+                    ```plaintext
+                    lattice: lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
+                    ```
+
+            - **Single-line Template With Block:**
+                ```plaintext
+                KEY: [INSTRUCTION]
+                ```
+                - Encloses the instruction within square brackets (`[ ]`), indicating a block even if it&#39;s a single line.
+                - *Example:*
+                    ```plaintext
+                    0: [dimension ${dimension}]
+                    ```
+
+            - **Multi-line Template With Block:**
+                ```plaintext
+                KEY: [
+                    INSTRUCTION1
+                    INSTRUCTION2
+                    ...
+                    ]
+                ```
+                - Begins with `KEY: [` and ends with a standalone `]` on a new line.
+                - Supports multiple instructions within the block.
+                - **Ellipsis (`...`)** can be used at the end of a line to indicate that the line continues, which is particularly useful if the instruction includes characters like square brackets (`[ ]`).
+                - Comments following ellipses are stripped and not part of the block content.
+                - *Example:*
+                    ```plaintext
+                    6: [ 
+                        # Create region with continuation
+                        region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}  ...
+                        ]
+                    ```
+
+        - **Key Points:**
+            - **Blocks:** Group multiple instructions under a single key, enclosed in square brackets.
+            - **Continuation Markers (`...`):** Indicate that the current line continues onto the next, allowing complex instructions that include characters like `[` and `]` without prematurely closing the block.
+            - **Comments:** 
+                - Placed after instructions or continuation markers.
+                - Comments following continuation markers are removed during parsing and do not become part of the template block.
+                - Inline comments are preserved only if they are outside of quoted strings and not part of the instruction syntax.
+
+    4. **Comments:**
+        - Lines starting with comment characters (`#`, `%`) are ignored unless they are within quotes.
+        - Inline comments can be added after instructions for clarity.
+
+
+**Revision:**
+Last revision: 2024-11-25
+
+&#34;&#34;&#34;
+
+# Dependencies
+from pizza.script import script, scriptdata  # Base script and data structure classes
+from pizza.dscript import dscript  # Dynamic script class for managing LAMMPS inputs
+from pizza.group import group  # Group management for atoms or molecules
+from pizza.region import region  # Region class to define physical simulation regions
+from pizza.dforcefield import dforcefield  # Dynamic forcefield for particles
+from pizza.generic import generic  # Generic forcefield module
+
+
+# %% S1a, S1b: Defining Simulation Box, Lattice, and Regions
+# Goal: Demonstrate how to define the simulation box and cylindrical regions.
+# Syntax: Both `Sx.step = &#34;...&#34;` and `Sx[&#34;step&#34;] = &#34;...&#34;` are supported shorthands.
+# Learn how to initialize the simulation setup, including dimensions and lattice.
+
+R_container = region(
+    name=&#34;SimulationBox&#34;,  # Name of the box
+    dimension=3,  # 3D simulation
+    boundary=[&#34;f&#34;, &#34;f&#34;, &#34;f&#34;],  # Fixed boundary conditions
+    nbeads=3,  # Number of bead types
+    width=0.06, height=0.02, depth=0.06,  # Box dimensions in meters
+    units=&#34;si&#34;,  # Using SI units for LAMMPS
+    lattice_scale=0.0008271, lattice_style=&#34;sc&#34;,  # Lattice type and scaling
+    lattice_spacing=0.0008271,  # Lattice point spacing
+    separationdistance=0.0001  # Minimum separation between points
+)
+
+# Define cylindrical regions for the three cylinders
+R_container.cylinder(name=&#34;LowerCylinder&#34;, dim=&#34;z&#34;, c1=0, c2=0, radius=0.03, lo=0.0, hi=0.005, beadtype=1)
+R_container.cylinder(name=&#34;CentralCylinder&#34;, dim=&#34;z&#34;, c1=0, c2=0, radius=0.03, lo=0.005, hi=0.015, beadtype=2)
+R_container.cylinder(name=&#34;UpperCylinder&#34;, dim=&#34;z&#34;, c1=0, c2=0, radius=0.03, lo=0.015, hi=0.02, beadtype=3)
+
+# Generate scripts for initialization, lattice setup, and region definition
+S1_headers = R_container.pscriptHeaders(what=[&#34;init&#34;, &#34;lattice&#34;, &#34;box&#34;])
+S1_core = R_container.pipescript()
+
+# Combine header and region definitions into one script
+S1 = S1_headers | S1_core
+print(&#39; \n# S1: HEADERS &amp; REGIONS\n&#39;, S1.do(printflag=False, verbose=False), sep=&#34;\n&#34;)
+
+
+# %% S2: Customized Forcefields
+# Goal: Define and apply dynamic forcefields to the cylinders.
+# Syntax: Use `USER` to pass custom properties to the forcefield.
+# Learn how to customize material properties like elasticity, density, and viscosity.
+
+# Additional modules can be added to forcefields
+additional_modules = [generic]
+
+# Define the dynamic forcefield with custom properties
+dynamic_ff = dforcefield(
+    base_class=&#34;solidfood&#34;,
+    beadtype=None,  # Set dynamically
+    userid=&#34;solid&#34;,
+    additional_modules=additional_modules,
+    rho=1.0e3, E=1e4, nu=0.3, c0=&#34;0.1*sqrt(${E}/${rho})&#34;, sigma_yield=&#34;0.1*${E}&#34;, 
+    hardening=0, q1=1.0, q2=2.0, Hg=10.0, Cp=1000.0,
+    contact_scale=1.5, contact_stiffness=&#34;2.5*${c0}^2*${rho}&#34;
+)
+
+# Forcefield properties for each cylinder
+customff1 = scriptdata(E=1e4, rho=1000)
+customff2 = scriptdata(E=5e3, rho=1000)
+customff3 = scriptdata(E=4e4, rho=1000)
+
+# Assign forcefield to each cylinder (b1, b2, b3)
+b1 = dynamic_ff.scriptobject(beadtype=1, USER=customff1, name=&#34;b1&#34;, group=[&#34;lower&#34;, &#34;solid&#34;, &#34;fixed&#34;])
+b2 = dynamic_ff.scriptobject(beadtype=2, USER=customff2, name=&#34;b2&#34;, group=[&#34;middle&#34;, &#34;solid&#34;, &#34;movable&#34;])
+b3 = dynamic_ff.scriptobject(beadtype=3, USER=customff3, name=&#34;b3&#34;, group=[&#34;upper&#34;, &#34;solid&#34;, &#34;movable&#34;])
+
+# Combine forcefields into one collection
+collection = b1 + b2 + b3
+S2 = collection.script(printflag=False, verbosity=1)
+S2.name = &#34;S2:forcefield&#34;
+
+# Output forcefield definitions
+print(&#34;\n# FORCEFIELDS\n&#34;, S2.do(printflag=False, verbose=False), sep=&#34;\n&#34;)
+
+
+# %% S3: Customized Groups
+# Goal: Define and manage groups of objects.
+# Syntax: Use `+` for group union and `-` for group subtraction.
+# Learn how to manage groups for controlling particle behavior.
+
+# Create a group container for managing groups
+G = collection.group_generator()
+
+# Define groups: &#34;all&#34; and &#34;external&#34;
+G.evaluate(&#34;all&#34;, G.lower + G.middle + G.upper)
+G.evaluate(&#34;external&#34;, G.all - G.middle)
+
+# Generate group script
+Gall = G(&#34;all&#34;, &#34;external&#34;)
+S3 = Gall.script(verbose=False)
+S3.name = &#34;S3:customgroup&#34;
+
+# Output group definitions
+print(&#34;\n# CUSTOMIZED GROUPS\n&#34;, S3.do(printflag=False, verbose=False), sep=&#34;\n&#34;)
+
+
+# %% S4a: Movable Objects (Upper Cylinder Movement)
+# Goal: Define movement and dynamic behavior of particles.
+# Learn how to initialize movement and apply periodic forces.
+
+move = dscript(name=&#34;S4a:move&#34;,
+               amplitude=1.0e-3,  # Movement amplitude
+               period=1.0)  # Period in seconds
+
+# If needed, movement variables can be modified later
+move.DEFINITIONS.update(
+    amplitude=1.0e-3,  # Amplitude of movement (1 mm)
+    period=1.0  # Period of movement (1 second)
+)
+
+# CODELET &#34;moveinit&#34; initializes velocity for all beads
+# It can be defined via several shorthands
+#   move[&#34;moveinit&#34;] = &#34;...&#34; is a shorthand of move.TEMPLATE[&#34;moveinit&#34;]=&#34;...&#34;
+#   move.moveinit =  &#34;...&#34; is a shorthand of move.TEMPLATE[&#34;moveinit&#34;]=&#34;...&#34;
+# Note: it is imperative to use move[&#34;move:init&#34;] if you use special characters in name
+move.moveinit = &#34;&#34;&#34;
+# Set initial velocities to zero
+velocity all set 0.0 0.0 0.0 units box # note box units
+&#34;&#34;&#34;
+
+# CODELET &#34;movelower&#34; fixes the position of the lower cylinder
+move.movelower = &#34;&#34;&#34;
+# Fix the lower cylinder to prevent movement
+fix fix_lower lower setforce 0.0 0.0 0.0
+&#34;&#34;&#34;
+
+# CODELET &#34;moveupper&#34; applies periodic movement to the upper cylinder
+move.moveupper = &#34;&#34;&#34;
+# Apply periodic movement to the upper cylinder
+fix move_upper upper move wiggle 0.0 0.0 ${amplitude} ${period} units box
+&#34;&#34;&#34;
+#move.moveupper.eval = True  # Force evaluation of movement # not needed anymore, see note 1
+
+# for a rapid control
+move.moveupper
+
+# full control
+print(&#34;\n# MOVABLE OBJECTS&#34;, move.do(printflag=False, verbose=True), sep=&#34;\n&#34;)
+
+
+# %% S4b: Time Integration Setup
+# Goal: Define time integration methods for the simulation.
+# Learn how to set and dynamically adjust the timestep.
+
+# Note 1: Defined variables are recognized on the fly.
+#         There is no need to force: integration.intinit.eval = True
+
+integration = dscript(name=&#34;S4b:timeintegration&#34;, dt=0.1)
+integration.intinit = &#34;fix dtfix all smd/adjust_dt ${dt}&#34;
+integration.intset = &#34;fix integration_fix all smd/integrate_tlsph&#34;
+print(&#34;\n# TIME INTEGRATION&#34;, integration.do(printflag=False, verbose=False), sep=&#34;\n&#34;)
+
+
+# %% S4c: Trajectory Output
+# Goal: Define trajectory output for post-processing and visualization.
+# Learn how to capture stress, strain, and neighbor information for each particle.
+
+trajectory = dscript(name=&#34;S4c:trajectoryoutput&#34;)
+trajectory.compute = &#34;&#34;&#34;
+compute S all smd/tlsph_stress
+compute E all smd/tlsph_strain
+compute nn all smd/tlsph_num_neighs
+&#34;&#34;&#34;
+print(&#34;\n# TRAJECTORY OUTPUT&#34;, trajectory.do(printflag=False, verbose=False), sep=&#34;\n&#34;)
+
+
+# %% S4: Combine S4a, S4b, S4c
+S4 = move + integration + trajectory
+S4.name = &#34;S4:dynamics&#34;
+print(&#34;\n# DYNAMICS&#34;, S4.do(printflag=False, verbose=False), sep=&#34;\n&#34;)
+
+
+# %% S5: Dump Settings
+# Define how the output data will be dumped.
+S5 = dscript(name=&#34;S5:dump&#34;, dumpdt=50, dumpfile=&#34;$dump.LAMMPS&#34;)
+S5.dumpinit = &#34;&#34;&#34;
+dump dump_id all custom ${dumpdt} ${dumpfile} id type x y z vx vy vz &amp;
+c_S[1] c_S[2] c_S[4] c_nn &amp;
+c_E[1] c_E[2] c_E[4] &amp;
+vx vy vz
+&#34;&#34;&#34;
+# S5.dumpinit.eval = True  # not needed anymore, see note 1
+S5.dumpset = &#34;&#34;&#34;
+dump_modify dump_id first yes
+&#34;&#34;&#34;
+
+
+# %% S6: Thermodynamic Output
+# Define thermodynamic output frequency and format.
+S6 = dscript(name=&#34;S6:thermo&#34;, thermodt=100)
+S6.thermo = &#34;&#34;&#34;
+thermo ${thermodt}
+thermo_style custom step dt f_dtfix v_strain
+&#34;&#34;&#34;
+# S6.thermo.eval = True  # not needed anymore, see note 1
+
+
+# %% S7: Run the Simulation
+# Define the final run command for the simulation.
+S7 = dscript(name=&#34;S7:run&#34;, runtime=5000)
+S7.run = &#34;run ${runtime}&#34;
+# S7.run.eval = True # not needed anymore, see note 1
+
+
+# %% Combine All Sections (S1, S2, S3, S4, S5, S6, S7)
+Sall = S1 | S2 | S3 | S4 | S5 | S6 | S7  # Pipe all sections together
+print(&#34;\n\n# ALL SCRIPTS\n&#34;, Sall.do(printflag=False, verbose=True), sep=&#34;\n&#34;)
+
+
+# %% Write the final LAMMPS script to file
+Sall.write(&#34;tmp/example.txt&#34;, verbosity=1,overwrite=True)
+
+
+# %% Convert the full script back to a dynamic dscript
+Dall = Sall.dscript(verbose=True)
+
+
+# %% Write Dall as dynamic script for reuse
+Dall.save(&#34;tmp/example.d.txt&#34;, overwrite=True)
+
+
+# %% Retrieve the Dscript file and convert it back to a pipescript
+Dall2 = dscript.load(&#34;tmp/example.d.txt&#34;)
+Sall2 = Dall2.pipescript(verbose=False)
+print(&#34;\n\n# ALL SCRIPTS (from disk)&#34;, Sall2.do(printflag=False, verbose=False), sep=&#34;\n&#34;)
+
+
+# %% Repeat the whole code in DSCRIPT language
+&#34;&#34;&#34;
+**DSCRIPT File Example and Dynamic Re-conversion with Dall3**
+
+This example demonstrates how to leverage the DSCRIPT syntax in Pizza3 for defining complex simulation parameters dynamically. The `Dcode` variable contains the entire simulation configuration in the DSCRIPT syntax, enabling both persistent storage and later re-conversion into dynamic objects.
+
+**Key Concepts Illustrated in Dcode:**
+1. **Global and Local Definitions**:
+   - **Global Definitions**: Variables set globally at the beginning, such as `dumpfile`, `dumpdt`, `thermodt`, and `runtime`, are applied across multiple templates if not overridden locally. When saved, global values can be annotated, indicating if they&#39;re set externally.
+   - **Local Definitions**: Variables are defined with a specified &#34;scope&#34; per template section. This allows values to be overridden or dynamically updated only for certain steps in the simulation without affecting other sections.
+
+2. **Templates and Steps**:
+   - **Step-based Scripting**: Each section in the simulation corresponds to a numbered &#34;step&#34; that represents a unique template in the script. Local definitions for each step can be configured independently.
+   - **Special Syntax**: Local definitions leverage Pizza3&#39;s dynamic substitution, allowing variables such as `${ID}`, `${style}`, and `${args}` to be dynamically evaluated within each template.
+
+3. **Simulation Structure**:
+   - **Pipeline of Steps**: Dcode’s steps flow in sequence to establish each simulation stage: initialization, lattice setup, region definitions, group definitions, forcefield configurations, and more. This structure aligns with LAMMPS, ensuring reproducibility and compatibility with specific physical behaviors.
+   - **Comments and Header Sections**: Each step includes comments or headers for easy reading and reuse. Headers describe the purpose of each template, with inline comments highlighting variable options and expected parameter values.
+
+4. **Overrides in `Dall3`**:
+   - **Dynamic Updates and Local Precedence**: The `Dall3` instance, derived from Dcode, retains the entire sequence as a `dscript` object. The `dscript` format allows flexible adjustments, with both global and local values manageable at runtime.
+   - **Local Precedence**: When values are overridden locally, they take precedence in the final generated script, illustrating the control and precision available in the Pizza3 DSCRIPT system.
+
+**Usage**:
+- `Dall3.DEFINITIONS.runtime = 1e4`: Sets the global definition of `runtime` to `1e4`.
+- `Dall3[-1].definitions.runtime = 2e5`: Sets a local definition of `runtime` specifically for the final step in `Dall3`, giving it precedence over the global value.
+
+**Example Output**:
+- The last command, `print(Dall3[-1].do())`, demonstrates that `Dall3` reflects the local override by outputting `run 200000.0`, verifying the variable hierarchy and precedence.
+&#34;&#34;&#34;
+
+
+
+Dcode = &#34;&#34;&#34;
+# DSCRIPT SAVE FILE
+
+# GLOBAL DEFINITIONS
+dumpfile = $dump.LAMMPS
+dumpdt = 50
+thermodt = 100
+runtime = 5000
+
+# LOCAL DEFINITIONS for step &#39;0&#39;
+dimension = 3
+units = $si
+boundary = [&#39;f&#39;, &#39;f&#39;, &#39;f&#39;]
+atom_style = $smd
+atom_modify = [&#39;map&#39;, &#39;array&#39;]
+comm_modify = [&#39;vel&#39;, &#39;yes&#39;]
+neigh_modify = [&#39;every&#39;, 10, &#39;delay&#39;, 0, &#39;check&#39;, &#39;yes&#39;]
+newton = $off
+name = $SimulationBox
+
+0: [    % --------------[ Initialization Header (helper) for &#34;${name}&#34;   ]--------------
+    # set a parameter to None or &#34;&#34; to remove the definition
+    dimension    ${dimension}
+    units        ${units}
+    boundary     ${boundary}
+    atom_style   ${atom_style}
+    atom_modify  ${atom_modify}
+    comm_modify  ${comm_modify}
+    neigh_modify ${neigh_modify}
+    newton       ${newton}
+    # ------------------------------------------ 
+ ]
+
+# LOCAL DEFINITIONS for step &#39;1&#39;
+lattice_style = $sc
+lattice_scale = 0.0008271
+lattice_spacing = [0.0008271, 0.0008271, 0.0008271]
+
+1: [% --------------[ LatticeHeader &#39;helper&#39; for &#34;${name}&#34;   ]--------------
+    lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
+    # ------------------------------------------ 
+    ]
+
+# LOCAL DEFINITIONS for step &#39;2&#39;
+xmin = -0.03
+xmax = 0.03
+ymin = -0.01
+ymax = 0.01
+zmin = -0.03
+zmax = 0.03
+nbeads = 3
+
+2: [ % --------------[ Box Header &#39;helper&#39; for &#34;${name}&#34;   ]--------------
+    region box block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax}
+    create_box  ${nbeads} box
+    # ------------------------------------------   
+    ]
+
+# LOCAL DEFINITIONS for step &#39;3&#39;
+ID = $LowerCylinder
+style = $cylinder
+
+3: % variables to be used for ${ID} ${style}
+
+# LOCAL DEFINITIONS for step &#39;4&#39;
+ID = $CentralCylinder
+
+4: % variables to be used for ${ID} ${style}
+
+# LOCAL DEFINITIONS for step &#39;5&#39;
+ID = $UpperCylinder
+
+5: % variables to be used for ${ID} ${style}
+
+# LOCAL DEFINITIONS for step &#39;6&#39;
+args = [&#39;z&#39;, 0.0, 0.0, 36.27130939426913, 0.0, 6.045218232378189]
+side = &#34;&#34;
+move = &#34;&#34;
+rotate = &#34;&#34;
+open = &#34;&#34;
+ID = $LowerCylinder
+units = &#34;&#34;
+
+6: [ % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}  ]
+
+# LOCAL DEFINITIONS for step &#39;7&#39;
+ID = $CentralCylinder
+args = [&#39;z&#39;, 0.0, 0.0, 36.27130939426913, 6.045218232378189, 18.135654697134566]
+
+7: [ % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}  ]
+
+# LOCAL DEFINITIONS for step &#39;8&#39;
+ID = $UpperCylinder
+args = [&#39;z&#39;, 0.0, 0.0, 36.27130939426913, 18.135654697134566, 24.180872929512756]
+
+8: [ % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}  ]
+
+# LOCAL DEFINITIONS for step &#39;9&#39;
+ID = $LowerCylinder
+beadtype = 1
+
+9: [ % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}  ]
+
+# LOCAL DEFINITIONS for step &#39;10&#39;
+ID = $CentralCylinder
+beadtype = 2
+
+10: [ % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}  ]
+
+# LOCAL DEFINITIONS for step &#39;11&#39;
+ID = $UpperCylinder
+beadtype = 3
+
+11: [ % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}  ]
+
+12: [
+    # ===== [ BEGIN GROUP SECTION ] =====================================================================================
+    group        lower  type     1
+    group        solid  type     1 2 3
+    group        fixed  type     1
+    group        middle         type     2
+    group        movable        type     2 3
+    group        upper  type     3
+    
+    # ===== [ END GROUP SECTION ] =======================================================================================
+    
+    
+    # [1:b1] PAIR STYLE SMD
+    pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &amp;
+    smd/tlsph smd/hertz 1.5
+    
+    # [1:b1 x 1:b1] Diagonal pair coefficient tlsph
+    pair_coeff      1 1 smd/tlsph *COMMON 1000 10000.0 0.3 1.0 2.0 10.0 1000.0 &amp;
+    *STRENGTH_LINEAR_PLASTIC 1000.0 0 &amp;
+    *EOS_LINEAR &amp;
+    *END
+    
+    # [2:b2 x 2:b2] Diagonal pair coefficient tlsph
+    pair_coeff      2 2 smd/tlsph *COMMON 1000 5000.0 0.3 1.0 2.0 10.0 1000.0 &amp;
+    *STRENGTH_LINEAR_PLASTIC 500.0 0 &amp;
+    *EOS_LINEAR &amp;
+    *END
+    
+    # [3:b3 x 3:b3] Diagonal pair coefficient tlsph
+    pair_coeff      3 3 smd/tlsph *COMMON 1000 40000.0 0.3 1.0 2.0 10.0 1000.0 &amp;
+    *STRENGTH_LINEAR_PLASTIC 4000.0 0 &amp;
+    *EOS_LINEAR &amp;
+    *END
+    
+    # [1:b1 x 2:b2] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 2 smd/hertz 250.0000000000001
+    
+    # [1:b1 x 3:b3] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 3 smd/hertz 250.0000000000001
+    
+    # [2:b2 x 3:b3] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 3 smd/hertz 125.00000000000003
+    
+    # ===== [ END FORCEFIELD SECTION ] ==================================================================================
+ ]
+
+13: [ group all union lower middle upper
+      group external subtract all middle  ]
+
+14: velocity all set 0.0 0.0 0.0 units box
+15: fix fix_lower lower setforce 0.0 0.0 0.0
+16: fix move_upper upper move wiggle 0.0 0.0 ${amplitude} ${period} units box
+17: fix dtfix tlsph smd/adjust_dt ${dt}
+18: fix integration_fix tlsph smd/integrate_tlsph
+
+19: [ compute S all smd/tlsph_stress
+      compute E all smd/tlsph_strain
+      compute nn all smd/tlsph_num_neighs  ]
+
+20: [    dump dump_id all custom ${dumpdt} ${dumpfile} id type x y z vx vy vz &amp;
+    c_S[1] c_S[2] c_S[4] c_nn &amp;
+    c_E[1] c_E[2] c_E[4] &amp;
+    vx vy vz  ]
+
+21: dump_modify dump_id first yes
+
+22: [     thermo ${thermodt}
+    thermo_style custom step dt f_dtfix v_strain    ]
+
+23: run ${runtime}
+&#34;&#34;&#34;
+Dall3 = dscript.parsesyntax(Dcode,verbose=True)
+print(&#34;\nDSCRIPT str -&gt; do()&#34;,Dall3.do(verbose=False),sep=&#34;\n&#34;)
+
+
+# %% Illustration of overrides
+Dall3.DEFINITIONS.runtime = 1e4  # global definitions (note the uppercase)
+Dall3[-1].definitions.runtime = 2e5 # local definitions (higher precedence)
+print(&#34;\nlast step revised:&#34;,Dall3[-1].do(),sep=&#34;\n&#34;) # the result is run 200000.0
+
+# %% Override with do
+Dlast4 = Dall3(20,21,22,23) # take the last four steps 20,21,22,23 only
+print(&#34;\nlast 4 steps revised:&#34;,Dlast4.do(runtime=12345.0),sep=&#34;\n&#34;) # the result is run 200000.0</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>generic API documentation</title>
+<meta name="description" content="generic() is a forcefield class helper (surrogate class)
+genericdata() is a data container for generic() …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>generic</code></h1>
+</header>
+<section id="section-intro">
+<p>generic() is a forcefield class helper (surrogate class)
+genericdata() is a data container for generic()</p>
+<pre><code>&gt; The class helper enables to defines general RULES based on formula
+&gt; and to store GLOBAL parameters in instances
+&gt; Methods operates with LOCAL parameters according to the recommended precedence
+  GLOBAL + LOCAL + RULES (consistency is managed internally by a code analysis)
+
+&gt; A typical use
+
+    # CREATE AN INSTANCE and set GLOBAL PARAMETERS
+    mylibrary = mygenericclass(name="myclass",param1=...)
+    # CALL THE METHODS FOR THIS INSTANCE
+    FF = mylibrary.forcefield(beadtype=1, userid="myliquid")
+
+&gt; A typical USER class (inherited from generic) would look like
+
+    class mygenericclass(generic):
+
+        # static properties shared between all instances
+        _version = xxx
+        _description = "............"
+        RULES = genericdata(.........) # class rules (please do not change them)
+
+        # constructor method (required) to create an instance
+        def __init__(self,name="...",
+                     type=None,
+                     param1=...,
+                     param2=...,
+                     ...
+                     USER=genericdata()):
+
+            super().__init__()
+            self.name, self.type = name, type
+            self.GLOBAL = genericdata(
+                param1 = param1, # parameter specific to mygenericclass()
+                param2 = param2, # idem
+                ...
+                ) + USER    # USER enables a unique/default container to be used
+
+        def myforcefield(self,
+                         beadtype=1,   # if needed
+                         userid = "",  # user id
+                         p1=...,       # first parameter
+                         p2=...,       # second parameter
+                     USER=genericdata()):
+
+            self.LOCAL = genericdata(
+                p1=p1,
+                p2=p2
+                )
+            # manage inheritance, defintion consistency
+            CURRENT = self.GLOBAL+self.LOCAL+self.RULES
+            return someforcefield(beadtype=beadtype, userid=userid, USER=CURRENT)
+</code></pre>
+<p>Created on Fri May 13 22:06:30 2022</p>
+<p>@author: olivi</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+
+    generic() is a forcefield class helper (surrogate class)
+    genericdata() is a data container for generic()
+
+    &gt; The class helper enables to defines general RULES based on formula
+    &gt; and to store GLOBAL parameters in instances
+    &gt; Methods operates with LOCAL parameters according to the recommended precedence
+      GLOBAL + LOCAL + RULES (consistency is managed internally by a code analysis)
+
+    &gt; A typical use
+
+        # CREATE AN INSTANCE and set GLOBAL PARAMETERS
+        mylibrary = mygenericclass(name=&#34;myclass&#34;,param1=...)
+        # CALL THE METHODS FOR THIS INSTANCE
+        FF = mylibrary.forcefield(beadtype=1, userid=&#34;myliquid&#34;)
+
+    &gt; A typical USER class (inherited from generic) would look like
+
+        class mygenericclass(generic):
+
+            # static properties shared between all instances
+            _version = xxx
+            _description = &#34;............&#34;
+            RULES = genericdata(.........) # class rules (please do not change them)
+
+            # constructor method (required) to create an instance
+            def __init__(self,name=&#34;...&#34;,
+                         type=None,
+                         param1=...,
+                         param2=...,
+                         ...
+                         USER=genericdata()):
+
+                super().__init__()
+                self.name, self.type = name, type
+                self.GLOBAL = genericdata(
+                    param1 = param1, # parameter specific to mygenericclass()
+                    param2 = param2, # idem
+                    ...
+                    ) + USER    # USER enables a unique/default container to be used
+
+            def myforcefield(self,
+                             beadtype=1,   # if needed
+                             userid = &#34;&#34;,  # user id
+                             p1=...,       # first parameter
+                             p2=...,       # second parameter
+                         USER=genericdata()):
+
+                self.LOCAL = genericdata(
+                    p1=p1,
+                    p2=p2
+                    )
+                # manage inheritance, defintion consistency
+                CURRENT = self.GLOBAL+self.LOCAL+self.RULES
+                return someforcefield(beadtype=beadtype, userid=userid, USER=CURRENT)
+
+Created on Fri May 13 22:06:30 2022
+
+@author: olivi
+&#34;&#34;&#34;
+
+__project__ = &#34;Pizza3&#34;
+__author__ = &#34;Olivier Vitrac&#34;
+__copyright__ = &#34;Copyright 2022&#34;
+__credits__ = [&#34;Olivier Vitrac&#34;]
+__license__ = &#34;GPLv3&#34;
+__maintainer__ = &#34;Olivier Vitrac&#34;
+__email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
+__version__ = &#34;0.9971&#34;
+
+# INRAE\Olivier Vitrac - rev. 2024-10-11
+# contact: olivier.vitrac@agroparistech.fr
+
+# History
+# 2022-05-13 draft version (fields are not reordered)
+# 2022-05-16 splitting CORE and USER classes and extended help
+# 2022-05-16 full implementation of pizza.private.mstruct.sortdefinitions() in parameterforcefield()
+# 2024-10-11 fix userid for newtonianfluid
+
+# %% CORE DEFINITIONS (please)
+
+# imports
+from pizza.forcefield import parameterforcefield, water
+
+__all__ = [&#39;USERSMD&#39;, &#39;generic&#39;, &#39;genericdata&#39;, &#39;parameterforcefield&#39;, &#39;water&#39;]
+
+
+# genericdata() class // please do not motify
+class genericdata(parameterforcefield):
+    &#34;&#34;&#34; generic data class to be used along with pizza.generic &#34;&#34;&#34;
+    _type = &#34;gendata&#34;        # object type
+    _fulltype = &#34;generic data&#34; # full name
+    _ftype = &#34;item&#34;        # field name
+    _maxdisplay = 80
+
+# generic() class // pease do not modify
+class generic:
+    &#34;&#34;&#34; generic helper class &#34;&#34;&#34;
+    _version = 0.1
+    _description = &#34;generic helper for forcefield parameterization&#34;
+    RULES = genericdata()
+
+    def __init__(self):
+        self.name = None
+        self.type = None
+
+    def __repr__(self):
+        &#34;&#34;&#34; representation of generic() &#34;&#34;&#34;
+        id = &#34;&#34;
+        if self.type is not None: id = str(self.type)+&#34;:&#34;
+        if self.name is not None: id = id+str(self.name)
+        if id !=&#34;&#34;: id = &#39;&#34;&#39;+id+&#39;&#34;&#39;
+        idstr = &#39;  generic helper: %s\n\t (class &#34;%s&#34;)&#39; % (id,self.__class__)
+        print(&#34;%s&#34; % idstr)
+        if len(self.GLOBAL):
+            print(&#34;  with GLOBAL data&#34;)
+            self.GLOBAL.__repr__()
+        return idstr
+
+# %% USER SECTION
+
+# USERSMD is a class derived from generic()
+class USERSMD(generic):
+    &#34;&#34;&#34; class helper for the module LAMMPS.USERSMD &#34;&#34;&#34;
+
+    # specific tules (add formula, missing parameters will be provided by GLOBAL or LOCAL)
+    RULES = genericdata(
+        # list here default forcefield rules (USER can overload these rules)
+        c0 = &#34;${vmax}/${Ma}&#34;,
+        q1 = &#34;8*${nu}/(${c0}*${h})&#34;,
+        Cp = 1.0,
+        contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;
+        )
+
+    # constructor of USERSMD (note that USER can override all definitions)
+    def __init__(self, name=None, type=None, h=0.1, Ma=0.1, vmax=0.1, USER = genericdata()):
+        &#34;&#34;&#34; generic helper constructor &#34;&#34;&#34;
+        super().__init__()
+        self.name = name
+        self.type = type
+        self.GLOBAL = genericdata(
+            # variables which apply to all forcefields
+            h = h,
+            Ma = Ma,
+            vmax = vmax
+            ) + USER
+
+    # forcefield derived from pizza.forcefield.water()
+    def newtonianfluid(self, beadtype=1, userid = None, rho=1000.0, nu = 1e-6, mu = None, USER = genericdata()):
+        &#34;&#34;&#34;
+            newtonianfluid() returns a parameterized ULSPH forcefield
+            with prescribed viscosity (mu [Pa.s] or nu in [m2/s])
+            and density (rho).
+            Based on recommendations of J. Comput. Phys 1997, 136, 214–226
+        &#34;&#34;&#34;
+        self.LOCAL = genericdata(
+            rho = rho,
+            nu = nu, # note that that nu is preferred as it is independent of rho
+            mu = mu # dynamic viscosity (dependent on rho)
+            ) + USER
+        if self.LOCAL.nu is None: self.LOCAL.nu = self.LOCAL.mu / self.LOCAL.rho
+        if self.LOCAL.nu is None: raise(ValueError(&#34;bad kinematic viscosity value: nu [m2/s]&#34;))
+        if self.LOCAL.mu is None: self.LOCAL.mu = self.LOCAL.nu * self.LOCAL.rho
+        if userid == &#34;&#34; or userid is None:
+            userid = &#34;newtonianfluid rho=%0.4g [kg/m3] and nu=%0.4g [m2/s]&#34; \
+                           % (self.LOCAL.rho,self.LOCAL.nu)
+        # this simple line with +
+        # manages inheritance (the las definition as always higher precendence)
+        # sorts definitions to enable execution (struct.sortdefinitions())
+        # (see pizza.forcefield.parameterforcefield())
+        CURRENT = self.GLOBAL+self.LOCAL+self.RULES
+        return water(beadtype=beadtype, userid=userid, USER=CURRENT)
+
+
+# %% DEBUG
+# ===================================================
+# main()
+# ===================================================
+# for debugging purposes (code called as a script)
+# the code is called from here
+# ===================================================
+if __name__ == &#39;__main__&#39;:
+    mylibrary = USERSMD(name=&#34;currentsim&#34;,h=1)
+    w = mylibrary.newtonianfluid(beadtype=1, userid=&#34;fluid&#34;)
+    print(&#34;\n&#34;*2,w)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="generic.USERSMD"><code class="flex name class">
+<span>class <span class="ident">USERSMD</span></span>
+<span>(</span><span>name=None, type=None, h=0.1, Ma=0.1, vmax=0.1, USER=generic data (gendata object) with 0 items)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>class helper for the module LAMMPS.USERSMD </p>
+<p>generic helper constructor</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class USERSMD(generic):
+    &#34;&#34;&#34; class helper for the module LAMMPS.USERSMD &#34;&#34;&#34;
+
+    # specific tules (add formula, missing parameters will be provided by GLOBAL or LOCAL)
+    RULES = genericdata(
+        # list here default forcefield rules (USER can overload these rules)
+        c0 = &#34;${vmax}/${Ma}&#34;,
+        q1 = &#34;8*${nu}/(${c0}*${h})&#34;,
+        Cp = 1.0,
+        contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;
+        )
+
+    # constructor of USERSMD (note that USER can override all definitions)
+    def __init__(self, name=None, type=None, h=0.1, Ma=0.1, vmax=0.1, USER = genericdata()):
+        &#34;&#34;&#34; generic helper constructor &#34;&#34;&#34;
+        super().__init__()
+        self.name = name
+        self.type = type
+        self.GLOBAL = genericdata(
+            # variables which apply to all forcefields
+            h = h,
+            Ma = Ma,
+            vmax = vmax
+            ) + USER
+
+    # forcefield derived from pizza.forcefield.water()
+    def newtonianfluid(self, beadtype=1, userid = None, rho=1000.0, nu = 1e-6, mu = None, USER = genericdata()):
+        &#34;&#34;&#34;
+            newtonianfluid() returns a parameterized ULSPH forcefield
+            with prescribed viscosity (mu [Pa.s] or nu in [m2/s])
+            and density (rho).
+            Based on recommendations of J. Comput. Phys 1997, 136, 214–226
+        &#34;&#34;&#34;
+        self.LOCAL = genericdata(
+            rho = rho,
+            nu = nu, # note that that nu is preferred as it is independent of rho
+            mu = mu # dynamic viscosity (dependent on rho)
+            ) + USER
+        if self.LOCAL.nu is None: self.LOCAL.nu = self.LOCAL.mu / self.LOCAL.rho
+        if self.LOCAL.nu is None: raise(ValueError(&#34;bad kinematic viscosity value: nu [m2/s]&#34;))
+        if self.LOCAL.mu is None: self.LOCAL.mu = self.LOCAL.nu * self.LOCAL.rho
+        if userid == &#34;&#34; or userid is None:
+            userid = &#34;newtonianfluid rho=%0.4g [kg/m3] and nu=%0.4g [m2/s]&#34; \
+                           % (self.LOCAL.rho,self.LOCAL.nu)
+        # this simple line with +
+        # manages inheritance (the las definition as always higher precendence)
+        # sorts definitions to enable execution (struct.sortdefinitions())
+        # (see pizza.forcefield.parameterforcefield())
+        CURRENT = self.GLOBAL+self.LOCAL+self.RULES
+        return water(beadtype=beadtype, userid=userid, USER=CURRENT)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="generic.generic" href="#generic.generic">generic</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="generic.USERSMD.RULES"><code class="name">var <span class="ident">RULES</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="generic.USERSMD.newtonianfluid"><code class="name flex">
+<span>def <span class="ident">newtonianfluid</span></span>(<span>self, beadtype=1, userid=None, rho=1000.0, nu=1e-06, mu=None, USER=generic data (gendata object) with 0 items)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>newtonianfluid() returns a parameterized ULSPH forcefield
+with prescribed viscosity (mu [Pa.s] or nu in [m2/s])
+and density (rho).
+Based on recommendations of J. Comput. Phys 1997, 136, 214–226</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def newtonianfluid(self, beadtype=1, userid = None, rho=1000.0, nu = 1e-6, mu = None, USER = genericdata()):
+    &#34;&#34;&#34;
+        newtonianfluid() returns a parameterized ULSPH forcefield
+        with prescribed viscosity (mu [Pa.s] or nu in [m2/s])
+        and density (rho).
+        Based on recommendations of J. Comput. Phys 1997, 136, 214–226
+    &#34;&#34;&#34;
+    self.LOCAL = genericdata(
+        rho = rho,
+        nu = nu, # note that that nu is preferred as it is independent of rho
+        mu = mu # dynamic viscosity (dependent on rho)
+        ) + USER
+    if self.LOCAL.nu is None: self.LOCAL.nu = self.LOCAL.mu / self.LOCAL.rho
+    if self.LOCAL.nu is None: raise(ValueError(&#34;bad kinematic viscosity value: nu [m2/s]&#34;))
+    if self.LOCAL.mu is None: self.LOCAL.mu = self.LOCAL.nu * self.LOCAL.rho
+    if userid == &#34;&#34; or userid is None:
+        userid = &#34;newtonianfluid rho=%0.4g [kg/m3] and nu=%0.4g [m2/s]&#34; \
+                       % (self.LOCAL.rho,self.LOCAL.nu)
+    # this simple line with +
+    # manages inheritance (the las definition as always higher precendence)
+    # sorts definitions to enable execution (struct.sortdefinitions())
+    # (see pizza.forcefield.parameterforcefield())
+    CURRENT = self.GLOBAL+self.LOCAL+self.RULES
+    return water(beadtype=beadtype, userid=userid, USER=CURRENT)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="generic.generic"><code class="flex name class">
+<span>class <span class="ident">generic</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>generic helper class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class generic:
+    &#34;&#34;&#34; generic helper class &#34;&#34;&#34;
+    _version = 0.1
+    _description = &#34;generic helper for forcefield parameterization&#34;
+    RULES = genericdata()
+
+    def __init__(self):
+        self.name = None
+        self.type = None
+
+    def __repr__(self):
+        &#34;&#34;&#34; representation of generic() &#34;&#34;&#34;
+        id = &#34;&#34;
+        if self.type is not None: id = str(self.type)+&#34;:&#34;
+        if self.name is not None: id = id+str(self.name)
+        if id !=&#34;&#34;: id = &#39;&#34;&#39;+id+&#39;&#34;&#39;
+        idstr = &#39;  generic helper: %s\n\t (class &#34;%s&#34;)&#39; % (id,self.__class__)
+        print(&#34;%s&#34; % idstr)
+        if len(self.GLOBAL):
+            print(&#34;  with GLOBAL data&#34;)
+            self.GLOBAL.__repr__()
+        return idstr</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="generic.USERSMD" href="#generic.USERSMD">USERSMD</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="generic.generic.RULES"><code class="name">var <span class="ident">RULES</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="generic.genericdata"><code class="flex name class">
+<span>class <span class="ident">genericdata</span></span>
+<span>(</span><span>sortdefinitions=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>generic data class to be used along with pizza.generic </p>
+<p>Constructor for parameterforcefield. It forces the parent's _returnerror parameter to False.</p>
+<h2 id="parameters">Parameters:</h2>
+<p>_protection : bool, optional
+Whether to enable protection on the parameters (default: False).
+_evaluation : bool, optional
+Whether evaluation is enabled for the parameters (default: True).
+sortdefinitions : bool, optional
+Whether to sort definitions upon initialization (default: False).
+**kwargs : dict
+Additional keyword arguments for the parent class.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class genericdata(parameterforcefield):
+    &#34;&#34;&#34; generic data class to be used along with pizza.generic &#34;&#34;&#34;
+    _type = &#34;gendata&#34;        # object type
+    _fulltype = &#34;generic data&#34; # full name
+    _ftype = &#34;item&#34;        # field name
+    _maxdisplay = 80</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.forcefield.parameterforcefield</li>
+<li>pizza.private.mstruct.paramauto</li>
+<li>pizza.private.mstruct.param</li>
+<li>pizza.private.mstruct.struct</li>
+</ul>
+</dd>
+<dt id="generic.parameterforcefield"><code class="flex name class">
+<span>class <span class="ident">parameterforcefield</span></span>
+<span>(</span><span>sortdefinitions=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>class of forcefields parameters, derived from param
+note that conctanating two forcefields force them
+to to be sorted</p>
+<p>Constructor for parameterforcefield. It forces the parent's _returnerror parameter to False.</p>
+<h2 id="parameters">Parameters:</h2>
+<p>_protection : bool, optional
+Whether to enable protection on the parameters (default: False).
+_evaluation : bool, optional
+Whether evaluation is enabled for the parameters (default: True).
+sortdefinitions : bool, optional
+Whether to sort definitions upon initialization (default: False).
+**kwargs : dict
+Additional keyword arguments for the parent class.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class parameterforcefield(paramauto):
+    &#34;&#34;&#34; class of forcefields parameters, derived from param
+        note that conctanating two forcefields force them
+        to to be sorted
+    &#34;&#34;&#34;
+    _type = &#34;FF&#34;
+    _fulltype = &#34;forcefield&#34;
+    _ftype = &#34;parameter&#34;
+    _maxdisplay = 80
+
+    # same strategy as used in dscript for forcing  _returnerror = False (added 2024-09-12)
+    def __init__(self, _protection=False, _evaluation=True, sortdefinitions=False, **kwargs):
+        &#34;&#34;&#34;
+        Constructor for parameterforcefield. It forces the parent&#39;s _returnerror parameter to False.
+
+        Parameters:
+        -----------
+        _protection : bool, optional
+            Whether to enable protection on the parameters (default: False).
+        _evaluation : bool, optional
+            Whether evaluation is enabled for the parameters (default: True).
+        sortdefinitions : bool, optional
+            Whether to sort definitions upon initialization (default: False).
+        **kwargs : dict
+            Additional keyword arguments for the parent class.
+        &#34;&#34;&#34;
+        # Call the parent class constructor
+        super().__init__(_protection=_protection, _evaluation=_evaluation, sortdefinitions=sortdefinitions, **kwargs)
+        # Override the _returnerror attribute at the instance level
+        self._returnerror = False</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.private.mstruct.paramauto</li>
+<li>pizza.private.mstruct.param</li>
+<li>pizza.private.mstruct.struct</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="generic.genericdata" href="#generic.genericdata">genericdata</a></li>
+<li>pizza.generic.genericdata</li>
+</ul>
+</dd>
+<dt id="generic.water"><code class="flex name class">
+<span>class <span class="ident">water</span></span>
+<span>(</span><span>beadtype=1, userid=None, USER=forcefield (FF object) with 0 parameters)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>water material (smd:ulsph): generic water model
+water()
+water(beadtype=index, userid="myfluid", USER=&hellip;)</p>
+<p>override any propery with USER.parameter (set only the parameters you want to override)
+USER.rho: density in kg/m3 (default=1000)
+USER.c0: speed of the sound in m/s (default=10.0)
+USER.q1: standard artificial viscosity linear coefficient (default=1.0)
+USER.Cp: heat capacity of material &ndash; not used here (default=1.0)
+USER.contact_scale: scaling coefficient for contact (default=1.5)
+USER.contact_stiffness: contact stifness in Pa (default="2.5<em>${c0}^2</em>${rho}")</p>
+<p>water forcefield:
+water(beadtype=index, userid="myfluid")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class water(ulsph):
+    &#34;&#34;&#34; water material (smd:ulsph): generic water model
+            water()
+            water(beadtype=index, userid=&#34;myfluid&#34;, USER=...)
+
+            override any propery with USER.parameter (set only the parameters you want to override)
+                USER.rho: density in kg/m3 (default=1000)
+                USER.c0: speed of the sound in m/s (default=10.0)
+                USER.q1: standard artificial viscosity linear coefficient (default=1.0)
+                USER.Cp: heat capacity of material -- not used here (default=1.0)
+                USER.contact_scale: scaling coefficient for contact (default=1.5)
+                USER.contact_stiffness: contact stifness in Pa (default=&#34;2.5*${c0}^2*${rho}&#34;)
+    &#34;&#34;&#34;
+    name = ulsph.name + struct(material=&#34;water&#34;)
+    description = ulsph.description + struct(material=&#34;water beads - SPH-like&#34;)
+    userid = &#39;water&#39;
+    version = 0.1
+
+    # constructor (do not forgert to include the constuctor)
+    def __init__(self, beadtype=1, userid=None, USER=parameterforcefield()):
+        &#34;&#34;&#34; water forcefield:
+            water(beadtype=index, userid=&#34;myfluid&#34;) &#34;&#34;&#34;
+        if userid!=None: self.userid = userid
+        self.beadtype = beadtype
+        self.parameters = parameterforcefield(
+            # water-water interactions
+            rho = 1000,
+            c0 = 10.0,
+            q1 = 1.0,
+            Cp = 1.0,
+            taitexponent = 7,
+            # hertz contacts
+            contact_scale = 1.5,
+            contact_stiffness = &#39;2.5*${c0}^2*${rho}&#39;
+            ) + USER # update with user properties if any</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.forcefield.ulsph</li>
+<li>pizza.forcefield.smd</li>
+<li>pizza.forcefield.forcefield</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="generic.water.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="generic.water.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="generic.water.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="generic.water.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="generic.USERSMD" href="#generic.USERSMD">USERSMD</a></code></h4>
+<ul class="">
+<li><code><a title="generic.USERSMD.RULES" href="#generic.USERSMD.RULES">RULES</a></code></li>
+<li><code><a title="generic.USERSMD.newtonianfluid" href="#generic.USERSMD.newtonianfluid">newtonianfluid</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="generic.generic" href="#generic.generic">generic</a></code></h4>
+<ul class="">
+<li><code><a title="generic.generic.RULES" href="#generic.generic.RULES">RULES</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="generic.genericdata" href="#generic.genericdata">genericdata</a></code></h4>
+</li>
+<li>
+<h4><code><a title="generic.parameterforcefield" href="#generic.parameterforcefield">parameterforcefield</a></code></h4>
+</li>
+<li>
+<h4><code><a title="generic.water" href="#generic.water">water</a></code></h4>
+<ul class="">
+<li><code><a title="generic.water.description" href="#generic.water.description">description</a></code></li>
+<li><code><a title="generic.water.name" href="#generic.water.name">name</a></code></li>
+<li><code><a title="generic.water.userid" href="#generic.water.userid">userid</a></code></li>
+<li><code><a title="generic.water.version" href="#generic.water.version">version</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

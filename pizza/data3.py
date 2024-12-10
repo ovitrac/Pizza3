@@ -1,6 +1,150 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+# `data` Class
+
+The `data` class provides tools to read, write, and manipulate LAMMPS data files, enabling seamless integration with the `dump` class for restart generation and simulation data management.
+
+---
+
+## Features
+
+- **Input Handling**:
+  - Supports single or multiple data files, including gzipped files.
+  - Create empty data objects or initialize from an existing `dump` object.
+
+- **Headers and Sections**:
+  - Access and modify headers, including atom counts and box dimensions.
+  - Define, reorder, append, and replace columns in data file sections.
+
+- **Integration with `dump`**:
+  - Generate restart files from `dump` snapshots.
+  - Replace atomic positions and velocities in `Atoms` and `Velocities` sections.
+
+- **Visualization**:
+  - Extract atoms and bonds for visualization tools.
+  - Iterate over single data file snapshots (compatible with `dump`).
+
+---
+
+## Usage
+
+### Initialization
+- **From a File**:
+  ```python
+  d = data("data.poly")          # Read a LAMMPS data file
+  ```
+
+- **Create an Empty Object**:
+  ```python
+  d = data()                     # Create an empty data object
+  ```
+
+- **From a `dump` Object**:
+  ```python
+  d = data(dump_obj, timestep)   # Generate data object from dump snapshot
+  ```
+
+### Accessing Data
+- **Headers**:
+  ```python
+  d.headers["atoms"] = 1500       # Set atom count in header
+  ```
+
+- **Sections**:
+  ```python
+  d.sections["Atoms"] = lines     # Define the `Atoms` section
+  ```
+
+### Manipulation
+- **Column Mapping**:
+  ```python
+  d.map(1, "id", 3, "x")          # Assign names to columns
+  ```
+
+- **Reorder Columns**:
+  ```python
+  d.reorder("Atoms", 1, 3, 2, 4)  # Reorder columns in a section
+  ```
+
+- **Replace or Append Data**:
+  ```python
+  d.replace("Atoms", 5, vec)      # Replace a column in `Atoms`
+  d.append("Atoms", vec)          # Append a new column to `Atoms`
+  ```
+
+- **Delete Headers or Sections**:
+  ```python
+  d.delete("Bonds")               # Remove the `Bonds` section
+  ```
+
+### Output
+- **Write to a File**:
+  ```python
+  d.write("data.new")             # Write the data object to a file
+  ```
+
+### Visualization
+- **Extract Data for Visualization**:
+  ```python
+  time, box, atoms, bonds, tris, lines = d.viz(0)
+  ```
+
+### Integration with `dump`
+- **Replace Atomic Positions**:
+  ```python
+  d.newxyz(dump_obj, timestep)    # Replace atomic positions with `dump` data
+  ```
+
+---
+
+## Examples
+
+### Basic Usage
+```python
+d = data("data.poly")             # Load a LAMMPS data file
+d.headers["atoms"] = 2000         # Update atom count
+d.reorder("Atoms", 1, 3, 2, 4)    # Reorder columns in `Atoms`
+d.write("data.new")               # Save to a new file
+```
+
+### Restart Generation
+```python
+dump_obj = dump("dump.poly")
+d = data(dump_obj, 1000)          # Create data object from dump
+d.write("data.restart")           # Write restart file
+```
+
+### Visualization
+```python
+time, box, atoms, bonds, tris, lines = d.viz(0)
+```
+
+---
+
+## Properties
+- **Headers**:
+  - `atoms`: Number of atoms in the data file.
+  - `atom types`: Number of atom types.
+  - `xlo xhi`, `ylo yhi`, `zlo zhi`: Box dimensions.
+
+- **Sections**:
+  - `Atoms`: Atomic data (e.g., ID, type, coordinates).
+  - `Velocities`: Atomic velocities (optional).
+  - Additional sections for bonds, angles, etc.
+
+---
+
+## Notes
+- **Compatibility**: Fully compatible with `dump` for restart and visualization tasks.
+- **Error Handling**: Automatically validates headers and sections for consistency.
+- **Extensibility**: Easily add or modify headers, sections, and attributes.
+
+---
+"""
+
+
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
 __copyright__ = "Copyright 2022"
@@ -8,7 +152,7 @@ __credits__ = ["Steve Plimpton", "Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.35"
+__version__ = "0.99991"
 
 
 # Pizza.py toolkit, www.cs.sandia.gov/~sjplimp/pizza.html
@@ -29,6 +173,7 @@ __version__ = "0.35"
 # 2022-02-04 - add append and start to add comments
 # 2022-02-10 - first implementation of a full restart object from a dump object
 # 2022-02-12 - revised append method, more robust, more verbose
+# 2024-12-08 - updated help
 
 oneline = "Read, write, manipulate LAMMPS data files"
 
@@ -58,7 +203,7 @@ d.newxyz(dmp,1000)		 replace xyz in Atoms with xyz of snapshot N
 
   newxyz assumes id,x,y,z are defined in both data and dump files
     also replaces ix,iy,iz if they are defined
-  
+
 index,time,flag = d.iterator(0/1)          loop over single data file snapshot
 time,box,atoms,bonds,tris,lines = d.viz(index)   return list of viz objects
 
@@ -75,7 +220,7 @@ time,box,atoms,bonds,tris,lines = d.viz(index)   return list of viz objects
       NULL if bonds do not exist
     tris = NULL
     lines = NULL
-    
+
 d.write("data.new")             write a LAMMPS data file
 """
 
@@ -101,6 +246,8 @@ import numpy as np
 # Dependecy for the creation of DATA restart object from a DUMP object
 from pizza.dump3 import dump
 
+__all__ = ['data', 'dump']
+
 #try:
 #    tmp = PIZZA_GUNZIP
 #except:
@@ -117,11 +264,11 @@ class data:
         self.nselect = 1
 
         if len(list) == 0:
-            
+
         # ========================================
         # Default Constructor (empty object)
         # ========================================
-            
+
             self.title = "LAMMPS data file"
             self.names = {}
             self.headers = {}
@@ -129,13 +276,13 @@ class data:
             self.flist = []
             self.restart = False
             return
-        
+
         elif isinstance(list[0],dump):
-                
+
         # ========================================
         # Constructor from an existing DUMP object
         # ========================================
-        
+
             X = list[0]     # supplied dump object
             t = X.time()
             nt = len(t)
@@ -181,11 +328,11 @@ class data:
             self.flist = list[0].flist
             self.restart = True
             return
-        
+
         # ===========================================================
         # Regular constructor from DATA file (supplied as filename)
         # ===========================================================
-        
+
         flist = list
         file = list[0]
         if file[-3:] == ".gz":
@@ -251,7 +398,7 @@ class data:
         self.sections = sections
         self.flist = flist
         self.restart = False
-        
+
     # --------------------------------------------------------------------
     # Display method (added OV - 2022-02-03)
     def __repr__(self):
@@ -263,7 +410,7 @@ class data:
             kind = "restart"
         else:
             kind = "source"
-        print("Data file: %s\n\tcontains %d atoms from %d atom types\n\twith box = [%0.4g %0.4g %0.4g %0.4g %0.4g %0.4g]" 
+        print("Data file: %s\n\tcontains %d atoms from %d atom types\n\twith box = [%0.4g %0.4g %0.4g %0.4g %0.4g %0.4g]"
               % (self.flist[0],
                  self.headers['atoms'],
                  self.headers['atom types'],
@@ -280,8 +427,8 @@ class data:
         ret = 'LAMMPS data object including %d atoms (%d types, %s="%s")' \
             % (self.headers['atoms'],self.maxtype(),kind,self.flist[0])
         return ret
-    
-    
+
+
     # --------------------------------------------------------------------
     # assign names to atom columns
 
@@ -414,10 +561,10 @@ class data:
         line = lines[0]
         words = line.split()
         ret = '"%s": %d x %d values' % (name,nlines,len(words))
-        
+
         if flaghead: ret = "LAMMPS data section "+ret
         return ret
-        
+
     # --------------------------------------------------------------------
     # replace x,y,z in Atoms with x,y,z values from snapshot ntime of dump object
     # assumes id,x,y,z are defined in both data and dump files
@@ -626,10 +773,10 @@ skeywords = [
     ["Tinker Types", "atoms"],
 ]
 
-# %%        
-# ===================================================   
+# %%
+# ===================================================
 # main()
-# ===================================================   
+# ===================================================
 # for debugging purposes (code called as a script)
 # the code is called from here
 # ===================================================

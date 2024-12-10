@@ -197,6 +197,8 @@ import hashlib, random, string, copy
 from pizza.script import span, pipescript
 from pizza.dscript import dscript
 
+__all__ = ['Operation', 'dscript', 'format_table', 'generate_random_name', 'group', 'groupcollection', 'groupobject', 'pipescript', 'span', 'truncate_text']
+
 # %% Private functions
 
 # Helper function that generates a random string of a specified length using uppercase and lowercase letters.
@@ -268,10 +270,10 @@ def format_table(
         >>> col_max_widths = [5, 10, 8]
         >>> align = ["R", "C", "L"]
         >>> print(format_table(headers, rows, col_max_widths, align))
-        Idx   |   Name    | Value   
+        Idx   |   Name    | Value
         ----- | ---------- | --------
-          1   |  Example  | 12345   
-          2   | LongerName | 67890   
+          1   |  Example  | 12345
+          2   | LongerName | 67890
     """
     # Normalize alignment input
     if isinstance(align, str):
@@ -386,7 +388,7 @@ class groupobject:
             str: String representation including beadtype, group, and mass (if not None).
         """
         return f"groupobject(beadtype={self.beadtype}, group={span(self.group,',','[',']')}, name={self.name}, mass={self.mass})"
-    
+
 
     def __add__(self, other: Union['groupobject', 'groupcollection']) -> 'groupcollection':
         """
@@ -645,17 +647,17 @@ class groupcollection:
     def mass(self, name: Optional[str] = None, default_mass: Optional[Union[str, int, float]] = "${mass}", verbose: Optional[bool] = True) -> 'dscript':
         """
         Generates LAMMPS mass commands for each unique beadtype in the collection.
-        
+
         The method iterates through all `groupobject` instances in the collection,
         collects unique beadtypes, and ensures that each beadtype has a consistent mass.
         If a beadtype has `mass=None`, it assigns a default mass as specified by `default_mass`.
-        
+
         ### Parameters:
             name (str, optional): The name to assign to the resulting `dscript` object. Defaults to a generated name.
             default_mass (str, optional): The default mass value to assign when a beadtype's mass is `None`.
                                           Defaults to `"${mass}"`.
             verbose (bool, optional): If `True`, includes a comment header in the output. Defaults to `True`.
-        
+
         ### Returns:
             dscript: A `dscript` object containing the mass commands for each beadtype, formatted as follows:
                      ```
@@ -664,20 +666,20 @@ class groupcollection:
                      mass 3 2.5
                      ```
                      The `collection` attribute of the `dscript` object holds the formatted mass commands as a single string.
-     
+
         ### Raises:
             ValueError: If a beadtype has inconsistent mass values across different `groupobject` instances.
-    
+
         ### Example:
             ```python
             # Create groupobject instances
             o1 = groupobject(beadtype=1, group=["all", "A"], mass=1.0)
             o2 = groupobject(beadtype=2, group=["all", "B", "C"])
             o3 = groupobject(beadtype=3, group="C", mass=2.5)
-    
+
             # Initialize a groupcollection with the groupobjects
             G = groupcollection([o1, o2, o3])
-    
+
             # Generate mass commands
             M = G.mass()
             print(M.do())
@@ -1098,40 +1100,40 @@ class Operation:
     def _operate(self, other, operator):
         """
         Implements algebraic operations between self and other Operation instances.
-    
+
         Parameters:
         - other (Operation): The other Operation instance to be operated with.
         - operator (str): The operation to be performed. Supported values are '+', '-', '*'.
-    
+
         Returns:
         - Operation: A new Operation instance reflecting the result of the operation.
         """
         # Ensure other is also an instance of Operation
         if not isinstance(other, Operation):
             raise TypeError(f"Unsupported type: {type(other)}")
-    
+
         # Map operator to prefix
         prefix_map = {'+': 'add', '-': 'sub', '*': 'mul'}
         prefix = prefix_map.get(operator, 'op')
-    
+
         # Prepare operands list
         operands = []
-    
+
         # Handle self
         if self.operator == operator and not self.isfinalized():
             operands.extend(self.operands)
         else:
             operands.append(self)
-    
+
         # Handle other
         if other.operator == operator and not other.isfinalized():
             operands.extend(other.operands)
         else:
             operands.append(other)
-    
+
         # Generate a new name
         name = self.generate_hashname(prefix=prefix, ID=self.generateID() + other.generateID())
-    
+
         # Create a new Operation
         new_op = Operation(operator, operands, name=name)
         return new_op
@@ -1139,7 +1141,7 @@ class Operation:
     def script(self):
         """
         Generate the LAMMPS code using the dscript and script classes.
-        
+
         Returns:
         - script onject: The LAMMPS code generated by this operation.
         """
@@ -1186,7 +1188,7 @@ class group:
       resulting operations.
     - **Integration with Scripting Tools**: Convert group operations into
       `dscript` or `pipescript` objects for advanced script management.
-      
+
     ### LAMMPS Context
 
     In LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator),
@@ -1198,7 +1200,7 @@ class group:
     This `group` class abstracts the complexity of managing group definitions
     and operations, providing a high-level interface to define and manipulate
     groups programmatically.
-    
+
 
     ### Usage Examples
 
@@ -1289,7 +1291,7 @@ class group:
     # Evaluate the operation and store the result
     G.evaluate('combined_group', complex_op)
     ```
-    
+
 
     **Subindexing with Callable Syntax**
 
@@ -1322,7 +1324,7 @@ class group:
       - `groups` (dict): Dictionary of group definitions to create upon initialization.
       - `group_names` (list): List of group names to create empty groups upon initialization.
       - `collection` (list or tuple of groupobject, optional): Collection of groupobject instances.
-      
+
       - `printflag` (bool): If True, enables printing of script generation.
       - `verbose` (bool): If True, enables verbose output.
 
@@ -1443,35 +1445,35 @@ class group:
     it enhances productivity and reduces the potential for errors in simulation setup.
     """
 
-    
+
     def __init__(self, name=None, groups=None, group_names=None, collection=None, printflag=False, verbose=True, verbosity=None):
         """
         Initializes a new instance of the group class.
-        
+
         ### Parameters:
             name (str, optional): Name for the group instance. If `None` or empty and `collection` is provided,
                                   generates a name based on beadtypes (e.g., "1+2+3").
             groups (dict, optional): Dictionary of group definitions to create upon initialization.
             group_names (list or tuple, optional): List of group names to create empty groups upon initialization.
-            collection (list, tuple, or groupcollection, optional): 
+            collection (list, tuple, or groupcollection, optional):
                 - If a list or tuple, it should contain `groupobject` instances.
                 - If a `groupcollection` object, it will extract the `groupobject` instances from it.
             printflag (bool, optional): If `True`, enables printing of script generation.
             verbose (bool, optional): If `True`, enables verbose output.
-        
+
         ### Raises:
-            TypeError: 
+            TypeError:
                 - If `groups` is not a dictionary.
                 - If `group_names` is not a list or tuple.
                 - If `collection` is not a list, tuple, or `groupcollection` object.
                 - If any item in `collection` (when it's a list or tuple) is not a `groupobject` instance.
         """
-        self._in_construction = True  # Indicate that the object is under construction        
+        self._in_construction = True  # Indicate that the object is under construction
         # Handle 'name' parameter
         if not name:
             name = generate_random_name()
         self._name = name
-        
+
         # Initialize other attributes
         self._operations = []
         self.printflag = printflag
@@ -1502,18 +1504,18 @@ class group:
                         raise TypeError("All items in 'collection' must be `groupobject` instances.")
                 self.generate_group_definitions_from_collection(collection)
 
-            
-            
+
+
     def create_groups(self, *group_names):
         for group_name in group_names:
             if not isinstance(group_name, str):
                 raise TypeError(f"Group name must be a string, got {type(group_name)}")
             self.create(group_name)
-            
+
 
     def __str__(self):
         return f'Group "{self._name}" with {len(self._operations)} operations\n'
-    
+
 
     def format_cell_content(self, content, max_width):
         content = str(content) if content is not None else ''
@@ -1527,11 +1529,11 @@ class group:
     def __repr__(self):
         """
         Returns a neatly formatted table representation of the group's operations.
-    
+
         Each row represents an operation in the group, displaying its index, name,
         operator, and operands. The table adjusts column widths dynamically and
         truncates content based on maximum column widths.
-    
+
         ### Returns:
             str: A formatted string representation of the group operations.
         """
@@ -1561,7 +1563,7 @@ class group:
     def list(self):
         """ return the list of all operations """
         return [op.name for op in self._operations]
-    
+
 
     def code(self):
         """
@@ -1592,19 +1594,19 @@ class group:
     def delete(self, name):
         """
         Deletes one or more stored operations based on their names.
-    
+
         Parameters:
         -----------
         name : str, list, or tuple
-            The name(s) of the operation(s) to delete. If a list or tuple is provided, 
+            The name(s) of the operation(s) to delete. If a list or tuple is provided,
             all specified operations will be deleted.
-    
+
         Usage:
         ------
         G.delete('operation_name')
         G.delete(['operation1', 'operation2'])
         G.delete(('operation1', 'operation2'))
-        
+
         Raises:
         -------
         ValueError
@@ -1715,7 +1717,7 @@ class group:
                 raise IndexError("Operation index out of range.")
         else:
             raise TypeError("Key must be an operation name (string) or index (integer).")
-            
+
 
     def __getattr__(self, name):
         """
@@ -1723,17 +1725,17 @@ class group:
         If the attribute is one of the core attributes, returns it directly.
         For other attributes, searches for an operation with a matching name
         in the _operations list.
-    
+
         Parameters:
         -----------
         name : str
             The name of the attribute or operation to access.
-    
+
         Returns:
         --------
         The value of the attribute if it's a core attribute, or the operation
         associated with the specified name if found in _operations.
-    
+
         Raises:
         -------
         AttributeError
@@ -1750,8 +1752,8 @@ class group:
                     return op
         # If not found, raise an AttributeError
         raise AttributeError(f"Attribute or operation '{name}' not found.")
-            
-                
+
+
     def __setattr__(self, name, value):
         """
         Allows deletion of an operation via 'G.operation_name = []' after construction.
@@ -1772,22 +1774,22 @@ class group:
             else:
                 # Set attribute normally
                 super().__setattr__(name, value)
-                
-                
+
+
     def _get_subobject(self, key):
         """
         Retrieves a subobject based on the provided key.
-    
+
         Parameters:
         -----------
         key : str or int
             The key used to retrieve the subobject.
-    
+
         Returns:
         --------
         Operation
             The operation corresponding to the key.
-    
+
         Raises:
         -------
         KeyError
@@ -1812,7 +1814,7 @@ class group:
         else:
             raise TypeError("Key must be a string or integer.")
 
-    
+
     def __call__(self, *keys):
         """
         Allows subindexing of the group object using callable syntax with multiple keys.
@@ -1835,7 +1837,7 @@ class group:
         for key in keys:
             operation = self._get_subobject(key)
             selected_operations.append(operation)
-        
+
         # Create a new group instance with the selected operations
         new_group = group(name=f"{self._name}_subgroup", printflag=self.printflag, verbose=self.verbose)
         new_group._operations = selected_operations
@@ -1872,7 +1874,7 @@ class group:
     def variable(self, variable_name, expression, style="atom"):
         """
         Assigns an expression to a LAMMPS variable.
-    
+
         Parameters:
         - variable_name (str): The name of the variable to be assigned.
         - expression (str): The expression to assign to the variable.
@@ -1884,16 +1886,16 @@ class group:
             raise TypeError(f"Expression must be a string, got {type(expression)}")
         if not isinstance(style, str):
             raise TypeError(f"Style must be a string, got {type(style)}")
-    
+
         lammps_code = f"variable {variable_name} {style} \"{expression}\""
         op = Operation("variable", [variable_name, expression], code=lammps_code)
         self.add_operation(op)
-        
-    
+
+
     def byvariable(self, group_name, variable_name):
         """
         Sets a group of atoms based on a variable.
-    
+
         Parameters:
         - group_name: str, the name of the group.
         - variable_name: str, the name of the variable to define the group.
@@ -1902,7 +1904,7 @@ class group:
             raise TypeError(f"Group name must be a string, got {type(group_name)}")
         if not isinstance(variable_name, str):
             raise TypeError(f"Variable name must be a string, got {type(variable_name)}")
-    
+
         lammps_code = f"group {group_name} variable {variable_name}"
         op = Operation("byvariable", [variable_name], name=group_name, code=lammps_code)
         self.add_operation(op)
@@ -1985,7 +1987,7 @@ class group:
         criteria = {"intersect": groups}
         op = Operation("intersect", groups, name=group_name, code=lammps_code, criteria=criteria)
         self.add_operation(op)
-        
+
 
     def subtract(self,group_name, *groups):
         """
@@ -2013,17 +2015,17 @@ class group:
         """
         if not isinstance(group_op, Operation):
             raise TypeError("Expected an instance of Operation.")
-    
+
         if group_name in self.list():
             raise ValueError(f"The operation '{group_name}' already exists.")
-    
+
         # If the operation is already finalized, no need to evaluate
         if group_op.isfinalized():
             if group_op.name != group_name:
                 # If names differ, create a copy with the new name
                 self.copy(group_op.name, group_name)
             return
-    
+
         # Recursively evaluate operands
         operand_names = []
         for op in group_op.operands:
@@ -2040,7 +2042,7 @@ class group:
                     operand_names.append(op.name)
             else:
                 operand_names.append(str(op))
-    
+
         # Call the appropriate method based on the operator
         if group_op.operator == '+':
             self.union(group_name, *operand_names)
@@ -2053,38 +2055,38 @@ class group:
             group_op.operator = 'intersect'
         else:
             raise ValueError(f"Unknown operator: {group_op.operator}")
-    
+
         # Update the operation
         group_op.name = group_name
         # Get the last added operation
         finalized_op = self._operations[-1]
         group_op.code = finalized_op.code
         group_op.operands = operand_names
-    
+
         # Add the operation to the group's _operations if not already added
         if group_op.name not in self.list():
             self._operations.append(group_op)
-            
-            
+
+
     def add_group_criteria(self, *args, **kwargs):
         """
         Adds group(s) using existing methods based on key-value pairs.
-    
+
         Supports two usages:
         1. add_group_criteria(group_name, **criteria)
         2. add_group_criteria(group_definitions)
-    
+
         Parameters:
         - group_name (str): The name of the group.
         - **criteria: Criteria for group creation.
-    
+
         OR
-    
+
         - group_definitions (dict): A dictionary where keys are group names and values are criteria dictionaries.
-    
+
         Raises:
         - TypeError: If arguments are invalid.
-    
+
         Usage:
         - G.add_group_criteria('group_name', type=[1,2])
         - G.add_group_criteria({'group1': {'type': [1]}, 'group2': {'region': 'regionID'}})
@@ -2103,20 +2105,20 @@ class group:
         else:
             raise TypeError("Invalid arguments. Use add_group_criteria(group_name, **criteria) or add_group_criteria(group_definitions).")
 
-    
+
     def add_group_criteria_single(self, group_name, **criteria):
         """
         Adds a single group based on criteria.
-    
+
         Parameters:
         - group_name (str): The name of the group.
         - **criteria: Criteria for group creation.
-    
+
         Raises:
         - TypeError: If group_name is not a string.
         - ValueError: If no valid criteria are provided or if criteria are invalid.
-        
-        
+
+
         Example (advanced):
             G = group()
             group_definitions = {
@@ -2130,35 +2132,35 @@ class group:
             }
             G.add_group_criteria(group_definitions)
             print(G.code())
-            
+
         Expected output
             variable myVar atom "x > 5"
             group myGroup variable myVar
         """
         if not isinstance(group_name, str):
             raise TypeError(f"Group name must be a string, got {type(group_name)}")
-    
+
         if not criteria:
             raise ValueError(f"No criteria provided for group '{group_name}'.")
-    
+
         if "type" in criteria:
             type_values = criteria["type"]
             if not isinstance(type_values, (list, tuple, int)):
                 raise TypeError("Type values must be an integer or a list/tuple of integers.")
             self.bytype(group_name, type_values)
-    
+
         elif "region" in criteria:
             region_name = criteria["region"]
             if not isinstance(region_name, str):
                 raise TypeError("Region name must be a string.")
             self.byregion(group_name, region_name)
-    
+
         elif "id" in criteria:
             id_values = criteria["id"]
             if not isinstance(id_values, (list, tuple, int)):
                 raise TypeError("ID values must be an integer or a list/tuple of integers.")
             self.byid(group_name, id_values)
-    
+
         elif "variable" in criteria:
             var_info = criteria["variable"]
             if not isinstance(var_info, dict):
@@ -2170,75 +2172,75 @@ class group:
             var_name = var_info['name']
             expression = var_info['expression']
             style = var_info.get('style', 'atom')
-    
+
             # First, assign the variable
             self.variable(var_name, expression, style)
-    
+
             # Then, create the group based on the variable
             self.byvariable(group_name, var_name)
-    
+
         elif "union" in criteria:
             groups = criteria["union"]
             if not isinstance(groups, (list, tuple)):
                 raise TypeError("Union groups must be a list or tuple of group names.")
             self.union(group_name, *groups)
-    
+
         elif "intersect" in criteria:
             groups = criteria["intersect"]
             if not isinstance(groups, (list, tuple)):
                 raise TypeError("Intersect groups must be a list or tuple of group names.")
             self.intersect(group_name, *groups)
-    
+
         elif "subtract" in criteria:
             groups = criteria["subtract"]
             if not isinstance(groups, (list, tuple)):
                 raise TypeError("Subtract groups must be a list or tuple of group names.")
             self.subtract(group_name, *groups)
-    
+
         elif "create" in criteria and criteria["create"]:
             self.create(group_name)
-    
+
         elif "clear" in criteria and criteria["clear"]:
             self.clear(group_name)
-    
+
         else:
             raise ValueError(f"No valid criterion provided for group '{group_name}'.")
 
 
 
-    
+
     def get_group_criteria(self, group_name):
         """
         Retrieve the criteria that define a group. Handles group_name as a string or number.
-        
+
         Parameters:
         - group_name: str or int, the name or number of the group.
-        
+
         Returns:
         - dict or str: The criteria used to define the group, or a message if defined by multiple criteria.
-        
+
         Raises:
         - ValueError: If the group does not exist.
         """
         # Check if group_name exists in _operations
         if group_name not in self._operations:
             raise ValueError(f"Group '{group_name}' does not exist.")
-        
+
         # Retrieve all operations related to the group directly from _operations
         operations = self._operations[group_name]
-        
+
         if not operations:
             raise ValueError(f"No operations found for group '{group_name}'.")
-    
+
         criteria = {}
         for op in operations:
             if op.criteria:
                 criteria.update(op.criteria)
-        
+
         # If multiple criteria, return a message
         if len(criteria) > 1:
             return f"Group '{group_name}' is defined by multiple criteria: {criteria}"
-        
+
         return criteria
 
 
@@ -2283,12 +2285,12 @@ class group:
             # Use the index as the key for the script line
            dscript_obj[idx] = op.code
         return dscript_obj
-        
-    
+
+
     def script(self, name=None, printflag=None, verbose=None, verbosity=None):
         """
         Generates a script object containing the group's LAMMPS commands.
-        
+
         Parameters:
         - name (str): Optional name for the script object.
         - printflag (bool, default=False): print on the current console if True
@@ -2304,12 +2306,12 @@ class group:
         verbosity = 0 if not verbose else verbosity
         script_obj = self.dscript(name=name,printflag=printflag, verbose=verbose, verbosity=verbosity).script(printflag=printflag, verbose=verbose, verbosity=verbosity)
         return script_obj
-    
-    
+
+
     def pipescript(self, printflag=None, verbose=None, verbosity=None):
         """
         Generates a pipescript object containing the group's LAMMPS commands.
-                
+
         Parameters:
         - printflag (bool, default=False): print on the current console if True
         - verbose (bool, default=True): keep comments if True
@@ -2358,44 +2360,44 @@ class group:
         memo[id(self)] = copie
         for k, v in self.__dict__.items():
             setattr(copie, k, copy.deepcopy(v, memo))
-        return copie 
-    
-    
+        return copie
+
+
     def count(self,name=None, selection: Optional[List[str]] = None) -> 'dscript':
         """
         Generates DSCRIPT counters for specified groups with LAMMPS variable definitions and print commands.
-        
+
         The method retrieves the list of group names using `self.list()`. If `selection` is provided, it
         filters the groups to include only those specified. It then creates a variable for each selected
         group that counts the number of atoms in that group and generates corresponding print commands.
         The commands are encapsulated within a `dscript` object for execution.
-        
+
         ### Parameters:
-            selection (list of str, optional): 
+            selection (list of str, optional):
                 - List of group names to be numbered.
                 - If `None`, all groups in the collection are numbered.
-        
+
         ### Returns:
             dscript: A `dscript` object containing the variable definitions and print commands, formatted as follows:
                      ```
                      variable n_lower equal "count(lower)"
                      variable n_middle equal "count(middle)"
                      variable n_upper equal "count(upper)"
-                     
-                     print "Number of atoms in lower: ${n_lower}" 
-                     print "Number of atoms in middle: ${n_middle}" 
+
+                     print "Number of atoms in lower: ${n_lower}"
+                     print "Number of atoms in middle: ${n_middle}"
                      print "Number of atoms in upper: ${n_upper}"
                      ```
                      The `variables` attribute holds the variable definitions, and the `printvariables` attribute
                      holds the print commands, each separated by a newline.
-        
+
         ### Raises:
-            ValueError: 
+            ValueError:
                 - If any group specified in `selection` does not exist in the collection.
                 - If `selection` contains duplicate group names.
             TypeError:
                 - If `selection` is not a list of strings.
-        
+
         ### Example:
             ```python
             # Create groupobject instances
@@ -2405,16 +2407,16 @@ class group:
 
             # Initialize a group with the groupobjects
             G = group(name="1+2+3",collection=(g1,g2,g3)) or collection=g1+g2+g3
-            
+
             # add other groups
             G.evaluate("all", G.lower + G.middle + G.upper)
             G.evaluate("external", G.all - G.middle)
-            
+
             # Generate number commands for all groups
             N = G.count(selection=["all","lower","middle","lower"])
             print(N.do())
             ```
-            
+
             **Output:**
             ```
             variable n_all equal "count(all)"
@@ -2429,7 +2431,7 @@ class group:
         """
         # Retrieve the list of all group names
         all_group_names = self.list()
-        
+
         # If selection is provided, validate it
         if selection is not None:
             if not isinstance(selection, (list, tuple)):
@@ -2447,7 +2449,7 @@ class group:
         else:
             # If no selection, target all groups
             target_groups = all_group_names
-        
+
         # Initialize lists to hold variable definitions and print commands
         variable_definitions = []
         print_commands = []
@@ -2487,7 +2489,7 @@ if __name__ == '__main__':
 
     G.union("uniongroup","group1","group2","group3")
     print(G.disp("uniongroup"))
-    
+
     # LAMMPS example
     #     group myGroup region myRegion
     #     group typeGroup type 1 2
@@ -2505,7 +2507,7 @@ if __name__ == '__main__':
     G0.evaluate('unionGroup', union_op)
     # Generate LAMMPS script
     print(G0.code())
-    
+
 
     # Advanced Usage
     G = group()
@@ -2517,7 +2519,7 @@ if __name__ == '__main__':
     G.evaluate("debug1",G.o1+G.o2)
     G.evaluate("debug2",G.o1+G.o2+G.o3-(G.o4+G.o5)+(G.o6*G.o7))
     print(repr(G))
-    
+
     # Example to prepare workshop
     G = group()
     G.add_group_criteria("lower", type=[1])
@@ -2525,5 +2527,3 @@ if __name__ == '__main__':
     G.add_group_criteria("new_group", create=True)
     G.add_group_criteria("upper", clear=True)
     G.add_group_criteria("subtract_group", subtract=["group1", "group2"])
-
-    

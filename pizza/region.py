@@ -123,10 +123,10 @@ Below are some examples demonstrating how to use the REGION module:
 6. **Adding a Cylinder**:
     ```python
     R.cylinder(name='cyl1', dim='z', c1=0, c2=0, radius=1.0, lo=0.0, hi=5.0, beadtype=1)
-    
+
 
 Advanced features
------------------    
+-----------------
 Public features (i.e. to be used by the end-user)
     	Let R1, R2 being pizza.regions()
     	R = R1 + R2 concatenates two regions (objects of R2 are inherited in R1, higher precedence for R2)
@@ -155,7 +155,7 @@ Private features (i.e. to be used inside the code)
 	| pipe them
 
    Add other geometries: block, sphere, cylinder....
-    
+
     ```
 
 Dependencies
@@ -186,12 +186,12 @@ __credits__ = ["Olivier Vitrac", "Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9999"
+__version__ = "0.99991"
 
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-12-01 (community)
+# INRAE\Olivier Vitrac - rev. 2024-12-09 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -237,6 +237,7 @@ __version__ = "0.9999"
 # 2024-08-01 more robust implementation via method: scriptHeaders() and headersData object
 # 2024-10-08 add lattice_scale
 # 2024-12-01 standarize scripting features, automatically call script/pscript methods
+# 2024-12-09 fix getattr for region objects to be compatible with inspect, pdoc
 
 
 # %% Imports and private library
@@ -256,13 +257,17 @@ from webbrowser import open as livelammps
 # os.chdir(pwd)
 
 # import struct, param, paramauto, span
-from pizza.private.struct import *
+from pizza.private.mstruct import *
 from pizza.script import pipescript, script, scriptdata, scriptobject, span
 from pizza.forcefield import *
 
+
+__all__ = ['Block', 'Collection', 'Cone', 'Cylinder', 'Ellipsoid', 'Evalgeometry', 'Intersect', 'LammpsCollectionGroup', 'LammpsCreate', 'LammpsFooter', 'LammpsFooterPreview', 'LammpsGeneric', 'LammpsGroup', 'LammpsHeader', 'LammpsHeaderBox', 'LammpsHeaderInit', 'LammpsHeaderLattice', 'LammpsHeaderMass', 'LammpsMove', 'LammpsRegion', 'LammpsSetGroup', 'LammpsSpacefilling', 'LammpsVariables', 'Plane', 'Prism', 'Sphere', 'Union', 'cleanname', 'coregeometry', 'emulsion', 'forcefield', 'headersRegiondata', 'none', 'param', 'paramauto', 'parameterforcefield', 'pipescript', 'pstr', 'region', 'regioncollection', 'regiondata', 'rigidwall', 'saltTLSPH', 'scatter', 'script', 'scriptdata', 'scriptobject', 'smd', 'solidfood', 'span', 'struct', 'tlsph', 'ulsph', 'water', 'wrap']
+
+
 # protected properties in region
-protectedregionkeys = ('name', 'live', 'nbeads' 'volume', 'mass', 'radius', 'contactradius', 'velocities', \
-                        'forces', 'filename', 'index', 'objects', 'nobjects', 'counter','_iter_',\
+protectedregionkeys = ('name', 'live', 'nbeads' 'volume', 'mass', 'radius', 'contactradius', 'velocities',
+                        'forces', 'filename', 'index', 'objects', 'nobjects', 'counter','_iter_',
                         'livelammps','copy', 'hasfixmove', 'spacefilling', 'isspacefilled', 'spacefillingbeadtype','mass','density',
                         'units','center','separationdistance','regionunits',
                         'lattice_scale','lattice_style','lattice_scale_siunits', 'lattice_spacing',
@@ -691,7 +696,7 @@ class LammpsHeaderInit(LammpsGeneric): # --- helper script ---
                     newton = "${newton}",
             hasvariables = False
                     )
-    
+
     def __init__(self, persistentfile=True, persistentfolder=None, **userdefinitions):
         """Constructor adding instance definitions stored in USER."""
         super().__init__(persistentfile, persistentfolder, **userdefinitions)
@@ -830,7 +835,7 @@ class LammpsHeaderMass(LammpsGeneric):
     def __init__(self, persistentfile=True, persistentfolder=None, **userdefinitions):
         """
             Constructor adding instance definitions stored in USER.
-    
+
             Parameters:
                 persistentfile (bool, optional): Whether to use a persistent file. Defaults to True.
                 persistentfolder (str, optional): Folder path for persistent files. Defaults to None.
@@ -845,7 +850,7 @@ class LammpsHeaderMass(LammpsGeneric):
     def generate_template(self):
         """
             Generate the TEMPLATE for mass assignments based on USER definitions.
-    
+
             The method constructs mass assignments for each bead type. If `mass` overrides
             are provided as a list or tuple, it assigns the specified mass to the corresponding
             bead types. Otherwise, it uses the default `mass` value from `USER.headersData.mass`.
@@ -855,7 +860,7 @@ class LammpsHeaderMass(LammpsGeneric):
         mass = self.USER.mass
         # Validate mass
         if not isinstance(mass, (list, tuple)): mass = [mass]  # Convert single value to a list
-        if len(mass) > nbeads: 
+        if len(mass) > nbeads:
             mass = mass[:nbeads]  # Truncate excess entries
         elif len(mass) < nbeads:
             last_mass = mass[-1]  # Repeat the last value for missing entries
@@ -1011,7 +1016,7 @@ class coregeometry:
                  group=[],
                  mass=1, density=1,
                  lattice_style="sc", lattice_scale=1, lattice_scale_siunits=1 # added on 2024-07-05
-                 ): 
+                 ):
         """
             constructor of the generic core geometry
                 USER: any definitions requires by the geometry
@@ -1624,7 +1629,7 @@ class coregeometry:
         else:
             print("Volume attribute is missing.")
             return None
-    
+
     # return parent region details
     @property
     def regiondetails(self):
@@ -1638,8 +1643,8 @@ class coregeometry:
         f"Volume (SI units): {self.volume('si')}",
         f"Number of Atoms: {self.natoms}","\n"
         ))
-        
-    
+
+
     # return geometry details (2024-07-04)
     @property
     def geometry(self):
@@ -1668,7 +1673,7 @@ class Block(coregeometry):
         self.subindex = subindex
         self.mass = mass
         self.density = density
-        
+
         # call the generic constructor
         super().__init__(
                 USER = regiondata(style="$block"),
@@ -1782,7 +1787,7 @@ class Cylinder(coregeometry):
                 lattice_scale_siunits=lattice_scale_siunits,
                 style=style, group=group, forcefield=forcefield # script object properties
                 )
-        
+
     def volume(self,units=None):
         """Calculate the volume of the cylinder based on USER.args"""
         # args = [dim,c1,c2,radius,lo,hi]
@@ -1827,7 +1832,7 @@ class Ellipsoid(coregeometry):
                 lattice_scale_siunits=lattice_scale_siunits,
                 style=style, group=group, forcefield=forcefield # script object properties
                 )
-        
+
     def volume(self,units=None):
         #args = [x, y, z, a, b, c]
         """Calculate the volume of the ellipsoid based on USER.args"""
@@ -2162,7 +2167,7 @@ class Collection:
 # %% region class (main class)
 class region:
     """
-    The `region` class represents a simulation region, centered at the origin (0, 0, 0) by default, 
+    The `region` class represents a simulation region, centered at the origin (0, 0, 0) by default,
     and is characterized by its physical dimensions, properties, and boundary conditions. It supports
     setting up lattice structures, particle properties, and options for live previews.
 
@@ -2188,7 +2193,7 @@ class region:
     -------------------
     mass : float, optional
         Mass of particles in the region (default is 1).
-    
+
     volume : float, optional
         Volume of the region (default is 1).
 
@@ -2290,10 +2295,10 @@ class region:
 
     Methods:
     -------
-    __init__ : 
+    __init__ :
         Constructor method to initialize all the attributes of the `region` class.
     """
-   
+
     _version = "0.9997"
     __custom_documentations__ = "pizza.region.region class"
 
@@ -2322,7 +2327,7 @@ class region:
                  boundary = None,
                  nbeads=1,
                  units = "",
-                 
+
                  # particle properties
                  mass=1.0,
                  volume=1.0,
@@ -2331,7 +2336,7 @@ class region:
                  contactradius=0.5,
                  velocities=[0.0,0.0,0.0],
                  forces=[0.0,0.0,0.0],
-                 
+
                  # other properties
                  filename="",
                  previewfilename="",
@@ -2356,24 +2361,24 @@ class region:
                  lattice_scale = 0.8442,    # LJ units (for visualization)
                  lattice_spacing = None,    # lattice spacing is not used by default (set [dx dy dz] if needed)
                  lattice_style = "fcc" ,    # any valid lattice style accepted by LAMMPS (sc=simple cubic)
-                 
+
                  # Atom properties
                  atom_style = "smd",
                  atom_modify = ["map","array"],
                  comm_modify = ["vel","yes"],
                  neigh_modify = ["every",10,"delay",0,"check","yes"],
                  newton ="off",
-                                  
+
                  # Live preview
                  live_units = "lj",         # units to be used ONLY with livelammps (https://andeplane.github.io/atomify/)
                  live_atom_style = "atomic",# atom style to be used ONLY with livelammps (https://andeplane.github.io/atomify/)
-                 
+
                  # livepreview options
                  livepreview_options = {
                      'static':{'run':1},
                      'dynamic':{'run':100}
                      },
-                 
+
                  # common flags (for scripting)
                  printflag = False,
                  verbose = True,
@@ -2382,11 +2387,11 @@ class region:
                  ):
         """ constructor """
         self.name = name
-        
+
         # Ensure dimension is an integer (must be 2 or 3 for LAMMPS)
         if not isinstance(dimension, int) or dimension not in (2, 3):
             raise ValueError("dimension must be either 2 or 3.")
-        
+
         # Handle boundary input
         if boundary is None:
             boundary = ["sm"] * dimension
@@ -2395,11 +2400,11 @@ class region:
                 raise ValueError(f"The length of boundary ({len(boundary)}) must match the dimension ({dimension}).")
         else:
             raise ValueError("boundary must be a list of strings or None.")
-        
+
         # Validate regionunits
         if regionunits not in ("lattice", "si"):
             raise ValueError("regionunits can only be 'lattice' or 'si'.")
-        
+
         # Lattice scaling logic
         lattice_scale_siunits = lattice_scale if regionunits == "si" else separationdistance
         if lattice_scale_siunits is None or lattice_scale_siunits=="":
@@ -2475,13 +2480,13 @@ class region:
         # region object units
         self.regionunits = regionunits
         # lattice
-        self.units = units       
+        self.units = units
         self.center = center
         self.separationdistance = separationdistance
         self.lattice_scale = lattice_scale
         self.lattice_spacing = lattice_spacing
         self.lattice_scale_siunits = lattice_scale_siunits
-        self.lattice_style = lattice_style 
+        self.lattice_style = lattice_style
         # headers for header scripts (added 2024-09-01)
         # geometry is assumed to be units set by ${boxunits_arg} (new standard 2024-11-26)
         self.headersData = headersRegiondata(
@@ -2524,14 +2529,14 @@ class region:
     def scale_and_translate(self, value, offset=0):
         """
         Scale and translate a value or encapsulate the formula within a string.
-        
+
         If self.regionunits is "si", only the offset is applied without scaling.
         Otherwise, scaling and translation are performed based on self.units ("si" or "lattice").
-        
+
         Parameters:
             value (str or float): The value or formula to be scaled and translated.
             offset (float, optional): The offset to apply. Defaults to 0.
-        
+
         Returns:
             str or float: The scaled and translated value or formula.
         """
@@ -2569,7 +2574,7 @@ class region:
                 else:  # "lattice"
                     return translated * self.lattice_scale + (offset * self.lattice_scale)
 
-        
+
 
     # space filling attributes (cannot be changed)
     @property
@@ -2579,7 +2584,7 @@ class region:
     @property
     def spacefillingbeadtype(self):
         return self.spacefilling["fillingbeadtype"]
-    
+
     # total number of atoms in the region
     @property
     def natoms(self):
@@ -2588,7 +2593,7 @@ class region:
         for eachobj in self:
             total_atoms += eachobj.natoms
         return total_atoms
-    
+
     # details if the geometry of the region
     @property
     def geometry(self):
@@ -2870,7 +2875,7 @@ class region:
                 self.scale_and_translate(lo, self.center[2]),
                 self.scale_and_translate(hi, self.center[2])
             ]
-        
+
         if self.units == "si":
             C.USER.args = args_scaled
             C.USER.args_siunits = args
@@ -3001,7 +3006,7 @@ class region:
                 self.scale_and_translate(radius, 0),
                 self.scale_and_translate(lo, self.center[2]),
                 self.scale_and_translate(hi, self.center[2])
-            ]        
+            ]
         if self.units == "si":
             C.USER.args = args_scaled
             C.USER.args_siunits = args
@@ -3722,10 +3727,16 @@ class region:
         """ getattr attribute override """
         if (name in self.__dict__) or (name in protectedregionkeys):
             return self.__dict__[name] # higher precedence for root attributes
-        elif name in protectedregionkeys:
+        if name in protectedregionkeys:
             return getattr(type(self), name).__get__(self) # for methods decorated as properties (@property)
-        else:
-            return self.get(name)
+        # Handle special cases like __wrapped__ explicitly
+        if name == "__wrapped__":
+            return None  # Default value or appropriate behavior
+        # Leave legitimate __dunder__ attributes to the default mechanism
+        if name.startswith("__") and name.endswith("__"):
+            raise AttributeError(f"{type(self).__name__!r} object has no attribute {name!r}")
+        # Default
+        return self.get(name)
 
     # generic SET method ----------------------------
     def set(self,name,value):
@@ -3881,7 +3892,7 @@ class region:
         for t in utypes:
             c.append((t,typlist.count(t)))
         return c
-    
+
     # BEADTYPES property
     @property
     def beadtypes(self):
@@ -3993,7 +4004,7 @@ class region:
         """ script all objects in the region """
         printflag = self.printflag if printflag is None else printflag
         verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
-        verbosity = 0 if not verbose else verbosity        
+        verbosity = 0 if not verbose else verbosity
         s = self.pipescript(printflag=printflag,verbose=verbose,verbosity=verbosity).script(printflag=printflag,verbose=verbose,verbosity=verbosity)
         if self.isspacefilled:
             USERspacefilling =regiondata(**self.spacefilling)
@@ -4019,40 +4030,40 @@ class region:
             USER.run =self.livelammps["options"][livemode]["run"]
             s = LammpsHeader(**USER)+s+LammpsFooter(**USER)
         return s
-    
+
     # SCRIPTHEADERS add header scripts for initializing script, lattice, box for region
     def scriptHeaders(self, what=["init", "lattice", "box"], pipescript=False, **userdefinitions):
         """
-            Generate and return LAMMPS header scripts for initializing the simulation, defining the lattice, 
+            Generate and return LAMMPS header scripts for initializing the simulation, defining the lattice,
             and specifying the simulation box for all region objects.
-        
+
             Parameters:
             - what (list of str): Specifies which scripts to generate. Options are "init", "lattice", "box", "mass" and "preview".
-                                  Multiple scripts can be generated by passing a list of these options. 
+                                  Multiple scripts can be generated by passing a list of these options.
                                   Default is ["init", "lattice", "box"].
             - pipescript (bool): If True, the generated scripts are combined with `|` instead of `+`. Default is False.
-            
+
             Property/pair value
             - nbeads (int): Specifies the number of beads, overriding the default if larger than `self.nbeads`.
                             Default is 1.
             - mass (real value or list): Sets the mass for each bead, overrriding `self.mass`
                             Default is 1.0.
-    
-        
+
+
             Returns:
-            - object: The combined header scripts as a single object. 
+            - object: The combined header scripts as a single object.
                       Header values can be overridden by updating `self.headersData`.
-        
+
             Raises:
             - Exception: If no valid script options are provided in `what`.
-        
+
             Example usage:
                 sRheader = R.scriptHeaders("box").do()  # Generate the box header script.
                 sRallheaders = R.scriptHeaders(["init", "lattice", "box"])  # Generate all headers.
-            
+
                 Example usage without naming parameters:
                 sRheader = R.scriptHeaders("box")  # "what" specified as "box", nbeads defaults to 1.
-            
+
                 Example of overriding values
                 sRheader = R.scriptHeaders("lattice",lattice_style = "$sq")  # Generate the lattice header script with the overridden value.
         """
@@ -4081,9 +4092,9 @@ class region:
             scripts.append(LammpsFooterPreview(**USERregion))
         if not scripts:
             raise Exception('nothing to do (use: "init", "lattice", "box", "mass" or "preview" within [ ])')
-    
+
         # Combine the scripts based on the pipescript flag
-        combined_script = scripts[0]  # Initialize the combined script with the first element    
+        combined_script = scripts[0]  # Initialize the combined script with the first element
         for script in scripts[1:]:
             if pipescript:
                 # Combine scripts using the | operator, maintaining pipescript format
@@ -4092,16 +4103,16 @@ class region:
                 # Combine scripts using the + operator, maintaining regular script format
                 combined_script = combined_script + script  # s_ab = s_a + s_b
         return combined_script
-    
+
 
     def pscriptHeaders(self, what=["init", "lattice", "box"], **userdefinitions):
         """
         Surrogate method for generating LAMMPS pipescript headers.
         Calls the `scriptHeaders` method with `pipescript=True`.
-    
+
         Parameters:
         - what (list of str): Specifies which scripts to generate. Options are "init", "lattice", and "box".
-                              Multiple scripts can be generated by passing a list of these options. 
+                              Multiple scripts can be generated by passing a list of these options.
                               Default is ["init", "lattice", "box"].
         Property/pair value
         - nbeads (int): Specifies the number of beads, overriding the default if larger than `self.nbeads`.
@@ -4438,60 +4449,60 @@ if __name__ == '__main__':
     C.script()
     g = C.emulsion.group()
     C.dolive()
-    
-    
+
+
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     #             F O R   P R O D U C T I O N
     # +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     # History: 2024-07-04 (first version), 2024-07-29 (update), 2024-09-01 (community, per request)
-    
+
     """
 === [  S Y N O P S I S  ] ===
-This script provides a detailed example of simulating gel compression using cylindrical objects 
-within a defined region, employing SI units. The example is designed for production and includes 
+This script provides a detailed example of simulating gel compression using cylindrical objects
+within a defined region, employing SI units. The example is designed for production and includes
 steps to create, script, and visualize the simulation setup using LAMMPS-compatible scripts.
 
 Key Features:
-1. **Geometry Setup**: 
-    - Four cylindrical objects ('top', 'food', 'tongue', 'bottom') are defined with specific radii 
+1. **Geometry Setup**:
+    - Four cylindrical objects ('top', 'food', 'tongue', 'bottom') are defined with specific radii
       and heights.
-    - The cylinders are positioned within a central container, with spacing determined by a spacer 
+    - The cylinders are positioned within a central container, with spacing determined by a spacer
       element.
     - The total height of the system is calculated, and the objects are centered within the region.
-  
+
 2. **Forcefield Assignment**:
     - Each object is assigned a bead type and grouped with attributes such as rigidity or softness.
-    - Custom forcefields are applied to each object, simulating different physical properties like 
+    - Custom forcefields are applied to each object, simulating different physical properties like
       rigid walls or soft materials.
-  
+
 3. **Region Definition**:
-    - A simulation region is created with specific dimensions, accounting for the maximum radius of 
+    - A simulation region is created with specific dimensions, accounting for the maximum radius of
       the cylinders and the total height of the system.
-    - The region is defined in SI units, with additional parameters like separation distance and 
+    - The region is defined in SI units, with additional parameters like separation distance and
       lattice scale.
-  
+
 4. **Script Generation**:
     - The script converts the defined region and objects into LAMMPS-compatible code.
     - Header scripts for initialization, lattice, and the bounding box are generated.
-    - The example emphasizes the flexibility in scripting, allowing dynamic reordering and 
+    - The example emphasizes the flexibility in scripting, allowing dynamic reordering and
       combination of scripts.
 
 5. **Execution and Visualization**:
-    - The region setup is executed for visualization purposes, enabling control and inspection of 
+    - The region setup is executed for visualization purposes, enabling control and inspection of
       the geometry.
-    - The geometry details, including an estimation of the number of atoms, are provided for 
+    - The geometry details, including an estimation of the number of atoms, are provided for
       further analysis.
 
-This example showcases how to effectively set up a gel compression simulation, highlighting key 
+This example showcases how to effectively set up a gel compression simulation, highlighting key
 aspects of geometry definition, forcefield application, and scripting for simulation execution.
 """
-    
+
     # EXAMPLE: gel compression with SI units
     name = ['top', 'food', 'tongue', 'bottom']
     radius = [10e-3, 5e-3, 8e-3, 10e-3]  # in m
     height = [1e-3, 4e-3, 3e-3, 1e-3]  # in m
     spacer = 2e-3  # in m
-    
+
     # Calculate positions in SI units (meters)
     position_original = [
         spacer + height[1] + height[2] + height[3],
@@ -4500,16 +4511,16 @@ aspects of geometry definition, forcefield application, and scripting for simula
         0
     ]
     total_height = sum(height) + spacer * 1e-3  # converting spacer to meters
-    
+
     # Center positions around the middle of the container
     position = [x - total_height / 2 for x in position_original]
-    
+
     # information for beads
     # add attributes to forcefields to match your needs or derive new forcefields
     beadtypes = [1, 2, 3, 1]
     groups = [["rigid","wall1"],["food1","soft"],["food2","soft"],["rigid","wall2"]]
     forcefields = [rigidwall(),solidfood(),solidfood(),rigidwall()]
-    
+
     # Create the region container with SI units
     R = region(
         name='region container',
@@ -4520,7 +4531,7 @@ aspects of geometry definition, forcefield application, and scripting for simula
         separationdistance=100e-6,  # 50 µm
         lattice_scale=100e-6  # 50 µm
     )
-    
+
     # Add cylinders to the region R
     # the objects are added "statically"
     # since they contain variables a do() is required to make them a script
@@ -4536,15 +4547,15 @@ aspects of geometry definition, forcefield application, and scripting for simula
             hi=position[i] + height[i],
             beadtype=beadtypes[i],
             style="smd",      # the script oject properties
-            group=groups[i],  # can be defined in the geometry or 
+            group=groups[i],  # can be defined in the geometry or
             forcefield=forcefields[i] # when scriptoject() is called
         )
-        
+
     # Compile statically all objects
     # sR contains the LAMMPS code to generate all region objects and their atoms
     # sR is a string, all variables have been executed
     sR = R.do() # this line force the execution of R
-    
+
     # Header Scripts facilitate the deployment and initialization of region objects.
     # ------------- Summary ---------------
     # Available scripts include "init", "lattice", and "box".
@@ -4565,7 +4576,7 @@ aspects of geometry definition, forcefield application, and scripting for simula
     # Scripts can be dynamically combined using the + operator or statically with the & operator.
     # Scripts can also be combined with pipescripts using the + or | (piped) operator.
     # Region and collection objects are considered pipescripts.
-    # 
+    #
     # Comment on the differences between scripts and pipescripts:
     #   - Scripts operate within a single variable space and cannot be reordered once combined.
     #   - Pipescripts, however, include both global and local variable spaces and can be reordered,
@@ -4575,7 +4586,7 @@ aspects of geometry definition, forcefield application, and scripting for simula
     # In this example, atom_style is removed as it also set with forcefields
     R.headersData.atom_style = None
     sRallheaders = R.scriptHeaders(["init", "lattice", "box"] )
-        
+
     # Generate information on beads from the scripted objects
     # note that scriptobject is a method of script extended to region
     # the region must have been preallably scripted, which has been done with "sR = R.do()"
@@ -4585,15 +4596,15 @@ aspects of geometry definition, forcefield application, and scripting for simula
         # style, group and forcefield can be overdefined if needed
         b.append(R[i].scriptobject(style="smd"))
     collection = b[0] + b[1] + b[2] + b[3]
-    
+
     # The script corresponding to the collection is given by:
     # scollection is an object of the class script
     # its final execution can be still affected by variables
     scollection = collection.script.do()
-    
+
     # Execute the region setup only for visualization (control only)
     R.dolive()
-    
+
     # The detail of the geometry with an estimation of the number of atoms (control only)
     R.geometry
 

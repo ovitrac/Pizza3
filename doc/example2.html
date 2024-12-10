@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>example2 API documentation</title>
+<meta name="description" content="Comprehensive Documentation of Example 2 …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>example2</code></h1>
+</header>
+<section id="section-intro">
+<h3 id="comprehensive-documentation-of-example-2">Comprehensive Documentation of Example 2</h3>
+<p>This example is a <strong>showcase</strong> of the powerful capabilities provided by the <strong>Pizza3 toolkit</strong> for creating, managing, and analyzing simulations in LAMMPS. It integrates multiple components of the Pizza3 framework, demonstrating their interplay and highlighting their advanced functionalities.</p>
+<hr>
+<h3 id="objective"><strong>Objective</strong></h3>
+<p>This example demonstrates the programmatic creation of <strong>3D geometries</strong>, management of <strong>atomic groups</strong>, and generation of both <strong>LAMMPS scripts</strong> and <strong>DSCRIPT files</strong>. The goal is to illustrate the flexibility and modularity of the Pizza3 toolkit for handling simulation workflows efficiently and dynamically.</p>
+<hr>
+<h3 id="what-you-will-learn"><strong>What You Will Learn</strong></h3>
+<ol>
+<li><strong>Initialization and Setup:</strong></li>
+<li>Configure global settings for simulations.</li>
+<li>
+<p>Handle directory and file management for temporary data.</p>
+</li>
+<li>
+<p><strong>Using the <code>region</code> Class:</strong></p>
+</li>
+<li>Define and initialize a 3D simulation box with SI units.</li>
+<li>Create subdomains (regions) within the box using a lattice-based approach.</li>
+<li>
+<p>Add cylindrical regions with specific dimensions and bead types.</p>
+</li>
+<li>
+<p><strong>Dynamic Group Management with <code>group</code> and <code>groupobject</code>:</strong></p>
+</li>
+<li>Create and manage groups of atoms based on bead types.</li>
+<li>Perform arithmetic operations on groups (union, subtraction).</li>
+<li>
+<p>Dynamically assign masses and verify atom counts for each group.</p>
+</li>
+<li>
+<p><strong>Combining Scripts:</strong></p>
+</li>
+<li>Use the <code>pipescript</code> class to combine multiple scripts into a cohesive workflow.</li>
+<li>
+<p>Modularly add initialization, lattice definitions, group assignments, and geometry preview scripts.</p>
+</li>
+<li>
+<p><strong>Generating and Using DSCRIPT Files:</strong></p>
+</li>
+<li>Export LAMMPS scripts to DSCRIPT format for reusability.</li>
+<li>
+<p>Reconstruct and validate LAMMPS scripts from DSCRIPT files.</p>
+</li>
+<li>
+<p><strong>Debugging and Visualization:</strong></p>
+</li>
+<li>Generate output files for debugging and visualizing the simulation geometry.</li>
+<li>Use flexible templates and substitutions to manage dynamic variables.</li>
+</ol>
+<hr>
+<h3 id="structure-of-the-script"><strong>Structure of the Script</strong></h3>
+<p>The script is divided into multiple logical sections, each demonstrating a specific feature of the Pizza3 toolkit:</p>
+<h4 id="1-setup-and-directory-management"><strong>1. Setup and Directory Management</strong></h4>
+<ul>
+<li>Initializes a temporary folder (<code>tmp/</code>) to store generated scripts and output files.</li>
+<li>Ensures the folder exists or creates it dynamically.</li>
+</ul>
+<h4 id="2-defining-the-simulation-box"><strong>2. Defining the Simulation Box</strong></h4>
+<ul>
+<li>Creates a simulation box using the <code>region</code> class.</li>
+<li>Configures:</li>
+<li>Dimensions (3D).</li>
+<li>Boundary conditions (fixed).</li>
+<li>Units (SI).</li>
+<li>Lattice styles and spacing.</li>
+</ul>
+<h4 id="3-adding-subregions"><strong>3. Adding Subregions</strong></h4>
+<ul>
+<li>Adds cylindrical subregions within the simulation box.</li>
+<li>Associates each cylinder with a specific bead type and dimensions.</li>
+</ul>
+<h4 id="4-managing-groups"><strong>4. Managing Groups</strong></h4>
+<ul>
+<li>Uses the <code>groupobject</code> class to define atom groups for each bead type.</li>
+<li>Combines groups dynamically using operations like union and subtraction.</li>
+<li>Assigns masses to groups and verifies atom counts.</li>
+</ul>
+<h4 id="5-generating-scripts"><strong>5. Generating Scripts</strong></h4>
+<ul>
+<li>Creates modular LAMMPS scripts for initialization, group definitions, and geometry preview.</li>
+<li>Combines them into a single script using <code>pipescript</code>.</li>
+</ul>
+<h4 id="6-exporting-and-validating-dscript-files"><strong>6. Exporting and Validating DSCRIPT Files</strong></h4>
+<ul>
+<li>Converts the LAMMPS script to a DSCRIPT format for future reuse.</li>
+<li>Loads the DSCRIPT file and regenerates the LAMMPS script to verify consistency.</li>
+</ul>
+<hr>
+<h3 id="key-components-and-tools"><strong>Key Components and Tools</strong></h3>
+<h4 id="pizza3-classes-and-methods"><strong>Pizza3 Classes and Methods</strong></h4>
+<table>
+<thead>
+<tr>
+<th>Class/Module</th>
+<th>Functionality</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>region</code></td>
+<td>Defines 3D simulation boxes and subregions.</td>
+</tr>
+<tr>
+<td><code>groupobject</code></td>
+<td>Manages groups of atoms or molecules.</td>
+</tr>
+<tr>
+<td><code>group</code></td>
+<td>Performs arithmetic operations on groups and evaluates atom counts.</td>
+</tr>
+<tr>
+<td><code>pipescript</code></td>
+<td>Combines multiple script components into a single executable pipeline.</td>
+</tr>
+<tr>
+<td><code>dscript</code></td>
+<td>Converts LAMMPS scripts into modular, reusable DSCRIPT files.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="lammps-integration"><strong>LAMMPS Integration</strong></h4>
+<ul>
+<li>The script generates valid LAMMPS input files with commands for defining regions, groups, and atoms.</li>
+<li>The generated scripts are compatible with LAMMPS' syntax and can be executed directly.</li>
+</ul>
+<h4 id="dscript-features"><strong>DSCRIPT Features</strong></h4>
+<ul>
+<li>Encodes LAMMPS workflows in a structured, modular format.</li>
+<li>Supports dynamic variable substitutions for maximum flexibility.</li>
+</ul>
+<hr>
+<h3 id="execution-steps-and-python-code"><strong>Execution Steps and Python Code</strong></h3>
+<h4 id="step-1-setup-and-directory-management"><strong>Step 1: Setup and Directory Management</strong></h4>
+<p>Before beginning, ensure that the required directory structure exists. This example uses a <code>tmp/</code> directory for storing temporary files.</p>
+<pre><code class="language-python">import os
+
+# Path to the 'tmp' folder
+tmp_folder = os.path.join(os.getcwd(), &quot;tmp&quot;)
+allow_create = True  # Set to False to prevent automatic creation
+
+# Check and create the folder if necessary
+if not os.path.exists(tmp_folder):
+    if allow_create:
+        os.makedirs(tmp_folder)
+        print(f&quot;Created temporary folder: {tmp_folder}&quot;)
+    else:
+        raise FileNotFoundError(
+            f&quot;
+
+The 'tmp' folder does not exist in the current directory: {os.getcwd()}. &quot;
+            &quot;Please create the 'tmp/' subfolder manually or set `allow_create = True`.
+&quot;
+        )
+else:
+    print(f&quot;
+
+Using existing temporary folder: {tmp_folder}
+&quot;)
+</code></pre>
+<hr>
+<h4 id="step-2-initialize-the-simulation-box"><strong>Step 2: Initialize the Simulation Box</strong></h4>
+<p>Use the <code>region</code> class to define the simulation box. Add global parameters such as dimensions, boundary conditions, and lattice details.</p>
+<pre><code class="language-python">from pizza.region import region
+
+# Initialize the simulation box
+R = region(
+    name=&quot;SimulationBox&quot;,  # Name of the simulation box
+    dimension=3,  # 3D simulation
+    boundary=[&quot;f&quot;, &quot;f&quot;, &quot;f&quot;],  # Fixed boundary conditions
+    nbeads=3,  # Number of bead types
+    width=0.08, height=0.08, depth=0.06,  # Dimensions in meters
+    units=&quot;si&quot;,  # Use SI units
+    regionunits=&quot;si&quot;,  # Define regions in SI units
+    lattice_scale=0.001,  # Lattice scale in meters
+    lattice_style=&quot;sc&quot;,  # Simple cubic lattice
+    lattice_spacing=0.001,  # Spacing between lattice points
+    separationdistance=0.001,  # Minimum separation between points
+    mass=1.0  # Default mass
+)
+</code></pre>
+<hr>
+<h4 id="step-3-add-cylindrical-subregions"><strong>Step 3: Add Cylindrical Subregions</strong></h4>
+<p>Define subregions (cylinders) within the simulation box using the <code>cylinder</code> method of the <code>region</code> class.</p>
+<pre><code class="language-python"># Add cylindrical subregions with different bead types
+R.cylinder(name=&quot;LowerCylinder&quot;, dim=&quot;z&quot;, c1=0, c2=0, radius=0.03, lo=-0.03, hi=-0.01, beadtype=1)
+R.cylinder(name=&quot;CentralCylinder&quot;, dim=&quot;z&quot;, c1=0, c2=0, radius=0.03, lo=-0.01, hi=0.01, beadtype=2)
+R.cylinder(name=&quot;UpperCylinder&quot;, dim=&quot;z&quot;, c1=0, c2=0, radius=0.03, lo=0.01, hi=0.03, beadtype=3)
+</code></pre>
+<p>Generate initialization scripts for the region.</p>
+<pre><code class="language-python"># Generate initialization headers for the region
+Rheaders = R.pscriptHeaders(what=[&quot;init&quot;, &quot;lattice&quot;, &quot;box&quot;])
+</code></pre>
+<hr>
+<h4 id="step-4-manage-groups"><strong>Step 4: Manage Groups</strong></h4>
+<p>Use <code>groupobject</code> to define groups of atoms for each bead type and combine them into a collection.</p>
+<pre><code class="language-python">from pizza.group import group, groupobject
+
+# Create group objects for each bead type
+g1 = groupobject(beadtype=1, group='lower', mass=2.0)
+g2 = groupobject(beadtype=2, group='middle')
+g3 = groupobject(beadtype=3, group='upper')
+
+# Combine group objects into a collection
+gcollection = g1 + g2 + g3
+
+# Generate a script to assign masses
+Mscript = gcollection.mass(default_mass=R.mass)
+</code></pre>
+<p>Evaluate and define relationships between groups.</p>
+<pre><code class="language-python"># Define and evaluate groups
+G = group(name=&quot;1+2+3&quot;, collection=gcollection)
+G.evaluate(&quot;all&quot;, G.lower + G.middle + G.upper)
+G.evaluate(&quot;external&quot;, G.all - G.middle)
+
+# Generate a script to count atoms in each group
+Ncontrol = G.count(selection=[&quot;all&quot;, &quot;lower&quot;, &quot;middle&quot;, &quot;upper&quot;])
+</code></pre>
+<hr>
+<h4 id="step-5-preview-and-combine-scripts"><strong>Step 5: Preview and Combine Scripts</strong></h4>
+<p>Preview the region geometry and combine all scripts using <code>pipescript</code>.</p>
+<pre><code class="language-python"># Preview the region geometry
+Rpreview = R.pscriptHeaders(what=&quot;preview&quot;)
+
+# Combine all scripts into a single pipeline
+from pizza.script import pipescript
+
+S = Rheaders | R | G | Mscript | Ncontrol | Rpreview
+</code></pre>
+<p>Write the full script to a file.</p>
+<pre><code class="language-python"># Write the combined LAMMPS script to a file
+scriptfile = S.write(&quot;tmp/example2.txt&quot;, verbosity=1, overwrite=True)
+print(f&quot;The LAMMPS script is available here:
+{scriptfile}&quot;)
+</code></pre>
+<hr>
+<h4 id="step-6-generate-dscript"><strong>Step 6: Generate DSCRIPT</strong></h4>
+<p>Export the combined LAMMPS script to a DSCRIPT format for future reuse.</p>
+<pre><code class="language-python">from pizza.dscript import dscript
+
+# Convert to DSCRIPT
+D = S.dscript(verbose=True)
+dscriptfile = D.save(&quot;tmp/example2.d.txt&quot;, overwrite=True)
+print(f&quot;The DSCRIPT is available here:
+{dscriptfile}&quot;)
+</code></pre>
+<hr>
+<h4 id="step-7-validate-reversibility"><strong>Step 7: Validate Reversibility</strong></h4>
+<p>Reload the DSCRIPT file and regenerate the LAMMPS script to ensure consistency.</p>
+<pre><code class="language-python"># Load DSCRIPT and regenerate the LAMMPS script
+Dreverse = dscript.load(dscriptfile)
+Sreverse = Dreverse.pipescript(verbose=False)
+
+# Output the regenerated script
+print(&quot;
+
+# Reverse LAMMPS code (from disk)&quot;, Sreverse.do(verbose=False), sep=&quot;
+&quot;)
+</code></pre>
+<hr>
+<h3 id="key-outputs"><strong>Key Outputs</strong></h3>
+<ol>
+<li><strong>Generated Files</strong>:</li>
+<li>LAMMPS script (<code>tmp/example2.txt</code>).</li>
+<li>
+<p>DSCRIPT file (<code>tmp/example2.d.txt</code>).</p>
+</li>
+<li>
+<p><strong>Debug Information</strong>:</p>
+</li>
+<li>Atom counts for each group.</li>
+<li>
+<p>Validation of script reversibility.</p>
+</li>
+<li>
+<p><strong>Visualization</strong>:</p>
+</li>
+<li>Geometry dump file for previewing the simulation setup.</li>
+</ol>
+<hr>
+<h3 id="next-steps"><strong>Next Steps</strong></h3>
+<ul>
+<li>Modify dimensions, bead types, and subregions to explore flexibility.</li>
+<li>Add dynamic forcefield definitions using <code>dforcefield</code>.</li>
+<li>Incorporate additional physical parameters and dynamics into the simulation.</li>
+</ul>
+<p>This tutorial equips you to efficiently design, manage, and analyze LAMMPS simulations with the Pizza3 toolkit. Explore its modular and reusable approach to streamline your workflow!</p>
+<hr>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>This example is a <strong>comprehensive guide</strong> to using Pizza3 for managing LAMMPS simulations programmatically. By integrating flexible region definitions, dynamic group management, and reusable script generation, this workflow demonstrates how to simplify and enhance the process of creating and managing complex simulations.</p>
+<h3 id="next-steps_1"><strong>Next Steps</strong></h3>
+<ul>
+<li>Explore the generated files (<code>example2.txt</code> and <code>example2.d.txt</code>) to understand the structure of LAMMPS and DSCRIPT outputs.</li>
+<li>Modify parameters (e.g., dimensions, bead types) to test the adaptability of the script.</li>
+<li>Use the Pizza3 toolkit to integrate additional features like forcefields and dynamics.</li>
+</ul>
+<p>Created on Tue Nov 26, 2024
+Author: olivi</p>
+<p>last revision: 2024-12-04</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+### Comprehensive Documentation of Example 2
+
+This example is a **showcase** of the powerful capabilities provided by the **Pizza3 toolkit** for creating, managing, and analyzing simulations in LAMMPS. It integrates multiple components of the Pizza3 framework, demonstrating their interplay and highlighting their advanced functionalities.
+
+---
+
+### **Objective**
+
+This example demonstrates the programmatic creation of **3D geometries**, management of **atomic groups**, and generation of both **LAMMPS scripts** and **DSCRIPT files**. The goal is to illustrate the flexibility and modularity of the Pizza3 toolkit for handling simulation workflows efficiently and dynamically.
+
+---
+
+### **What You Will Learn**
+
+1. **Initialization and Setup:**
+   - Configure global settings for simulations.
+   - Handle directory and file management for temporary data.
+
+2. **Using the `region` Class:**
+   - Define and initialize a 3D simulation box with SI units.
+   - Create subdomains (regions) within the box using a lattice-based approach.
+   - Add cylindrical regions with specific dimensions and bead types.
+
+3. **Dynamic Group Management with `group` and `groupobject`:**
+   - Create and manage groups of atoms based on bead types.
+   - Perform arithmetic operations on groups (union, subtraction).
+   - Dynamically assign masses and verify atom counts for each group.
+
+4. **Combining Scripts:**
+   - Use the `pipescript` class to combine multiple scripts into a cohesive workflow.
+   - Modularly add initialization, lattice definitions, group assignments, and geometry preview scripts.
+
+5. **Generating and Using DSCRIPT Files:**
+   - Export LAMMPS scripts to DSCRIPT format for reusability.
+   - Reconstruct and validate LAMMPS scripts from DSCRIPT files.
+
+6. **Debugging and Visualization:**
+   - Generate output files for debugging and visualizing the simulation geometry.
+   - Use flexible templates and substitutions to manage dynamic variables.
+
+---
+
+### **Structure of the Script**
+
+The script is divided into multiple logical sections, each demonstrating a specific feature of the Pizza3 toolkit:
+
+#### **1. Setup and Directory Management**
+- Initializes a temporary folder (`tmp/`) to store generated scripts and output files.
+- Ensures the folder exists or creates it dynamically.
+
+#### **2. Defining the Simulation Box**
+- Creates a simulation box using the `region` class.
+- Configures:
+  - Dimensions (3D).
+  - Boundary conditions (fixed).
+  - Units (SI).
+  - Lattice styles and spacing.
+
+#### **3. Adding Subregions**
+- Adds cylindrical subregions within the simulation box.
+- Associates each cylinder with a specific bead type and dimensions.
+
+#### **4. Managing Groups**
+- Uses the `groupobject` class to define atom groups for each bead type.
+- Combines groups dynamically using operations like union and subtraction.
+- Assigns masses to groups and verifies atom counts.
+
+#### **5. Generating Scripts**
+- Creates modular LAMMPS scripts for initialization, group definitions, and geometry preview.
+- Combines them into a single script using `pipescript`.
+
+#### **6. Exporting and Validating DSCRIPT Files**
+- Converts the LAMMPS script to a DSCRIPT format for future reuse.
+- Loads the DSCRIPT file and regenerates the LAMMPS script to verify consistency.
+
+---
+
+### **Key Components and Tools**
+
+#### **Pizza3 Classes and Methods**
+
+| Class/Module   | Functionality                                                                 |
+|----------------|-------------------------------------------------------------------------------|
+| `region`       | Defines 3D simulation boxes and subregions.                                 |
+| `groupobject`  | Manages groups of atoms or molecules.                                       |
+| `group`        | Performs arithmetic operations on groups and evaluates atom counts.         |
+| `pipescript`   | Combines multiple script components into a single executable pipeline.      |
+| `dscript`      | Converts LAMMPS scripts into modular, reusable DSCRIPT files.              |
+
+#### **LAMMPS Integration**
+- The script generates valid LAMMPS input files with commands for defining regions, groups, and atoms.
+- The generated scripts are compatible with LAMMPS&#39; syntax and can be executed directly.
+
+#### **DSCRIPT Features**
+- Encodes LAMMPS workflows in a structured, modular format.
+- Supports dynamic variable substitutions for maximum flexibility.
+
+---
+
+### **Execution Steps and Python Code**
+
+#### **Step 1: Setup and Directory Management**
+
+Before beginning, ensure that the required directory structure exists. This example uses a `tmp/` directory for storing temporary files.
+
+```python
+import os
+
+# Path to the &#39;tmp&#39; folder
+tmp_folder = os.path.join(os.getcwd(), &#34;tmp&#34;)
+allow_create = True  # Set to False to prevent automatic creation
+
+# Check and create the folder if necessary
+if not os.path.exists(tmp_folder):
+    if allow_create:
+        os.makedirs(tmp_folder)
+        print(f&#34;Created temporary folder: {tmp_folder}&#34;)
+    else:
+        raise FileNotFoundError(
+            f&#34;\n\nThe &#39;tmp&#39; folder does not exist in the current directory: {os.getcwd()}. &#34;
+            &#34;Please create the &#39;tmp/&#39; subfolder manually or set `allow_create = True`.\n&#34;
+        )
+else:
+    print(f&#34;\n\nUsing existing temporary folder: {tmp_folder}\n&#34;)
+```
+
+---
+
+#### **Step 2: Initialize the Simulation Box**
+
+Use the `region` class to define the simulation box. Add global parameters such as dimensions, boundary conditions, and lattice details.
+
+```python
+from pizza.region import region
+
+# Initialize the simulation box
+R = region(
+    name=&#34;SimulationBox&#34;,  # Name of the simulation box
+    dimension=3,  # 3D simulation
+    boundary=[&#34;f&#34;, &#34;f&#34;, &#34;f&#34;],  # Fixed boundary conditions
+    nbeads=3,  # Number of bead types
+    width=0.08, height=0.08, depth=0.06,  # Dimensions in meters
+    units=&#34;si&#34;,  # Use SI units
+    regionunits=&#34;si&#34;,  # Define regions in SI units
+    lattice_scale=0.001,  # Lattice scale in meters
+    lattice_style=&#34;sc&#34;,  # Simple cubic lattice
+    lattice_spacing=0.001,  # Spacing between lattice points
+    separationdistance=0.001,  # Minimum separation between points
+    mass=1.0  # Default mass
+)
+```
+
+---
+
+#### **Step 3: Add Cylindrical Subregions**
+
+Define subregions (cylinders) within the simulation box using the `cylinder` method of the `region` class.
+
+```python
+# Add cylindrical subregions with different bead types
+R.cylinder(name=&#34;LowerCylinder&#34;, dim=&#34;z&#34;, c1=0, c2=0, radius=0.03, lo=-0.03, hi=-0.01, beadtype=1)
+R.cylinder(name=&#34;CentralCylinder&#34;, dim=&#34;z&#34;, c1=0, c2=0, radius=0.03, lo=-0.01, hi=0.01, beadtype=2)
+R.cylinder(name=&#34;UpperCylinder&#34;, dim=&#34;z&#34;, c1=0, c2=0, radius=0.03, lo=0.01, hi=0.03, beadtype=3)
+```
+
+Generate initialization scripts for the region.
+
+```python
+# Generate initialization headers for the region
+Rheaders = R.pscriptHeaders(what=[&#34;init&#34;, &#34;lattice&#34;, &#34;box&#34;])
+```
+
+---
+
+#### **Step 4: Manage Groups**
+
+Use `groupobject` to define groups of atoms for each bead type and combine them into a collection.
+
+```python
+from pizza.group import group, groupobject
+
+# Create group objects for each bead type
+g1 = groupobject(beadtype=1, group=&#39;lower&#39;, mass=2.0)
+g2 = groupobject(beadtype=2, group=&#39;middle&#39;)
+g3 = groupobject(beadtype=3, group=&#39;upper&#39;)
+
+# Combine group objects into a collection
+gcollection = g1 + g2 + g3
+
+# Generate a script to assign masses
+Mscript = gcollection.mass(default_mass=R.mass)
+```
+
+Evaluate and define relationships between groups.
+
+```python
+# Define and evaluate groups
+G = group(name=&#34;1+2+3&#34;, collection=gcollection)
+G.evaluate(&#34;all&#34;, G.lower + G.middle + G.upper)
+G.evaluate(&#34;external&#34;, G.all - G.middle)
+
+# Generate a script to count atoms in each group
+Ncontrol = G.count(selection=[&#34;all&#34;, &#34;lower&#34;, &#34;middle&#34;, &#34;upper&#34;])
+```
+
+---
+
+#### **Step 5: Preview and Combine Scripts**
+
+Preview the region geometry and combine all scripts using `pipescript`.
+
+```python
+# Preview the region geometry
+Rpreview = R.pscriptHeaders(what=&#34;preview&#34;)
+
+# Combine all scripts into a single pipeline
+from pizza.script import pipescript
+
+S = Rheaders | R | G | Mscript | Ncontrol | Rpreview
+```
+
+Write the full script to a file.
+
+```python
+# Write the combined LAMMPS script to a file
+scriptfile = S.write(&#34;tmp/example2.txt&#34;, verbosity=1, overwrite=True)
+print(f&#34;The LAMMPS script is available here:\n{scriptfile}&#34;)
+```
+
+---
+
+#### **Step 6: Generate DSCRIPT**
+
+Export the combined LAMMPS script to a DSCRIPT format for future reuse.
+
+```python
+from pizza.dscript import dscript
+
+# Convert to DSCRIPT
+D = S.dscript(verbose=True)
+dscriptfile = D.save(&#34;tmp/example2.d.txt&#34;, overwrite=True)
+print(f&#34;The DSCRIPT is available here:\n{dscriptfile}&#34;)
+```
+
+---
+
+#### **Step 7: Validate Reversibility**
+
+Reload the DSCRIPT file and regenerate the LAMMPS script to ensure consistency.
+
+```python
+# Load DSCRIPT and regenerate the LAMMPS script
+Dreverse = dscript.load(dscriptfile)
+Sreverse = Dreverse.pipescript(verbose=False)
+
+# Output the regenerated script
+print(&#34;\n\n# Reverse LAMMPS code (from disk)&#34;, Sreverse.do(verbose=False), sep=&#34;\n&#34;)
+```
+
+---
+
+### **Key Outputs**
+
+1. **Generated Files**:
+   - LAMMPS script (`tmp/example2.txt`).
+   - DSCRIPT file (`tmp/example2.d.txt`).
+
+2. **Debug Information**:
+   - Atom counts for each group.
+   - Validation of script reversibility.
+
+3. **Visualization**:
+   - Geometry dump file for previewing the simulation setup.
+
+---
+
+### **Next Steps**
+
+- Modify dimensions, bead types, and subregions to explore flexibility.
+- Add dynamic forcefield definitions using `dforcefield`.
+- Incorporate additional physical parameters and dynamics into the simulation.
+
+This tutorial equips you to efficiently design, manage, and analyze LAMMPS simulations with the Pizza3 toolkit. Explore its modular and reusable approach to streamline your workflow!
+
+---
+
+### **Conclusion**
+
+This example is a **comprehensive guide** to using Pizza3 for managing LAMMPS simulations programmatically. By integrating flexible region definitions, dynamic group management, and reusable script generation, this workflow demonstrates how to simplify and enhance the process of creating and managing complex simulations.
+
+### **Next Steps**
+- Explore the generated files (`example2.txt` and `example2.d.txt`) to understand the structure of LAMMPS and DSCRIPT outputs.
+- Modify parameters (e.g., dimensions, bead types) to test the adaptability of the script.
+- Use the Pizza3 toolkit to integrate additional features like forcefields and dynamics.
+
+
+
+Created on Tue Nov 26, 2024
+Author: olivi
+
+last revision: 2024-12-04
+&#34;&#34;&#34;
+
+# Dependencies
+from pizza.script import pipescript, script, scriptdata  # Base script and data structure classes
+from pizza.dscript import dscript  # Dynamic script class for managing LAMMPS inputs
+from pizza.group import group, groupobject  # Group management for atoms or molecules
+from pizza.region import region  # Region class to define physical simulation regions
+from pizza.dforcefield import dforcefield  # Dynamic forcefield for particles
+from pizza.generic import generic  # Generic forcefield module
+
+# Ensure the script is run in a directory where &#39;tmp/&#39; exists or can be created
+import os
+# Path to the &#39;tmp&#39; folder
+tmp_folder = os.path.join(os.getcwd(), &#34;tmp&#34;)
+# Allow the creation of the &#39;tmp&#39; folder if it does not exist
+allow_create = True  # Set to False to prevent automatic creation
+if not os.path.exists(tmp_folder):
+    if allow_create:
+        os.makedirs(tmp_folder)
+        print(f&#34;Created temporary folder: {tmp_folder}&#34;)
+    else:
+        raise FileNotFoundError(
+            f&#34;\n\nThe &#39;tmp&#39; folder does not exist in the current directory: {os.getcwd()}. &#34;
+            &#34;Please create the &#39;tmp/&#39; subfolder manually or set `allow_create = True`.\n&#34;
+        )
+else:
+    print(f&#34;\n\nUsing existing temporary folder: {tmp_folder}\n&#34;)
+
+
+
+# %% Define Region and Lattice
+
+# Initialize region with global parameters
+R = region(
+    name=&#34;SimulationBox&#34;,  # Simulation box name
+    dimension=3,  # 3D simulation
+    boundary=[&#34;f&#34;, &#34;f&#34;, &#34;f&#34;],  # Fixed boundary conditions
+    nbeads=3,  # Number of bead types
+    width=0.08, height=0.08, depth=0.06,  # Box dimensions (meters)
+    units=&#34;si&#34;,  # SI units
+    regionunits=&#34;si&#34;,  # Regions defined in SI units
+    lattice_scale=0.001,  # Lattice scale (meters)
+    lattice_style=&#34;sc&#34;,  # Simple cubic lattice
+    lattice_spacing=0.001,  # Lattice point spacing (meters)
+    separationdistance=0.001,  # Minimum separation between points
+    mass=1.0  # Default mass
+)
+
+# Add cylindrical subregions
+R.cylinder(name=&#34;LowerCylinder&#34;, dim=&#34;z&#34;, c1=0, c2=0, radius=0.03, lo=-0.03, hi=-0.01, beadtype=1)
+R.cylinder(name=&#34;CentralCylinder&#34;, dim=&#34;z&#34;, c1=0, c2=0, radius=0.03, lo=-0.01, hi=0.01, beadtype=2)
+R.cylinder(name=&#34;UpperCylinder&#34;, dim=&#34;z&#34;, c1=0, c2=0, radius=0.03, lo=0.01, hi=0.03, beadtype=3)
+
+# Generate initialization scripts
+Rheaders = R.pscriptHeaders(what=[&#34;init&#34;, &#34;lattice&#34;, &#34;box&#34;])
+
+# %% Define Groups
+
+# Create group objects for each bead type
+g1 = groupobject(beadtype=1, group=&#39;lower&#39;, mass=2.0)
+g2 = groupobject(beadtype=2, group=&#39;middle&#39;)
+g3 = groupobject(beadtype=3, group=&#39;upper&#39;)
+
+# Combine group objects into a collection
+gcollection = g1 + g2 + g3
+
+# Generate a script to assign masses to bead types
+Mscript = gcollection.mass(default_mass=R.mass)
+
+# Define and evaluate groups
+G = group(name=&#34;1+2+3&#34;, collection=gcollection)
+G.evaluate(&#34;all&#34;, G.lower + G.middle + G.upper)
+G.evaluate(&#34;external&#34;, G.all - G.middle)
+
+# Generate script for counting atoms in groups
+Ncontrol = G.count(selection=[&#34;all&#34;, &#34;lower&#34;, &#34;middle&#34;, &#34;upper&#34;])
+
+# %% Add Preview Scripts
+
+Rpreview = R.pscriptHeaders(what=&#34;preview&#34;)
+
+# %% Assemble the Full Script
+
+# Combine all scripts into a single `pipescript`
+S = Rheaders | R | G | Mscript | Ncontrol | Rpreview
+
+# Write the full LAMMPS script to a file
+scriptfile = S.write(&#34;tmp/example2.txt&#34;, verbosity=1, overwrite=True)
+print(f&#34;The LAMMPS script is available here:\n{scriptfile}&#34;)
+
+# %% Generate DSCRIPT Code
+
+# Convert the LAMMPS script to a DSCRIPT for dynamic reuse
+D = S.dscript(verbose=True)
+dscriptfile = D.save(&#34;tmp/example2.d.txt&#34;, overwrite=True)
+print(f&#34;The DSCRIPT is available here:\n{dscriptfile}&#34;)
+
+# %% Verify Reversibility
+
+# Load the DSCRIPT file and regenerate the LAMMPS script (without comments)
+Dreverse = dscript.load(dscriptfile)
+Sreverse = Dreverse.pipescript(verbose=False)
+print(&#34;\n\n# Reverse LAMMPS code (from disk)&#34;, Sreverse.do(verbose=False), sep=&#34;\n&#34;)
+
+
+# %% LAMMPS CODE
+&#34;&#34;&#34;
+# -------------------------------- [ LAMMPS CODE ] --------------------------------
+# Initialize simulation
+dimension    3
+units        si
+boundary     f f f
+atom_style   smd
+atom_modify  map array
+comm_modify  vel yes
+neigh_modify every 10 delay 0 check yes
+newton       off
+
+# Define finer lattice for better discretization
+lattice sc 0.001
+
+# Define simulation box in SI units
+region box block -0.04 0.04 -0.04 0.04 -0.03 0.03 units box
+create_box 3 box
+
+# Define cylinder regions within the simulation box, using SI units
+region LowerCylinder cylinder z 0.0 0.0 0.03 -0.03 -0.01 units box
+region CentralCylinder cylinder z 0.0 0.0 0.03 -0.01 0.01 units box
+region UpperCylinder cylinder z 0.0 0.0 0.03 0.01 0.03 units box
+
+# Create atoms in each region
+create_atoms 1 region LowerCylinder
+create_atoms 2 region CentralCylinder
+create_atoms 3 region UpperCylinder
+
+# Group definitions
+group lower type 1
+group middle type 2
+group upper type 3
+group all union lower middle upper
+group external subtract all middle
+
+# Assign masses (required even if dynamics are not performed)
+mass 1 2.0
+mass 2 1.0
+mass 3 1.0
+
+# Verify the number of atoms created
+variable n_all equal &#34;count(all)&#34;
+variable n_lower equal &#34;count(lower)&#34;
+variable n_middle equal &#34;count(middle)&#34;
+variable n_upper equal &#34;count(upper)&#34;
+print &#34;Number of atoms in all: ${n_all}&#34;
+print &#34;Number of atoms in lower: ${n_lower}&#34;
+print &#34;Number of atoms in middle: ${n_middle}&#34;
+print &#34;Number of atoms in upper: ${n_upper}&#34;
+
+# Output the initial geometry to a dump file for visualization
+dump initial_dump all custom 1 dump.initial_geometry id type x y z
+run 0
+# -------------------------------- [ END ] --------------------------------
+&#34;&#34;&#34;
+
+
+# %% DSCRIPT FILE OUTPUT
+&#34;&#34;&#34;
+### DSCRIPT SAVE FILE Structure and Syntax
+
+The **DSCRIPT SAVE FILE** is a modular and flexible representation of LAMMPS scripts, supporting reverse generation
+and easy integration into workflows. Below is a detailed explanation of its structure:
+
+---
+
+#### 0. Header
+The header provides metadata about the DSCRIPT file:
+- **Version**: DSCRIPT version used to generate the file.
+- **License**: Licensing information for the script.
+- **Email**: Contact email for the script author or maintainer.
+- **Name**: The name of the DSCRIPT object.
+- **Path**: Filepath where the DSCRIPT is saved (optional; excluded if `filepath=None`).
+- **Generation Details**: Includes the user, hostname, current directory, and timestamp.
+
+
+#### 1. Global Parameters
+This section stores key-value pairs defining the DSCRIPT object&#39;s general settings.
+It is formatted in strict Python syntax, supporting lists, strings, numbers, and booleans.
+
+
+#### 2. Global Definitions
+This section defines variables that are globally available to all templates. It includes:
+- **Defined Values**: Explicit variable definitions (e.g., `mass = 1.0`).
+- **Referenced Variables**: Variables used but not explicitly defined (noted as &#34;assumed to be defined outside this DSCRIPT file&#34;).
+
+
+#### 3. Templates
+Templates define reusable script content. Each template:
+- Has a unique key (e.g., `0`, `1`, `2`) and optional local definitions.
+- Supports variable substitution with `${variable_name}` syntax.
+- Encodes complex structures like regions, groups, or simulation commands.
+
+
+#### 4. Attributes
+Attributes store metadata about each template, such as:
+- **facultative**: Whether the template is optional.
+- **eval**: Whether variables are evaluated.
+- **readonly**: Whether the template is read-only.
+
+&#34;&#34;&#34;
+
+# The generated output is reproduced here
+output = &#34;&#34;&#34;
+# DSCRIPT SAVE FILE
+
+# ╔════════════════════════════════════════════════════════════════════════════════════════╗
+# ║  PIZZA.DSCRIPT FILE v0.9999 | License: GPLv3 | Email: olivier.vitrac@agroparistech.fr  ║
+# ║════════════════════════════════════════════════════════════════════════════════════════║
+# ║                                     Name: akuWzPlc                                     ║
+# ╚════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+# GLOBAL PARAMETERS (8 parameters)
+{
+    SECTIONS = [&#39;DYNAMIC&#39;],
+    section = 0,
+    position = 0,
+    role = &#39;dscript instance&#39;,
+    description = &#39;dynamic script&#39;,
+    userid = &#39;script:LammpsHeaderBox:headerinit...script:LammpsFooterPreview:footerpreview&#39;,
+    version = 0.9999,
+    verbose = False
+}
+
+
+# GLOBAL DEFINITIONS (number of definitions=5)
+mass = 1.0
+n_middle = ${n_middle}  # value assumed to be defined outside this DSCRIPT file
+n_upper = ${n_upper}  # value assumed to be defined outside this DSCRIPT file
+n_all = ${n_all}  # value assumed to be defined outside this DSCRIPT file
+n_lower = ${n_lower}  # value assumed to be defined outside this DSCRIPT file
+
+
+# TEMPLATES (number of items=17)
+
+# LOCAL DEFINITIONS for key &#39;0&#39;
+name = $SimulationBox
+dimension = 3
+units = $si
+boundary = [&#39;f&#39;, &#39;f&#39;, &#39;f&#39;]
+atom_style = $smd
+atom_modify = [&#39;map&#39;, &#39;array&#39;]
+comm_modify = [&#39;vel&#39;, &#39;yes&#39;]
+neigh_modify = [&#39;every&#39;, 10, &#39;delay&#39;, 0, &#39;check&#39;, &#39;yes&#39;]
+newton = $off
+boxid = $box
+
+0: [
+    % --------------[ Initialization for &lt;${name}:${boxid}&gt;   ]--------------
+    # set a parameter to None or &#34;&#34; to remove the definition
+    dimension    ${dimension}
+    units        ${units}
+    boundary     ${boundary}
+    atom_style   ${atom_style}
+    atom_modify  ${atom_modify}
+    comm_modify  ${comm_modify}
+    neigh_modify ${neigh_modify}
+    newton       ${newton}
+    # ------------------------------------------
+ ]
+
+# LOCAL DEFINITIONS for key &#39;1&#39;
+lattice_style = $sc
+lattice_scale = 0.001
+lattice_spacing = [0.001, 0.001, 0.001]
+
+1: [
+    % --------------[ Lattice for &lt;${name}:${boxid}&gt;, style=${lattice_style}, scale=${lattice_scale} ]--------------
+    lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
+    # ------------------------------------------
+ ]
+
+# LOCAL DEFINITIONS for key &#39;2&#39;
+boxunits_arg = $units box
+xmin = -0.04
+xmax = 0.04
+ymin = -0.04
+ymax = 0.04
+zmin = -0.03
+zmax = 0.03
+nbeads = 3
+
+2: [
+    % --------------[ Box for &lt;${name}:${boxid}&gt; incl. ${nbeads} bead types ]--------------
+    region ${boxid} block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax} ${boxunits_arg}
+    create_box  ${nbeads} ${boxid}
+    # ------------------------------------------
+ ]
+
+# LOCAL DEFINITIONS for key &#39;3&#39;
+style = $cylinder
+ID = $LowerCylinder
+
+3: % variables to be used for ${ID} ${style}
+
+# LOCAL DEFINITIONS for key &#39;4&#39;
+ID = $CentralCylinder
+4: % variables to be used for ${ID} ${style}
+
+# LOCAL DEFINITIONS for key &#39;5&#39;
+ID = $UpperCylinder
+5: % variables to be used for ${ID} ${style}
+
+# LOCAL DEFINITIONS for key &#39;6&#39;
+ID = $LowerCylinder
+args = [&#39;z&#39;, 0, 0, 0.03, 0.0, 0.005]
+side = &#34;&#34;
+move = &#34;&#34;
+units = $ units box
+rotate = &#34;&#34;
+open = &#34;&#34;
+
+6: [
+    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+ ]
+
+# LOCAL DEFINITIONS for key &#39;7&#39;
+ID = $CentralCylinder
+args = [&#39;z&#39;, 0, 0, 0.03, 0.005, 0.015]
+
+7: [
+    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+ ]
+
+# LOCAL DEFINITIONS for key &#39;8&#39;
+ID = $UpperCylinder
+args = [&#39;z&#39;, 0, 0, 0.03, 0.015, 0.02]
+
+8: [
+    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+ ]
+
+# LOCAL DEFINITIONS for key &#39;9&#39;
+ID = $LowerCylinder
+beadtype = 1
+
+9: [
+    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}
+ ]
+
+# LOCAL DEFINITIONS for key &#39;10&#39;
+ID = $CentralCylinder
+beadtype = 2
+
+10: [
+    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}
+ ]
+
+# LOCAL DEFINITIONS for key &#39;11&#39;
+ID = $UpperCylinder
+beadtype = 3
+
+11: [
+    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}
+ ]
+
+12: [
+    # --------------[ TEMPLATE &#34;1+2+3&#34; ]--------------
+    group lower type 1
+    group middle type 2
+    group upper type 3
+    group all union lower middle upper
+    group external subtract all middle
+    # --------------------------------------------
+    # ---&gt; Total items: 5 - Ignored item: 0
+ ]
+
+13: [
+    mass 1 2.0
+    mass 2 ${mass}
+    mass 3 ${mass}
+ ]
+
+14: [
+    variable n_all equal &#34;count(all)&#34;
+    variable n_lower equal &#34;count(lower)&#34;
+    variable n_middle equal &#34;count(middle)&#34;
+    variable n_upper equal &#34;count(upper)&#34;
+ ]
+
+15: [
+    print &#34;Number of atoms in all: ${n_all}&#34;
+    print &#34;Number of atoms in lower: ${n_lower}&#34;
+    print &#34;Number of atoms in middle: ${n_middle}&#34;
+    print &#34;Number of atoms in upper: ${n_upper}&#34;
+ ]
+
+# LOCAL DEFINITIONS for key &#39;16&#39;
+previewfilename = $dump.initial.region_SimulationBox
+
+16: [
+    % --------------[ Preview for &lt;${name}:${boxid}&gt; incl. ${nbeads} bead types ]--------------
+    % Output the initial geometry to a dump file &#34;${previewfilename}&#34; for visualization
+    dump initial_dump all custom 1 ${previewfilename} id type x y z
+    run 0
+    # ------------------------------------------
+ ]
+
+# ATTRIBUTES (number of items with explicit attributes=17)
+0:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+1:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+2:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+3:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+4:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+5:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+6:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+7:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+8:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+9:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+10:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+11:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+12:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+13:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+14:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+15:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+16:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+
+&#34;&#34;&#34;
+Doutput = dscript.parsesyntax(output)  # it is parsed here</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#comprehensive-documentation-of-example-2">Comprehensive Documentation of Example 2</a></li>
+<li><a href="#objective">Objective</a></li>
+<li><a href="#what-you-will-learn">What You Will Learn</a></li>
+<li><a href="#structure-of-the-script">Structure of the Script</a><ul>
+<li><a href="#1-setup-and-directory-management">1. Setup and Directory Management</a></li>
+<li><a href="#2-defining-the-simulation-box">2. Defining the Simulation Box</a></li>
+<li><a href="#3-adding-subregions">3. Adding Subregions</a></li>
+<li><a href="#4-managing-groups">4. Managing Groups</a></li>
+<li><a href="#5-generating-scripts">5. Generating Scripts</a></li>
+<li><a href="#6-exporting-and-validating-dscript-files">6. Exporting and Validating DSCRIPT Files</a></li>
+</ul>
+</li>
+<li><a href="#key-components-and-tools">Key Components and Tools</a><ul>
+<li><a href="#pizza3-classes-and-methods">Pizza3 Classes and Methods</a></li>
+<li><a href="#lammps-integration">LAMMPS Integration</a></li>
+<li><a href="#dscript-features">DSCRIPT Features</a></li>
+</ul>
+</li>
+<li><a href="#execution-steps-and-python-code">Execution Steps and Python Code</a><ul>
+<li><a href="#step-1-setup-and-directory-management">Step 1: Setup and Directory Management</a></li>
+<li><a href="#step-2-initialize-the-simulation-box">Step 2: Initialize the Simulation Box</a></li>
+<li><a href="#step-3-add-cylindrical-subregions">Step 3: Add Cylindrical Subregions</a></li>
+<li><a href="#step-4-manage-groups">Step 4: Manage Groups</a></li>
+<li><a href="#step-5-preview-and-combine-scripts">Step 5: Preview and Combine Scripts</a></li>
+<li><a href="#step-6-generate-dscript">Step 6: Generate DSCRIPT</a></li>
+<li><a href="#step-7-validate-reversibility">Step 7: Validate Reversibility</a></li>
+</ul>
+</li>
+<li><a href="#key-outputs">Key Outputs</a></li>
+<li><a href="#next-steps">Next Steps</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#next-steps_1">Next Steps</a></li>
+</ul>
+</div>
+<ul id="index">
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

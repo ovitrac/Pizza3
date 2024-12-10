@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -103,11 +102,11 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9999"
+__version__ = "0.99991"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-12-01 (community)
+# INRAE\Olivier Vitrac - rev. 2024-12-09 (community)
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -154,6 +153,7 @@ __version__ = "0.9999"
 # 2024-11-29 improved save features
 # 2024-12-01 standarize scripting features, automatically call script/pscript methods
 # 2024-12-02 standardize script.header(), pscript.header() and dscript.header()
+# 2024-12-09 get-metadata() use globals()
 
 
 # %% Dependencies
@@ -164,8 +164,11 @@ from shutil import copy as copyfile
 
 
 # All forcefield parameters are stored à la Matlab in a structure
-from pizza.private.struct import param,struct
+from pizza.private.mstruct import param,struct
 from pizza.forcefield import *
+
+__all__ = ['CallableScript', 'boundarysection', 'discretizationsection', 'dumpsection', 'forcefield', 'frame_header', 'geometrysection', 'get_metadata', 'get_tmp_location', 'globalsection', 'initializesection', 'integrationsection', 'interactionsection', 'none', 'param', 'paramauto', 'parameterforcefield', 'picker', 'pipescript', 'remove_comments', 'rigidwall', 'runsection', 'saltTLSPH', 'script', 'scriptdata', 'scriptobject', 'scriptobjectgroup', 'smd', 'solidfood', 'span', 'statussection', 'struct', 'tlsph', 'ulsph', 'water']
+
 
 
 # span vector into a single string
@@ -186,20 +189,20 @@ BOM_UTF8 = b'\xef\xbb\xbf'
 def remove_comments(content, split_lines=False, emptylines=False, comment_chars="#", continuation_marker="\\\\", remove_continuation_marker=False):
     """
     Removes comments from a single or multi-line string, handling quotes, escaped characters, and line continuation.
-    
+
     Parameters:
     -----------
     content : str
-        The input string, which may contain multiple lines. Each line will be processed 
+        The input string, which may contain multiple lines. Each line will be processed
         individually to remove comments, while preserving content inside quotes.
     split_lines : bool, optional (default: False)
-        If True, the function will return a list of processed lines. If False, it will 
+        If True, the function will return a list of processed lines. If False, it will
         return a single string with all lines joined by newlines.
     emptylines : bool, optional (default: False)
-        If True, empty lines will be preserved in the output. If False, empty lines 
+        If True, empty lines will be preserved in the output. If False, empty lines
         will be removed from the output.
     comment_chars : str, optional (default: "#")
-        A string containing characters to identify the start of a comment. 
+        A string containing characters to identify the start of a comment.
         Any of these characters will mark the beginning of a comment unless within quotes.
     continuation_marker : str or None, optional (default: "\\\\")
         A string containing characters to indicate line continuation (use `\\` to specify).
@@ -208,11 +211,11 @@ def remove_comments(content, split_lines=False, emptylines=False, comment_chars=
     remove_continuation_marker : bool, optional (default: False)
         If True, the continuation marker itself is removed from the processed line, keeping
         only the characters before it. If False, the marker is retained as part of the line.
-    
+
     Returns:
     --------
     str or list of str
-        The processed content with comments removed. Returns a list of lines if 
+        The processed content with comments removed. Returns a list of lines if
         `split_lines` is True, or a single string if False.
     """
     def process_line(line):
@@ -221,30 +224,30 @@ def remove_comments(content, split_lines=False, emptylines=False, comment_chars=
         in_double_quote = False
         escaped = False
         result = []
-        
+
         i = 0
         while i < len(line):
             char = line[i]
-            
+
             if escaped:
                 result.append(char)
                 escaped = False
                 i += 1
                 continue
-            
+
             # Handle escape character within quoted strings
             if char == '\\' and (in_single_quote or in_double_quote):
                 escaped = True
                 result.append(char)
                 i += 1
                 continue
-            
+
             # Toggle state for single and double quotes
             if char == "'" and not in_double_quote:
                 in_single_quote = not in_single_quote
             elif char == '"' and not in_single_quote:
                 in_double_quote = not in_double_quote
-            
+
             # Check for line continuation marker if it's set and outside of quotes
             if continuation_marker and not in_single_quote and not in_double_quote:
                 # Check if the remaining part of the line matches the continuation marker
@@ -255,14 +258,14 @@ def remove_comments(content, split_lines=False, emptylines=False, comment_chars=
                     else:
                         result.append(line[:i + len(continuation_marker)].rstrip())  # Include the marker itself
                     return ''.join(result).strip()
-            
+
             # Check for comment start characters outside of quotes
             if char in comment_chars and not in_single_quote and not in_double_quote:
                 break  # Stop processing the line when a comment is found
-            
+
             result.append(char)
             i += 1
-        
+
         return ''.join(result).strip()
 
     # Split the input content into lines
@@ -289,7 +292,6 @@ def remove_comments(content, split_lines=False, emptylines=False, comment_chars=
 # returns the metadata
 def get_metadata():
     """Return a dictionary of explicitly defined metadata."""
-    import pizza.script as script # Ensure script is imported to access its globals
     # Define the desired metadata keys
     metadata_keys = [
         "__project__",
@@ -301,8 +303,8 @@ def get_metadata():
         "__email__",
         "__version__",
     ]
-    # Filter only the desired keys from the module's variables
-    return {key.strip("_"): getattr(script, key) for key in metadata_keys if hasattr(script, key)}
+    # Filter only the desired keys from the current module's globals
+    return {key.strip("_"): globals()[key] for key in metadata_keys if key in globals()}
 
 
 # frames headers
@@ -517,73 +519,73 @@ class scriptobject(struct):
     """
     scriptobject: A Class for Managing Script Objects in LAMMPS
 
-    The `scriptobject` class is designed to represent individual objects in LAMMPS scripts, 
-    such as beads, atoms, or other components. Each object is associated with a `forcefield` 
-    instance that defines the physical interactions of the object, and the class supports 
-    a variety of properties for detailed object definition. Additionally, `scriptobject` 
-    instances can be grouped together and compared based on their properties, such as 
+    The `scriptobject` class is designed to represent individual objects in LAMMPS scripts,
+    such as beads, atoms, or other components. Each object is associated with a `forcefield`
+    instance that defines the physical interactions of the object, and the class supports
+    a variety of properties for detailed object definition. Additionally, `scriptobject`
+    instances can be grouped together and compared based on their properties, such as
     `beadtype` and `name`.
 
     Key Features:
     -------------
-    - **Forcefield Integration**: Each `scriptobject` is associated with a `forcefield` 
-      instance, allowing for customized physical interactions. Forcefields can be passed 
+    - **Forcefield Integration**: Each `scriptobject` is associated with a `forcefield`
+      instance, allowing for customized physical interactions. Forcefields can be passed
       via the `USER` keyword for dynamic parameterization.
-    - **Grouping**: Multiple `scriptobject` instances can be combined into a 
+    - **Grouping**: Multiple `scriptobject` instances can be combined into a
       `scriptobjectgroup` using the `+` operator, allowing for complex collections of objects.
-    - **Object Comparison**: `scriptobject` instances can be compared and sorted based on 
+    - **Object Comparison**: `scriptobject` instances can be compared and sorted based on
       their `beadtype` and `name`, enabling efficient organization and manipulation of objects.
-    - **Piping and Execution**: Supports the pipe (`|`) operator, allowing `scriptobject` 
+    - **Piping and Execution**: Supports the pipe (`|`) operator, allowing `scriptobject`
       instances to be used in script pipelines alongside other script elements.
 
     Practical Use Cases:
     --------------------
-    - **Object Definition in LAMMPS**: Use `scriptobject` to represent individual objects in 
+    - **Object Definition in LAMMPS**: Use `scriptobject` to represent individual objects in
       a simulation, including their properties and associated forcefields.
-    - **Forcefield Parameterization**: Pass customized parameters to the forcefield via the 
+    - **Forcefield Parameterization**: Pass customized parameters to the forcefield via the
       `USER` keyword to dynamically adjust the physical interactions.
-    - **Grouping and Sorting**: Combine multiple objects into groups, or sort them based 
+    - **Grouping and Sorting**: Combine multiple objects into groups, or sort them based
       on their properties (e.g., `beadtype`) for easier management in complex simulations.
-    
+
     Methods:
     --------
-    __init__(self, beadtype=1, name="undefined", fullname="", filename="", style="smd", 
+    __init__(self, beadtype=1, name="undefined", fullname="", filename="", style="smd",
              forcefield=rigidwall(), group=[], USER=scriptdata()):
-        Initializes a new `scriptobject` with the specified properties, including `beadtype`, 
+        Initializes a new `scriptobject` with the specified properties, including `beadtype`,
         `name`, `forcefield`, and optional `group`.
 
     __str__(self):
         Returns a string representation of the `scriptobject`, showing its `beadtype` and `name`.
 
     __add__(self, SO):
-        Combines two `scriptobject` instances or a `scriptobject` with a `scriptobjectgroup`. 
-        Raises an error if the two objects have the same `name` or if the second operand is not 
+        Combines two `scriptobject` instances or a `scriptobject` with a `scriptobjectgroup`.
+        Raises an error if the two objects have the same `name` or if the second operand is not
         a valid `scriptobject` or `scriptobjectgroup`.
 
     __or__(self, pipe):
         Overloads the pipe (`|`) operator to integrate the `scriptobject` into a pipeline.
 
     __eq__(self, SO):
-        Compares two `scriptobject` instances, returning `True` if they have the same 
+        Compares two `scriptobject` instances, returning `True` if they have the same
         `beadtype` and `name`.
 
     __ne__(self, SO):
         Returns `True` if the two `scriptobject` instances differ in either `beadtype` or `name`.
 
     __lt__(self, SO):
-        Compares the `beadtype` of two `scriptobject` instances, returning `True` if the 
+        Compares the `beadtype` of two `scriptobject` instances, returning `True` if the
         left object's `beadtype` is less than the right object's.
 
     __gt__(self, SO):
-        Compares the `beadtype` of two `scriptobject` instances, returning `True` if the 
+        Compares the `beadtype` of two `scriptobject` instances, returning `True` if the
         left object's `beadtype` is greater than the right object's.
 
     __le__(self, SO):
-        Returns `True` if the `beadtype` of the left `scriptobject` is less than or equal to 
+        Returns `True` if the `beadtype` of the left `scriptobject` is less than or equal to
         the right `scriptobject`.
 
     __ge__(self, SO):
-        Returns `True` if the `beadtype` of the left `scriptobject` is greater than or equal 
+        Returns `True` if the `beadtype` of the left `scriptobject` is greater than or equal
         to the right `scriptobject`.
 
     Attributes:
@@ -604,44 +606,44 @@ class scriptobject(struct):
         A list of other `scriptobject` instances that are grouped with this object.
     USER : scriptdata
         A collection of user-defined variables for customizing the forcefield or other properties.
-    
+
     Original Content:
     -----------------
     The `scriptobject` class enables the definition of objects within LAMMPS scripts, providing:
-    - **Beadtype and Naming**: Objects are distinguished by their `beadtype` and `name`, allowing 
+    - **Beadtype and Naming**: Objects are distinguished by their `beadtype` and `name`, allowing
       for comparison and sorting based on these properties.
-    - **Forcefield Support**: Objects are linked to a forcefield instance, and user-defined forcefield 
+    - **Forcefield Support**: Objects are linked to a forcefield instance, and user-defined forcefield
       parameters can be passed through the `USER` keyword.
-    - **Group Management**: Multiple objects can be grouped together using the `+` operator, forming 
+    - **Group Management**: Multiple objects can be grouped together using the `+` operator, forming
       a `scriptobjectgroup`.
-    - **Comparison Operators**: Objects can be compared based on their `beadtype` and `name`, using 
+    - **Comparison Operators**: Objects can be compared based on their `beadtype` and `name`, using
       standard comparison operators (`==`, `<`, `>`, etc.).
-    - **Pipelines**: `scriptobject` instances can be integrated into pipelines, supporting the `|` 
+    - **Pipelines**: `scriptobject` instances can be integrated into pipelines, supporting the `|`
       operator for use in sequential script execution.
-    
+
     Example Usage:
     --------------
     ```
     from pizza.scriptobject import scriptobject, rigidwall, scriptdata
-    
+
     # Define a script object with custom properties
     obj1 = scriptobject(beadtype=1, name="bead1", forcefield=rigidwall(USER=scriptdata(param1=10)))
-    
+
     # Combine two objects into a group
     obj2 = scriptobject(beadtype=2, name="bead2")
     group = obj1 + obj2
-    
+
     # Print object information
     print(obj1)
     print(group)
     ```
-    
+
     The output will be:
     ```
     script object | type=1 | name=bead1
     scriptobjectgroup containing 2 objects
     ```
-    
+
     OVERVIEW
     --------------
 
@@ -750,29 +752,29 @@ class scriptobjectgroup(struct):
     """
     scriptobjectgroup: A Class for Managing Groups of Script Objects in LAMMPS
 
-    The `scriptobjectgroup` class is designed to represent a group of `scriptobject` instances, 
-    such as beads or atoms in a simulation. This class allows users to group objects together 
-    based on their properties (e.g., beadtype, name), and provides tools to generate scripts 
+    The `scriptobjectgroup` class is designed to represent a group of `scriptobject` instances,
+    such as beads or atoms in a simulation. This class allows users to group objects together
+    based on their properties (e.g., beadtype, name), and provides tools to generate scripts
     that define interactions, groups, and forcefields for these objects in LAMMPS.
 
     Key Features:
     -------------
-    - **Group Management**: Objects can be combined into a group, where each `beadtype` occurs 
+    - **Group Management**: Objects can be combined into a group, where each `beadtype` occurs
       once. The class ensures that objects are uniquely identified by their `beadtype` and `name`.
-    - **Dynamic Properties**: The group’s properties (e.g., `beadtype`, `name`, `groupname`) 
+    - **Dynamic Properties**: The group’s properties (e.g., `beadtype`, `name`, `groupname`)
       are dynamically calculated, ensuring that the group reflects the current state of the objects.
-    - **Script Generation**: Provides methods to generate scripts based on the group's objects, 
+    - **Script Generation**: Provides methods to generate scripts based on the group's objects,
       including interaction forcefields and group definitions.
-    - **Interaction Accumulation**: Automatically accumulates and updates all forcefield 
+    - **Interaction Accumulation**: Automatically accumulates and updates all forcefield
       interactions for the objects in the group.
 
     Practical Use Cases:
     --------------------
-    - **LAMMPS Group Definitions**: Define groups of objects for use in LAMMPS simulations, 
+    - **LAMMPS Group Definitions**: Define groups of objects for use in LAMMPS simulations,
       based on properties like `beadtype` and `groupname`.
-    - **Forcefield Management**: Automatically manage and update interaction forcefields for 
+    - **Forcefield Management**: Automatically manage and update interaction forcefields for
       objects in the group.
-    - **Script Generation**: Generate LAMMPS-compatible scripts that include group definitions, 
+    - **Script Generation**: Generate LAMMPS-compatible scripts that include group definitions,
       input file handling, and interaction forcefields.
 
     Methods:
@@ -781,11 +783,11 @@ class scriptobjectgroup(struct):
         Initializes a new `scriptobjectgroup` with one or more `scriptobject` instances.
 
     __str__(self):
-        Returns a string representation of the `scriptobjectgroup`, showing the number of objects 
+        Returns a string representation of the `scriptobjectgroup`, showing the number of objects
         in the group and their `beadtypes`.
 
     __add__(self, SOgroup):
-        Combines two `scriptobjectgroup` instances or a `scriptobject` with an existing group, 
+        Combines two `scriptobjectgroup` instances or a `scriptobject` with an existing group,
         ensuring that `beadtype` values are unique.
 
     __or__(self, pipe):
@@ -795,7 +797,7 @@ class scriptobjectgroup(struct):
         Selects and returns a subset of the group based on the specified `beadtype`.
 
     script(self, printflag=False, verbosity=2, verbose=None):
-        Generates a script based on the current collection of objects, including input file 
+        Generates a script based on the current collection of objects, including input file
         handling, group definitions, and interaction forcefields.
 
     interactions(self, printflag=False, verbosity=2, verbose=None):
@@ -807,7 +809,7 @@ class scriptobjectgroup(struct):
     Properties:
     -----------
     - list : Converts the group into a sorted list of objects.
-    - zip : Returns a sorted list of tuples containing `beadtype`, `name`, `group`, and `filename` 
+    - zip : Returns a sorted list of tuples containing `beadtype`, `name`, `group`, and `filename`
       for each object.
     - n : Returns the number of objects in the group.
     - beadtype : Returns a list of the `beadtypes` for all objects in the group.
@@ -822,16 +824,16 @@ class scriptobjectgroup(struct):
 
     Original Content:
     -----------------
-    The `scriptobjectgroup` class enables the collection and management of multiple 
+    The `scriptobjectgroup` class enables the collection and management of multiple
     `scriptobject` instances, providing the following functionalities:
-    - **Group Creation**: Groups are automatically formed by combining individual objects 
-      using the `+` operator. Each `beadtype` occurs only once in the group, and errors are 
+    - **Group Creation**: Groups are automatically formed by combining individual objects
+      using the `+` operator. Each `beadtype` occurs only once in the group, and errors are
       raised if an object with the same `name` or `beadtype` already exists.
-    - **Dynamic Properties**: Properties such as `beadtype`, `name`, `groupname`, and `filename` 
+    - **Dynamic Properties**: Properties such as `beadtype`, `name`, `groupname`, and `filename`
       are dynamically calculated, reflecting the current state of the objects.
-    - **Forcefield Handling**: Forcefields are automatically managed for the objects in the group, 
+    - **Forcefield Handling**: Forcefields are automatically managed for the objects in the group,
       including diagonal and off-diagonal terms for pair interactions.
-    - **Script Generation**: Scripts are generated to define the interactions, groups, and 
+    - **Script Generation**: Scripts are generated to define the interactions, groups, and
       input file handling for LAMMPS.
 
     Example Usage:
@@ -1122,7 +1124,7 @@ class scriptobjectgroup(struct):
                 - 1: Basic comments for run steps.
                 - 2: Detailed comments with additional information.
                 Default is 2
-            
+
             Returns:
             --------
             script
@@ -1167,23 +1169,23 @@ class scriptobjectgroup(struct):
         if printflag:
             repr(tscript)
         return tscript
-    
+
     def group_generator(self, name=None):
         """
         Generate and return a group object.
-    
+
         This method creates a new `group` object, optionally with a specified name.
-        If no name is provided, it generates a default name based on the current 
+        If no name is provided, it generates a default name based on the current
         instance's `name` attribute, formatted with the `span` function. The method
         then iterates through the existing groups in `self.group`, adding each group
         to the new `group` object based on its `groupidname` and `beadtype`.
-    
+
         Parameters:
         -----------
         name : str, optional
             The name for the generated group object. If not provided, a default name
             is generated based on the current instance's `name`.
-    
+
         Returns:
         --------
         group
@@ -1196,8 +1198,8 @@ class scriptobjectgroup(struct):
         for g in self.group:
             G.add_group_criteria(g.groupidname, type=g.beadtype)
         return G
-    
-    
+
+
     def mass(self, name=None, default_mass="${mass}", printflag=False, verbosity=2, verbose=True):
         """
         Generates LAMMPS mass commands for each unique beadtype in the collection.
@@ -1207,17 +1209,17 @@ class scriptobjectgroup(struct):
         If a beadtype has `mass=None`, it assigns a default mass as specified by `default_mass`.
 
         ### Parameters:
-            name (str, optional): 
+            name (str, optional):
                 The name to assign to the resulting `script` object. Defaults to a generated name.
-            default_mass (str, int, or float, optional): 
-                The default mass value to assign when a beadtype's mass is `None`. 
+            default_mass (str, int, or float, optional):
+                The default mass value to assign when a beadtype's mass is `None`.
                 Can be a string, integer, or floating-point value. Defaults to `"${mass}"`.
-            printflag (bool, optional): 
+            printflag (bool, optional):
                 If `True`, prints the representation of the resulting `script` object. Defaults to `False`.
-            verbosity (int, optional): 
-                The verbosity level for logging or debugging. Higher values indicate more detailed output. 
+            verbosity (int, optional):
+                The verbosity level for logging or debugging. Higher values indicate more detailed output.
                 Defaults to `2`.
-            verbose (bool, optional): 
+            verbose (bool, optional):
                 If `True`, includes a comment header in the output. Overrides `verbosity` when `False`.
                 Defaults to `True`.
 
@@ -1287,7 +1289,7 @@ class scriptobjectgroup(struct):
         if printflag:
             repr(mscript)
         return mscript
-        
+
 
 # %% script core class
 # note: please derive this class when you use it, do not alter it
@@ -1403,7 +1405,7 @@ class script:
     --------------
     ```
     from pizza.script import script, scriptdata
-    
+
     class example_section(script):
         DEFINITIONS = scriptdata(
             X = 10,
@@ -1411,7 +1413,7 @@ class script:
             result = "${X} + ${Y}"
         )
         TEMPLATE = "${result} = ${X} + ${Y}"
-    
+
     s1 = example_section()
     s1.USER.X = 5
     s1.do()
@@ -1591,10 +1593,10 @@ class script:
             2000000 = 2000 * 1000
 
     """
-    
+
     # metadata
     metadata = get_metadata()               # retrieve all metadata
-    
+
     type = "script"                         # type (class name)
     name = "empty script"                   # name
     description = "it is an empty script"   # description
@@ -1604,7 +1606,7 @@ class script:
     version = metadata["version"]           # version
     license = metadata["license"]
     email = metadata["email"]               # email
-    
+
     verbose = False                         # set it to True to force verbosity
     _contact = ("INRAE\SAYFOOD\olivier.vitrac@agroparistech.fr",
                 "INRAE\SAYFOOD\william.jenkinson@agroparistech.fr",
@@ -1682,23 +1684,23 @@ class script:
 
     # Generate the script
     def do(self,printflag=None,verbose=None):
-        """ 
+        """
         Generate the LAMMPS script based on the current configuration.
-    
+
         This method generates a LAMMPS-compatible script from the templates and definitions
         stored in the `script` object. The generated script can be displayed, returned,
         and optionally include comments for debugging or clarity.
-    
+
         Parameters:
         - printflag (bool, optional): If True, the generated script is printed to the console.
                                       Default is True.
         - verbose (bool, optional): If True, comments and additional information are included
                                     in the generated script. If False, comments are removed.
                                     Default is True.
-    
+
         Returns:
         - str: The generated LAMMPS script.
-    
+
         Method Behavior:
         - The method first collects all key-value pairs from `DEFINITIONS` and `USER` objects,
           which store the configuration data for the script.
@@ -1708,7 +1710,7 @@ class script:
         - If `verbose` is set to False, comments in the generated script are removed.
         - The script is then printed if `printflag` is True.
         - Finally, the formatted script is returned as a string.
-    
+
         Example Usage:
         --------------
         >>> s = script()
@@ -1717,10 +1719,10 @@ class script:
         dimension       3
         boundary        f f f
         # Additional script commands...
-        
+
         >>> s.do(printflag=False, verbose=False)
         'units si\ndimension 3\nboundary f f f\n# Additional script commands...'
-    
+
         Notes:
         - Comments are indicated in the script with '%' or '#'.
         - The [position {self.position}:{self.userid}] marker is inserted for tracking
@@ -1839,7 +1841,7 @@ class script:
         elif isinstance(pipe,groupcollection):
             rightarg = pipe.script(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
         elif isinstance(pipe,region):
-            rightarg = pipe.pscript(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)            
+            rightarg = pipe.pscript(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
         else:
             rightarg = pipe
         if isinstance(rightarg,(pipescript,script,scriptobject,scriptobjectgroup)):
@@ -1891,13 +1893,13 @@ class script:
     def write(self, file, printflag=True, verbose=False, overwrite=False, style=2):
         """
         Write the script to a file.
-        
+
         Parameters:
             - file (str): The file path where the script will be saved.
             - printflag (bool): Flag to enable/disable printing of details.
             - verbose (bool): Flag to enable/disable verbose mode.
             - overwrite (bool): Whether to overwrite the file if it already exists.
-            - style (int, optional): 
+            - style (int, optional):
                 Defines the ASCII frame style for the header.
                 Valid values are integers from 1 to 6, corresponding to predefined styles:
                     1. Basic box with `+`, `-`, and `|`
@@ -1910,7 +1912,7 @@ class script:
 
         Returns:
             str: The full absolute path of the file written.
-            
+
         Raises:
             FileExistsError: If the file already exists and overwrite is False.
         """
@@ -1931,10 +1933,10 @@ class script:
     def tmpwrite(self, verbose=False, style=1):
         """
         Write the script to a temporary file and create optional persistent copies.
-    
+
         Parameters:
             verbose (bool, optional): Controls verbosity during script generation. Defaults to False.
-    
+
         The method:
             - Creates a temporary file for the script, with platform-specific behavior:
                 - On Windows (`os.name == 'nt'`), the file is not automatically deleted.
@@ -1944,7 +1946,7 @@ class script:
                 - `script.preview.<suffix>`: A persistent copy of the temporary file.
                 - `script.preview.clean.<suffix>`: A clean copy with comments and empty lines removed.
             - Handles cleanup and exceptions gracefully to avoid leaving orphaned files.
-            - style (int, optional): 
+            - style (int, optional):
                 Defines the ASCII frame style for the header.
                 Valid values are integers from 1 to 6, corresponding to predefined styles:
                     1. Basic box with `+`, `-`, and `|`
@@ -1954,11 +1956,11 @@ class script:
                     5. Box drawing characters with `┌`, `─`, and `│`
                     6. Minimalist dotted frame with `.`, `:`, and `.`
                 Default is `1` (basic box).
-    
+
         Returns:
             TemporaryFile: The temporary file handle (non-Windows systems only).
             None: On Windows, the file is closed and not returned.
-    
+
         Raises:
             Exception: If there is an error creating or writing to the temporary file.
         """
@@ -1968,7 +1970,7 @@ class script:
                 ftmp = tempfile.NamedTemporaryFile(mode="w+b", prefix="script_", suffix=".txt", delete=False)
             else:  # Other platforms
                 ftmp = tempfile.NamedTemporaryFile(mode="w+b", prefix="script_", suffix=".txt")
-    
+
             # Generate header and content
             header = (
                 f"# TEMPORARY PIZZA.SCRIPT FILE\n"
@@ -1980,27 +1982,27 @@ class script:
                 + "\n# This is a temporary file (it will be deleted automatically)\n\n"
                 + self.do(printflag=False, verbose=verbose)
             )
-    
+
             # Write content to the temporary file
             ftmp.write(BOM_UTF8 + content.encode('utf-8'))
             ftmp.seek(0)  # Reset file pointer to the beginning
-    
+
         except Exception as e:
             # Handle errors gracefully
             ftmp.close()
             os.remove(ftmp.name)  # Clean up the temporary file
             raise Exception(f"Failed to write to or handle the temporary file: {e}") from None
-    
+
         print("\nTemporary File Header:\n", header, "\n")
         print("A temporary file has been generated here:\n", ftmp.name)
-    
+
         # Persistent copy creation
         if self.persistentfile:
             ftmpname = os.path.basename(ftmp.name)
             fcopyname = os.path.join(self.persistentfolder, f"script.preview.{ftmpname.rsplit('_', 1)[1]}")
             copyfile(ftmp.name, fcopyname)
             print("A persistent copy has been created here:\n", fcopyname)
-    
+
             # Create a clean copy without empty lines or comments
             with open(ftmp.name, "r") as f:
                 lines = f.readlines()
@@ -2013,7 +2015,7 @@ class script:
             with open(fcleanname, "w") as f:
                 f.writelines(clean_lines)
             print("A clean copy has been created here:\n", fcleanname)
-    
+
             # Handle file closure for Windows
             if os.name == 'nt':
                 ftmp.close()
@@ -2021,7 +2023,7 @@ class script:
             else:
                 return ftmp
 
-            
+
     # Note that it was not the original intent to copy scripts
     def __copy__(self):
         """ copy method """
@@ -2128,7 +2130,7 @@ class pipescript:
 
     write(self, file, printflag=True, verbosity=2, verbose=None):
         Write the generated script to a file.
-        
+
     dscript(self, verbose=None, **USER)
         Convert the current pipescript into a dscript object
 
@@ -2379,7 +2381,7 @@ class pipescript:
             leftarg.listscript = leftarg.listscript + rightarg.listscript
             leftarg.listUSER = leftarg.listUSER + rightarg.listUSER
             leftarg.name = leftarg.name + rightarg.name
-            for i in range(len(rightarg)): 
+            for i in range(len(rightarg)):
                 rightarg.executed[i] = False
             leftarg.executed = leftarg.executed + rightarg.executed
             return leftarg
@@ -2567,37 +2569,37 @@ class pipescript:
     def do(self, idx=None, printflag=True, verbosity=2, verbose=None, forced=False):
         """
         Execute the pipeline or a part of the pipeline and generate the LAMMPS script.
-    
+
         Parameters:
             idx (list, range, or int, optional): Specifies which steps of the pipeline to execute.
             printflag (bool, optional): Whether to print the script for each step. Default is True.
             verbosity (int, optional): Level of verbosity for the output.
             verbose (bool, optional): Override for verbosity. If False, sets verbosity to 0.
             forced (bool, optional): If True, forces the pipeline to regenerate all scripts.
-    
+
         Returns:
             str: Combined LAMMPS script for the specified pipeline steps.
-            
+
             Execute the pipeline or a part of the pipeline and generate the LAMMPS script.
-        
+
             This method processes the pipeline of script objects, executing each step to generate
-            a combined LAMMPS-compatible script. The execution can be done for the entire pipeline 
-            or for a specified range of indices. The generated script can include comments and 
-            metadata based on the verbosity level.       
-            
-        
+            a combined LAMMPS-compatible script. The execution can be done for the entire pipeline
+            or for a specified range of indices. The generated script can include comments and
+            metadata based on the verbosity level.
+
+
         Method Workflow:
             - The method first checks if there are any script objects in the pipeline.
               If the pipeline is empty, it returns a message indicating that there is nothing to execute.
             - It determines the start and stop indices for the range of steps to execute.
               If idx is not provided, it defaults to executing all steps from the last executed position.
             - If a specific index or list of indices is provided, it executes only those steps.
-            - The pipeline steps are executed in order, combining the scripts using the 
+            - The pipeline steps are executed in order, combining the scripts using the
               >> operator for sequential execution.
             - The generated script includes comments indicating the current run step and pipeline range,
               based on the specified verbosity level.
             - The final combined script is returned as a string.
-        
+
         Example Usage:
         --------------
             >>> p = pipescript()
@@ -2607,24 +2609,24 @@ class pipescript:
             >>> partial_script = p.do([0, 2])
             >>> # Execute step 1 with minimal verbosity
             >>> minimal_script = p.do(idx=1, verbosity=0)
-        
+
             Notes:
-            - The method uses modular arithmetic to handle index wrapping, allowing 
+            - The method uses modular arithmetic to handle index wrapping, allowing
               for cyclic execution of pipeline steps.
             - If the pipeline is empty, the method returns the string "# empty pipe - nothing to do".
-            - The globalscript is initialized or updated with each step's script, 
+            - The globalscript is initialized or updated with each step's script,
               and the USER definitions are accumulated across the steps.
-            - The command string self.cmd is updated with the generated script for 
+            - The command string self.cmd is updated with the generated script for
               each step in the specified range.
-        
+
             Raises:
-            - None: The method does not raise exceptions directly, but an empty pipeline will 
+            - None: The method does not raise exceptions directly, but an empty pipeline will
                     result in the return of "# empty pipe - nothing to do".
         """
         verbosity = 0 if verbose is False else verbosity
         if len(self) == 0:
             return "# empty pipe - nothing to do"
-            
+
         # Check if not all steps are executed or if there are gaps
         not_all_executed = not all(self.executed[:self.nrun])  # Check up to the last executed step
 
@@ -2636,48 +2638,48 @@ class pipescript:
         else:
             start = self.nrun
             self.cmd = self.cmd.rstrip("\n") + "\n\n"
-    
+
         if idx is None:
             idx = range(start, total_steps)
         if isinstance(idx, int):
             idx = [idx]
         if isinstance(idx, range):
             idx = list(idx)
-    
+
         idx = [i % total_steps for i in idx]
         start, stop = min(idx), max(idx)
-    
+
         # Prevent re-executing already completed steps
         if not forced:
             idx = [step for step in idx if not self.executed[step]]
-    
+
         # Execute pipeline steps
         for step in idx:
             step_wrapped = step % total_steps
-    
+
             # Combine scripts
             if step_wrapped == 0:
                 self.globalscript = self.listscript[step_wrapped]
             else:
                 self.globalscript = self.globalscript >> self.listscript[step_wrapped]
-    
+
             # Step label
             step_name = f"<{self.name[step]}>"
             step_label = f"# [{step+1} of {total_steps} from {start}:{stop}] {step_name}"
-    
+
             # Get script content for the step
             step_output = self.globalscript.do(printflag=printflag, verbose=verbosity > 1)
-    
+
             # Add comments and content
             if step_output.strip():
                 self.cmd += f"{step_label}\n{step_output.strip()}\n\n"
             elif verbosity > 0:
                 self.cmd += f"{step_label} :: no content\n\n"
-    
+
             # Update USER definitions
             self.globalscript.USER += self.listUSER[step]
             self.executed[step] = True
-    
+
         # Clean up and finalize script
         self.cmd = self.cmd.replace("\\n", "\n").strip()  # Remove literal \\n and extra spaces
         self.cmd += "\n"  # Ensure trailing newline
@@ -2687,43 +2689,43 @@ class pipescript:
     def do_legacy(self, idx=None, printflag=True, verbosity=2, verbose=None, forced=False):
         """
         Execute the pipeline or a part of the pipeline and generate the LAMMPS script.
-    
+
         This method processes the pipeline of script objects, executing each step to generate
-        a combined LAMMPS-compatible script. The execution can be done for the entire pipeline 
-        or for a specified range of indices. The generated script can include comments and 
+        a combined LAMMPS-compatible script. The execution can be done for the entire pipeline
+        or for a specified range of indices. The generated script can include comments and
         metadata based on the verbosity level.
-    
+
         Parameters:
         - idx (list, range, or int, optional): Specifies which steps of the pipeline to execute.
-                                               If None, all steps from the current position to 
+                                               If None, all steps from the current position to
                                                the end are executed. A list of indices can be
                                                provided to execute specific steps, or a single
                                                integer can be passed to execute a specific step.
                                                Default is None.
-        - printflag (bool, optional): If True, the generated script for each step is printed 
+        - printflag (bool, optional): If True, the generated script for each step is printed
                                       to the console. Default is True.
         - verbosity (int, optional): Controls the level of detail in the generated script.
                                      - 0: Minimal output, no comments.
                                      - 1: Basic comments for run steps.
                                      - 2: Detailed comments with additional information.
                                      Default is 2.
-        - forced (bool, optional): If True, all scripts are regenerated 
-        
+        - forced (bool, optional): If True, all scripts are regenerated
+
         Returns:
         - str: The combined LAMMPS script generated from the specified steps of the pipeline.
-    
+
         Method Workflow:
         - The method first checks if there are any script objects in the pipeline.
           If the pipeline is empty, it returns a message indicating that there is nothing to execute.
         - It determines the start and stop indices for the range of steps to execute.
           If idx is not provided, it defaults to executing all steps from the last executed position.
         - If a specific index or list of indices is provided, it executes only those steps.
-        - The pipeline steps are executed in order, combining the scripts using the 
+        - The pipeline steps are executed in order, combining the scripts using the
           >> operator for sequential execution.
         - The generated script includes comments indicating the current run step and pipeline range,
           based on the specified verbosity level.
         - The final combined script is returned as a string.
-    
+
         Example Usage:
         --------------
         >>> p = pipescript()
@@ -2733,18 +2735,18 @@ class pipescript:
         >>> partial_script = p.do([0, 2])
         >>> # Execute step 1 with minimal verbosity
         >>> minimal_script = p.do(idx=1, verbosity=0)
-    
+
         Notes:
-        - The method uses modular arithmetic to handle index wrapping, allowing 
+        - The method uses modular arithmetic to handle index wrapping, allowing
           for cyclic execution of pipeline steps.
         - If the pipeline is empty, the method returns the string "# empty pipe - nothing to do".
-        - The globalscript is initialized or updated with each step's script, 
+        - The globalscript is initialized or updated with each step's script,
           and the USER definitions are accumulated across the steps.
-        - The command string self.cmd is updated with the generated script for 
+        - The command string self.cmd is updated with the generated script for
           each step in the specified range.
-    
+
         Raises:
-        - None: The method does not raise exceptions directly, but an empty pipeline will 
+        - None: The method does not raise exceptions directly, but an empty pipeline will
                 result in the return of "# empty pipe - nothing to do".
         """
 
@@ -2790,23 +2792,23 @@ class pipescript:
             script the pipeline or parts of the pipeline
                 s = p.script()
                 s = p.script([0,2])
-                
+
         Parameters:
         - idx (list, range, or int, optional): Specifies which steps of the pipeline to execute.
-                                               If None, all steps from the current position to 
+                                               If None, all steps from the current position to
                                                the end are executed. A list of indices can be
                                                provided to execute specific steps, or a single
                                                integer can be passed to execute a specific step.
                                                Default is None.
-        - printflag (bool, optional): If True, the generated script for each step is printed 
+        - printflag (bool, optional): If True, the generated script for each step is printed
                                       to the console. Default is True.
         - verbosity (int, optional): Controls the level of detail in the generated script.
                                      - 0: Minimal output, no comments.
                                      - 1: Basic comments for run steps.
                                      - 2: Detailed comments with additional information.
                                      Default is 2.
-        - forced (bool, optional): If True, all scripts are regenerated 
-        - style (int, optional): 
+        - forced (bool, optional): If True, all scripts are regenerated
+        - style (int, optional):
             Defines the ASCII frame style for the header.
             Valid values are integers from 1 to 6, corresponding to predefined styles:
                 1. Basic box with `+`, `-`, and `|`
@@ -2816,7 +2818,7 @@ class pipescript:
                 5. Box drawing characters with `┌`, `─`, and `│`
                 6. Minimalist dotted frame with `.`, `:`, and `.`
             Default is `4` (thick outer frame).
-        
+
         """
         printflag = self.printflag if printflag is None else printflag
         verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
@@ -2855,7 +2857,7 @@ class pipescript:
         for i in range(1,len(liste)):
             out = out | liste[i]
         return out
-    
+
     # Note that it was not the original intent to copy pipescripts
     def __copy__(self):
         """ copy method """
@@ -2871,26 +2873,26 @@ class pipescript:
         memo[id(self)] = copie
         for k, v in self.__dict__.items():
             setattr(copie, k, deepduplicate(v, memo))
-        return copie 
+        return copie
 
     # write file
     def write(self, file, printflag=False, verbosity=2, verbose=None, overwrite=False):
        """
        Write the combined script to a file.
-   
+
        Parameters:
            file (str): The file path where the script will be saved.
            printflag (bool): Flag to enable/disable printing of details.
            verbosity (int): Level of verbosity for the script generation.
            verbose (bool or None): If True, enables verbose mode; if None, defaults to the instance's verbosity.
            overwrite (bool): Whether to overwrite the file if it already exists. Default is False.
-   
+
         Returns:
             str: The full absolute path of the file written.
 
        Raises:
            FileExistsError: If the file already exists and overwrite is False.
-   
+
        Notes:
            - This method combines the individual scripts within the `pipescript` object
              and saves the resulting script to the specified file.
@@ -2902,30 +2904,30 @@ class pipescript:
        # Call the script's write method with the overwrite parameter
        return myscript.write(file, printflag=printflag, verbose=verbose, overwrite=overwrite)
 
-        
+
     def dscript(self, name=None, printflag=None, verbose=None, verbosity=None, **USER):
         """
         Convert the current pipescript object to a dscript object.
-        
+
         This method merges the STATIC, GLOBAL, and LOCAL variable spaces from each step
         in the pipescript into a single dynamic script per step in the dscript.
         Each step in the pipescript is transformed into a dynamic script in the dscript,
         where variable spaces are combined using the following order:
-        
+
         1. STATIC: Definitions specific to each script in the pipescript.
         2. GLOBAL: User variables shared across steps from a specific point onwards.
         3. LOCAL: User variables for each individual step.
-        
+
         Parameters:
         -----------
         verbose : bool, optional
             Controls verbosity of the dynamic scripts in the resulting dscript object.
             If None, the verbosity setting of the pipescript will be used.
-        
+
         **USER : scriptobjectdata(), optional
             Additional user-defined variables that can override existing static variables
             in the dscript object or be added to it.
-        
+
         Returns:
         --------
         outd : dscript
@@ -2940,7 +2942,7 @@ class pipescript:
         printflag = self.printflag if printflag is None else printflag
         verbose = verbosity > 0 if verbosity is not None else (self.verbose if verbose is None else verbose)
         verbosity = 0 if not verbose else verbosity
-    
+
         # Adjust name
         if name is None:
             if isinstance(self.name, str):
@@ -2949,16 +2951,16 @@ class pipescript:
                 name = (
                     self.name[0] if len(self.name) == 1 else self.name[0] + "..." + self.name[-1]
                 )
-    
+
         # Create the dscript container with the pipescript name as the userid
         outd = dscript(userid=name, verbose=self.verbose, **USER)
-    
+
         # Initialize static merged definitions
         staticmerged_definitions = lambdaScriptdata()
-        
+
         # Track used variables per step
         step_used_variables = []
-    
+
         # Loop over each step in the pipescript
         for i, script in enumerate(self.listscript):
             # Merge STATIC, GLOBAL, and LOCAL variables for the current step
@@ -2966,25 +2968,25 @@ class pipescript:
             global_vars = script.DEFINITIONS # self.scripts[i].USER
             local_vars = script.USER # self.USER[i]
             refreshed_globalvars = static_vars + global_vars
-    
+
             # Detect variables used in the current template
             used_variables = set(script.detect_variables())
             step_used_variables.append(used_variables)  # Track used variables for this step
 
             # Copy all current variables to local_static_updates and remove matching variables from staticmerged_definitions
             local_static_updates = lambdaScriptdata(**local_vars)
-                        
+
             for var, value in refreshed_globalvars.items():
                 if var in staticmerged_definitions:
                     if (getattr(staticmerged_definitions, var) != value) and (var not in local_vars):
                         setattr(local_static_updates, var, value)
                 else:
                     setattr(staticmerged_definitions, var, value)
-    
+
            # Create the dynamic script for this step using the method in dscript
             key_name = i  # Use the index 'i' as the key in TEMPLATE
             content = script.TEMPLATE
-    
+
             # Use the helper method in dscript to add this dynamic script
             outd.add_dynamic_script(
                 key=key_name,
@@ -2993,7 +2995,7 @@ class pipescript:
                 verbose=self.verbose if verbose is None else verbose,
                 userid=self.name[i]
             )
-    
+
             # Set eval=True only if variables are detected in the template
             if outd.TEMPLATE[key_name].detect_variables():
                 outd.TEMPLATE[key_name].eval = True
@@ -3005,10 +3007,10 @@ class pipescript:
         filtered_definitions = {
             var: value for var, value in staticmerged_definitions.items() if var in global_used_variables
         }
-    
+
         # Assign the filtered definitions along with USER variables to outd.DEFINITIONS
         outd.DEFINITIONS = lambdaScriptdata(**filtered_definitions)
-    
+
         return outd
 
 

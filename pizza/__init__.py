@@ -11,7 +11,7 @@
 
 # List of public classes: data, dump, raster, script, forcefield, struct, param
 
-# $ Last revision: 2024-04-14 $
+# $ Last revision: 2024-12-08 $
 
 # Revision history
 # 2022-05-16: Initial Release Candidate (RC)
@@ -19,6 +19,7 @@
 # 2023-07-12: Added paramauto
 # 2023-04-14: Fixed issues for Python 3.11 on Windows
 # 2024-10-11 add global flag
+# 2024-12-08 add all pizza classes
 
 import os
 from platform import system
@@ -59,18 +60,19 @@ if not globals().get('_PIZZA_INITIALIZED', False):
 
     # Import script engine and methods
     from pizza.script import *
+    from pizza.dscript import *
 
     # Import forcefield objects and derived classes
     from pizza.forcefield import *
-
-    # Import generic utilities
+    from pizza.dforcefield import *
     from pizza.generic import *
 
     # Import struct and param utilities with Matlab-like features
-    from pizza.private.struct import struct, param, paramauto
+    from pizza.private.mstruct import struct, param, paramauto
 
-    # Import region objects and methods
+    # Import region and group objects and methods
     from pizza.region import *
+    from pizza.group import *
 
     # Import additional libraries for the workshop
     from workshop0 import *

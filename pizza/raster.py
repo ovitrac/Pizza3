@@ -1,16 +1,122 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__project__ = "Pizza3"
-__author__ = "Olivier Vitrac"
-__copyright__ = "Copyright 2022"
-__credits__ = ["Olivier Vitrac"]
-__license__ = "GPLv3"
-__maintainer__ = "Olivier Vitrac"
-__email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.43"
-
 """
+
+`raster.py` provides methods to generate and manipulate raster-based geometries for LAMMPS input files. It includes tools for creating, plotting, and exporting geometric objects, with advanced features for particle systems such as emulsions and core-shell dispersions. This module is part of the **Pizza3** toolkit.
+
+---
+
+## Features
+
+### 1. **Raster Area Creation**
+Create a raster object with customizable dimensions and properties:
+```python
+R = raster(width=200, height=200, dpi=300)
+```
+
+### 2. **Geometric Object Insertion**
+Define and manipulate objects such as rectangles, circles, triangles, diamonds, and polygons:
+```python
+R.rectangle(10, 20, 15, 30, name='rect1', beadtype=1)
+R.circle(50, 50, 10, name='circle1', beadtype=2, angle=45)
+R.triangle(30, 40, 10, name='triangle1', beadtype=3, angle=30)
+```
+
+### 3. **Collections and Paths**
+Group objects into collections or copy them along specified paths:
+```python
+R.collection(object1, object2, name='my_collection', beadtype=1)
+R.copyalongpath(object1, name='path_collection', path=linear, n=5)
+```
+
+### 4. **Scatter and Emulsions**
+Generate random distributions of particles:
+- **Emulsions**: Place circular particles within defined boundaries.
+- **Core-Shell Particles**: Insert particles with inner and outer radii.
+```python
+e = emulsion(xmin=10, ymin=10, xmax=100, ymax=100)
+e.insertion([10, 20, 30], beadtype=1)
+```
+
+### 5. **Visualization**
+Preview objects and raster layouts:
+```python
+R.plot()
+R.show(extra="label", contour=True)
+```
+
+### 6. **Exporting to LAMMPS**
+Generate a `pizza.data3.data` object for exporting to LAMMPS:
+```python
+data_obj = R.data(scale=(1, 1), center=(0, 0))
+data_obj.write("output_file.lmp")
+```
+
+---
+
+## Advanced Features
+- **Overlay Images**: Import and convert images to raster objects with beads:
+  ```python
+  R.overlay(50, 50, filename="image.jpg", ncolors=4, beadtype=2)
+  ```
+- **Hexagonal Packing**: Generate hex-packed data for particle arrangements.
+- **Labeling and Masking**: Add labels to objects or define masked regions.
+
+---
+
+## Usage Examples
+
+### Basic Example
+```python
+R = raster(width=100, height=100)
+R.rectangle(10, 20, 15, 30, name='rect1', beadtype=1)
+R.circle(50, 50, 10, name='circle1', beadtype=2)
+R.plot()
+R.show(extra="label")
+```
+
+### Emulsion Generation
+```python
+E = raster(width=400, height=400)
+e = emulsion(xmin=10, ymin=10, xmax=390, ymax=390)
+e.insertion([60, 50, 40, 30], beadtype=1)
+E.scatter(e, name="emulsion")
+E.plot()
+E.show()
+```
+
+### Core-Shell Dispersion
+```python
+C = raster(width=400, height=400)
+cs = coreshell(xmin=10, ymin=10, xmax=390, ymax=390)
+cs.insertion([60, 50, 40], beadtype=(1, 2), thickness=4)
+C.scatter(cs, name="core-shell")
+C.plot()
+C.show()
+```
+
+---
+
+## Requirements
+Since version 0.40, image overlays and live previews depend on the `Pizza3.pizza.private.PIL` library. For compatibility, the customized version of PIL must be compiled:
+```bash
+cd Pizza3/pizza/private/PIL
+python3 setup.py install
+```
+
+---
+
+## Authors and Credits
+- **Author**: Olivier Vitrac
+- **Email**: olivier.vitrac@agroparistech.fr
+- **License**: GPLv3
+- **Credits**: [Olivier Vitrac, Pizza3 Development Team]
+
+---
+
+## Old help
+
     RASTER method to generate LAMMPS input files (in 2D for this version)
 
     Generate a raster area
@@ -113,7 +219,18 @@ __version__ = "0.43"
 
 """
 
-# INRAE\Olivier Vitrac - rev. 2023-01-03
+
+__project__ = "Pizza3"
+__author__ = "Olivier Vitrac"
+__copyright__ = "Copyright 2022"
+__credits__ = ["Olivier Vitrac"]
+__license__ = "GPLv3"
+__maintainer__ = "Olivier Vitrac"
+__email__ = "olivier.vitrac@agroparistech.fr"
+__version__ = "0.99991"
+
+
+# INRAE\Olivier Vitrac - rev. 2024-12-08
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # History
@@ -142,6 +259,7 @@ __version__ = "0.43"
 # 2022-04-28 fix len(raster object) - typo error (0.4221)
 # 2022-05-03 add hexpacking to data(), enables you to reproduces an hexgonal packaging
 # 2023-01-03 workaround to have raster working on Windows without restrictions
+# 2024-12-08 improved help
 
 # %% Imports and private library
 import os
@@ -155,7 +273,8 @@ import matplotlib.patches as patches
 import matplotlib.cm as cmap
 from IPython.display import display
 from pizza.data3 import data as data3
-from pizza.private.struct import struct
+from pizza.private.mstruct import struct
+
 if sys()=="Windows":
     try:
         from PIL import Image, ImagePalette
@@ -166,6 +285,9 @@ if sys()=="Windows":
 else:
     from pizza.private.PIL import Image, ImagePalette
     PILavailable = True
+
+__all__ = ['Circle', 'Collection', 'Diamond', 'Hexagon', 'Pentagon', 'Rectangle', 'Triangle', 'arc', 'collection', 'coregeometry', 'coreshell', 'emulsion', 'genericpolygon', 'imagesc', 'ind2rgb', 'linear', 'overlay', 'raster', 'scatter']
+
 
 def _rotate(x0,y0,xc,yc,angle):
     angle = np.pi * angle / 180.0

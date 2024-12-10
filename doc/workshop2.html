@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>workshop1 API documentation</title>
-<meta name="description" content="Workshop 1 - main file …" />
+<title>workshop2 API documentation</title>
+<meta name="description" content="Workshop 2 - main file …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,10 +19,10 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>workshop1</code></h1>
+<h1 class="title">Module <code>workshop2</code></h1>
 </header>
 <section id="section-intro">
-<p>Workshop 1 - main file</p>
+<p>Workshop 2 - main file</p>
 <pre><code>    Write a LAMMPS code directy from Python from codelets (Python script templates)
     Typical section LAMMPS code with variables (strings, expressions, vectors, lists)
     are coded with "codelets" (dynamics scripts of the class pizza.script())
@@ -104,7 +104,7 @@
             "" "
 
 USAGE:
-    from workshop0 import *
+    from workshop2 import *
 
     use name_of_the_codelet.description to see the syntax
 
@@ -138,10 +138,10 @@ LIST OF CODELETS:
 
     -- displacements --
 
-        translation()       ---&gt; translation of rigid objects
-        force()             ---&gt; set forces
+        translation()       ---&gt; impose translation on object
+        force()             ---&gt; impose force on object
 </code></pre>
-<p>Created on Fri Feb 25 13:52:08 2022 - revised on 2022-03-18</p>
+<p>Created on Fri Feb 25 13:52:08 2022 - revised on 2022-07-</p>
 <p>@author: olivi,billy</p>
 <details class="source">
 <summary>
@@ -150,7 +150,7 @@ LIST OF CODELETS:
 <pre><code class="python">#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 &#34;&#34;&#34;
-    Workshop 1 - main file
+    Workshop 2 - main file
 
         Write a LAMMPS code directy from Python from codelets (Python script templates)
         Typical section LAMMPS code with variables (strings, expressions, vectors, lists)
@@ -233,7 +233,7 @@ LIST OF CODELETS:
                 &#34;&#34; &#34;
 
     USAGE:
-        from workshop0 import *
+        from workshop2 import *
 
         use name_of_the_codelet.description to see the syntax
 
@@ -267,12 +267,12 @@ LIST OF CODELETS:
 
         -- displacements --
 
-            translation()       ---&gt; translation of rigid objects
-            force()             ---&gt; set forces
+            translation()       ---&gt; impose translation on object
+            force()             ---&gt; impose force on object
 
 
 
-Created on Fri Feb 25 13:52:08 2022 - revised on 2022-03-18
+Created on Fri Feb 25 13:52:08 2022 - revised on 2022-07-
 
 @author: olivi,billy
 &#34;&#34;&#34;
@@ -292,8 +292,21 @@ Created on Fri Feb 25 13:52:08 2022 - revised on 2022-03-18
 #            dump class upgraded, option to chose dump information by catagories
 #            translation and force classes created, can now apply equations directly
 #            run class created
-#
-
+# 2022-04-20 [FORK] workshop2: (minor) integration modified, dtfix now acts on
+#            &#34;ulsph&#34;, not &#34;fluid&#34;, to make labelling consistent
+#            (minor) feature added to equilibrate to make groups of atoms
+#            static during equilibration process
+#            (major) translation and force modified and improved, now possible
+#            to chose equations for velocity and a NULL condition for objects
+#            e.g. eq_vx=&#34;$ sin(temp)&#34;, v_fy=&#34;$ NULL&#34;
+# 2022-04-28 [FORK] viscosimeter, dedicated for numerical experiments in viscometry
+# 2022-04-29 Viscous stress print to smddump: &#34;c_P[1]&#34;,&#34;c_P[2]&#34;,&#34;c_P[3]&#34; etc.
+#            by diffult, adjust radius now does nothing
+# 2022-7-26  [FORK] workshop2: ulsph stress tensor calculation was changed from
+#            to virial stress tensor calculation due to the limits of SMD package
+#            translation and force classes further improved so that variable
+#            names can be specified case-by-case
+#            files section created, replacing filename arg in particle interaction section
 # generic dependencies
 import datetime, os, socket, getpass
 
@@ -306,10 +319,10 @@ from pizza.private.mstruct import struct
 # %% INITIALIZATION
 class initialization(globalsection):
     &#34;&#34;&#34;
-    workshop1.initialization()
-    workshop1.initialization(param1=value1,param2=value2)
+    workshop2.initialization()
+    workshop2.initialization(param1=value1,param2=value2)
 
-        Initialize LAMMPS script of workshop1
+        Initialize LAMMPS script of workshop2
 
         Example
         -------
@@ -365,23 +378,85 @@ class initialization(globalsection):
     TEMPLATE = &#34;\n\n# &#34; + &#34;\n# &#34;.join(script._contact) + &#34;\n&#34;*3 + &#34;&#34;&#34;
 #   Scheme initialization
 units       ${units}
-dimension       ${dimension}
+dimension       ${dimension}        # 2 or 3 dimensions
 boundary    ${boundary}         # f = fixed, p = periodic
 comm_modify ${comm_modify}
-comm_style  ${comm_style}
+comm_style  ${comm_style}       # brick or tiled (docs.lammps.org/comm_style.html)
 atom_modify ${atom_modify}
-newton ${newton}
-neighbor        ${neighbor}            # search radius for neighbor list (=kernel radius)
+newton      ${newton}
+neighbor        ${neighbor}         # search radius for neighbor list (=kernel radius)
 neigh_modify    every ${neigh_modify_every} delay ${neigh_modify_delay} check ${neigh_modify_check}
 
 atom_style      ${atom_style}
  &#34;&#34;&#34;
 
 
+class file(globalsection):
+    &#34;&#34;&#34;
+    workshop2.file(file_name = [&#34;filelmp&#34;],group_name = [&#34;groupID&#34;],group=False,append=False)
+
+        Define how files are read. Use group=True to add the contents of the file to a custom group
+        Use append=True for consecutive file loads (this is mandatory for every file except the first)
+
+        Example
+        -------
+        file(file_name=[&#34;./data.file&#34;],group=True,group_name=[&#34;data1&#34;], append = False)
+        Previous step/class: initialization()
+        Next step/class: group()
+
+    &#34;&#34;&#34;
+    description = &#39;file(param=value...)&#39;
+    userid = &#34;file()&#34;
+    version = 1.0
+
+    DEFINITIONS = scriptdata(
+        file_name = [&#34;filelmp&#34;],
+        group_name = [&#34;groupID&#34;],
+        )
+    def __init__(self,group=False,append=False,**args):
+        READDATA = &#34;&#34;&#34;
+#   Load files
+read_data ${file_name} &#34;&#34;&#34;
+        if append:
+            READDATA = READDATA+&#34;add append &#34;
+        if group:
+            READDATA = READDATA+&#34;group ${group_name}&#34;
+        self.TEMPLATE= READDATA
+        self.USER = scriptdata(**args)
+
+
+class group(globalsection):
+    &#34;&#34;&#34;
+    workshop2.group()
+
+        Define new groups by selection a region of atoms.
+        By default, all spatial arguments are &#39;EDGE&#39; which means the edge of the domain box.
+
+        Example
+        -------
+        groups = group(groupID = [&#39;fixed_bottom&#39;], y=[&#39;EDGE&#39;,0.0002])
+        Previous step/class: initialization()
+        Next step/class: integration()
+
+    &#34;&#34;&#34;
+    description = &#39;group(param=value...)&#39;
+    userid = &#34;group()&#34;
+    version = 1.0
+
+    DEFINITIONS = scriptdata(
+        groupID = [&#34;regionID&#34;],
+              x = [&#39;EDGE&#39;,&#39;EDGE&#39;],
+              y = [&#39;EDGE&#39;,&#39;EDGE&#39;],
+              z = [&#39;EDGE&#39;,&#39;EDGE&#39;]
+        )
+    TEMPLATE = &#34;&#34;&#34;
+region      ${groupID} block ${x} ${y} ${z} units box
+group       ${groupID} region ${groupID}
+    &#34;&#34;&#34;
 # %% THERMO
 class integration(integrationsection):
     &#34;&#34;&#34;
-    workshop1.integration( g = 9.81,g_vector = [0,1,0],dt = 0.1,adjust_radius = [1.01,10,15],
+    workshop2.integration( g = 9.81,g_vector = [0,1,0],dt = 0.1,adjust_radius = [1.01,10,15],
                           balance = [500, 0.9, &#34;rcb&#34;])
 
         Set default parameters for time integration
@@ -399,7 +474,7 @@ class integration(integrationsection):
             adjust_radius lets smd dynamically modify the kernel radius to optimize num. neighbors
             balance allows LAMMPS to dynamically modify the domain and processor loading
 
-        Previous step/class: initialization()
+        Previous step/class: file()
         Next step/class: thermo_print()
 
     &#34;&#34;&#34;
@@ -410,32 +485,41 @@ class integration(integrationsection):
     DEFINITIONS = scriptdata(
             g = 9.81,
             g_vector = [0,1,0],
-              dt = 0.1,
-   adjust_radius = [1.01,10,15],
+              sf = 0.1,
+              dt = 1E-7,
+   adjust_radius = [1.00,10,15],
         balance = [500, 0.9, &#34;rcb&#34;] # load balancing for MPI
         )
 
-    TEMPLATE = &#34;&#34;&#34;
+    def __init__(self,timestep=False,**args):
+        READDATA = &#34;&#34;&#34;
 #   Gravity
-fix             gfix all gravity ${g} vector ${g_vector}
+fix             gfix all gravity ${g} vector ${g_vector} # apply gravitational force
 #   Time integration conditions
-fix             dtfix fluid smd/adjust_dt ${dt} # dynamically adjust time increment every step
 fix             integration_fix_ulsph ulsph smd/integrate_ulsph adjust_radius ${adjust_radius}
 fix             integration_fix_tlsph tlsph smd/integrate_tlsph
 #   balancing
 fix             balance_fix all balance ${balance}
-&#34;&#34;&#34;
+    &#34;&#34;&#34;
+        if timestep:
+            READDATA = READDATA+&#34;&#34;&#34;#   A user-speficied timestep is applied
+timestep        ${dt} &#34;&#34;&#34;
+        else:
+            READDATA = READDATA+&#34;&#34;&#34;#   timestep calculated using CFL criteria
+            fix             dtfix ulsph smd/adjust_dt ${sf} # dynamic timestep (CFL criteria)&#34;&#34;&#34;
+        self.TEMPLATE= READDATA
+        self.USER = scriptdata(**args)
 
 class thermo_print(integrationsection):
     &#34;&#34;&#34;
-    workshop1.thermo_print()
+    workshop2.thermo_print()
 
         Set frequency and parameters of terminal output
 
         Example
         -------
         thermo = thermo_print()
-        thermo = thermo_print(outstep = 1000) # less terminal output
+        thermo = thermo_print(print_freq = 1000) # less terminal output
 
         Comments:
             refer to TEMPLATE for details
@@ -443,7 +527,7 @@ class thermo_print(integrationsection):
 
 
 
-        Previous step/class: interactions()
+        Previous step/class: group()
         Next step/class: equilibration()
 
     &#34;&#34;&#34;
@@ -452,36 +536,37 @@ class thermo_print(integrationsection):
     version = 1.0
 
     DEFINITIONS = scriptdata(
-         outstep = 100,
+            print_freq = 100,
          thermo_modify = [&#34;lost&#34;,&#34;ignore&#34;],
-         thermo_style = [&#34;custom&#34;,&#34;step&#34;,&#34;dt&#34;]
+          thermo_style = [&#34;custom&#34;,&#34;step&#34;,&#34;dt&#34;]
         )
 
     TEMPLATE = &#34;&#34;&#34;
 #   thermodynamic information
-thermo             ${outstep}
-thermo_modify  ${thermo_modify}
-thermo_style   ${thermo_style}
+thermo             ${print_freq}       # print TD information every N steps
+thermo_modify  ${thermo_modify} # set options for how TD info is computed and printed
+thermo_style   ${thermo_style}  # specify what TD info is printed (default [N dt])
 &#34;&#34;&#34;
 # %% EQUILIBRATION
 
 class equilibration(integrationsection):
     &#34;&#34;&#34;
-    workshop1.equilibration()
+    workshop2.equilibration()
 
-        Relax and equilibrate the simulation with limit_velocities
-        It performs 50 iterations where limit_velocities(n) = 0.9*maxvel(n-1)
-        where n is the iteration step: 0.9^50 = 0.005
-        i.e. final_velocity =&lt; 0.005*inital_velocity
+        Relax and equilibrate the simulation
+        It performs 50 iterations of setting all velocities in the system to 0
+        I.E. the simulation relaxes for 1000 steps to turn PE -&gt; KE, then after
+        all KE is set to 0
 
         Example
         -------
-        equilsteps = equilibration(iterations=10)
+        equilsteps = equilibration(iterations=10, static=&#34;walls&#34;)
 
         Comments:
-            Heuristic, based on rapidly destroying kinetic energy in the system
+            Heuristic, based on destroying kinetic energy in the system
             iterations can be modified
-            rule of thumb: velocity halved every 7 iterations
+            static = &#34;$ group&#34; fixes atoms in a group during equilibration
+            example use being to maintain an enclosure around a fluid
 
         Previous step/class: thermo_print()
         Next step/class: smddump()
@@ -493,27 +578,33 @@ class equilibration(integrationsection):
 
     DEFINITIONS = scriptdata(
         it = 50,
-        re = 0.9
+        re = 0.9,
+        static = &#34;$ tlsph&#34;
         )
 
     TEMPLATE = &#34;&#34;&#34;
 #   Equilibration
+fix             static_objects ${static} smd/setvel 0 0 0 # ${static} have 0 velocity during equilibration
+
 dump            dump_equilibrate all custom 100 dump.equilibrate id type x y z &amp;
                 fx fy fz vx vy vz radius
-dump_modify     dump_equilibrate first yes
+dump_modify     dump_equilibrate first yes time yes # a light equilibration dump file is made for forensics
 
-variable vmag atom sqrt(vx^2+vy^2+vz^2)
-compute         maxvel all reduce max v_vmag
-variable        maxvelre equal ${re}*c_maxvel
+variable vmag atom sqrt(vx^2+vy^2+vz^2)         # velocity magnitude is computed
+compute         maxvel all reduce max v_vmag    # maximum velocity among all atoms
+variable        maxvelre equal ${re}*c_maxvel   # reduced maximum velocity is computed
 run     ${it}000 every 1000 &amp;
-    &#34;print \${maxvelre}&#34; &amp;
-    &#34;fix             ulsph_equilibration ulsph smd/integrate_ulsph limit_velocity \${maxvelre}&#34; &amp;
-    &#34;fix             tlsph_equilibration tlsph smd/integrate_tlsph limit_velocity \${maxvelre}&#34;
+    &#34;fix             ulsph_equilibration ulsph smd/integrate_ulsph limit_velocity 0&#34; &amp;
+    &#34;fix             tlsph_equilibration tlsph smd/integrate_tlsph limit_velocity 0&#34; &amp;
+    &#34;run             0&#34;                                                              &amp;
+    &#34;fix             ulsph_equilibration ulsph smd/integrate_ulsph&#34; &amp;
+    &#34;fix             tlsph_equilibration tlsph smd/integrate_tlsph&#34; # Every 1000 steps set destroy all KE
 
-dump_modify     dump_equilibrate every 1000000
+dump_modify     dump_equilibrate every 1000000 # frequency of dumps into the equilibrate file is replaced by a very large number
 
-fix             ulsph_equilibration ulsph smd/integrate_ulsph
-fix             tlsph_equilibration tlsph smd/integrate_tlsph
+fix             ulsph_equilibration ulsph smd/integrate_ulsph # velocity limits are removed ahead of the product run
+fix             tlsph_equilibration tlsph smd/integrate_tlsph # velocity limits are removed ahead of the product run
+fix             static_objects ${static} smd/setvel NULL NULL NULL  # ${static} have 0 velocity during equilibration
 
 &#34;&#34;&#34;
 
@@ -521,13 +612,13 @@ fix             tlsph_equilibration tlsph smd/integrate_tlsph
 # %% DUMP SECTION
 class smddump(dumpsection):
     &#34;&#34;&#34;
-    workshop1.smddump(outstep=1000,outputfile=&#34;$myfile&#34;)
+    workshop2.smddump(outstep=1000,outputfile=&#34;$myfile&#34;)
 
         Dump file format for SMD
 
         Example
         -------
-        dump = smddump(outstep=5000,outputfile=&#34;$ dump.workshop0&#34;)
+        dump = smddump(dump_freq=5000,outputfile=&#34;$ dump.workshop0&#34;)
         dump = smddump(machanical = True) # computes and dumps mechanical data
 
         Comments:
@@ -551,14 +642,15 @@ class smddump(dumpsection):
     version = 1.0
 
     DEFINITIONS = scriptdata(
-            outstep = 1000,
+          dump_freq = 1000,
          outputfile = &#34;$ dump.file&#34;,
       particle_data = [&#34;id&#34;,&#34;type&#34;,&#34;x&#34;,&#34;y&#34;,&#34;z&#34;,&#34;mol&#34;,&#34;mass&#34;,&#34;c_rho&#34;,&#34;c_vol&#34;,&#34;radius&#34;,&#34;c_contact_radius&#34;],
               v_xyz = [&#34;vx&#34;,&#34;vy&#34;,&#34;vz&#34;],
               f_xyz = [&#34;fx&#34;,&#34;fy&#34;,&#34;fz&#34;],
-      stress_tensor = [&#34;c_S[1]&#34;,&#34;c_S[2]&#34;],
-      strain_tensor = [&#34;c_E[1]&#34;,&#34;c_E[2]&#34;],
- strain_rate_tensor = [&#34;c_L[1]&#34;,&#34;c_L[2]&#34;],
+   stress_tensor_tl = [&#34;c_S[1]&#34;,&#34;c_S[2]&#34;,&#34;c_S[3]&#34;,&#34;c_S[4]&#34;,&#34;c_S[5]&#34;,&#34;c_S[6]&#34;,&#34;c_S[7]&#34;],
+   strain_tensor_tl = [&#34;c_E[1]&#34;,&#34;c_E[2]&#34;,&#34;c_E[3]&#34;,&#34;c_E[4]&#34;,&#34;c_E[5]&#34;,&#34;c_E[6]&#34;],
+strain_rate_tensor_tl = [&#34;c_L[1]&#34;,&#34;c_L[2]&#34;,&#34;c_L[3]&#34;,&#34;c_L[4]&#34;,&#34;c_L[5]&#34;,&#34;c_L[6]&#34;],
+   stress_tensor_ul = [&#34;c_P[1]&#34;,&#34;c_P[2]&#34;],
   thermo_properties = [&#34;c_epl&#34;],
           calc_data = [&#34;c_nn&#34;,&#34;proc&#34;,&#34;c_HGe&#34;]
 
@@ -570,13 +662,13 @@ class smddump(dumpsection):
         DUMP = &#34;&#34;&#34;
 
 #   dump command
-dump            dump_id all custom ${outstep} ${outputfile} &#34;&#34;&#34;
+dump            dump_id all custom ${dump_freq} ${outputfile} &#34;&#34;&#34;
         if particle_data:
             COMPUTE += &#34;&#34;&#34;
 #   Compute supp particle data
-compute         contact_radius all smd/contact/radius
-compute         vol all smd/vol
-compute         rho all smd/rho
+compute         contact_radius all smd/contact/radius # compute contact radius
+compute         vol all smd/vol # compute local volume
+compute         rho all smd/rho # compute local density
 &#34;&#34;&#34;
             DUMP += &#34;&#34;&#34;&amp;
 ${particle_data} &#34;&#34;&#34;
@@ -586,113 +678,161 @@ ${v_xyz} ${f_xyz} &#34;&#34;&#34;
         if mechanical:
             COMPUTE += &#34;&#34;&#34;
 #   Compute mechanical data
-compute         S tlsph smd/tlsph/stress
-compute         E tlsph smd/tlsph/stress
-compute         L tlsph smd/tlsph/stress
-compute         P ulpsh smd/ulsph/stress
+compute         S tlsph smd/tlsph/stress # computed Cauchy stress tensor terms and Von Mises eqv; xx yy zz xy xz yz vm
+compute         E tlsph smd/tlsph/strain # computed strain tensor terms; xx yy zz xy xz yz
+compute         L tlsph smd/tlsph/strain/rate # computed strain rate tensor terms; xx yy zz xy xz yz
+#compute         P ulsph smd/ulsph/stress # computed Cauchy stress tensor (currently a non-feature in SMD package)
+compute         P ulsph stress/atom NULL  #Virial stress tensor to approximate stress in units pressure*volume (https://docs.lammps.org/compute_stress_atom.html)
 &#34;&#34;&#34;
             DUMP += &#34;&#34;&#34;&amp;
-${stress_tensor} ${strain_tensor} ${strain_rate_tensor}&#34;&#34;&#34;
+${stress_tensor_tl} ${strain_tensor_tl} ${strain_rate_tensor_tl} &amp;
+${stress_tensor_ul} &#34;&#34;&#34;
         if thermo:
             COMPUTE +=  &#34;&#34;&#34;
 #   Compute thermo data
-compute         e_int all smd/internal_energy&#34;&#34;&#34;
+compute         e_int all smd/internal_energy # compute internal energy&#34;&#34;&#34;
             DUMP += &#34;&#34;&#34;&amp;
 ${thermo_properties} &#34;&#34;&#34;
         if calc_data:
             COMPUTE += &#34;&#34;&#34;
 #   Compute calculation data
-compute         nn ulsph smd/ulsph/num/neighs
-computer        HGE all smd/hourglass_error&#34;&#34;&#34;
+compute         nn ulsph smd/ulsph/num/neighs # compute number of neighbors
+computer        HGE all smd/hourglass_error # compute hourglass error&#34;&#34;&#34;
             DUMP += &#34;&#34;&#34;&amp;
 ${calc_data}&#34;&#34;&#34;
         self.TEMPLATE = COMPUTE + DUMP + &#34;&#34;&#34;
-dump_modify     dump_id first yes #every/time 0.001
+dump_modify     dump_id first yes time yes
 &#34;&#34;&#34;
         self.USER = scriptdata(**args)
 
 # %% DISPLACEMENTS AND FORCES
 class translation(runsection):
     &#34;&#34;&#34;
-    workshop1.translation(eq_vx = [&#34;NULL&#34;],eq_vy = [&#34;NULL&#34;],eq_vz = [&#34;NULL&#34;],
-                          fix_ID = [&#34;setvelocities&#34;],group = &#34;all&#34;)
+    workshop2.translation(vx_name = &#34;vel_x&#34;, vy_name = &#34;vel_y&#34;, vz_name = &#34;vel_z&#34;,
+                          vx_eq = 0, vy_eq = 0, vz_eq = 0, vx = &#34;$ v_vel_x&#34;,
+                          vy = &#34;$ v_vel_y&#34;, vz = &#34;$ v_vel_z&#34;,
+                          fix_ID = [&#34;setvelocities&#34;], group = &#34;all&#34;)
 
-        Translates top and bottom according to set velocities or forces
+        Translates objects according to imposed velocities (units m/s)
+        By default, everything is set to 0 velocity (i.e. object is frozen)
 
         Example
         -------
-        moves = translation(eq_vx = [&#34;NULL&#34;],eq_vy = [&#34;0&#34;],eq_vz = [&#34;sin(temp)&#34;,group=&#34;object1&#34;])
+        moves = translation(vy_eq = 0,vz_eq =&#34;$ sin(time)&#34;, vx=&#34;NULL&#34;, group=[&#34;object1&#34;])
 
         Comments:
-            Refer to TEMPLATE for details
-            =0 sets velocity to 0 whereas =NULL means do not alter
 
+            Refer to TEMPLATE for details
+
+            vx_name, vy_name, vz_name, sets the name of the velocity variable,
+            if consecutive movements are being performed in one script, they each
+            need their own name
+
+            vx_eq, vy_eq, vz_eq, specifies an equation to perform an action (see
+            https://docs.lammps.org/variable.html for the syntax for maths)
+
+            N.B. vx_eq=0 sets velocity to 0 (i.e. frozen) whereas vx=NULL means do not alter (i.e. free movement)
+            To set a NULL condition, vx=&#34;NULL&#34;, vy=&#34;NULL&#34;, vz=&#34;NULL&#34;
+            You also have the right to set vx, vy, vz directly to constants,
+            annulling any previous set values e.g. vx=1, vy=0
         Previous step/class: smddump()
         Next step/class: force()
     &#34;&#34;&#34;
 
-    description = &#39;translation(velocity1=[],velocity2=[],force=[],run=5000)&#39;
-    userid = &#34;smddump()&#34;
+    description = &#39;translation(vx_eq=[],vy_eq=[],group=&#34;object1&#34;)&#39;
+    userid = &#34;translate()&#34;
     version = 1.0
 
+
     DEFINITIONS = scriptdata(
-        eqvx = [&#34;0&#34;],
-        eqvy = [&#34;0&#34;],
-        eqvz = [&#34;0&#34;],
-        fixIDv = [&#34;setvelocities&#34;],
-        group = [&#34;all&#34;]
+    vx_name = &#34;$ vel_x&#34;,
+    vy_name = &#34;$ vel_y&#34;,
+    vz_name = &#34;$ vel_z&#34;,
+      vx_eq = 0,
+      vy_eq = 0,
+      vz_eq = 0,
+     fixIDv = &#34;$ setvelocities&#34;,
+      group = &#34;$ all&#34;,
+      vx = &#34;$ v_${vx_name}&#34;,
+      vy = &#34;$ v_${vy_name}&#34;,
+      vz = &#34;$ v_${vz_name}&#34;
         )
+
+
     TEMPLATE = &#34;&#34;&#34;
 #   Translation
-variable        vx equal ${eqvx}
-variable        vy equal ${eqvy}
-variable        vz equal ${eqvz}
-fix             ${fixIDv} ${group} smd/setvel v_vx v_vy v_vz
+variable        ${vx_name} equal ${vx_eq} # variable defined in x-direction
+variable        ${vy_name} equal ${vy_eq} # variable defined in y-direction
+variable        ${vz_name} equal ${vz_eq} # variable defined in z-direction
+fix             ${fixIDv} ${group} smd/setvel ${vx} ${vy} ${vz}  # set velocities to ${group}
 &#34;&#34;&#34;
 
 class force(runsection):
     &#34;&#34;&#34;
-    workshop0.translation(velocity1=[],velocity2=[],force=[],run=5000)
+    workshop2.force(fx_name = &#34;force_x&#34;, fy_name = &#34;force_y&#34;, fz_name = &#34;force_z&#34;,
+                          fx_eq = 0, fy_eq = 0, fz_eq = 0, fx = &#34;$ v_force_x&#34;,
+                          fy = &#34;$ v_force_y&#34;, fz = &#34;$ v_force_z&#34;,
+                          fix_ID = [&#34;setforces&#34;], group = &#34;all&#34;)
 
-        Translates top and bottom according to set velocities or forces
+        Imposes forces on an object (units N (Newtons))
+        By default, everything is set to 0 force (i.e. object is frozen)
 
         Example
         -------
-        moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp; \
-                translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp; \
-                translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp; \
-                rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+        moves = force(fy_eq = 0,fz_eq =&#34;$ sin(time)&#34;, fx=&#34;NULL&#34;, group=[&#34;object1&#34;])
 
         Comments:
+
             Refer to TEMPLATE for details
 
-        Previous step/class: smddump()
-        Next step/class: rampforce()
+            fx_name, fy_name, fz_name, sets the name of the force variable, if
+            consecutive movements are being performed in one script, they each
+            need their own name
+
+            fx_eq, fy_eq, fz_eq, specifies an equation to perform an action (see
+            https://docs.lammps.org/variable.html for the syntax for maths)
+
+            N.B. fx_eq=0 sets force to 0 (acceleration=0 i.e. frozen) whereas
+            fx=NULL means do not alter (i.e. free movement)
+            To set a NULL condition, fx=&#34;NULL&#34;, fy=&#34;NULL&#34;, fz=&#34;NULL&#34;
+            You also have the right to set fx, fy, fz directly to constants,
+            annulling any previous set values e.g. fx=1, fy=0
+        Previous step/class: translation()
+        Next step/class: run()
     &#34;&#34;&#34;
 
-    description = &#39;translation(velocity1=[],velocity2=[],force=[],run=5000)&#39;
-    userid = &#34;smddump()&#34;
+    description = &#39;force(fx_eq=[],fy_eq=[],group=&#34;object1&#34;)&#39;
+    userid = &#34;force()&#34;
     version = 1.0
 
+
     DEFINITIONS = scriptdata(
-        eqfx = [&#34;0&#34;],
-        eqfy = [&#34;0&#34;],
-        eqfz = [&#34;0&#34;],
-        fixIDf = [&#34;setforces&#34;],
-        group = [&#34;all&#34;]
+    fx_name = &#34;$ force_x&#34;,
+    fy_name = &#34;$ force_y&#34;,
+    fz_name = &#34;$ force_z&#34;,
+      fx_eq = 0,
+      fy_eq = 0,
+      fz_eq = 0,
+     fixIDv = &#34;$ setforces&#34;,
+      group = &#34;$ all&#34;,
+       fx = &#34;$ v_${fx_name}&#34;,
+       fy = &#34;$ v_${fy_name}&#34;,
+       fz = &#34;$ v_${fz_name}&#34;
         )
+
     TEMPLATE = &#34;&#34;&#34;
-#   Force
-variable        fx equal ${eqfx}/count(${group})
-variable        fy equal ${eqfy}/count(${group})
-variable        fz equal ${eqfz}/count(${group})
-fix             ${fixIDf} ${group} smd/setvel v_fx v_fy v_fz
+#   Translation
+variable        ${fx_name} equal ${fx_eq} # variable defined in x-direction
+variable        ${fy_name} equal ${fy_eq} # variable defined in y-direction
+variable        ${fz_name} equal ${fz_eq} # variable defined in z-direction
+fix             ${fixIDv} ${group} smd/setvel ${fx} ${fy} ${fz}  # set forces to ${group}
 &#34;&#34;&#34;
+
 # %% RUN
 
 class run(runsection):
     &#34;&#34;&#34;
-    workshop1.run(runs=50000)
+    workshop2.run(runs=50000)
 
         Performs a run of N steps
 
@@ -754,10 +894,10 @@ if __name__ == &#39;__main__&#39;:
     equilsteps =   equilibration(it=15)
 
     # modify the dump settings, outstep, properties dumped etc.
-    dmp = smddump(outstep=2000,outputfile=[&#34;dump.workshop1&#34;],)
+    dmp = smddump(outstep=2000,outputfile=[&#34;dump.workshop2&#34;],)
 
     # use equations to move specific objects or groups of atoms
-    moves = translation(vx = [&#34;0.1*exp(-step/100)&#34;],vy = [&#34;0&#34;],vz = [&#34;0&#34;]) &amp; \
+    moves = translation(vx = &#34;$ 0.1*exp(-step/100)&#34;,v_vy = &#34;$ NULL&#34;,vz = 0) &amp; \
             run() &amp; \
             translation() &amp; \
             force() &amp; \
@@ -781,25 +921,26 @@ if __name__ == &#39;__main__&#39;:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="workshop1.equilibration"><code class="flex name class">
+<dt id="workshop2.equilibration"><code class="flex name class">
 <span>class <span class="ident">equilibration</span></span>
 <span>(</span><span>persistentfile=True, persistentfolder=None, printflag=False, verbose=False, verbosity=None, **userdefinitions)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>workshop1.equilibration()</p>
-<pre><code>Relax and equilibrate the simulation with limit_velocities
-It performs 50 iterations where limit_velocities(n) = 0.9*maxvel(n-1)
-where n is the iteration step: 0.9^50 = 0.005
-i.e. final_velocity =&lt; 0.005*inital_velocity
+<div class="desc"><p>workshop2.equilibration()</p>
+<pre><code>Relax and equilibrate the simulation
+It performs 50 iterations of setting all velocities in the system to 0
+I.E. the simulation relaxes for 1000 steps to turn PE -&gt; KE, then after
+all KE is set to 0
 
 Example
 -------
-equilsteps = equilibration(iterations=10)
+equilsteps = equilibration(iterations=10, static="walls")
 
 Comments:
-    Heuristic, based on rapidly destroying kinetic energy in the system
+    Heuristic, based on destroying kinetic energy in the system
     iterations can be modified
-    rule of thumb: velocity halved every 7 iterations
+    static = "$ group" fixes atoms in a group during equilibration
+    example use being to maintain an enclosure around a fluid
 
 Previous step/class: thermo_print()
 Next step/class: smddump()
@@ -811,21 +952,22 @@ Next step/class: smddump()
 </summary>
 <pre><code class="python">class equilibration(integrationsection):
     &#34;&#34;&#34;
-    workshop1.equilibration()
+    workshop2.equilibration()
 
-        Relax and equilibrate the simulation with limit_velocities
-        It performs 50 iterations where limit_velocities(n) = 0.9*maxvel(n-1)
-        where n is the iteration step: 0.9^50 = 0.005
-        i.e. final_velocity =&lt; 0.005*inital_velocity
+        Relax and equilibrate the simulation
+        It performs 50 iterations of setting all velocities in the system to 0
+        I.E. the simulation relaxes for 1000 steps to turn PE -&gt; KE, then after
+        all KE is set to 0
 
         Example
         -------
-        equilsteps = equilibration(iterations=10)
+        equilsteps = equilibration(iterations=10, static=&#34;walls&#34;)
 
         Comments:
-            Heuristic, based on rapidly destroying kinetic energy in the system
+            Heuristic, based on destroying kinetic energy in the system
             iterations can be modified
-            rule of thumb: velocity halved every 7 iterations
+            static = &#34;$ group&#34; fixes atoms in a group during equilibration
+            example use being to maintain an enclosure around a fluid
 
         Previous step/class: thermo_print()
         Next step/class: smddump()
@@ -837,27 +979,33 @@ Next step/class: smddump()
 
     DEFINITIONS = scriptdata(
         it = 50,
-        re = 0.9
+        re = 0.9,
+        static = &#34;$ tlsph&#34;
         )
 
     TEMPLATE = &#34;&#34;&#34;
 #   Equilibration
+fix             static_objects ${static} smd/setvel 0 0 0 # ${static} have 0 velocity during equilibration
+
 dump            dump_equilibrate all custom 100 dump.equilibrate id type x y z &amp;
                 fx fy fz vx vy vz radius
-dump_modify     dump_equilibrate first yes
+dump_modify     dump_equilibrate first yes time yes # a light equilibration dump file is made for forensics
 
-variable vmag atom sqrt(vx^2+vy^2+vz^2)
-compute         maxvel all reduce max v_vmag
-variable        maxvelre equal ${re}*c_maxvel
+variable vmag atom sqrt(vx^2+vy^2+vz^2)         # velocity magnitude is computed
+compute         maxvel all reduce max v_vmag    # maximum velocity among all atoms
+variable        maxvelre equal ${re}*c_maxvel   # reduced maximum velocity is computed
 run     ${it}000 every 1000 &amp;
-    &#34;print \${maxvelre}&#34; &amp;
-    &#34;fix             ulsph_equilibration ulsph smd/integrate_ulsph limit_velocity \${maxvelre}&#34; &amp;
-    &#34;fix             tlsph_equilibration tlsph smd/integrate_tlsph limit_velocity \${maxvelre}&#34;
+    &#34;fix             ulsph_equilibration ulsph smd/integrate_ulsph limit_velocity 0&#34; &amp;
+    &#34;fix             tlsph_equilibration tlsph smd/integrate_tlsph limit_velocity 0&#34; &amp;
+    &#34;run             0&#34;                                                              &amp;
+    &#34;fix             ulsph_equilibration ulsph smd/integrate_ulsph&#34; &amp;
+    &#34;fix             tlsph_equilibration tlsph smd/integrate_tlsph&#34; # Every 1000 steps set destroy all KE
 
-dump_modify     dump_equilibrate every 1000000
+dump_modify     dump_equilibrate every 1000000 # frequency of dumps into the equilibrate file is replaced by a very large number
 
-fix             ulsph_equilibration ulsph smd/integrate_ulsph
-fix             tlsph_equilibration tlsph smd/integrate_tlsph
+fix             ulsph_equilibration ulsph smd/integrate_ulsph # velocity limits are removed ahead of the product run
+fix             tlsph_equilibration tlsph smd/integrate_tlsph # velocity limits are removed ahead of the product run
+fix             static_objects ${static} smd/setvel NULL NULL NULL  # ${static} have 0 velocity during equilibration
 
 &#34;&#34;&#34;</code></pre>
 </details>
@@ -868,45 +1016,140 @@ fix             tlsph_equilibration tlsph smd/integrate_tlsph
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="workshop1.equilibration.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dt id="workshop2.equilibration.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.equilibration.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dt id="workshop2.equilibration.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.equilibration.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dt id="workshop2.equilibration.description"><code class="name">var <span class="ident">description</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.equilibration.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dt id="workshop2.equilibration.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.equilibration.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dt id="workshop2.equilibration.version"><code class="name">var <span class="ident">version</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 </dd>
-<dt id="workshop1.force"><code class="flex name class">
+<dt id="workshop2.file"><code class="flex name class">
+<span>class <span class="ident">file</span></span>
+<span>(</span><span>group=False, append=False, **args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop2.file(file_name = ["filelmp"],group_name = ["groupID"],group=False,append=False)</p>
+<pre><code>Define how files are read. Use group=True to add the contents of the file to a custom group
+Use append=True for consecutive file loads (this is mandatory for every file except the first)
+
+Example
+-------
+file(file_name=["./data.file"],group=True,group_name=["data1"], append = False)
+Previous step/class: initialization()
+Next step/class: group()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class file(globalsection):
+    &#34;&#34;&#34;
+    workshop2.file(file_name = [&#34;filelmp&#34;],group_name = [&#34;groupID&#34;],group=False,append=False)
+
+        Define how files are read. Use group=True to add the contents of the file to a custom group
+        Use append=True for consecutive file loads (this is mandatory for every file except the first)
+
+        Example
+        -------
+        file(file_name=[&#34;./data.file&#34;],group=True,group_name=[&#34;data1&#34;], append = False)
+        Previous step/class: initialization()
+        Next step/class: group()
+
+    &#34;&#34;&#34;
+    description = &#39;file(param=value...)&#39;
+    userid = &#34;file()&#34;
+    version = 1.0
+
+    DEFINITIONS = scriptdata(
+        file_name = [&#34;filelmp&#34;],
+        group_name = [&#34;groupID&#34;],
+        )
+    def __init__(self,group=False,append=False,**args):
+        READDATA = &#34;&#34;&#34;
+#   Load files
+read_data ${file_name} &#34;&#34;&#34;
+        if append:
+            READDATA = READDATA+&#34;add append &#34;
+        if group:
+            READDATA = READDATA+&#34;group ${group_name}&#34;
+        self.TEMPLATE= READDATA
+        self.USER = scriptdata(**args)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.globalsection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop2.file.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop2.file.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop2.file.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop2.file.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop2.force"><code class="flex name class">
 <span>class <span class="ident">force</span></span>
 <span>(</span><span>persistentfile=True, persistentfolder=None, printflag=False, verbose=False, verbosity=None, **userdefinitions)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>workshop0.translation(velocity1=[],velocity2=[],force=[],run=5000)</p>
-<pre><code>Translates top and bottom according to set velocities or forces
+<div class="desc"><p>workshop2.force(fx_name = "force_x", fy_name = "force_y", fz_name = "force_z",
+fx_eq = 0, fy_eq = 0, fz_eq = 0, fx = "$ v_force_x",
+fy = "$ v_force_y", fz = "$ v_force_z",
+fix_ID = ["setforces"], group = "all")</p>
+<pre><code>Imposes forces on an object (units N (Newtons))
+By default, everything is set to 0 force (i.e. object is frozen)
 
 Example
 -------
-moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp;                 translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp;                 translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp;                 rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+moves = force(fy_eq = 0,fz_eq ="$ sin(time)", fx="NULL", group=["object1"])
 
 Comments:
+
     Refer to TEMPLATE for details
 
-Previous step/class: smddump()
-Next step/class: rampforce()
+    fx_name, fy_name, fz_name, sets the name of the force variable, if
+    consecutive movements are being performed in one script, they each
+    need their own name
+
+    fx_eq, fy_eq, fz_eq, specifies an equation to perform an action (see
+    &lt;https://docs.lammps.org/variable.html&gt; for the syntax for maths)
+
+    N.B. fx_eq=0 sets force to 0 (acceleration=0 i.e. frozen) whereas
+    fx=NULL means do not alter (i.e. free movement)
+    To set a NULL condition, fx="NULL", fy="NULL", fz="NULL"
+    You also have the right to set fx, fy, fz directly to constants,
+    annulling any previous set values e.g. fx=1, fy=0
+Previous step/class: translation()
+Next step/class: run()
 </code></pre>
 <p>constructor adding instance definitions stored in USER</p></div>
 <details class="source">
@@ -915,41 +1158,63 @@ Next step/class: rampforce()
 </summary>
 <pre><code class="python">class force(runsection):
     &#34;&#34;&#34;
-    workshop0.translation(velocity1=[],velocity2=[],force=[],run=5000)
+    workshop2.force(fx_name = &#34;force_x&#34;, fy_name = &#34;force_y&#34;, fz_name = &#34;force_z&#34;,
+                          fx_eq = 0, fy_eq = 0, fz_eq = 0, fx = &#34;$ v_force_x&#34;,
+                          fy = &#34;$ v_force_y&#34;, fz = &#34;$ v_force_z&#34;,
+                          fix_ID = [&#34;setforces&#34;], group = &#34;all&#34;)
 
-        Translates top and bottom according to set velocities or forces
+        Imposes forces on an object (units N (Newtons))
+        By default, everything is set to 0 force (i.e. object is frozen)
 
         Example
         -------
-        moves = translation(velocity1 = [0,-1,0], velocity2 = [0,1,0],run=5000) &amp; \
-                translation(velocity1 = [0,-0.1,0], velocity2 = [0,0.1,0],run=2000) &amp; \
-                translation(force=[0,-1,0], velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000) &amp; \
-                rampforce(ramp=(-1,-10), velocity1 = [0,0,0], velocity2 = [0,0,0],run=21000)
+        moves = force(fy_eq = 0,fz_eq =&#34;$ sin(time)&#34;, fx=&#34;NULL&#34;, group=[&#34;object1&#34;])
 
         Comments:
+
             Refer to TEMPLATE for details
 
-        Previous step/class: smddump()
-        Next step/class: rampforce()
+            fx_name, fy_name, fz_name, sets the name of the force variable, if
+            consecutive movements are being performed in one script, they each
+            need their own name
+
+            fx_eq, fy_eq, fz_eq, specifies an equation to perform an action (see
+            https://docs.lammps.org/variable.html for the syntax for maths)
+
+            N.B. fx_eq=0 sets force to 0 (acceleration=0 i.e. frozen) whereas
+            fx=NULL means do not alter (i.e. free movement)
+            To set a NULL condition, fx=&#34;NULL&#34;, fy=&#34;NULL&#34;, fz=&#34;NULL&#34;
+            You also have the right to set fx, fy, fz directly to constants,
+            annulling any previous set values e.g. fx=1, fy=0
+        Previous step/class: translation()
+        Next step/class: run()
     &#34;&#34;&#34;
 
-    description = &#39;translation(velocity1=[],velocity2=[],force=[],run=5000)&#39;
-    userid = &#34;smddump()&#34;
+    description = &#39;force(fx_eq=[],fy_eq=[],group=&#34;object1&#34;)&#39;
+    userid = &#34;force()&#34;
     version = 1.0
 
+
     DEFINITIONS = scriptdata(
-        eqfx = [&#34;0&#34;],
-        eqfy = [&#34;0&#34;],
-        eqfz = [&#34;0&#34;],
-        fixIDf = [&#34;setforces&#34;],
-        group = [&#34;all&#34;]
+    fx_name = &#34;$ force_x&#34;,
+    fy_name = &#34;$ force_y&#34;,
+    fz_name = &#34;$ force_z&#34;,
+      fx_eq = 0,
+      fy_eq = 0,
+      fz_eq = 0,
+     fixIDv = &#34;$ setforces&#34;,
+      group = &#34;$ all&#34;,
+       fx = &#34;$ v_${fx_name}&#34;,
+       fy = &#34;$ v_${fy_name}&#34;,
+       fz = &#34;$ v_${fz_name}&#34;
         )
+
     TEMPLATE = &#34;&#34;&#34;
-#   Force
-variable        fx equal ${eqfx}/count(${group})
-variable        fy equal ${eqfy}/count(${group})
-variable        fz equal ${eqfz}/count(${group})
-fix             ${fixIDf} ${group} smd/setvel v_fx v_fy v_fz
+#   Translation
+variable        ${fx_name} equal ${fx_eq} # variable defined in x-direction
+variable        ${fy_name} equal ${fy_eq} # variable defined in y-direction
+variable        ${fz_name} equal ${fz_eq} # variable defined in z-direction
+fix             ${fixIDv} ${group} smd/setvel ${fx} ${fy} ${fz}  # set forces to ${group}
 &#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -959,36 +1224,114 @@ fix             ${fixIDf} ${group} smd/setvel v_fx v_fy v_fz
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="workshop1.force.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dt id="workshop2.force.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.force.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dt id="workshop2.force.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.force.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dt id="workshop2.force.description"><code class="name">var <span class="ident">description</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.force.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dt id="workshop2.force.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.force.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dt id="workshop2.force.version"><code class="name">var <span class="ident">version</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 </dd>
-<dt id="workshop1.initialization"><code class="flex name class">
+<dt id="workshop2.group"><code class="flex name class">
+<span>class <span class="ident">group</span></span>
+<span>(</span><span>persistentfile=True, persistentfolder=None, printflag=False, verbose=False, verbosity=None, **userdefinitions)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>workshop2.group()</p>
+<pre><code>Define new groups by selection a region of atoms.
+By default, all spatial arguments are 'EDGE' which means the edge of the domain box.
+
+Example
+-------
+groups = group(groupID = ['fixed_bottom'], y=['EDGE',0.0002])
+Previous step/class: initialization()
+Next step/class: integration()
+</code></pre>
+<p>constructor adding instance definitions stored in USER</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class group(globalsection):
+    &#34;&#34;&#34;
+    workshop2.group()
+
+        Define new groups by selection a region of atoms.
+        By default, all spatial arguments are &#39;EDGE&#39; which means the edge of the domain box.
+
+        Example
+        -------
+        groups = group(groupID = [&#39;fixed_bottom&#39;], y=[&#39;EDGE&#39;,0.0002])
+        Previous step/class: initialization()
+        Next step/class: integration()
+
+    &#34;&#34;&#34;
+    description = &#39;group(param=value...)&#39;
+    userid = &#34;group()&#34;
+    version = 1.0
+
+    DEFINITIONS = scriptdata(
+        groupID = [&#34;regionID&#34;],
+              x = [&#39;EDGE&#39;,&#39;EDGE&#39;],
+              y = [&#39;EDGE&#39;,&#39;EDGE&#39;],
+              z = [&#39;EDGE&#39;,&#39;EDGE&#39;]
+        )
+    TEMPLATE = &#34;&#34;&#34;
+region      ${groupID} block ${x} ${y} ${z} units box
+group       ${groupID} region ${groupID}
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.script.globalsection</li>
+<li>pizza.script.script</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="workshop2.group.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop2.group.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop2.group.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop2.group.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="workshop2.group.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="workshop2.initialization"><code class="flex name class">
 <span>class <span class="ident">initialization</span></span>
 <span>(</span><span>persistentfile=True, persistentfolder=None, printflag=False, verbose=False, verbosity=None, **userdefinitions)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>workshop1.initialization()
-workshop1.initialization(param1=value1,param2=value2)</p>
-<pre><code>Initialize LAMMPS script of workshop1
+<div class="desc"><p>workshop2.initialization()
+workshop2.initialization(param1=value1,param2=value2)</p>
+<pre><code>Initialize LAMMPS script of workshop2
 
 Example
 -------
@@ -1025,10 +1368,10 @@ Next step/class: integration()
 </summary>
 <pre><code class="python">class initialization(globalsection):
     &#34;&#34;&#34;
-    workshop1.initialization()
-    workshop1.initialization(param1=value1,param2=value2)
+    workshop2.initialization()
+    workshop2.initialization(param1=value1,param2=value2)
 
-        Initialize LAMMPS script of workshop1
+        Initialize LAMMPS script of workshop2
 
         Example
         -------
@@ -1084,13 +1427,13 @@ Next step/class: integration()
     TEMPLATE = &#34;\n\n# &#34; + &#34;\n# &#34;.join(script._contact) + &#34;\n&#34;*3 + &#34;&#34;&#34;
 #   Scheme initialization
 units       ${units}
-dimension       ${dimension}
+dimension       ${dimension}        # 2 or 3 dimensions
 boundary    ${boundary}         # f = fixed, p = periodic
 comm_modify ${comm_modify}
-comm_style  ${comm_style}
+comm_style  ${comm_style}       # brick or tiled (docs.lammps.org/comm_style.html)
 atom_modify ${atom_modify}
-newton ${newton}
-neighbor        ${neighbor}            # search radius for neighbor list (=kernel radius)
+newton      ${newton}
+neighbor        ${neighbor}         # search radius for neighbor list (=kernel radius)
 neigh_modify    every ${neigh_modify_every} delay ${neigh_modify_delay} check ${neigh_modify_check}
 
 atom_style      ${atom_style}
@@ -1103,34 +1446,34 @@ atom_style      ${atom_style}
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="workshop1.initialization.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dt id="workshop2.initialization.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.initialization.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dt id="workshop2.initialization.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.initialization.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dt id="workshop2.initialization.description"><code class="name">var <span class="ident">description</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.initialization.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dt id="workshop2.initialization.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.initialization.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dt id="workshop2.initialization.version"><code class="name">var <span class="ident">version</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 </dd>
-<dt id="workshop1.integration"><code class="flex name class">
+<dt id="workshop2.integration"><code class="flex name class">
 <span>class <span class="ident">integration</span></span>
-<span>(</span><span>persistentfile=True, persistentfolder=None, printflag=False, verbose=False, verbosity=None, **userdefinitions)</span>
+<span>(</span><span>timestep=False, **args)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>workshop1.integration( g = 9.81,g_vector = [0,1,0],dt = 0.1,adjust_radius = [1.01,10,15],
+<div class="desc"><p>workshop2.integration( g = 9.81,g_vector = [0,1,0],dt = 0.1,adjust_radius = [1.01,10,15],
 balance = [500, 0.9, "rcb"])</p>
 <pre><code>Set default parameters for time integration
 
@@ -1147,7 +1490,7 @@ Comments:
     adjust_radius lets smd dynamically modify the kernel radius to optimize num. neighbors
     balance allows LAMMPS to dynamically modify the domain and processor loading
 
-Previous step/class: initialization()
+Previous step/class: file()
 Next step/class: thermo_print()
 </code></pre>
 <p>constructor adding instance definitions stored in USER</p></div>
@@ -1157,7 +1500,7 @@ Next step/class: thermo_print()
 </summary>
 <pre><code class="python">class integration(integrationsection):
     &#34;&#34;&#34;
-    workshop1.integration( g = 9.81,g_vector = [0,1,0],dt = 0.1,adjust_radius = [1.01,10,15],
+    workshop2.integration( g = 9.81,g_vector = [0,1,0],dt = 0.1,adjust_radius = [1.01,10,15],
                           balance = [500, 0.9, &#34;rcb&#34;])
 
         Set default parameters for time integration
@@ -1175,7 +1518,7 @@ Next step/class: thermo_print()
             adjust_radius lets smd dynamically modify the kernel radius to optimize num. neighbors
             balance allows LAMMPS to dynamically modify the domain and processor loading
 
-        Previous step/class: initialization()
+        Previous step/class: file()
         Next step/class: thermo_print()
 
     &#34;&#34;&#34;
@@ -1186,21 +1529,30 @@ Next step/class: thermo_print()
     DEFINITIONS = scriptdata(
             g = 9.81,
             g_vector = [0,1,0],
-              dt = 0.1,
-   adjust_radius = [1.01,10,15],
+              sf = 0.1,
+              dt = 1E-7,
+   adjust_radius = [1.00,10,15],
         balance = [500, 0.9, &#34;rcb&#34;] # load balancing for MPI
         )
 
-    TEMPLATE = &#34;&#34;&#34;
+    def __init__(self,timestep=False,**args):
+        READDATA = &#34;&#34;&#34;
 #   Gravity
-fix             gfix all gravity ${g} vector ${g_vector}
+fix             gfix all gravity ${g} vector ${g_vector} # apply gravitational force
 #   Time integration conditions
-fix             dtfix fluid smd/adjust_dt ${dt} # dynamically adjust time increment every step
 fix             integration_fix_ulsph ulsph smd/integrate_ulsph adjust_radius ${adjust_radius}
 fix             integration_fix_tlsph tlsph smd/integrate_tlsph
 #   balancing
 fix             balance_fix all balance ${balance}
-&#34;&#34;&#34;</code></pre>
+    &#34;&#34;&#34;
+        if timestep:
+            READDATA = READDATA+&#34;&#34;&#34;#   A user-speficied timestep is applied
+timestep        ${dt} &#34;&#34;&#34;
+        else:
+            READDATA = READDATA+&#34;&#34;&#34;#   timestep calculated using CFL criteria
+            fix             dtfix ulsph smd/adjust_dt ${sf} # dynamic timestep (CFL criteria)&#34;&#34;&#34;
+        self.TEMPLATE= READDATA
+        self.USER = scriptdata(**args)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1209,34 +1561,30 @@ fix             balance_fix all balance ${balance}
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="workshop1.integration.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dt id="workshop2.integration.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.integration.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dt id="workshop2.integration.description"><code class="name">var <span class="ident">description</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.integration.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dt id="workshop2.integration.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.integration.userid"><code class="name">var <span class="ident">userid</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="workshop1.integration.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dt id="workshop2.integration.version"><code class="name">var <span class="ident">version</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 </dd>
-<dt id="workshop1.run"><code class="flex name class">
+<dt id="workshop2.run"><code class="flex name class">
 <span>class <span class="ident">run</span></span>
 <span>(</span><span>persistentfile=True, persistentfolder=None, printflag=False, verbose=False, verbosity=None, **userdefinitions)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>workshop1.run(runs=50000)</p>
+<div class="desc"><p>workshop2.run(runs=50000)</p>
 <pre><code>Performs a run of N steps
 
 Example
@@ -1256,7 +1604,7 @@ Next step/class: rampforce()
 </summary>
 <pre><code class="python">class run(runsection):
     &#34;&#34;&#34;
-    workshop1.run(runs=50000)
+    workshop2.run(runs=50000)
 
         Performs a run of N steps
 
@@ -1293,39 +1641,39 @@ run ${runs}
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="workshop1.run.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dt id="workshop2.run.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.run.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dt id="workshop2.run.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.run.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dt id="workshop2.run.description"><code class="name">var <span class="ident">description</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.run.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dt id="workshop2.run.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.run.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dt id="workshop2.run.version"><code class="name">var <span class="ident">version</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 </dd>
-<dt id="workshop1.smddump"><code class="flex name class">
+<dt id="workshop2.smddump"><code class="flex name class">
 <span>class <span class="ident">smddump</span></span>
 <span>(</span><span>particle_data=True, velocity_force=True, mechanical=False, thermo=False, calc_data=False, **args)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>workshop1.smddump(outstep=1000,outputfile="$myfile")</p>
+<div class="desc"><p>workshop2.smddump(outstep=1000,outputfile="$myfile")</p>
 <pre><code>Dump file format for SMD
 
 Example
 -------
-dump = smddump(outstep=5000,outputfile="$ dump.workshop0")
+dump = smddump(dump_freq=5000,outputfile="$ dump.workshop0")
 dump = smddump(machanical = True) # computes and dumps mechanical data
 
 Comments:
@@ -1350,13 +1698,13 @@ Next step/class: translation()
 </summary>
 <pre><code class="python">class smddump(dumpsection):
     &#34;&#34;&#34;
-    workshop1.smddump(outstep=1000,outputfile=&#34;$myfile&#34;)
+    workshop2.smddump(outstep=1000,outputfile=&#34;$myfile&#34;)
 
         Dump file format for SMD
 
         Example
         -------
-        dump = smddump(outstep=5000,outputfile=&#34;$ dump.workshop0&#34;)
+        dump = smddump(dump_freq=5000,outputfile=&#34;$ dump.workshop0&#34;)
         dump = smddump(machanical = True) # computes and dumps mechanical data
 
         Comments:
@@ -1380,14 +1728,15 @@ Next step/class: translation()
     version = 1.0
 
     DEFINITIONS = scriptdata(
-            outstep = 1000,
+          dump_freq = 1000,
          outputfile = &#34;$ dump.file&#34;,
       particle_data = [&#34;id&#34;,&#34;type&#34;,&#34;x&#34;,&#34;y&#34;,&#34;z&#34;,&#34;mol&#34;,&#34;mass&#34;,&#34;c_rho&#34;,&#34;c_vol&#34;,&#34;radius&#34;,&#34;c_contact_radius&#34;],
               v_xyz = [&#34;vx&#34;,&#34;vy&#34;,&#34;vz&#34;],
               f_xyz = [&#34;fx&#34;,&#34;fy&#34;,&#34;fz&#34;],
-      stress_tensor = [&#34;c_S[1]&#34;,&#34;c_S[2]&#34;],
-      strain_tensor = [&#34;c_E[1]&#34;,&#34;c_E[2]&#34;],
- strain_rate_tensor = [&#34;c_L[1]&#34;,&#34;c_L[2]&#34;],
+   stress_tensor_tl = [&#34;c_S[1]&#34;,&#34;c_S[2]&#34;,&#34;c_S[3]&#34;,&#34;c_S[4]&#34;,&#34;c_S[5]&#34;,&#34;c_S[6]&#34;,&#34;c_S[7]&#34;],
+   strain_tensor_tl = [&#34;c_E[1]&#34;,&#34;c_E[2]&#34;,&#34;c_E[3]&#34;,&#34;c_E[4]&#34;,&#34;c_E[5]&#34;,&#34;c_E[6]&#34;],
+strain_rate_tensor_tl = [&#34;c_L[1]&#34;,&#34;c_L[2]&#34;,&#34;c_L[3]&#34;,&#34;c_L[4]&#34;,&#34;c_L[5]&#34;,&#34;c_L[6]&#34;],
+   stress_tensor_ul = [&#34;c_P[1]&#34;,&#34;c_P[2]&#34;],
   thermo_properties = [&#34;c_epl&#34;],
           calc_data = [&#34;c_nn&#34;,&#34;proc&#34;,&#34;c_HGe&#34;]
 
@@ -1399,13 +1748,13 @@ Next step/class: translation()
         DUMP = &#34;&#34;&#34;
 
 #   dump command
-dump            dump_id all custom ${outstep} ${outputfile} &#34;&#34;&#34;
+dump            dump_id all custom ${dump_freq} ${outputfile} &#34;&#34;&#34;
         if particle_data:
             COMPUTE += &#34;&#34;&#34;
 #   Compute supp particle data
-compute         contact_radius all smd/contact/radius
-compute         vol all smd/vol
-compute         rho all smd/rho
+compute         contact_radius all smd/contact/radius # compute contact radius
+compute         vol all smd/vol # compute local volume
+compute         rho all smd/rho # compute local density
 &#34;&#34;&#34;
             DUMP += &#34;&#34;&#34;&amp;
 ${particle_data} &#34;&#34;&#34;
@@ -1415,28 +1764,30 @@ ${v_xyz} ${f_xyz} &#34;&#34;&#34;
         if mechanical:
             COMPUTE += &#34;&#34;&#34;
 #   Compute mechanical data
-compute         S tlsph smd/tlsph/stress
-compute         E tlsph smd/tlsph/stress
-compute         L tlsph smd/tlsph/stress
-compute         P ulpsh smd/ulsph/stress
+compute         S tlsph smd/tlsph/stress # computed Cauchy stress tensor terms and Von Mises eqv; xx yy zz xy xz yz vm
+compute         E tlsph smd/tlsph/strain # computed strain tensor terms; xx yy zz xy xz yz
+compute         L tlsph smd/tlsph/strain/rate # computed strain rate tensor terms; xx yy zz xy xz yz
+#compute         P ulsph smd/ulsph/stress # computed Cauchy stress tensor (currently a non-feature in SMD package)
+compute         P ulsph stress/atom NULL  #Virial stress tensor to approximate stress in units pressure*volume (https://docs.lammps.org/compute_stress_atom.html)
 &#34;&#34;&#34;
             DUMP += &#34;&#34;&#34;&amp;
-${stress_tensor} ${strain_tensor} ${strain_rate_tensor}&#34;&#34;&#34;
+${stress_tensor_tl} ${strain_tensor_tl} ${strain_rate_tensor_tl} &amp;
+${stress_tensor_ul} &#34;&#34;&#34;
         if thermo:
             COMPUTE +=  &#34;&#34;&#34;
 #   Compute thermo data
-compute         e_int all smd/internal_energy&#34;&#34;&#34;
+compute         e_int all smd/internal_energy # compute internal energy&#34;&#34;&#34;
             DUMP += &#34;&#34;&#34;&amp;
 ${thermo_properties} &#34;&#34;&#34;
         if calc_data:
             COMPUTE += &#34;&#34;&#34;
 #   Compute calculation data
-compute         nn ulsph smd/ulsph/num/neighs
-computer        HGE all smd/hourglass_error&#34;&#34;&#34;
+compute         nn ulsph smd/ulsph/num/neighs # compute number of neighbors
+computer        HGE all smd/hourglass_error # compute hourglass error&#34;&#34;&#34;
             DUMP += &#34;&#34;&#34;&amp;
 ${calc_data}&#34;&#34;&#34;
         self.TEMPLATE = COMPUTE + DUMP + &#34;&#34;&#34;
-dump_modify     dump_id first yes #every/time 0.001
+dump_modify     dump_id first yes time yes
 &#34;&#34;&#34;
         self.USER = scriptdata(**args)</code></pre>
 </details>
@@ -1447,36 +1798,36 @@ dump_modify     dump_id first yes #every/time 0.001
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="workshop1.smddump.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dt id="workshop2.smddump.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.smddump.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dt id="workshop2.smddump.description"><code class="name">var <span class="ident">description</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.smddump.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dt id="workshop2.smddump.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.smddump.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dt id="workshop2.smddump.version"><code class="name">var <span class="ident">version</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 </dd>
-<dt id="workshop1.thermo_print"><code class="flex name class">
+<dt id="workshop2.thermo_print"><code class="flex name class">
 <span>class <span class="ident">thermo_print</span></span>
 <span>(</span><span>persistentfile=True, persistentfolder=None, printflag=False, verbose=False, verbosity=None, **userdefinitions)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>workshop1.thermo_print()</p>
+<div class="desc"><p>workshop2.thermo_print()</p>
 <pre><code>Set frequency and parameters of terminal output
 
 Example
 -------
 thermo = thermo_print()
-thermo = thermo_print(outstep = 1000) # less terminal output
+thermo = thermo_print(print_freq = 1000) # less terminal output
 
 Comments:
     refer to TEMPLATE for details
@@ -1484,7 +1835,7 @@ Comments:
 
 
 
-Previous step/class: interactions()
+Previous step/class: group()
 Next step/class: equilibration()
 </code></pre>
 <p>constructor adding instance definitions stored in USER</p></div>
@@ -1494,14 +1845,14 @@ Next step/class: equilibration()
 </summary>
 <pre><code class="python">class thermo_print(integrationsection):
     &#34;&#34;&#34;
-    workshop1.thermo_print()
+    workshop2.thermo_print()
 
         Set frequency and parameters of terminal output
 
         Example
         -------
         thermo = thermo_print()
-        thermo = thermo_print(outstep = 1000) # less terminal output
+        thermo = thermo_print(print_freq = 1000) # less terminal output
 
         Comments:
             refer to TEMPLATE for details
@@ -1509,7 +1860,7 @@ Next step/class: equilibration()
 
 
 
-        Previous step/class: interactions()
+        Previous step/class: group()
         Next step/class: equilibration()
 
     &#34;&#34;&#34;
@@ -1518,16 +1869,16 @@ Next step/class: equilibration()
     version = 1.0
 
     DEFINITIONS = scriptdata(
-         outstep = 100,
+            print_freq = 100,
          thermo_modify = [&#34;lost&#34;,&#34;ignore&#34;],
-         thermo_style = [&#34;custom&#34;,&#34;step&#34;,&#34;dt&#34;]
+          thermo_style = [&#34;custom&#34;,&#34;step&#34;,&#34;dt&#34;]
         )
 
     TEMPLATE = &#34;&#34;&#34;
 #   thermodynamic information
-thermo             ${outstep}
-thermo_modify  ${thermo_modify}
-thermo_style   ${thermo_style}
+thermo             ${print_freq}       # print TD information every N steps
+thermo_modify  ${thermo_modify} # set options for how TD info is computed and printed
+thermo_style   ${thermo_style}  # specify what TD info is printed (default [N dt])
 &#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -1537,45 +1888,59 @@ thermo_style   ${thermo_style}
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="workshop1.thermo_print.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dt id="workshop2.thermo_print.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.thermo_print.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dt id="workshop2.thermo_print.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.thermo_print.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dt id="workshop2.thermo_print.description"><code class="name">var <span class="ident">description</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.thermo_print.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dt id="workshop2.thermo_print.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.thermo_print.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dt id="workshop2.thermo_print.version"><code class="name">var <span class="ident">version</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 </dd>
-<dt id="workshop1.translation"><code class="flex name class">
+<dt id="workshop2.translation"><code class="flex name class">
 <span>class <span class="ident">translation</span></span>
 <span>(</span><span>persistentfile=True, persistentfolder=None, printflag=False, verbose=False, verbosity=None, **userdefinitions)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>workshop1.translation(eq_vx = ["NULL"],eq_vy = ["NULL"],eq_vz = ["NULL"],
-fix_ID = ["setvelocities"],group = "all")</p>
-<pre><code>Translates top and bottom according to set velocities or forces
+<div class="desc"><p>workshop2.translation(vx_name = "vel_x", vy_name = "vel_y", vz_name = "vel_z",
+vx_eq = 0, vy_eq = 0, vz_eq = 0, vx = "$ v_vel_x",
+vy = "$ v_vel_y", vz = "$ v_vel_z",
+fix_ID = ["setvelocities"], group = "all")</p>
+<pre><code>Translates objects according to imposed velocities (units m/s)
+By default, everything is set to 0 velocity (i.e. object is frozen)
 
 Example
 -------
-moves = translation(eq_vx = ["NULL"],eq_vy = ["0"],eq_vz = ["sin(temp)",group="object1"])
+moves = translation(vy_eq = 0,vz_eq ="$ sin(time)", vx="NULL", group=["object1"])
 
 Comments:
-    Refer to TEMPLATE for details
-    =0 sets velocity to 0 whereas =NULL means do not alter
 
+    Refer to TEMPLATE for details
+
+    vx_name, vy_name, vz_name, sets the name of the velocity variable,
+    if consecutive movements are being performed in one script, they each
+    need their own name
+
+    vx_eq, vy_eq, vz_eq, specifies an equation to perform an action (see
+    &lt;https://docs.lammps.org/variable.html&gt; for the syntax for maths)
+
+    N.B. vx_eq=0 sets velocity to 0 (i.e. frozen) whereas vx=NULL means do not alter (i.e. free movement)
+    To set a NULL condition, vx="NULL", vy="NULL", vz="NULL"
+    You also have the right to set vx, vy, vz directly to constants,
+    annulling any previous set values e.g. vx=1, vy=0
 Previous step/class: smddump()
 Next step/class: force()
 </code></pre>
@@ -1586,40 +1951,63 @@ Next step/class: force()
 </summary>
 <pre><code class="python">class translation(runsection):
     &#34;&#34;&#34;
-    workshop1.translation(eq_vx = [&#34;NULL&#34;],eq_vy = [&#34;NULL&#34;],eq_vz = [&#34;NULL&#34;],
-                          fix_ID = [&#34;setvelocities&#34;],group = &#34;all&#34;)
+    workshop2.translation(vx_name = &#34;vel_x&#34;, vy_name = &#34;vel_y&#34;, vz_name = &#34;vel_z&#34;,
+                          vx_eq = 0, vy_eq = 0, vz_eq = 0, vx = &#34;$ v_vel_x&#34;,
+                          vy = &#34;$ v_vel_y&#34;, vz = &#34;$ v_vel_z&#34;,
+                          fix_ID = [&#34;setvelocities&#34;], group = &#34;all&#34;)
 
-        Translates top and bottom according to set velocities or forces
+        Translates objects according to imposed velocities (units m/s)
+        By default, everything is set to 0 velocity (i.e. object is frozen)
 
         Example
         -------
-        moves = translation(eq_vx = [&#34;NULL&#34;],eq_vy = [&#34;0&#34;],eq_vz = [&#34;sin(temp)&#34;,group=&#34;object1&#34;])
+        moves = translation(vy_eq = 0,vz_eq =&#34;$ sin(time)&#34;, vx=&#34;NULL&#34;, group=[&#34;object1&#34;])
 
         Comments:
-            Refer to TEMPLATE for details
-            =0 sets velocity to 0 whereas =NULL means do not alter
 
+            Refer to TEMPLATE for details
+
+            vx_name, vy_name, vz_name, sets the name of the velocity variable,
+            if consecutive movements are being performed in one script, they each
+            need their own name
+
+            vx_eq, vy_eq, vz_eq, specifies an equation to perform an action (see
+            https://docs.lammps.org/variable.html for the syntax for maths)
+
+            N.B. vx_eq=0 sets velocity to 0 (i.e. frozen) whereas vx=NULL means do not alter (i.e. free movement)
+            To set a NULL condition, vx=&#34;NULL&#34;, vy=&#34;NULL&#34;, vz=&#34;NULL&#34;
+            You also have the right to set vx, vy, vz directly to constants,
+            annulling any previous set values e.g. vx=1, vy=0
         Previous step/class: smddump()
         Next step/class: force()
     &#34;&#34;&#34;
 
-    description = &#39;translation(velocity1=[],velocity2=[],force=[],run=5000)&#39;
-    userid = &#34;smddump()&#34;
+    description = &#39;translation(vx_eq=[],vy_eq=[],group=&#34;object1&#34;)&#39;
+    userid = &#34;translate()&#34;
     version = 1.0
 
+
     DEFINITIONS = scriptdata(
-        eqvx = [&#34;0&#34;],
-        eqvy = [&#34;0&#34;],
-        eqvz = [&#34;0&#34;],
-        fixIDv = [&#34;setvelocities&#34;],
-        group = [&#34;all&#34;]
+    vx_name = &#34;$ vel_x&#34;,
+    vy_name = &#34;$ vel_y&#34;,
+    vz_name = &#34;$ vel_z&#34;,
+      vx_eq = 0,
+      vy_eq = 0,
+      vz_eq = 0,
+     fixIDv = &#34;$ setvelocities&#34;,
+      group = &#34;$ all&#34;,
+      vx = &#34;$ v_${vx_name}&#34;,
+      vy = &#34;$ v_${vy_name}&#34;,
+      vz = &#34;$ v_${vz_name}&#34;
         )
+
+
     TEMPLATE = &#34;&#34;&#34;
 #   Translation
-variable        vx equal ${eqvx}
-variable        vy equal ${eqvy}
-variable        vz equal ${eqvz}
-fix             ${fixIDv} ${group} smd/setvel v_vx v_vy v_vz
+variable        ${vx_name} equal ${vx_eq} # variable defined in x-direction
+variable        ${vy_name} equal ${vy_eq} # variable defined in y-direction
+variable        ${vz_name} equal ${vz_eq} # variable defined in z-direction
+fix             ${fixIDv} ${group} smd/setvel ${vx} ${vy} ${vz}  # set velocities to ${group}
 &#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -1629,23 +2017,23 @@ fix             ${fixIDv} ${group} smd/setvel v_vx v_vy v_vz
 </ul>
 <h3>Class variables</h3>
 <dl>
-<dt id="workshop1.translation.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
+<dt id="workshop2.translation.DEFINITIONS"><code class="name">var <span class="ident">DEFINITIONS</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.translation.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
+<dt id="workshop2.translation.TEMPLATE"><code class="name">var <span class="ident">TEMPLATE</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.translation.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dt id="workshop2.translation.description"><code class="name">var <span class="ident">description</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.translation.userid"><code class="name">var <span class="ident">userid</span></code></dt>
+<dt id="workshop2.translation.userid"><code class="name">var <span class="ident">userid</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="workshop1.translation.version"><code class="name">var <span class="ident">version</span></code></dt>
+<dt id="workshop2.translation.version"><code class="name">var <span class="ident">version</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1663,82 +2051,100 @@ fix             ${fixIDv} ${group} smd/setvel v_vx v_vy v_vz
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="workshop1.equilibration" href="#workshop1.equilibration">equilibration</a></code></h4>
+<h4><code><a title="workshop2.equilibration" href="#workshop2.equilibration">equilibration</a></code></h4>
 <ul class="">
-<li><code><a title="workshop1.equilibration.DEFINITIONS" href="#workshop1.equilibration.DEFINITIONS">DEFINITIONS</a></code></li>
-<li><code><a title="workshop1.equilibration.TEMPLATE" href="#workshop1.equilibration.TEMPLATE">TEMPLATE</a></code></li>
-<li><code><a title="workshop1.equilibration.description" href="#workshop1.equilibration.description">description</a></code></li>
-<li><code><a title="workshop1.equilibration.userid" href="#workshop1.equilibration.userid">userid</a></code></li>
-<li><code><a title="workshop1.equilibration.version" href="#workshop1.equilibration.version">version</a></code></li>
+<li><code><a title="workshop2.equilibration.DEFINITIONS" href="#workshop2.equilibration.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.equilibration.TEMPLATE" href="#workshop2.equilibration.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop2.equilibration.description" href="#workshop2.equilibration.description">description</a></code></li>
+<li><code><a title="workshop2.equilibration.userid" href="#workshop2.equilibration.userid">userid</a></code></li>
+<li><code><a title="workshop2.equilibration.version" href="#workshop2.equilibration.version">version</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="workshop1.force" href="#workshop1.force">force</a></code></h4>
+<h4><code><a title="workshop2.file" href="#workshop2.file">file</a></code></h4>
 <ul class="">
-<li><code><a title="workshop1.force.DEFINITIONS" href="#workshop1.force.DEFINITIONS">DEFINITIONS</a></code></li>
-<li><code><a title="workshop1.force.TEMPLATE" href="#workshop1.force.TEMPLATE">TEMPLATE</a></code></li>
-<li><code><a title="workshop1.force.description" href="#workshop1.force.description">description</a></code></li>
-<li><code><a title="workshop1.force.userid" href="#workshop1.force.userid">userid</a></code></li>
-<li><code><a title="workshop1.force.version" href="#workshop1.force.version">version</a></code></li>
+<li><code><a title="workshop2.file.DEFINITIONS" href="#workshop2.file.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.file.description" href="#workshop2.file.description">description</a></code></li>
+<li><code><a title="workshop2.file.userid" href="#workshop2.file.userid">userid</a></code></li>
+<li><code><a title="workshop2.file.version" href="#workshop2.file.version">version</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="workshop1.initialization" href="#workshop1.initialization">initialization</a></code></h4>
+<h4><code><a title="workshop2.force" href="#workshop2.force">force</a></code></h4>
 <ul class="">
-<li><code><a title="workshop1.initialization.DEFINITIONS" href="#workshop1.initialization.DEFINITIONS">DEFINITIONS</a></code></li>
-<li><code><a title="workshop1.initialization.TEMPLATE" href="#workshop1.initialization.TEMPLATE">TEMPLATE</a></code></li>
-<li><code><a title="workshop1.initialization.description" href="#workshop1.initialization.description">description</a></code></li>
-<li><code><a title="workshop1.initialization.userid" href="#workshop1.initialization.userid">userid</a></code></li>
-<li><code><a title="workshop1.initialization.version" href="#workshop1.initialization.version">version</a></code></li>
+<li><code><a title="workshop2.force.DEFINITIONS" href="#workshop2.force.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.force.TEMPLATE" href="#workshop2.force.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop2.force.description" href="#workshop2.force.description">description</a></code></li>
+<li><code><a title="workshop2.force.userid" href="#workshop2.force.userid">userid</a></code></li>
+<li><code><a title="workshop2.force.version" href="#workshop2.force.version">version</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="workshop1.integration" href="#workshop1.integration">integration</a></code></h4>
+<h4><code><a title="workshop2.group" href="#workshop2.group">group</a></code></h4>
 <ul class="">
-<li><code><a title="workshop1.integration.DEFINITIONS" href="#workshop1.integration.DEFINITIONS">DEFINITIONS</a></code></li>
-<li><code><a title="workshop1.integration.TEMPLATE" href="#workshop1.integration.TEMPLATE">TEMPLATE</a></code></li>
-<li><code><a title="workshop1.integration.description" href="#workshop1.integration.description">description</a></code></li>
-<li><code><a title="workshop1.integration.userid" href="#workshop1.integration.userid">userid</a></code></li>
-<li><code><a title="workshop1.integration.version" href="#workshop1.integration.version">version</a></code></li>
+<li><code><a title="workshop2.group.DEFINITIONS" href="#workshop2.group.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.group.TEMPLATE" href="#workshop2.group.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop2.group.description" href="#workshop2.group.description">description</a></code></li>
+<li><code><a title="workshop2.group.userid" href="#workshop2.group.userid">userid</a></code></li>
+<li><code><a title="workshop2.group.version" href="#workshop2.group.version">version</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="workshop1.run" href="#workshop1.run">run</a></code></h4>
+<h4><code><a title="workshop2.initialization" href="#workshop2.initialization">initialization</a></code></h4>
 <ul class="">
-<li><code><a title="workshop1.run.DEFINITIONS" href="#workshop1.run.DEFINITIONS">DEFINITIONS</a></code></li>
-<li><code><a title="workshop1.run.TEMPLATE" href="#workshop1.run.TEMPLATE">TEMPLATE</a></code></li>
-<li><code><a title="workshop1.run.description" href="#workshop1.run.description">description</a></code></li>
-<li><code><a title="workshop1.run.userid" href="#workshop1.run.userid">userid</a></code></li>
-<li><code><a title="workshop1.run.version" href="#workshop1.run.version">version</a></code></li>
+<li><code><a title="workshop2.initialization.DEFINITIONS" href="#workshop2.initialization.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.initialization.TEMPLATE" href="#workshop2.initialization.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop2.initialization.description" href="#workshop2.initialization.description">description</a></code></li>
+<li><code><a title="workshop2.initialization.userid" href="#workshop2.initialization.userid">userid</a></code></li>
+<li><code><a title="workshop2.initialization.version" href="#workshop2.initialization.version">version</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="workshop1.smddump" href="#workshop1.smddump">smddump</a></code></h4>
+<h4><code><a title="workshop2.integration" href="#workshop2.integration">integration</a></code></h4>
 <ul class="">
-<li><code><a title="workshop1.smddump.DEFINITIONS" href="#workshop1.smddump.DEFINITIONS">DEFINITIONS</a></code></li>
-<li><code><a title="workshop1.smddump.description" href="#workshop1.smddump.description">description</a></code></li>
-<li><code><a title="workshop1.smddump.userid" href="#workshop1.smddump.userid">userid</a></code></li>
-<li><code><a title="workshop1.smddump.version" href="#workshop1.smddump.version">version</a></code></li>
+<li><code><a title="workshop2.integration.DEFINITIONS" href="#workshop2.integration.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.integration.description" href="#workshop2.integration.description">description</a></code></li>
+<li><code><a title="workshop2.integration.userid" href="#workshop2.integration.userid">userid</a></code></li>
+<li><code><a title="workshop2.integration.version" href="#workshop2.integration.version">version</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="workshop1.thermo_print" href="#workshop1.thermo_print">thermo_print</a></code></h4>
+<h4><code><a title="workshop2.run" href="#workshop2.run">run</a></code></h4>
 <ul class="">
-<li><code><a title="workshop1.thermo_print.DEFINITIONS" href="#workshop1.thermo_print.DEFINITIONS">DEFINITIONS</a></code></li>
-<li><code><a title="workshop1.thermo_print.TEMPLATE" href="#workshop1.thermo_print.TEMPLATE">TEMPLATE</a></code></li>
-<li><code><a title="workshop1.thermo_print.description" href="#workshop1.thermo_print.description">description</a></code></li>
-<li><code><a title="workshop1.thermo_print.userid" href="#workshop1.thermo_print.userid">userid</a></code></li>
-<li><code><a title="workshop1.thermo_print.version" href="#workshop1.thermo_print.version">version</a></code></li>
+<li><code><a title="workshop2.run.DEFINITIONS" href="#workshop2.run.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.run.TEMPLATE" href="#workshop2.run.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop2.run.description" href="#workshop2.run.description">description</a></code></li>
+<li><code><a title="workshop2.run.userid" href="#workshop2.run.userid">userid</a></code></li>
+<li><code><a title="workshop2.run.version" href="#workshop2.run.version">version</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="workshop1.translation" href="#workshop1.translation">translation</a></code></h4>
+<h4><code><a title="workshop2.smddump" href="#workshop2.smddump">smddump</a></code></h4>
 <ul class="">
-<li><code><a title="workshop1.translation.DEFINITIONS" href="#workshop1.translation.DEFINITIONS">DEFINITIONS</a></code></li>
-<li><code><a title="workshop1.translation.TEMPLATE" href="#workshop1.translation.TEMPLATE">TEMPLATE</a></code></li>
-<li><code><a title="workshop1.translation.description" href="#workshop1.translation.description">description</a></code></li>
-<li><code><a title="workshop1.translation.userid" href="#workshop1.translation.userid">userid</a></code></li>
-<li><code><a title="workshop1.translation.version" href="#workshop1.translation.version">version</a></code></li>
+<li><code><a title="workshop2.smddump.DEFINITIONS" href="#workshop2.smddump.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.smddump.description" href="#workshop2.smddump.description">description</a></code></li>
+<li><code><a title="workshop2.smddump.userid" href="#workshop2.smddump.userid">userid</a></code></li>
+<li><code><a title="workshop2.smddump.version" href="#workshop2.smddump.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop2.thermo_print" href="#workshop2.thermo_print">thermo_print</a></code></h4>
+<ul class="">
+<li><code><a title="workshop2.thermo_print.DEFINITIONS" href="#workshop2.thermo_print.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.thermo_print.TEMPLATE" href="#workshop2.thermo_print.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop2.thermo_print.description" href="#workshop2.thermo_print.description">description</a></code></li>
+<li><code><a title="workshop2.thermo_print.userid" href="#workshop2.thermo_print.userid">userid</a></code></li>
+<li><code><a title="workshop2.thermo_print.version" href="#workshop2.thermo_print.version">version</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="workshop2.translation" href="#workshop2.translation">translation</a></code></h4>
+<ul class="">
+<li><code><a title="workshop2.translation.DEFINITIONS" href="#workshop2.translation.DEFINITIONS">DEFINITIONS</a></code></li>
+<li><code><a title="workshop2.translation.TEMPLATE" href="#workshop2.translation.TEMPLATE">TEMPLATE</a></code></li>
+<li><code><a title="workshop2.translation.description" href="#workshop2.translation.description">description</a></code></li>
+<li><code><a title="workshop2.translation.userid" href="#workshop2.translation.userid">userid</a></code></li>
+<li><code><a title="workshop2.translation.version" href="#workshop2.translation.version">version</a></code></li>
 </ul>
 </li>
 </ul>
