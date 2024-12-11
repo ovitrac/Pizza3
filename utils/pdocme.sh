@@ -25,6 +25,12 @@
 # ./generate_diagrams.sh 
 # ./pdocme.sh
 
+# INRAE\Olivier Vitrac
+# Email: olivier.vitrac@agroparistech.fr
+# Last Revised:** 2024-12-11
+
+
+
 # Ensure the script is run from Pizza3/utils/
 if [[ ! -f "pdocme.sh" ]]; then
     echo "Error: This script must be run from the Pizza3/utils/ directory."

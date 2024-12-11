@@ -37,7 +37,7 @@ def main():
     ignore_extensions = [
         '.manifest', '.py~', '.sh~', '.pyc',
         '.sample', '.cache', '.xml', '.iml', '.zip', '.js',
-        '.pdf', '.png', '.mp4', '.avi'
+        '.pdf', '.png', '.mp4', '.avi', '.html~', '.gitignore~'
     ]
     
     ignore_dirs = [
@@ -46,11 +46,24 @@ def main():
         "history",
         "help",
         "debug",
+        "sandbox",
+        "draft",
+        "src",
         "tmp",
         "PIL",
+        "PIL.egg-info",
         "restore",
         "__all__",
-        "windowsONLY"
+        "windowsONLY",
+        "obsolete",
+        ".spyproject",
+        ".vscode",
+        "videos",
+        "converted",
+        "release",
+        "first_doc",
+        "old-doc",
+        "FIles_moved_to_Post"
     ]
 
     # Determine the current working directory

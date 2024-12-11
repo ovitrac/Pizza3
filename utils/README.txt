@@ -27,13 +27,25 @@ Use ./generate_simple_manifest.py to generate the simple manifest
     --> ../Pizza3.simple.manifest
 
 Use ./backupme.sh to backup all files
+    --> ../history/*.zip
+
+Use ./generate_release.sh to generate a release from Pizza3.simple.manifest
+    --> ../release/*.zip
 
 
 # *********************************************************
 # Procedure to refresh the entire help/documentation
 # ********************************************************
-# cd utils
-# rm -rf ../html/
-# ./generate_matlab_docs.py
-# ./generate_diagrams.sh
-# ./pdocme.sh
+cd utils
+rm -rf ../html/
+./generate_matlab_docs.py
+./generate_diagrams.sh
+./pdocme.sh
+
+# *********************************************************
+# Procedure to create a release
+# ********************************************************
+cd utils
+./generate_simple_manifest.py
+# edit and run
+./generate_release.sh
