@@ -10,6 +10,12 @@
 # Usage:
 #  ./generate_diagrams.sh
 
+
+# INRAE\Olivier Vitrac
+# Email: olivier.vitrac@agroparistech.fr
+# Last Revised:** 2024-12-11
+
+
 # Ensure script is run in a proper context (adjust if needed)
 if [[ ! -d "../pizza" ]]; then
     echo "Error: '../pizza' directory not found. Adjust mainfolder path accordingly."
@@ -49,6 +55,7 @@ echo "PYTHONPATH set to: $PYTHONPATH"
 
 # Directories to exclude (e.g., PIL)
 excluded_dirs=(
+    ".git"
     "PIL"
     "demo"
     "examples"

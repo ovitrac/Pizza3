@@ -13,11 +13,70 @@
 #    2) A Mermaid graph diagram for the class inheritance of that module
 #    3) Date of generation
 
+# INRAE\Olivier Vitrac
+# Email: olivier.vitrac@agroparistech.fr
+# Last Revised:** 2024-12-11
+
+
 import sys
 import os
 import importlib
 import inspect
 from datetime import datetime
+
+# Configuration Preambule
+ConfigurationPreambule = """
+## Configuration
+
+To run Pizza3, ensure your Python environment is properly configured. This setup assumes that you are operating from the `Pizza3/` directory, which contains the `pizza/` and `doc/` folders. The main folder (`$mainfolder`) is set to the absolute path of the current directory.
+
+### Setting Up PYTHONPATH
+
+Add the following paths to your `PYTHONPATH` environment variable to allow Python to locate the Pizza3 library and its dependencies:
+
+```bash
+# Define mainfolder as the absolute path
+mainfolder=$(realpath .)
+
+# Dynamically retrieve Python paths
+python_lib=$(python -c "import sysconfig; print(sysconfig.get_path('stdlib'))")
+lib_dynload=$(python -c "import sysconfig; print(sysconfig.get_path('platlib'))")
+site_packages=$(python -c "import site; print(site.getsitepackages()[0])")
+
+# Paths to include in PYTHONPATH
+additional_paths=(
+    "$mainfolder"
+    "$mainfolder/pizza"
+    "$python_lib"
+    "$lib_dynload"
+    "$site_packages"
+)
+
+# Set PYTHONPATH dynamically
+export PYTHONPATH=$(IFS=:; echo "${additional_paths[*]}")
+echo "PYTHONPATH set to: $PYTHONPATH"
+
+# Test Python Interpreter Configuration:
+# You should read "Pizza library initialized successfully"
+python -c "import pizza"
+```
+
+>**Note:**
+>
+>- The `.ipython/` directory has been excluded as it is not required for Pizza3.
+>- If you're using a virtual environment, ensure it's activated before running the script to automatically include the virtual environment's `site-packages` in `PYTHONPATH`.
+>- Replace `PYTHON_VERSION` with your actual Python version if different from `3.10`.
+>- If you're not using `Conda`, adjust the environment creation and activation commands accordingly.
+
+After setting up the `PYTHONPATH`, you can proceed to explore the Pizza3 modules below.
+
+### Launch `example2.py`
+You can now generate your first LAMMPS code from Python and run it with [LAMMPS-GUI](https://github.com/lammps/lammps/releases).
+```bash 
+    mkdir -p ./tmp     # create the output folder tmp/ if it does not exist
+    python example2.py # run example2
+```
+"""
 
 def class_name(cls):
     """Return a string representing the class"""
@@ -122,7 +181,9 @@ if __name__ == "__main__":
     with open(output_markdown, "w", encoding="utf-8") as f:
         f.write(f"# Pizza Modules Documentation\n\n")
         f.write(f"Generated on: **{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}**\n\n")
-
+        f.write('<hr style="border: none; height: 1px; background-color: #e0e0e0;" />\n\n')
+        f.write(ConfigurationPreambule + "\n\n")
+        f.write('<hr style="border: none; height: 1px; background-color: #e0e0e0;" />\n\n')
         for mod_name in sorted(modules):
             # Attempt to import module
             try:

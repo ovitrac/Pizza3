@@ -2,7 +2,7 @@
 
 # Generate documentation for Python files in Pizza3
 # Maintained by INRAE\olivier.vitrac@agroparistech.fr
-# Revision history: 2022-12-06, updated 2024-12-10
+# Revision history: 2022-12-06, updated 2024-12-11
 
 # Short view of the file tree
 # mainfolder/
@@ -18,6 +18,12 @@
 # │   ├── examples/
 # │   └── scripts/
 
+# Typycal usage
+# cd utils
+# rm -rf ../html/
+# ./generate_matlab_docs.py 
+# ./generate_diagrams.sh 
+# ./pdocme.sh
 
 # Ensure the script is run from Pizza3/utils/
 if [[ ! -f "pdocme.sh" ]]; then
@@ -296,6 +302,70 @@ cat > "$index_file" <<EOF
     tr:nth-child(odd) {
         background-color: rgba(76, 175, 80, 0.1); /* Light green for odd rows */
     }
+    /* Notification Banner Styling */
+    .notification-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #ff4d4d; /* fffae6 Light yellow background */
+        color: #333; /* Dark text color */
+        padding: 15px 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000; /* Ensures the banner stays on top */
+        font-family: Arial, sans-serif;
+        z-index: 1000;
+    }
+    .notification-banner a {
+        color: #1a73e8; /* Blue color for the link */
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .notification-banner a:hover {
+    text-decoration: underline;
+    }
+    .close-button {
+        position: absolute;
+        right: 60px;
+        top: 15px;
+        background: none;
+        border: none;
+        font-size: 32px;
+        font-weight: bold;
+        color: #ffffff;
+        cursor: pointer;
+        z-index: 1001;
+    }
+    .close-button:hover {
+        color: #dddddd;
+    }
+    .notification-banner {
+        transition: all 0.3s ease;
+    }
+
+    .notification-banner a {
+        transition: color 0.3s ease;
+    }
+
+    .notification-banner a:hover {
+        color: #0056b3; /* Darker blue on hover */
+    }
+    /* Media Queries for Responsiveness */
+    @media (max-width: 600px) {
+      .notification-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 10px;
+      }
+
+      .close-button {
+        position: static;
+        margin-top: 10px;
+      }
+    }
     </style>
     <!-- Include Marked.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
@@ -330,6 +400,14 @@ cat "$nav_file" >> "$index_file"
 # Append the main content with markdownContent embedded within a <script> block
 cat >> "$index_file" <<'EOF'
       </div>
+        <!-- Notification Banner -->
+        <div id="notification-banner" class="notification-banner">
+        <span>
+            If you were looking for the documentation of post- and pre-processing tools in Matlab, use this 
+            <a href="./index_matlab.html" target="_blank">link</a> instead.
+        </span>
+        <button class="close-button" onclick="closeBanner()">&times;</button>
+        </div>
       <div id="main">
         <h2>Welcome to Pizza3 Documentation</h2>
         <p>Select a Python module from the left panel to view its documentation. Click on a folder to expand/collapse its contents. <br/><i>Matlab/Octave codes for pre_ and post-preocessing are not listed here.</i></p>
@@ -360,6 +438,15 @@ cat >> "$index_file" <<'EOF'
         </footer>
       </div>
     </div>
+    <script>
+        // Function to close the notification banner
+        function closeBanner() {
+        var banner = document.getElementById('notification-banner');
+        if (banner) {
+            banner.style.display = 'none';
+        }
+        }
+    </script>
 </body>
 </html>
 EOF
