@@ -31,14 +31,14 @@ import datetime
 
 def main():
     # Define the manifest filename
-    manifest_filename = "Pizza3.simple.manifest"
+    manifest_filename = "Pizza3.mini.manifest"
 
     # Define the list of file extensions and directories to ignore
     ignore_extensions = [
         '.manifest', '.py~', '.sh~', '.pyc',
         '.sample', '.cache', '.xml', '.iml', '.zip', '.js',
         '.pdf', '.png', '.mp4', '.avi', '.html~', '.gitignore~',
-        '.gif','.pptx'
+        '.gif', '.pptx','.fig'
     ]
     
     ignore_dirs = [
@@ -64,7 +64,12 @@ def main():
         "release",
         "first_doc",
         "old-doc",
-        "FIles_moved_to_Post"
+        "FIles_moved_to_Post",
+        "dump",
+        "dumps",
+        "pub1",
+        "data",
+        "play_data"
     ]
 
     # Determine the current working directory
