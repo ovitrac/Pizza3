@@ -1,6 +1,6 @@
 # Directory for small utilities
 # backup, maintenance, synchronization
-# INRAE\Olivier Vitrac - 2024
+# INRAE\Olivier Vitrac - 2024-12-12
 
 # *********************************************************
 # All files are intented to be run from Pizza3/utils
@@ -49,3 +49,35 @@ cd utils
 ./generate_simple_manifest.py
 # edit and run
 ./generate_release.sh
+
+
+# *********************************************************
+# Procedure to resfresh 
+#    setup.py
+#    requirements.txt
+#    MANIFEST.in <-- run first ./generate_simple_manifest.py
+# ********************************************************
+Pizza3/
+│
+├── utils/
+│   ├── generate_requirements.py  # SETUP script
+│   ├── generate_manifest_in.py   # SETUP script
+│   └── generate_setup.py         # SETUP script
+│
+├── pizza/
+│   ├── __init__.py
+│   ├── private/
+│   │   ├── __init__.py
+│   │   └── PIL/
+│   │       ├── __init__.py
+│   │       └── ... (other PIL modules)
+│   └── ... (other modules)
+│
+├── example2.py
+├── tmp/
+├── README.md
+├── LICENSE
+├── Pizza3.simple.manifest
+├── requirements.txt             # run ./generate_requirements.py   from utils/
+├── MANIFEST.in                  # run ./generate_manifest_in.py  from utils/
+└── setup.py                     # run ./generate_setup.py   from utils/

@@ -6,7 +6,7 @@ Restricts __all__ to symbols defined within the module itself.
 Generates backup files with __all__ definitions in utils/__all__/ for review.
 """
 
-# Maintained by INRAE\olivier.vitrac@agroparistech.fr
+# Maintained by INRAE\\olivier.vitrac@agroparistech.fr
 # Revision history: 2024-12-08
 
 import os

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# # -*- coding: utf-8 -*-
+
 """
 Generate the Pizza3.simple.manifest
 
@@ -20,7 +21,7 @@ Configuration:
     - Excluded Folders and File Types: Defined in the 'ignore' list.
 
 Author:
-    INRAE\Olivier Vitrac
+    INRAE\\Olivier Vitrac
     Email: olivier.vitrac@agroparistech.fr
     Last Revised: 2024-12-11
 """
@@ -38,7 +39,7 @@ def main():
         '.manifest', '.py~', '.sh~', '.pyc',
         '.sample', '.cache', '.xml', '.iml', '.zip', '.js',
         '.pdf', '.png', '.mp4', '.avi', '.html~', '.gitignore~',
-        '.gif', '.pptx','.fig'
+        '.gif', '.pptx','.fig','.egg-info'
     ]
     
     ignore_dirs = [
@@ -51,7 +52,6 @@ def main():
         "draft",
         "src",
         "tmp",
-        "PIL",
         "PIL.egg-info",
         "restore",
         "__all__",

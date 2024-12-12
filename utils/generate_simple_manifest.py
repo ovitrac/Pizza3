@@ -20,9 +20,9 @@ Configuration:
     - Excluded Folders and File Types: Defined in the 'ignore' list.
 
 Author:
-    INRAE\Olivier Vitrac
+    INRAE\\Olivier Vitrac
     Email: olivier.vitrac@agroparistech.fr
-    Last Revised: 2024-12-11
+    Last Revised: 2024-12-12
 """
 
 import os
@@ -38,7 +38,7 @@ def main():
         '.manifest', '.py~', '.sh~', '.pyc',
         '.sample', '.cache', '.xml', '.iml', '.zip', '.js',
         '.pdf', '.png', '.mp4', '.avi', '.html~', '.gitignore~',
-        '.gif','.pptx'
+        '.gif','.pptx','.egg-info'
     ]
     
     ignore_dirs = [
@@ -51,7 +51,6 @@ def main():
         "draft",
         "src",
         "tmp",
-        "PIL",
         "PIL.egg-info",
         "restore",
         "__all__",

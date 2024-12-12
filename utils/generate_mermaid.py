@@ -13,7 +13,7 @@
 #    2) A Mermaid graph diagram for the class inheritance of that module
 #    3) Date of generation
 
-# INRAE\Olivier Vitrac
+# INRAE\\Olivier Vitrac
 # Email: olivier.vitrac@agroparistech.fr
 # Last Revised:** 2024-12-11
 

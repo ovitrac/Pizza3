@@ -11,7 +11,7 @@
 #  ./generate_diagrams.sh
 
 
-# INRAE\Olivier Vitrac
+# INRAE\\Olivier Vitrac
 # Email: olivier.vitrac@agroparistech.fr
 # Last Revised:** 2024-12-11
 
