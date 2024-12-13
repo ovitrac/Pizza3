@@ -1,55 +1,100 @@
-# Pizza3 #
 
-> Contributors:
->
-> ​	INRAE\Olivier Vitrac, E-mail: [olivier.vitrac@agroparistech.fr](olivier.vitrac@agroparistech.fr) (main contact)
->
-> ​	INRAE\William Jenkinson, E-mail: [william.jenkinson@agroparistech.fr](olivier.vitrac@agroparistech.fr)
->
-> ​	INRAE\Pei Sun, E-mail: [pei.sun@agroparistech.fr](olivier.vitrac@agroparistech.fr)
->
-> $ 2022-08-01 $
+# 🍕 **Pizza3**
 
-*Click [here](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html) to read this file in HTML (including with videos)*
+> **Toolkit for multiscale modeling with LAMMPS in Python 3.x**. It integrates with [LAMMPS-GUI](https://github.com/lammps/lammps/releases) and leverages Large Language Models for rapid prototyping.
+
+---
+
+- 📄 **[Read this file in `HTML`](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html)** *(includes videos and enhanced visuals).*
+- 📚 **[Online Documentation - 🐍Python](https://ovitrac.github.io/Pizza3/)** *(including how to install, run and modify <kbd>Pizza3</kbd>)
+- 📚 **[Online Documentation - 📊Matlab/Octave](https://ovitrac.github.io/Pizza3/index_matlab.html)** *(advanced post-treatment)*
+- 🔖 **[Releases](https://github.com/ovitrac/Pizza3/releases)** *(new capabilities are detailed there, download page)*
+
+
+
+---
 
 [TOC]
 
-##  Scope
 
-<kbd>Pizza3</kbd> is a fork and an extension of Pizza.py toolkit for [LAMMPS](https://www.lammps.org/) witten in Python 3.x, whereas the original `Pizza.py` has been written in Python 2.x. <kbd>Pizza3</kbd> should be seen as loosely integrated collection of tools for  [LAMMPS](https://www.lammps.org/)  regardless the considered style. Our main goal is to achieve a set of tools facilitating multiscale modeling in LAMMPS: the connection of results obtained at different scales with different levels of coarse graining or details.
-
->  The most important achievements are discussed hereafter. *The work is in progress, come back regularly.*
+---
 
 
+## 🧠 **Part I: Philosophy and Principles (Overview)**
 
-## Overview
+<kbd>Pizza3</kbd> began as a fork and extension of the **Pizza.py** toolkit for [LAMMPS](https://www.lammps.org/), rewritten in Python 3.x to modernize the original Python 2.x framework. Over time, it has evolved into a **flexible and loosely integrated toolkit** designed for [LAMMPS](https://www.lammps.org/) users, regardless of the simulation style. <kbd>Pizza3</kbd> empowers users to facilitate **multiscale modeling** and seamlessly connect results across different scales and levels of coarse-graining.
 
-Main scripts and classes are shown here. The demonstrations of implemented features are available as "==workshops==" (currently 0 = draft, 1=first workable, 2=first production). <kbd>Pizza3</kbd> is fully object-oriented and use a universal container a structure à la Matlab with self-evaluating capabilities (`param()`) or not (`pizza.private.struct()`). The design capabilities will remain limited in <kbd>Pizza3</kbd> but a set of methods are proposed in `pizza.raster()` to allow the testing of 2D algorithms with a much lower computational cost than in 3D without a loss of generality. 
+All objects in <kbd>Pizza3</kbd> have **scripting and static compiling capabilities**, and can be converted into [LAMMPS](https://www.lammps.org/) instructions through mathematical operators (e.g., `+`, `|`, `*`) or by calling methods like <kbd>script()</kbd> or <kbd>do()</kbd>. This design philosophy ensures that complex workflows remain accessible, flexible, and modular.
+
+> **Work in Progress:** The toolkit evolves regularly. **Come back often** for improved capabilities. Newer versions add more classes, dynamic scripting (`pizza.dscript()`, `pizza.dforcefield()`), and better integration with large language models via intermediate `DSCRIPT SAVE FILE` formats.
+
+### 📌 **Key Features:**
+
+- 🛠️ **Fully object-oriented architecture**
+- 🌐 **Compatibility with modern Python standards**
+- 📦 **Extensible classes for custom workflows**
+- 🎯 **Focus on multiscale and multiphysics modeling**
+- 🚀 **Advanced 2D/3D design capabilities**
+
+### 📌 **Key Components:**
+
+- 🌟 **Design reusable templates** with scripting classes like `pizza.script()`, `pizza.dscript()`, `pizza.forcefield()`, `pizza.dforcefield()`, `pizza.group()`.
+- 🚀 **Dynamic design of complex 2D and 3D shapes** with `pizza.raster()`, `pizza.region()`.
+- 🧩 **Combine simulation components** via mathematical operators (`+`, `|`, `*`,`&`).
+- 📜 **Generate input/output scripts and dumps** using classes like `pizza.data()` and `pizza.dump()`.
+- 🔬 **Perform advanced spatial/temporal analysis** using the MATLAB/Octave-based library in the `post/` folder.
+
+---
 
 
 
->The class `pizza.script()` is the main class to code in [LAMMPS](https://www.lammps.org/) from *codelets* written in Python.  *Codelets* are essential for our purpose of multiscale modeling. They parse and interpret [LAMMPS](https://www.lammps.org/) codes, so-called `TEMPLATES`, without importing them in LAMMPS either in real or deferred time. *Codelet* instances offer static, global and local variables, so-called `DEFINITIONS`, which facilitate the chaining of instructions (*e.g.*, programmed displacements, forcefield definitions) and the conversion from one style to the other. The static interpreter reorders mathematical expressions and definitions to make them executable.
-
-Input and output [LAMMPS](https://www.lammps.org/) data are managed as `pizza.data()` and `pizza.dump()` original objects. New methods extend original capabilities to facilitate the manipulation of frames, the conversion of outputs to inputs (equivalent restart files).
-
-> Forcefields are specific to each style and are manipulated through the concept of inheritance. A user library of forcefields can be set by overriding existing definitions. It is recommended to implement user rules with the class `pizza.generic()` (follows ) . 
+## 🏗️ **Part II: Illustrations** (Workshops and Examples)
 
 
 
-**Table 1**. Overview of classes
+### 🎓Scope
 
-| Workshops<br> (workable demonstrations) |             **Main classes<br/>and subclasses**              |                    Low-level<br/> classes                    |
-| :-------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
-|          class: ==workshop1==           |                2D drawing class: pizza.raster                |    generic struct class à la Matlab: pizza.private.struct    |
-|          class: ==workshop2==           | as above (with exemplification of advanced features, incl. time-steps, region of interest and salting selection |                           as above                           |
-|            script: geometry             |      class to read/write input files: pizza.data3.data       | self-evaluable struct with scripting/alias features: pizza.private.param |
-|            script: assembly             |         class to manage dump files: pizza.dump3.dump         |                                                              |
-|                                         | advanced scripting classes: pizza.script.script, pizza.script.datascript, pizza.script.scriptobject, pizza.script.scriptobjectgroup, pizza.script.pipescript |                                                              |
-|                                         | forcefield classes: pizza.forcefield.forcefield, pizza.forcefield.smd, pizza.forcefield.tlsph, pizza.forcefield.ulsph, pizza.forcefield.none, pizza.forcefield.water, pizza.forcefield.solidfood, pizza.forcefield.rigidwall |                                                              |
+Our main goal is to achieve a set of tools that **facilitate multiscale modeling** in [LAMMPS](https://www.lammps.org/): connecting results across scales with different levels of detail. Below we highlight the current achievements and show how <kbd>Pizza3</kbd> integrates with [LAMMPS](https://www.lammps.org/).
 
-## Key steps
+**In the latest versions of <kbd>Pizza3</kbd>:**  
+- 🚀 **Almost all 3D design capabilities** of [LAMMPS](https://www.lammps.org/) have been implemented, particularly via new classes like `pizza.region()` and `pizza.group()`.
+- 🧪 **2D algorithms** can be tested via `pizza.raster()` at lower computational cost without losing generality.
 
-Workshop1 illustrates the main steps to design, run and analyze a LAMMPS project from Python 3.x.
+> The class <kbd>pizza.script()</kbd> is central for coding [LAMMPS](https://www.lammps.org/) instructions from Python "codelets" and handling `TEMPLATES`. Dynamic scripting concepts via `pizza.dscript()` and `pizza.dforcefield()` make it easy to transform existing [LAMMPS](https://www.lammps.org/) code into reusable templates.
+
+**I/O Management:**  
+`pizza.data()` and `pizza.dump()` objects streamline frame manipulation, output-to-input conversions (like restart files), and advanced spatial/temporal analysis.
+
+**Forcefields:**  
+Forcefields can be managed through inheritance, and a user library can be built by overriding existing definitions. It's recommended to implement user rules with <kbd>pizza.generic()</kbd> or <kbd>pizza.dforcefield()</kbd>.
+
+**Visualization and Post-Processing:**  
+Some examples of visualization are proposed in 2D and 3D in Python. The `post/` folder includes advanced analysis tools integrated with MATLAB/Octave. Users are encouraged to combine [LAMMPS-GUI](https://github.com/lammps/lammps/releases) with [OVITO](https://www.ovito.org/) for rapid prototyping.
+
+**Integration with Large Language Models:**  
+The `DSCRIPT SAVE FILE` format has been designed for AI text generators and facilitating the maintenance of a large library of codelets. The use of this new text format or language is not mandatory, but it enables code generation with almost zero Python.
+
+
+---
+
+
+
+### 📊Table 1: Overview of Legacy Classes
+
+| Workshops<br>(workable demos) |             **Main classes<br/>and subclasses**              |                    Low-level<br/> classes                    |
+| :---------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
+|     class: ==workshop1==      |               2D drawing class: `pizza.raster`               | generic struct class à la Matlab: `pizza.private.mstruct()`  |
+|     class: ==workshop2==      | as above (with advanced features: time-steps, region of interest, salting) |                           as above                           |
+|       script: geometry        |     class to read/write input files: `pizza.data3.data`      | self-evaluable struct with scripting/alias: `pizza.private.param()` |
+|       script: assembly        |            manage dump files: `pizza.dump3.dump`             |                                                              |
+|                               | advanced scripting: `pizza.script.script`, `pizza.script.datascript`, `pizza.script.scriptobject`, `pizza.script.scriptobjectgroup`, `pizza.script.pipescript` |                                                              |
+|                               | forcefields: `pizza.forcefield.forcefield`, `pizza.forcefield.smd`, `pizza.forcefield.tlsph`, `pizza.forcefield.ulsph`, `pizza.forcefield.none`, `pizza.forcefield.water`, `pizza.forcefield.solidfood`, `pizza.forcefield.rigidwall` |                                                              |
+
+---
+
+### 📐Key Steps
+
+**Workshop1** illustrates the main steps to design, run, and analyze a  [LAMMPS](https://www.lammps.org/) project from Python 3.x.
 
 ```mermaid
 graph TD;
@@ -60,10 +105,11 @@ graph TD;
     A[assembly] --> D[dump]
 ```
 
-## Overview of workshop1 classes
+---
 
-Workshop1 contains 7 main steps and codes as:
+### 📝Overview of workshop1 Classes
 
+Workshop1 involves 7 main steps and codes, as shown below:
 
 ```python
 # initizalization of the scheme 
@@ -106,115 +152,65 @@ b4 = scriptobject(name="bead 4",
                   filename = './raster_4_types.lmp',
                   forcefield=solidfood(USER=SOLID))
 
-# set gravity, timestep, adjusted kernel radius
 inte = integration()
-    
-# modify which data is returned to the terminal
 thermo = thermo_print()
-    
-# equilibration/relaxation protocol, iterations can be reduced or augmented
-equilsteps =   equilibration(it=15)
-    
-# modify the dump settings, outstep, properties dumped etc.
+equilsteps = equilibration(it=15)
 dmp = smddump(outstep=2000,outputfile=["dump.workshop1"],)
-    
-# use equations to move specific objects or groups of atoms
 moves = translation(vx = ["0.1*exp(-step/100)"],
                         vy = ["0"],vz = ["0"]) & \
-		run() & \
+        run() & \
         translation() & \
         force() & \
         run()
 
-# combine everything into a full script and write file  
 collection = b1+b2+b3+b4
-fullscript = init + collection.script + inte \
-     			 + thermo + equilsteps + dmp + moves
+fullscript = init + collection.script + inte + thermo + equilsteps + dmp + moves
 fullscript.write("./tmp/in.swimmingpool")
 ```
 
-The equivalent flowchart reads:
+
+
+Equivalent flowchart:
 
 ```mermaid
 classDiagram
 class initialization{
 	<<globalsection>>
-	                units= "$ si"
-            dimension= 2
-             boundary= ["p","f","p"]
-          comm_modify= ["vel","yes"]
-           comm_style= "$ tiled"
-          atom_modify= ["map","array"]
-               newton= "$ off"
-              neighbor= [1,"bin"]
-    neigh_modify_every= 5 
-    neigh_modify_delay= 0
-    neigh_modify_check= "$ yes"
-            atom_style= "$ smd"
+	...
 }
-
 class integration{
-	 <<integrationsection>>
-            g = 9.81
-            g_vector = [0,1,0]
-              dt = 0.1
-   adjust_radius = [1.01,10,15]
-        balance = [500, 0.9, "rcb"] # load balancing for MPI
+	<<integrationsection>>
+	g=9.81
+	...
 }
-
 class thermo_print{
 	<<integrationsection>>
-	            g = 9.81
-            g_vector = [0,1,0]
-              dt = 0.1
-   adjust_radius = [1.01,10,15]
-        balance = [500, 0.9, "rcb"] # load balancing for MPI
+	...
 }
-
 class equilibration{
 	<<integrationsection>>
-	    it = 50,
-        re = 0.9
+	it=50,
+	re=0.9
 }
-
 class smddump{
 	<<dumpsection>>
-	            outstep = 1000,
-         outputfile = "$ dump.file",
-      particle_data = ["id","type","x","y","z","mol"...]
-              v_xyz = ["vx","vy","vz"]
-              f_xyz = ["fx","fy","fz"]
-      stress_tensor = ["c_S[1]","c_S[2]"]
-      strain_tensor = ["c_E[1]","c_E[2]"]
- strain_rate_tensor = ["c_L[1]","c_L[2]"]
-  thermo_properties = ["c_epl"]
-          calc_data = ["c_nn","proc","c_HGe"]
+	outstep=1000,
+	...
 }
-
 class translation{
 	<<runsection>>
-	    eqvx = 0
-        eqvy = 0
-        eqvz = 0
-        fixIDv = ["setvelocities"]
-        group = ["all"]
+	eqvx=0
+	...
 }
-
 class force{
 	<<runsection>>
-        eqfx = 0
-        eqfy = 0
-        eqfz = 0
-        fixIDf = ["setforces"]
-        group = ["all"]
+	eqfx=0
+	...
 }
-
 class run{
 	<<runsection>>
-		runs = 50000
-		}
-		
-
+	runs=50000
+}
 initialization --o collection
 collection --o integration
 integration --o thermo_print
@@ -225,151 +221,69 @@ run --o moves
 translation --o moves
 force --o moves
 smddump --o moves
-
 ```
 
+---
 
 
 
-## Overview of top classes
-
-The figure highlights the  dependencies between all classes. Note that several operators have been overloaded to facilitate scripting and indexing.
+### 🧩Top Classes Dependencies
 
 ```mermaid
 classDiagram
 class raster{
-	<<core>>
-	width=200
-	height=200
-	dpi=300
-	rectangle()
-	circle()
-	triangle()
-	diamond()
-	pentagon()
-	hexagon()
-	list()
-	get()
-	plot()
-	show()
-	label()
-	unlabel()
-	numeric()
-	string()
-	print()
-	data()
-	write()
+	...
 }
 
 class data{
-	<<pizza>>
-	title
-	names
-	headers
-	sections
-	flist
-	restart
-	append()
-	findtime()
-	map()
-	reorder()
-	replace()
-	write()
+	...
 }
 
 class dump{
-	<<pizza>>
-	flist
-	names
-	snaps
-	kind()
-	type()
-	maxbox()
-	maxtype()
-	tselect()
-	aselect()
-	frame()
-	findtime()
-	time()
-	read_all()
-	write()
+	...
 }
-	
-class struct{
+
+class mstruct{
 	<<private>>
 	var=value
 	generator()
 	scan()
 }
+
 class param{
 	<<private>>
 	var=value
 	eval()
 	formateval()
 }
+
 class scriptdata{
-	<<core>>
 	var1=value1
-	var2=value2
-	var3=value3
 }
+
 class forcefield{
-	<<core>>
-	name=forcefield:style:material
-	description
-	beadtype
-	parameters
-	userid
-	version
-	USER
+	...
 }
+
 class script{
-		<<core>>
-    	DEFINITIONS
-    	TEMPLATE
-        USER
-        +, &, *, **, |, +=
-        do()
-        write()
+	...
 }
+
 class scriptobject{
-		<<core>>
-    	beadtype
-    	name
-        fullname
-        filename
-        style
-        forcefield
-        group
-        USER
+	...
 }
+
 class scriptobjectgroup{
-		<<core>>
-    	groupid
-    	groupidname
-        groupname
-        beadtype
-        name
-        str
-        forcefield
-        script
-        interactions
-        select()     
+	...
 }
+
 class pipescript{
-	<<core>>
-	[]
-	|, +, +=, *
-	scripts
-	script
-	clear()
-	rename()
-	do()
-	
+	...
 }
+
 data --* raster
-struct --|>  param : extended
-struct --* dump
+mstruct --|>  param : extended
+mstruct --* dump
 param --* paramforcefield
 param --|> scriptdata
 param --* scriptobject
@@ -381,13 +295,15 @@ script --o pipescript
 scriptobject --o pipescript
 scriptobjectgroup --o pipescript
 data --o dump
-
-
 ```
 
-##  Output of workshop1
+---
 
-### LAMMPS script
+
+
+### 🏞️ Output of workshop1 (LAMMPS script)
+
+### 📜LAMMPS script
 
 ```perl
 # Automatic LAMMPS script (version 0.4)
@@ -584,116 +500,124 @@ run 50000
 
 
 
-###  Videos from workshop1
+---
 
-The videos are generated with Ovito directly from dump files.
+### 🎥 Videos from workshop1
+
+The videos are generated with [ovito](https://www.ovito.org/) directly from dump files.
 
 
 
-#### Equilibration step
+**Equilibration step**
 
 <video width="50%" controls="controls" preload="auto">
     <source type="video/mp4" src="https://github.com/ovitrac/Pizza3/raw/main/examples/workshop1_equilibration.mp4">
 </video>
 
 
-#### Run step
+**Run step**
 
 <video width="50%" controls="controls" preload="auto">
     <source type="video/mp4" src="https://github.com/ovitrac/Pizza3/raw/main/examples/workshop1_run.mp4">
 </video>
 
+---
 
-## Extensions offered by workshop2
 
-### Scope
 
-Workshop 2 addresses several issues and improve the user experience (better commenting, documentation, certain improvements to the intuition) and elaborates specific aspects of the pipeline. New features include
+### 📈 Extensions in Workshop2
 
-1. Inputs set from microscopic images
-2. Setting time-step,  salting
-3.  two examples (squeeze case and shearing case)
+
+
+#### 🎓Scope:  
+
+- Inputs from images
+- Time-step and salting
+- Squeeze and shear examples
 
 > With workshop 2, more complex systems should be achievable to the user including the use of "*sensing*" surfaces and better control of system parameters such as viscosity.
 
 
 
-### New classes and updates
+#### 🛠️New classes and updates
 
 A few classes have been updated/improved to be more usable and funcitonal, and two new classes have been created; file and group. Both these classes give additional methods of creating groups in lammps to suppliment the use of the intereactions class.
 
-#### workshop2.file
+##### 🌟workshop2.file
 
 The *file* class can be used to read the files, and it is a new method of creating a group. If you want all the atoms in your file to be part of a group, use the arguments group=True and specify an ID for them with group_name = "your_group_name"
 
 Example:
 
 ```PYTHON
-files = file(file_name=["./file1"],group=True,group_name=["sensor"]) & \
-        file(file_name=["./file2"],group=True,group_name=["substance"], append = True)
+files = workshop2.file(file_name=["./file1"],group=True,group_name=["sensor"]) & \
+        workshop2.file(file_name=["./file2"],group=True,group_name=["substance"], append = True)
 ```
 
 N.B. for subsequent files, if you want to preserve the files already uploaded use append=True
 
-#### workshop2.group
+##### 🌟workshop2.group
 
 The group class can create new groups from an input of arguments to specify a sub-domain of the simulation. You have four arguments; x = [x1 x2], x = [x1 x2], x = [x1 x2] and groupID="sensor".
 
 Example:
 
 ```PYTHON
-groups = group(groupID = ['bottom'], y=['EDGE',0.2])
+groups = workshop2.group(groupID = ['bottom'], y=['EDGE',0.2])
 ```
 
 By default, all spatial arguments are 'EDGE' which means the edge of the domain box.
 
-### Improvements and updates
-
-#### workshop2.equilibrate
+##### 🌟workshop2.equilibrate
 
 - by default, tlsph object are frozen but using static='yourgroup', an group of atoms can be frozen
 - equilibrate is simplified, periodically all velocities in the simulation are set to 0 in order to remove the kinetic energy from the system, it= can be used to specify the number of such cycles
 
-#### workshop2.translation/force
+##### 🌟workshop2.translation/force
 
 - bugs in the translation and force classes resolved
 - names can be specified case-by-case and multiple actions can be performed
 
-### Examples
 
-#### squeeze_flow
 
-A block of fluid is squeezed between two surfaces, the lower surface is "sensing" and detects stresses
+#### 🖼️ Examples
 
+
+
+##### **Squeeze Flow** 
+
+A block of fluid is squeezed between two surfaces, the lower surface is "sensing" and detects stresses.
 
 
 <img src="https://github.com/ovitrac/Pizza3/raw/main/examples/squeezing.png" style="zoom:33%;" /><img src="https://github.com/ovitrac/Pizza3/raw/main/examples/squeezing_salted.png" style="zoom:33%;" />
 
-
-
-
-
-#### shear_flow
+##### **Solid deformations**  
 
 <img src="https://github.com/ovitrac/Pizza3/raw/main/examples/shearing.png" style="zoom:33%;" />
 
+---
+
+## 🔗Part 3. Overview of classes used in workshops
 
 
-## pizza.raster()
 
-Raster is a 2D space-filling model for very coarse-grained systems. The code has been written in such a way as to allow an easy generalization in 3D: only the concept of convex hull must be added.
+### 🌟pizza.raster()
+
+`pizza.raster()` is a 2D space-filling model for coarse-grained systems. 
 
 ```python
 from pizza.raster import raster, emulsion, coreshell
 ```
 
+> Use `pizza.region()` to generate 3D complex objects and set their interactions. They can be generated and visualized with [LAMMPS-GUI](https://github.com/lammps/lammps/releases).  `pizza.group()` applies indifferently to 2D and 3D objects.
 
 
-### Principle to generate input data
+
+#### Basic shapes
 
 The example creates simple objects with different shapes and bead types.
 
-<img src="https://github.com/ovitrac/Pizza3/raw/main/examples/raster01.png" style="zoom:33%;" />
+<img src="./assets/raster01.png" style="zoom:33%;" />
 
 ```python
 # drawing area
@@ -733,7 +657,9 @@ X.write("tmp/example.lmp") # scaling is available
 
 
 
-### Duplicate and replicate objects along a path
+
+
+#### Duplicate and replicate objects along a path
 
 Geometry objects can be copied between `pizza.raster()` objects and copied along arbitrary paths or coordinates.
 
@@ -760,11 +686,9 @@ B.plot()
 B.show(extra="label")
 ```
 
+---
 
 
-### Customized classes
-
-Customized classes facilitate the construction of the collection of objects and can be inserted in `pizza.raster() ` instances.
 
 
 
@@ -804,9 +728,10 @@ D.show()
 
 
 
-## pizza.forcefield()
+### 🌟pizza.forcefield()
 
-Forcefields are essential, but complex to setup. The class `pizza.forcefield()` facilitate their design and use via libraries.
+Forcefield customization with inheritance. Example outputs shown previously.
+
 
 ```python
 from pizza.forcefield import *
@@ -870,10 +795,13 @@ replace FFi,FFj by your variable names <<<
 ```
 
 
+---
 
-## pizza.script.script(), pizza.script.pipescript()
 
-`pizza.script()` is the Swiss knife of <kbd>Pizza3</kbd>.
+
+### 🌟pizza.script(), pizza.script.pipescript()
+
+Key scripting classes enabling dynamic variable space, template parsing, and operator overloading.
 
 ```python
 from pizza.script import *
@@ -891,11 +819,9 @@ from pizza.script import *
 
 
 
-## pizza.data3.data(), pizza.dump3.dump()
+### 🌟pizza.data3.data(), pizza.dump3.dump()
 
-The objects `data()` and `dump()` are partly compatible and can be used alone or together.
-
-
+Easily handle input/output files, including restarts:
 
 ```python
 # input data objects and methods
@@ -917,3 +843,22 @@ R = data(Y,step)
 R.write("../tmp/data.myfirstrestart.lmp")
 ```
 
+
+
+
+
+---
+
+> 🖋️ **Contributors:**
+>
+> - INRAE\Olivier Vitrac (main contact: [olivier.vitrac@agroparistech.fr](mailto:olivier.vitrac@agroparistech.fr))
+> - INRAE\William Jenkinson ([william.jenkinson@agroparistech.fr](mailto:olivier.vitrac@agroparistech.fr))
+> - INRAE\Pei Sun ([pei.sun@agroparistech.fr](mailto:olivier.vitrac@agroparistech.fr))
+> - INRAE\Han Chen ([han.chen@inrae.fr](mailto:han.chen@inrae.fr))
+> - community contributors
+
+$ 2024-12-12 $
+
+---
+
+*For further details, consult the [online documentation](https://ovitrac.github.io/Pizza3/) and the [release page](https://github.com/ovitrac/Pizza3/releases) for new capabilities.*
