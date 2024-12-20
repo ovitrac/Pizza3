@@ -34,23 +34,25 @@
 # Inputs:
 #  - Takes a list of modules from STDIN (one per line, in dot notation)
 #  - First argument: output Markdown file
+#  - Second argument: path to modules_details.json
 #
 # Outputs:
 #  - A single Markdown file containing:
 #    1) A tabulated list of methods for each module (method name, first paragraph of docstring, number of lines, __version__)
 #    2) A Mermaid graph diagram for the class inheritance of that module
-#    3) Date of generation
+#    3) Links to class examples in HTML documentation
+#    4) Date of generation
 
-# INRAE\Olivier Vitrac
+# INRAE\\Olivier Vitrac
 # Email: olivier.vitrac@agroparistech.fr
-# Last Revised:** 2024-12-11
-
+# Last Revised:** 2024-12-19
 
 import sys
 import os
 import importlib
 import inspect
 from datetime import datetime
+import json
 
 # Configuration Preambule
 ConfigurationPreambule = &#34;&#34;&#34;
@@ -100,7 +102,7 @@ After setting up the `PYTHONPATH`, you can proceed to explore the Pizza3 modules
 
 ### Launch `example2.py`
 You can now generate your first LAMMPS code from Python and run it with [LAMMPS-GUI](https://github.com/lammps/lammps/releases).
-```bash 
+```bash
     mkdir -p ./tmp     # create the output folder tmp/ if it does not exist
     python example2.py # run example2
 ```
@@ -198,22 +200,38 @@ def get_module_methods(module):
 
     return top_methods, class_methods
 
-if __name__ == &#34;__main__&#34;:
-    if len(sys.argv) &lt; 2:
-        print(&#34;Usage: generate_mermaid.py output_markdown.md &lt; modules_list.txt&#34;)
+def main():
+    if len(sys.argv) &lt; 3:
+        print(&#34;Usage: generate_mermaid.py output_markdown.md modules_details.json &lt; modules_list.txt&#34;, file=sys.stderr)
         sys.exit(1)
 
     output_markdown = sys.argv[1]
+    modules_details_json = sys.argv[2]
+
+    if not os.path.isfile(modules_details_json):
+        print(f&#34;Error: JSON file &#39;{modules_details_json}&#39; does not exist.&#34;, file=sys.stderr)
+        sys.exit(1)
+
+    # === NEW SECTION: Load Module Details from JSON ===
+    # This section loads the modules_details.json to access module details
+    with open(modules_details_json, &#39;r&#39;, encoding=&#39;utf-8&#39;) as f:
+        modules_details = json.load(f)
+    # === END OF NEW SECTION ===
+
+    # Read module names from STDIN
     modules = [line.strip() for line in sys.stdin if line.strip()]
 
     with open(output_markdown, &#34;w&#34;, encoding=&#34;utf-8&#34;) as f:
+        # Write the main header and generation date
         f.write(f&#34;# Pizza Modules Documentation\n\n&#34;)
         f.write(f&#34;Generated on: **{datetime.now().strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)}**\n\n&#34;)
         f.write(&#39;&lt;hr style=&#34;border: none; height: 1px; background-color: #e0e0e0;&#34; /&gt;\n\n&#39;)
+        # Write the configuration preambule
         f.write(ConfigurationPreambule + &#34;\n\n&#34;)
         f.write(&#39;&lt;hr style=&#34;border: none; height: 1px; background-color: #e0e0e0;&#34; /&gt;\n\n&#39;)
+        # Iterate over each module
         for mod_name in sorted(modules):
-            # Attempt to import module
+            # Attempt to import the module
             try:
                 mod = importlib.import_module(mod_name)
             except Exception as e:
@@ -223,9 +241,9 @@ if __name__ == &#34;__main__&#34;:
 
             f.write(f&#34;## Module `{mod_name}`\n\n&#34;)
 
-            # Get class tree
+            # Get class inheritance tree
             module_classes, inheritances = classes_tree(mod, base_module=&#39;pizza&#39;)
-            # Mermaid diagram
+            # Generate Mermaid diagram if classes are found
             if module_classes:
                 f.write(&#34;### Class Inheritance Diagram\n&#34;)
                 f.write(&#34;```mermaid\n&#34;)
@@ -234,22 +252,42 @@ if __name__ == &#34;__main__&#34;:
             else:
                 f.write(&#34;*No classes found in this module.*\n\n&#34;)
 
-            # Get methods
+            # === NEW SECTION: Add Link to Class Examples ===
+            # This section retrieves module details from the JSON and adds a link to class_examples.html
+            module_detail = modules_details.get(mod_name)
+            if module_detail:
+                local_path = module_detail.get(&#34;local_path&#34;, &#34;&#34;)
+                number_of_examples = module_detail.get(&#34;number_of_examples&#34;, 0)
+                url_anchor = module_detail.get(&#34;url_anchor&#34;, &#34;&#34;)
+                # Construct relative link (e.g., &#34;class_examples.html#pizza_dscript&#34;)
+                link = f&#34;class_examples.html{url_anchor}&#34;
+                # Add the link in bold with module name and number of examples
+                f.write(f&#34;**[Class Examples for `{local_path}` ({number_of_examples})]({link})**\n\n&#34;)
+            else:
+                # If module details are missing, indicate that class examples are not available
+                f.write(f&#34;**Class Examples:** Not available.\n\n&#34;)
+            # === END OF NEW SECTION ===
+
+            # Get methods of the module
             top_methods, class_methods = get_module_methods(mod)
 
             if top_methods or class_methods:
                 f.write(&#34;### Methods Table\n\n&#34;)
+                # Write the table header
                 f.write(&#34;| Class | Method | Docstring First Paragraph | # Lines | __version__ |\n&#34;)
                 f.write(&#34;|-------|---------|---------------------------|---------|-------------|\n&#34;)
-                # Top-level methods
+                # Write top-level methods
                 for m in top_methods:
-                    f.write(f&#34;| (module-level) | {m[&#39;name&#39;]} | {m[&#39;doc&#39;]} | {m[&#39;nlines&#39;]} | {m[&#39;__version__&#39;]} |\n&#34;)
-                # Class methods
+                    f.write(f&#34;| (module-level) | `{m[&#39;name&#39;]}` | {m[&#39;doc&#39;]} | {m[&#39;nlines&#39;]} | {m[&#39;__version__&#39;]} |\n&#34;)
+                # Write class methods
                 for m in class_methods:
-                    f.write(f&#34;| {m.get(&#39;class&#39;,&#39;&#39;)} | {m[&#39;name&#39;]} | {m[&#39;doc&#39;]} | {m[&#39;nlines&#39;]} | {m[&#39;__version__&#39;]} |\n&#34;)
+                    f.write(f&#34;| `{m.get(&#39;class&#39;,&#39;&#39;)}` | `{m[&#39;name&#39;]}` | {m[&#39;doc&#39;]} | {m[&#39;nlines&#39;]} | {m[&#39;__version__&#39;]} |\n&#34;)
                 f.write(&#34;\n&#34;)
             else:
-                f.write(&#34;*No methods found in this module.*\n\n&#34;)</code></pre>
+                f.write(&#34;*No methods found in this module.*\n\n&#34;)
+
+if __name__ == &#34;__main__&#34;:
+    main()</code></pre>
 </details>
 </section>
 <section>
@@ -411,6 +449,102 @@ if __name__ == &#34;__main__&#34;:
     return top_methods, class_methods</code></pre>
 </details>
 </dd>
+<dt id="generate_mermaid.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def main():
+    if len(sys.argv) &lt; 3:
+        print(&#34;Usage: generate_mermaid.py output_markdown.md modules_details.json &lt; modules_list.txt&#34;, file=sys.stderr)
+        sys.exit(1)
+
+    output_markdown = sys.argv[1]
+    modules_details_json = sys.argv[2]
+
+    if not os.path.isfile(modules_details_json):
+        print(f&#34;Error: JSON file &#39;{modules_details_json}&#39; does not exist.&#34;, file=sys.stderr)
+        sys.exit(1)
+
+    # === NEW SECTION: Load Module Details from JSON ===
+    # This section loads the modules_details.json to access module details
+    with open(modules_details_json, &#39;r&#39;, encoding=&#39;utf-8&#39;) as f:
+        modules_details = json.load(f)
+    # === END OF NEW SECTION ===
+
+    # Read module names from STDIN
+    modules = [line.strip() for line in sys.stdin if line.strip()]
+
+    with open(output_markdown, &#34;w&#34;, encoding=&#34;utf-8&#34;) as f:
+        # Write the main header and generation date
+        f.write(f&#34;# Pizza Modules Documentation\n\n&#34;)
+        f.write(f&#34;Generated on: **{datetime.now().strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)}**\n\n&#34;)
+        f.write(&#39;&lt;hr style=&#34;border: none; height: 1px; background-color: #e0e0e0;&#34; /&gt;\n\n&#39;)
+        # Write the configuration preambule
+        f.write(ConfigurationPreambule + &#34;\n\n&#34;)
+        f.write(&#39;&lt;hr style=&#34;border: none; height: 1px; background-color: #e0e0e0;&#34; /&gt;\n\n&#39;)
+        # Iterate over each module
+        for mod_name in sorted(modules):
+            # Attempt to import the module
+            try:
+                mod = importlib.import_module(mod_name)
+            except Exception as e:
+                f.write(f&#34;## Module `{mod_name}`\n\n&#34;)
+                f.write(f&#34;**Error importing module**: {e}\n\n&#34;)
+                continue
+
+            f.write(f&#34;## Module `{mod_name}`\n\n&#34;)
+
+            # Get class inheritance tree
+            module_classes, inheritances = classes_tree(mod, base_module=&#39;pizza&#39;)
+            # Generate Mermaid diagram if classes are found
+            if module_classes:
+                f.write(&#34;### Class Inheritance Diagram\n&#34;)
+                f.write(&#34;```mermaid\n&#34;)
+                f.write(classes_tree_to_mermaid(module_classes, inheritances))
+                f.write(&#34;\n```\n\n&#34;)
+            else:
+                f.write(&#34;*No classes found in this module.*\n\n&#34;)
+
+            # === NEW SECTION: Add Link to Class Examples ===
+            # This section retrieves module details from the JSON and adds a link to class_examples.html
+            module_detail = modules_details.get(mod_name)
+            if module_detail:
+                local_path = module_detail.get(&#34;local_path&#34;, &#34;&#34;)
+                number_of_examples = module_detail.get(&#34;number_of_examples&#34;, 0)
+                url_anchor = module_detail.get(&#34;url_anchor&#34;, &#34;&#34;)
+                # Construct relative link (e.g., &#34;class_examples.html#pizza_dscript&#34;)
+                link = f&#34;class_examples.html{url_anchor}&#34;
+                # Add the link in bold with module name and number of examples
+                f.write(f&#34;**[Class Examples for `{local_path}` ({number_of_examples})]({link})**\n\n&#34;)
+            else:
+                # If module details are missing, indicate that class examples are not available
+                f.write(f&#34;**Class Examples:** Not available.\n\n&#34;)
+            # === END OF NEW SECTION ===
+
+            # Get methods of the module
+            top_methods, class_methods = get_module_methods(mod)
+
+            if top_methods or class_methods:
+                f.write(&#34;### Methods Table\n\n&#34;)
+                # Write the table header
+                f.write(&#34;| Class | Method | Docstring First Paragraph | # Lines | __version__ |\n&#34;)
+                f.write(&#34;|-------|---------|---------------------------|---------|-------------|\n&#34;)
+                # Write top-level methods
+                for m in top_methods:
+                    f.write(f&#34;| (module-level) | `{m[&#39;name&#39;]}` | {m[&#39;doc&#39;]} | {m[&#39;nlines&#39;]} | {m[&#39;__version__&#39;]} |\n&#34;)
+                # Write class methods
+                for m in class_methods:
+                    f.write(f&#34;| `{m.get(&#39;class&#39;,&#39;&#39;)}` | `{m[&#39;name&#39;]}` | {m[&#39;doc&#39;]} | {m[&#39;nlines&#39;]} | {m[&#39;__version__&#39;]} |\n&#34;)
+                f.write(&#34;\n&#34;)
+            else:
+                f.write(&#34;*No methods found in this module.*\n\n&#34;)</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -430,6 +564,7 @@ if __name__ == &#34;__main__&#34;:
 <li><code><a title="generate_mermaid.get_first_paragraph" href="#generate_mermaid.get_first_paragraph">get_first_paragraph</a></code></li>
 <li><code><a title="generate_mermaid.get_method_info" href="#generate_mermaid.get_method_info">get_method_info</a></code></li>
 <li><code><a title="generate_mermaid.get_module_methods" href="#generate_mermaid.get_module_methods">get_module_methods</a></code></li>
+<li><code><a title="generate_mermaid.main" href="#generate_mermaid.main">main</a></code></li>
 </ul>
 </li>
 </ul>

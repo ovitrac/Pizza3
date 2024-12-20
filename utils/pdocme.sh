@@ -27,7 +27,7 @@
 
 # INRAE\Olivier Vitrac
 # Email: olivier.vitrac@agroparistech.fr
-# Last Revised:** 2024-12-11
+# Last Revised:** 2024-12-19
 
 
 
@@ -49,6 +49,9 @@ nav_file="folders.nav"
 output_markdown="$output_dir/pizza_classes_documentation.md"
 processed_markdown="$output_dir/processed_pizza_classes_documentation.md"
 
+# Ensure output directory exists
+mkdir -p "$output_dir"
+
 # Paths to include in PYTHONPATH
 additional_paths=(
     "$mainfolder"
@@ -62,6 +65,7 @@ additional_paths=(
 # Set PYTHONPATH dynamically
 export PYTHONPATH=$(IFS=:; echo "${additional_paths[*]}")
 echo "PYTHONPATH set to: $PYTHONPATH"
+
 
 # Files and folders to exclude
 excluded_dirs=(
@@ -96,12 +100,26 @@ echo "Running find command to list Python files..."
 eval "$find_cmd" > "$tmp_file"
 echo "File list saved to $tmp_file"
 
-# Ensure output directory exists
-mkdir -p "$output_dir"
+# Rename existing HTML files to *.html~
+#!/bin/bash
+
+# List of HTML files to protect from renaming
+protected_htmlfiles=(
+    "class_examples.html"
+    "index_matlab.html"
+)
 
 # Rename existing HTML files to *.html~
 echo "Renaming existing HTML files to *.html~..."
 find "$output_dir" -type f -name "*.html" | while read -r html_file; do
+    # Get the base name of the HTML file
+    base_name=$(basename "$html_file")    
+    # Check if the file is in the protected list
+    if [[ " ${protected_htmlfiles[@]} " =~ " ${base_name} " ]]; then
+        echo "Skipping protected file: $html_file"
+        continue
+    fi
+    # Rename the file
     mv "$html_file" "${html_file}~"
     echo "Renamed $html_file -> ${html_file}~"
 done

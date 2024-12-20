@@ -1,62 +1,76 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-## **Script Documentation**
+generate_matlab_docs.py
 
-### **Pizza3.simple.manifest Generator**
+Generates self-contained HTML documentation for the MATLAB functions of the Pizza3 project.
 
-#### **Description**
+This script scans the Pizza3 project's MATLAB (.m) files, extracts documentation from their comments,
+and compiles them into a structured, navigable HTML format. The generated documentation includes
+function descriptions, examples, notes, and collapsible sections for MATLAB code with minimal
+syntax highlighting.
 
-The `manifest_generator.py` script is designed to traverse the project directory structure and generate a manifest file named `Pizza3.simple.manifest`. This manifest lists all relevant files within the project, excluding specified directories and file types. It is particularly useful for tracking files included in the Pizza3 project, facilitating version control, deployment, or distribution processes.
+Usage:
+    Ensure that this script is run from the `Pizza3/utils/` directory. If not, the script will exit
+    with an error message.
 
-#### **Features**
+    ```bash
+    python generate_matlab_docs.py
+    ```
 
-- **Exclusion of Specific Folders and File Types:**  
-  The script ignores directories and file extensions that are unnecessary or irrelevant for the manifest, ensuring a clean and concise list of pertinent files.
+Output:
+    - An `html` directory is created in the main project folder.
+    - An `index_matlab.html` file is generated within the `html` directory, containing the compiled
+      documentation.
 
-- **Execution Directory Verification:**  
-  Ensures that the script is executed from the `utils/` directory to maintain consistency and prevent path-related issues.
+Features:
+    - **Directory and File Filtering**: Excludes specified directories and files to avoid processing
+      unwanted content.
+    - **Documentation Extraction**: Extracts and formats help documentation from MATLAB comment blocks.
+    - **HTML Generation**: Creates a navigable HTML interface with a sidebar for function navigation
+      and a main panel for content display.
+    - **Styling and Interactivity**: Includes CSS for styling and JavaScript for interactive elements
+      such as collapsible code sections and dynamic content loading.
+    - **Syntax Highlighting**: Applies minimal syntax highlighting to MATLAB code snippets.
 
-- **Configurable Output Folder:**  
-  Allows specification of the output folder (`mainfolder`), which is the parent directory of `utils/`, ensuring that the manifest is generated in the correct location.
+Configuration:
+    - `mainfolder`: The main project directory path.
+    - `output_dir`: Directory path for the generated HTML documentation.
+    - `output_file`: Name of the main HTML file.
+    - `PIZZA3_VERSION`: Version identifier for the documentation.
+    - `CONTACT`: Contact information for the maintainer.
+    - `CSS_STYLE`: CSS styles applied to the generated HTML.
+    - `JS_SCRIPT`: JavaScript for interactive functionality in the HTML.
 
-- **Custom Output Filename:**  
-  Generates the manifest file with a standardized name, `Pizza3.simple.manifest`, for easy identification and access.
+Dependencies:
+    - Python 3.x
+    - Standard Python libraries:
+        - `os`
+        - `re`
+        - `sys`
+        - `datetime`
+        - `html`
 
-- **Timestamp Inclusion:**  
-  Inserts the date and time of manifest generation within the file for reference and tracking purposes.
+Requirements:
+    - The script must be executed from the `Pizza3/utils/` directory where `pdocme.sh` is present.
 
-#### **Usage**
+Example:
+    After running the script, open the generated `html/index_matlab.html` in a web browser to view the
+    documentation.
 
-1. **Ensure Correct Execution Directory:**  
-   The script must be run from the `utils/` directory of the Pizza3 project.
+Notes:
+    - The script ensures that all generated HTML elements have valid IDs to facilitate internal linking.
+    - Collapsible sections enhance readability by allowing users to hide or show MATLAB code as needed.
+    - The navigation menu mirrors the directory structure of the MATLAB files, providing an intuitive
+      browsing experience.
 
-2. **Run the Script:**  
-   Execute the script using Python 3:
-   
-   ```bash
-   python3 manifest_generator.py
-   ```
+Author:
+    - **INRAE\\Olivier Vitrac**
+    - **Email:** olivier.vitrac@agroparistech.fr
+    - **Last Revised:** 2024-12-20
 
-3. **Output:**  
-   Upon successful execution, a file named `Pizza3.simple.manifest` will be created in the specified `mainfolder`. This file will contain a list of all relevant files in the project directory, excluding those defined in the `ignore` list.
-
-#### **Configuration**
-
-- **Excluded Directories and File Types:**  
-  The `ignore` list contains patterns of directories and file extensions to exclude from the manifest. These are consistent with the exclusions used in your previous Python documentation script.
-
-- **Output Folder (`mainfolder`):**  
-  Defined as the parent directory of `utils/`, ensuring that the manifest is placed appropriately within the project structure.
-
-#### **Dependencies**
-
-- **Python 3.x**
-
-#### **Author**
-
-- **INRAE\\Olivier Vitrac**
-- **Email:** olivier.vitrac@agroparistech.fr
-- **Last Revised:** 2024-12-11
+Version:
+    Pizza3 v.0.99
 
 """
 

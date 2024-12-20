@@ -36,6 +36,9 @@ Use ./generate_release.sh to generate a release from Pizza3.simple.manifest
 # *********************************************************
 # Procedure to refresh the entire help/documentation
 # ********************************************************
+./refresh_alldocs.sh
+
+--- Manual Procedure (obsolete) ---
 cd utils
 rm -rf ../html/
 ./generate_matlab_docs.py

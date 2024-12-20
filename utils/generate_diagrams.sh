@@ -6,25 +6,28 @@
 # Prerequisites:
 #  - Python 3.x
 #  - generate_mermaid.py (the Python script) must be in the same directory
+#  - generate_examples.py (the Python script) must be in the same directory
 #
 # Usage:
 #  ./generate_diagrams.sh
 
-
 # INRAE\\Olivier Vitrac
 # Email: olivier.vitrac@agroparistech.fr
-# Last Revised:** 2024-12-11
+# Last Revised: 2024-12-20
 
+# ------------------------
+# Ensure Script is Run in Proper Context
+# ------------------------
 
-# Ensure script is run in a proper context (adjust if needed)
+# Check if the '../pizza' directory exists
 if [[ ! -d "../pizza" ]]; then
     echo "Error: '../pizza' directory not found. Adjust mainfolder path accordingly."
     exit 1
 fi
 
-########################
+# ------------------------
 # Configuration Section
-########################
+# ------------------------
 
 # Main folder and paths
 mainfolder="$(realpath ../)"
@@ -64,9 +67,9 @@ excluded_dirs=(
     "windowsONLY"
 )
 
-########################
+# ------------------------
 # Generate Modules List
-########################
+# ------------------------
 
 # Build the find command with exclusions
 find_cmd="find \"$mainfolder/pizza\" -type f -name \"*.py\""
@@ -77,18 +80,71 @@ done
 # Execute the find command and transform paths for Python import
 modules_list=$(eval "$find_cmd" | sed "s|$mainfolder/||;s|\.py$||" | sed 's|/|.|g')
 
-
+# Check if any modules were found
 if [[ -z "$modules_list" ]]; then
     echo "Error: No Python files found in the specified directory."
     exit 1
 fi
 
-########################
-# Generate Documentation
-########################
+# ------------------------
+# Generate Class Examples and JSON Details
+# ------------------------
 
-# Pass the module list to the Python script
-echo "$modules_list" | python3 generate_mermaid.py "$output_markdown"
+# Define filenames for examples list and JSON details
+moduleexamplesList="modules_withexamples_list.txt"
+moduleexamplesDetails="class_examples_details.json"
+moduleexamplesHTML="class_examples.html"
+lookfolders=(
+    "$mainfolder/pizza"
+    "$mainfolder/pizza/private"
+)
 
-# Final message
-echo "Markdown file generated at $output_markdown"
+# Find .py files and generate the modules list
+find "${lookfolders[@]}" -maxdepth 1 -type f -name '*.py' | sed "s|$mainfolder/||" | sort > "$output_dir/$moduleexamplesList"
+
+# Verify if the modules list was created successfully
+if [[ -f "$output_dir/$moduleexamplesList" ]]; then
+    echo "Module examples list generated successfully at '$output_dir/$moduleexamplesList'"
+else
+    echo "Failed to generate module examples list."
+    exit 1
+fi
+
+# Run generate_examples.py to create HTML and JSON files
+./generate_examples.py "$output_dir/$moduleexamplesHTML" "$output_dir/$moduleexamplesDetails" < "$output_dir/$moduleexamplesList"
+
+# Verify if both HTML and JSON files were created successfully
+if [[ -f "$output_dir/$moduleexamplesHTML" && -f "$output_dir/$moduleexamplesDetails" ]]; then
+    echo "Module examples page generated successfully at '$output_dir/$moduleexamplesHTML'"
+    echo "Module details JSON generated successfully at '$output_dir/$moduleexamplesDetails'"
+else
+    echo "Failed to generate module examples page or details."
+    exit 1
+fi
+
+# ------------------------
+# Generate Documentation with Mermaid
+# ------------------------
+
+# Path to the JSON details file
+mermaid_details_json="$output_dir/$moduleexamplesDetails"
+
+# Ensure generate_mermaid.py is executable
+chmod +x generate_mermaid.py
+
+# Run generate_mermaid.py with the JSON details
+echo "$modules_list" | python3 generate_mermaid.py "$output_markdown" "$mermaid_details_json"
+
+# Check if the Markdown documentation was created successfully
+if [[ -f "$output_markdown" ]]; then
+    echo "Markdown documentation generated successfully at '$output_markdown'"
+else
+    echo "Failed to generate Markdown documentation."
+    exit 1
+fi
+
+# ------------------------
+# Final Message
+# ------------------------
+
+echo "Documentation (Mermaid+Markdown) generation completed successfully."
