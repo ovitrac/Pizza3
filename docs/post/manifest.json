@@ -1,0 +1,17 @@
+[
+    {
+        "modified_name": "POST_example1",
+        "html_filename": "POST_example1.html",
+        "pdf_filename": "POST_example1.pdf"
+    },
+    {
+        "modified_name": "POST_example2",
+        "html_filename": "POST_example2.html",
+        "pdf_filename": "POST_example2.pdf"
+    },
+    {
+        "modified_name": "POST_example3",
+        "html_filename": "POST_example3.html",
+        "pdf_filename": "POST_example3.pdf"
+    }
+]

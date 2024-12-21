@@ -5,7 +5,7 @@
 # Use ./generate_simple_manifest.py to refresh the manifest
 
 # Maintained by INRAE\olivier.vitrac@agroparistech.fr
-# Revision history: 2024-12-11
+# Revision history: 2024-12-20
 
 # -----------------------------------
 # Configuration Section

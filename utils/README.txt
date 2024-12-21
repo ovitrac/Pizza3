@@ -1,6 +1,6 @@
 # Directory for small utilities
 # backup, maintenance, synchronization
-# INRAE\Olivier Vitrac - 2024-12-20
+# INRAE\Olivier Vitrac - 2024-12-21
 
 # *********************************************************
 # All files are intented to be run from Pizza3/utils
@@ -42,6 +42,7 @@ Use ./generate_release.sh to generate a release from Pizza3.simple.manifest
 cd utils
 rm -rf ../html/
 ./generate_matlab_docs.py
+./generate_post_docs.py
 ./generate_diagrams.sh
 ./pdocme.sh
 

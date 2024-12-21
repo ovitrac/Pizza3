@@ -86,6 +86,7 @@ fi
 
 # Check if the required scripts exist and are executable
 check_script "./generate_matlab_docs.py"
+check_script "./generate_post_docs.py"
 check_script "./generate_diagrams.sh"
 check_script "./pdocme.sh"
 
@@ -93,6 +94,12 @@ check_script "./pdocme.sh"
 echo "Running 'generate_matlab_docs.py'..."
 ./generate_matlab_docs.py
 echo "Completed 'generate_matlab_docs.py'."
+xdg-open ../html/index_matlab.html
+
+echo "Running 'generate_post_docs.py'..."
+./generate_post_docs.py
+echo "Completed 'generate_matlab_docs.py'."
+xdg-open ../html/post/index_post.html
 
 echo "Running 'generate_diagrams.sh'..."
 ./generate_diagrams.sh
@@ -101,6 +108,7 @@ echo "Completed 'generate_diagrams.sh'."
 echo "Running 'pdocme.sh'..."
 ./pdocme.sh
 echo "Completed 'pdocme.sh'."
+xdg-open ../html/index.html
 
 # Step 4: Final Completion Message
 print_header "Step 3/3: Documentation refresh completed successfully"

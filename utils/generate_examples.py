@@ -75,7 +75,7 @@ find "$mainfolder/pizza" "$mainfolder/pizza/private" -maxdepth 1 -type f -name '
 ---------
 INRAE\Olivier Vitrac  
 Email: olivier.vitrac@agroparistech.fr  
-Last Revised: 2024-12-18
+Last Revised: 2024-12-21
 
 """
 
@@ -292,6 +292,7 @@ def generate_welcome_html(generation_datetime):
     welcome_text = f"""
 <h2>Welcome to Usage Class Examples</h2>
 <p>Select a module in the left menu to view usage examples. These examples are not for production and are automatically extracted from the main section of each module.</p>
+<p>Back to the <a href='index.html'>Python'Pizza3 documentation</a>.</p>
 <p>When no module is selected, you see this welcome page. They are used to test classes with typical codes. The main section often serves as a testing script, example usage block, or self-contained test block. It's a way to demonstrate how the module's functionality works or to run simple unit tests and examples inline.</p>
 <p>Generated on: {generation_datetime}</p>
 """
@@ -306,7 +307,7 @@ def generate_full_html(nav_html, content_html, base_css, pygments_css, generatio
 <head>
 <meta charset='UTF-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-<title>Pizza3 Usage Examples</title>
+<title>Pizza3 Usage/Class Examples</title>
 <style>
 {base_css}
 

@@ -5,10 +5,11 @@
 
 ---
 
-- 📄 **[Read this file in `HTML`](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html)** *(includes videos and enhanced visuals).*
-- 📚 **[Online Documentation - 🐍Python](https://ovitrac.github.io/Pizza3/)** *(including how to install, run and modify <kbd>Pizza3</kbd>)
-- 📚 **[Online Documentation - 📊Matlab/Octave](https://ovitrac.github.io/Pizza3/index_matlab.html)** *(advanced post-treatment)*
-- 🔖 **[Releases](https://github.com/ovitrac/Pizza3/releases)** *(new capabilities are detailed there, download page)*
+- 📄 **[Read this file in `HTML`](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html)** *(includes 🎬 videos and enhanced visuals).*
+- 📚 **[Online Documentation - 🐍Python](https://ovitrac.github.io/Pizza3/)** *(including how to  🛠️ install, ▶️ run and ✏️ modify <kbd>Pizza3</kbd>)
+- 📚 **[Online Documentation - 📊Matlab/Octave](https://ovitrac.github.io/Pizza3/index_matlab.html)** *(advanced 📈📉 post-treatment)*
+- 📐[POST Examples and Analysis Workflow](https://ovitrac.github.io/Pizza3/post/index_post.html) *(examples of 🌊 fluid-structure interactions)*
+- 🔖 **[Releases](https://github.com/ovitrac/Pizza3/releases)** *(✨ new capabilities are detailed there, ⬇️ download page)*
 
 
 
@@ -814,7 +815,7 @@ from pizza.script import *
 | `scriptdata()`        | variable space: $s.variable$    | $s_{12}=s_1+s_2$<br />$s_1+=s_2$<br />$s_1=s_{12}-s_2$<br />$s.variable=value$<br />$s.variable=[]$<br />$s[0]$<br />$s[-1]$ |
 | `scriptobject()`      | "bead" object: $b_i$            | `name="bead name", group=["group1","group2"], filename="input_filename.lmp", forcefield=forcefield_class` <br />$C=b_1+b_2+...$<br />$b_2>b_1$ |
 | `scriptobjectgroup()` | collection of beads: $C_k$      | `select(),group(), interactions(), forcefield(), script`<br />$C=C_1+C_2$<br />$P=C_1|C_2$ |
-| `script()`            | script object: $S_k$            | $S(...,USER=s)$<br />`do(),write()`<br />Immediate execution: $S_{12}=S(context1)\& S(context2)$<br />Differed execution: $S_{12}=S_1+ S_2$<br />$S_{123}=S_1+ S_2\times2+S_3\times3$ |
+| `script()`            | script object: $S_k$            | $S(...,USER=s)$<br />`do(),write()`<br />Immediate execution: $S_{12}=S(context_1)\& S(context_2)$<br />Differed execution: $S_{12}=S_1+ S_2$<br />$S_{123}=S_1+ S_2\times2+S_3\times3$ |
 | `pipescript()`        | pipescript object: $P_k$, $Q_k$ | `do(),script,clear,rename()`<br />$P=P_0|C_0|S_1|S_2|S_3$<br />$P_{12}=P_1+P_2\times2$<br />$P[0:1]=Q[0:1]$<br />$Q = p[[2,0,1,1,2]]$<br />$Q.do([0,1,4,3])$<br />$P.USER[0].a=1$<br />$P.scripts[0].USER.a=10$ |
 
 
@@ -857,7 +858,7 @@ R.write("../tmp/data.myfirstrestart.lmp")
 > - INRAE\Han Chen ([han.chen@inrae.fr](mailto:han.chen@inrae.fr))
 > - community contributors
 
-$ 2024-12-12 $
+$ 2024-12-21 $
 
 ---
 

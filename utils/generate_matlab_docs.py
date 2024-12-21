@@ -67,7 +67,7 @@ Notes:
 Author:
     - **INRAE\\Olivier Vitrac**
     - **Email:** olivier.vitrac@agroparistech.fr
-    - **Last Revised:** 2024-12-20
+    - **Last Revised:** 2024-12-21
 
 Version:
     Pizza3 v.0.99
@@ -574,6 +574,8 @@ with open(index_file, "w", encoding="utf-8") as fout:
     fout.write("<div id='welcome-message'>\n")
     fout.write("<h2>Welcome to Pizza3 Matlab Documentation</h2>\n")
     fout.write("<p>Select a function in the left menu to view its documentation.</p>\n")
+    fout.write("<p>POST examples are fully detailed <a href='post/index_post.html' target='_blank'>here</a>.</p>\n")
+    fout.write("<p>Back to the <a href='index.html'>Python'Pizza3 documentation</a>.</p>\n")
     fout.write("<hr>\n")
     fout.write("<p><i>When no function is selected, you see this welcome page.</i></p>\n")
     # print the date

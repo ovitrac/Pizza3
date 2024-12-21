@@ -27,7 +27,7 @@
 
 # INRAE\Olivier Vitrac
 # Email: olivier.vitrac@agroparistech.fr
-# Last Revised:** 2024-12-19
+# Last Revised:** 2024-12-21
 
 
 
@@ -107,6 +107,10 @@ echo "File list saved to $tmp_file"
 protected_htmlfiles=(
     "class_examples.html"
     "index_matlab.html"
+    "index_post.html"
+    "POST_example1.html"
+    "POST_example2.html"
+    "POST_example3.html"
 )
 
 # Rename existing HTML files to *.html~

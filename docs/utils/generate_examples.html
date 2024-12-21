@@ -84,7 +84,7 @@ find &quot;$mainfolder/pizza&quot; &quot;$mainfolder/pizza/private&quot; -maxdep
 <h2 id="author"><strong>Author:</strong></h2>
 <p>INRAE\Olivier Vitrac<br>
 Email: olivier.vitrac@agroparistech.fr<br>
-Last Revised: 2024-12-18</p>
+Last Revised: 2024-12-21</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -166,7 +166,7 @@ find &#34;$mainfolder/pizza&#34; &#34;$mainfolder/pizza/private&#34; -maxdepth 1
 ---------
 INRAE\Olivier Vitrac  
 Email: olivier.vitrac@agroparistech.fr  
-Last Revised: 2024-12-18
+Last Revised: 2024-12-21
 
 &#34;&#34;&#34;
 
@@ -383,6 +383,7 @@ def generate_welcome_html(generation_datetime):
     welcome_text = f&#34;&#34;&#34;
 &lt;h2&gt;Welcome to Usage Class Examples&lt;/h2&gt;
 &lt;p&gt;Select a module in the left menu to view usage examples. These examples are not for production and are automatically extracted from the main section of each module.&lt;/p&gt;
+&lt;p&gt;Back to the &lt;a href=&#39;index.html&#39;&gt;Python&#39;Pizza3 documentation&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;When no module is selected, you see this welcome page. They are used to test classes with typical codes. The main section often serves as a testing script, example usage block, or self-contained test block. It&#39;s a way to demonstrate how the module&#39;s functionality works or to run simple unit tests and examples inline.&lt;/p&gt;
 &lt;p&gt;Generated on: {generation_datetime}&lt;/p&gt;
 &#34;&#34;&#34;
@@ -397,7 +398,7 @@ def generate_full_html(nav_html, content_html, base_css, pygments_css, generatio
 &lt;head&gt;
 &lt;meta charset=&#39;UTF-8&#39;&gt;
 &lt;meta name=&#39;viewport&#39; content=&#39;width=device-width, initial-scale=1.0&#39;&gt;
-&lt;title&gt;Pizza3 Usage Examples&lt;/title&gt;
+&lt;title&gt;Pizza3 Usage/Class Examples&lt;/title&gt;
 &lt;style&gt;
 {base_css}
 
@@ -937,7 +938,7 @@ Returns a list of tuples: (description, code)</p></div>
 &lt;head&gt;
 &lt;meta charset=&#39;UTF-8&#39;&gt;
 &lt;meta name=&#39;viewport&#39; content=&#39;width=device-width, initial-scale=1.0&#39;&gt;
-&lt;title&gt;Pizza3 Usage Examples&lt;/title&gt;
+&lt;title&gt;Pizza3 Usage/Class Examples&lt;/title&gt;
 &lt;style&gt;
 {base_css}
 
@@ -1085,6 +1086,7 @@ document.addEventListener(&#34;DOMContentLoaded&#34;, function() {{
     welcome_text = f&#34;&#34;&#34;
 &lt;h2&gt;Welcome to Usage Class Examples&lt;/h2&gt;
 &lt;p&gt;Select a module in the left menu to view usage examples. These examples are not for production and are automatically extracted from the main section of each module.&lt;/p&gt;
+&lt;p&gt;Back to the &lt;a href=&#39;index.html&#39;&gt;Python&#39;Pizza3 documentation&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;When no module is selected, you see this welcome page. They are used to test classes with typical codes. The main section often serves as a testing script, example usage block, or self-contained test block. It&#39;s a way to demonstrate how the module&#39;s functionality works or to run simple unit tests and examples inline.&lt;/p&gt;
 &lt;p&gt;Generated on: {generation_datetime}&lt;/p&gt;
 &#34;&#34;&#34;
