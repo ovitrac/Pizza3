@@ -10,9 +10,9 @@ This script processes a list of Python modules to extract usage examples from th
 1. An HTML file (`class_examples.html`) containing formatted usage examples for each module.
 2. A JSON file (`modules_details.json`) containing metadata about each processed module, including paths, anchors, and the number of examples.
 
-This script is called by utils/generate_diagrams.sh
-The outputs are used by utils/generate_mermaid.py
-The whole ecosystem is called by generate_diagrams.sh (use this script to update the entire documentation)
+This script is called by `utils/generate_diagrams.sh`.
+The outputs are used by `utils/generate_mermaid.py`.
+The whole ecosystem is called by `generate_diagrams.sh` (use this script to update the entire documentation).
 
 **Functionality:**
 ------------------
@@ -25,20 +25,31 @@ The whole ecosystem is called by generate_diagrams.sh (use this script to update
 ---------
 Run the script from the `Pizza3/utils/` directory using the following command:
 
- pizza/
-├── group.py
-├── dforcefield.py
-└── private/
-    └── mstruct.py
-
 ```bash
 ./generate_examples.py output_examples.html modules_details.json < modules_withexamples_list.txt
 ```
 
-Use this command to generate an input file from utils/
+Use this command to generate an input file from `utils/`:
+
 ```bash
- mainfolder="$(realpath ../)"
+mainfolder="$(realpath ../)"
 find "$mainfolder/pizza" "$mainfolder/pizza/private" -maxdepth 1 -type f -name '*.py' | sed "s|$mainfolder/||" | sort > ../html/modules_withexamples_list.txt
+```
+
+For production use this minimal example (see generate_diagrams.sh)
+```bash
+    mainfolder="$(realpath ../)"
+    output_markdown="$mainfolder/html/pizza_classes_documentation.md"
+    output_dir="$(dirname "$output_markdown")"
+    moduleexamplesList="modules_withexamples_list.txt"
+    moduleexamplesDetails="class_examples_details.json"
+    moduleexamplesHTML="class_examples.html"
+    lookfolders=(
+        "$mainfolder/pizza"
+        "$mainfolder/pizza/private"
+    )
+    find "${lookfolders[@]}" -maxdepth 1 -type f -name '*.py' | sed "s|$mainfolder/||" | sort > "$output_dir/$moduleexamplesList"
+    ./generate_examples.py "$output_dir/$moduleexamplesHTML" "$output_dir/$moduleexamplesDetails" < "$output_dir/$moduleexamplesList"
 ```
 
 **Arguments:**
@@ -75,17 +86,8 @@ find "$mainfolder/pizza" "$mainfolder/pizza/private" -maxdepth 1 -type f -name '
 ---------
 INRAE\Olivier Vitrac  
 Email: olivier.vitrac@agroparistech.fr  
-Last Revised: 2024-12-21
+Last Revised: 2024-12-23
 
-"""
-
-
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-generate_examples.py
-====================
-[Documentation as previously provided]
 """
 
 import sys
@@ -237,8 +239,7 @@ def generate_nav_html(tree, parent_path=''):
             html += f'<div class="folder-title" onclick="toggleFolder(this)">{key}</div>\n'
             html += f'<ul class="folder-content">\n'
             html += generate_nav_html(tree[key], new_path)
-            html += '</ul>\n'
-            html += '</li>\n'
+            html += '</ul>\n</li>\n'
     html += '</ul>\n'
     return html
 
@@ -277,11 +278,11 @@ def generate_example_html(module_anchor, examples):
         if code:
             highlighted_code = syntax_highlight(code)
             html += f'''
-<button type="button" class="collapsible">Show Code Example {idx + 1}</button>
-<div class="content">
-<pre class="code">{highlighted_code}</pre>
-</div>
-'''
+    <button type="button" class="collapsible">Show Code Example {idx + 1}</button>
+    <div class="content">
+    <pre class="code">{highlighted_code}</pre>
+    </div>
+    '''
     html += '</div>\n'
     return html
 
@@ -315,7 +316,13 @@ def generate_full_html(nav_html, content_html, base_css, pygments_css, generatio
 </style>
 </head>
 <body>
-<header><h1>Pizza3 Documentation - Usage Examples</h1></header>
+<header>
+    <!-- Toggle Sidebar Button -->
+    <button class='toggle-btn' id='toggleSidebar' aria-label='Toggle Sidebar' aria-expanded='false'>
+        <kbd>&#9776;</kbd>
+    </button>
+    <h1>Pizza3 Documentation - Usage Examples</h1>
+</header>
 <div id='content'>
 <div id='nav'>
 <p><strong>Version:</strong> Pizza3 v.0.99</p>
@@ -332,6 +339,7 @@ def generate_full_html(nav_html, content_html, base_css, pygments_css, generatio
 <p>&copy; {datetime.now().year} Pizza3 Project. All rights reserved.</p>
 </footer>
 <script>
+// Toggle visibility of folder contents
 function toggleFolder(element) {{
     var content = element.nextElementSibling;
     if (content.style.display === "block") {{
@@ -341,6 +349,7 @@ function toggleFolder(element) {{
     }}
 }}
 
+// Load documentation into the main panel
 function loadDoc(moduleId) {{
     var modules = document.getElementsByClassName('module-content');
     for (var i = 0; i < modules.length; i++) {{
@@ -354,6 +363,7 @@ function loadDoc(moduleId) {{
     }}
 }}
 
+// Toggle All Code Sections
 function toggleAllCode(button) {{
     var moduleContent = button.parentElement;
     var collapsibles = moduleContent.querySelectorAll('.collapsible');
@@ -397,6 +407,23 @@ document.addEventListener("DOMContentLoaded", function() {{
     var hash = window.location.hash.substring(1); // Remove the #
     if (hash) {{
         loadDoc(hash);
+    }}
+}});
+
+// Toggle Sidebar Functionality
+const toggleButton = document.getElementById('toggleSidebar');
+const nav = document.getElementById('nav');
+
+toggleButton.addEventListener('click', () => {{
+    nav.classList.toggle('collapsed');
+    document.body.classList.toggle('nav-open'); // Toggle overlay on small screens
+    // Change icon based on sidebar state
+    if(nav.classList.contains('collapsed')) {{
+        toggleButton.innerHTML = '<kbd>&#9776;</kbd>'; // Hamburger icon
+        toggleButton.setAttribute('aria-expanded', 'false');
+    }} else {{
+        toggleButton.innerHTML = '<kbd>&#10005;</kbd>'; // Close icon (X)
+        toggleButton.setAttribute('aria-expanded', 'true');
     }}
 }});
 </script>
@@ -491,7 +518,7 @@ def main():
     # Get current date and time
     generation_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Define base CSS (as provided in the user's initial message)
+    # Define base CSS
     base_css = """
 body {
     font-family: 'Segoe UI', Arial, sans-serif; 
@@ -505,29 +532,63 @@ header {
     background: #4CAF50; 
     color: #fff; 
     padding: 10px;
+    position: relative; /* For positioning the toggle button */
 }
 header h1 {
     margin: 0; 
     font-size: 1.5em;
     color: #fff; /* Explicitly set to white */
+    padding-left: 50px; /* Space for the toggle button */
 }
 #content {
     display: flex;
     height: calc(100vh - 50px); /* Adjusted for header height */
+    transition: all 0.3s ease; /* Enable transitions for smooth animations */
 }
 #nav {
-    min-width: 250px;
+    width: 300px; /* Set a fixed width */
     background: #fff;
     border-right: 1px solid #ddd;
     padding: 20px;
     overflow-y: auto;
     box-sizing: border-box;
+    transition: width 0.3s ease, padding 0.3s ease; /* Transition for smooth animations */
+    flex-shrink: 0; /* Prevent flexbox from shrinking */
+}
+#nav.collapsed {
+    width: 0; /* Hide the sidebar completely */
+    padding: 20px 0; /* Optionally adjust padding */
 }
 #main {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
     box-sizing: border-box;
+    transition: all 0.3s ease; /* Enable transitions for smooth animations */
+}
+header .toggle-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%); /* Center the button vertically */
+    left: 10px; /* Place the button on the left */
+    background-color: #4CAF50; /* Green background */
+    border: none;
+    color: white; /* Ensure the hamburger icon is white */
+    padding: 10px 12px; /* Adjust padding for larger button */
+    cursor: pointer;
+    font-size: 1.2em; /* Increase font size for better visibility */
+    border-radius: 4px;
+    z-index: 1001; /* Ensure the button is above other elements */
+}
+header .toggle-btn:hover {
+    background-color: #45a049;
+}
+header .toggle-btn kbd {
+    font-family: 'Arial', sans-serif; /* Match the header font */
+    color: white; /* Ensure the hamburger icon is white */
+    font-size: 1.2em; /* Same size as the button text */
+    background: none; /* Remove any background styling from <kbd> */
+    border: none; /* Remove any borders from <kbd> */
 }
 h1 {
     font-size: 1.8em;
@@ -636,6 +697,35 @@ tr:nth-child(odd) {
 .string {
     color: #a31515;
 }
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    #nav {
+        position: absolute;
+        left: 0;
+        top: 50px; /* Height of the header */
+        height: calc(100% - 50px);
+        z-index: 1000;
+    }
+    #nav.collapsed {
+        width: 0; /* Hide the sidebar completely */
+        padding: 20px 0; /* Adjust padding */
+    }
+    #main {
+        flex: 1;
+    }
+    /* Add overlay when sidebar is open on mobile */
+    body.nav-open::before {
+        content: "";
+        position: fixed;
+        top: 50px;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 50px);
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+}
 """
 
     # Initialize pygments_css
@@ -647,7 +737,7 @@ tr:nth-child(odd) {
     else:
         print("Warning: PYGMENTS is not installed. Code will have minimal syntax highlighting.", file=sys.stderr)
 
-    # Generate the full HTML with both base CSS and PYGMENTS CSS
+    # Generate the full HTML with both base CSS and Pygments CSS
     full_html = generate_full_html(nav_html, content_html, base_css, pygments_css, generation_datetime)
 
     # Write the HTML to the output file

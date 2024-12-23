@@ -15,7 +15,6 @@ Automate the generation of the POST examples documentation page for Pizza3. The 
 6. Incorporates the provided CSS styles to maintain a consistent layout.
 7. Appends contact information and the documentation creation date at the end of the right panel.
 
-
 - **`FILE_MAPPING`**: Dictionary mapping the modified names to their original HTML and PDF filenames.
 
 ```python
@@ -26,13 +25,11 @@ FILE_MAPPING = {
 }
 ```
 
-
 | Modified Name    | Original HTML Filename         | Original PDF Filename                                    |
 |------------------|--------------------------------|----------------------------------------------------------|
 | `POST_example1`  | `example1.html`                | `Pizza3 - WORKSHOP - PostTreatment - Part 1.pdf`         |
 | `POST_example2`  | `example2.html`                | `Pizza3 - WORKSHOP - PostTreatment - Part 2.pdf`         |
 | `POST_example3`  | `example2bis.html`             | `Pizza3 - WORKSHOP - PostTreatment - Part 2bis.pdf`      |
-
 
 **Usage:**
 ----------
@@ -91,29 +88,62 @@ header {
     background: #4CAF50; 
     color: #fff; 
     padding: 10px;
+    position: relative; /* For positioning the toggle button */
 }
 header h1 {
     margin: 0; 
     font-size: 1.5em;
     color: #fff; /* Explicitly set to white */
+    padding-left: 50px; /* Space for the toggle button */
 }
 #content {
     display: flex;
     height: calc(100vh - 50px); /* Adjusted for header height */
+    transition: all 0.3s ease;
 }
 #nav {
     min-width: 250px;
+    max-width: 250px; /* Fixed width */
     background: #fff;
     border-right: 1px solid #ddd;
     padding: 20px;
     overflow-y: auto;
     box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+#nav.collapsed {
+    margin-left: -250px; /* Hide the sidebar */
 }
 #main {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
     box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+header .toggle-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%); /* Center the button vertically */
+    left: 10px; /* Place the button on the left */
+    background-color: #4CAF50; /* Green background */
+    border: none;
+    color: white; /* Ensure the hamburger icon is white */
+    padding: 10px 12px; /* Adjust padding for larger button */
+    cursor: pointer;
+    font-size: 1.2em; /* Increase font size for better visibility */
+    border-radius: 4px;
+    z-index: 1001; /* Ensure the button is above other elements */
+}
+header .toggle-btn:hover {
+    background-color: #45a049;
+}
+header .toggle-btn kbd {
+    font-family: 'Arial', sans-serif; /* Match the header font */
+    color: white; /* Ensure the hamburger icon is white */
+    font-size: 1.2em; /* Same size as the button text */
+    background: none; /* Remove any background styling from <kbd> */
+    border: none; /* Remove any borders from <kbd> */
 }
 h1 {
     font-size: 1.8em;
@@ -221,6 +251,23 @@ tr:nth-child(odd) {
 }
 .string {
     color: #a31515;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    #nav {
+        position: absolute;
+        left: 0;
+        top: 50px; /* Height of the header */
+        height: calc(100% - 50px);
+        z-index: 1000;
+    }
+    #nav.collapsed {
+        margin-left: -250px;
+    }
+    #main {
+        flex: 1;
+    }
 }
 """
 
@@ -428,6 +475,10 @@ def generate_documentation(manifest):
     </head>
     <body>
         <header>
+            <!-- Toggle Sidebar Button -->
+            <button class="toggle-btn" id="toggleSidebar" aria-label="Toggle Sidebar">
+                <kbd>&#9776;</kbd>
+            </button>
             <h1>Pizza3 POST Documentation Index</h1>
         </header>
         <div id="content">
@@ -461,7 +512,26 @@ def generate_documentation(manifest):
                         target.style.display = 'block';
                         target.scrollIntoView({{behavior: "smooth"}});
                     }}
+                    // Collapse sidebar on small screens after selection
+                    if (window.innerWidth <= 768) {{
+                        nav.classList.add('collapsed');
+                        toggleButton.innerHTML = '<kbd>&#9776;</kbd>';
+                    }}
                 }});
+            }});
+
+            // Toggle Sidebar Functionality
+            const toggleButton = document.getElementById('toggleSidebar');
+            const nav = document.getElementById('nav');
+
+            toggleButton.addEventListener('click', () => {{
+                nav.classList.toggle('collapsed');
+                // Change icon based on sidebar state
+                if(nav.classList.contains('collapsed')) {{
+                    toggleButton.innerHTML = '<kbd>&#9776;</kbd>'; // Hamburger icon
+                }} else {{
+                    toggleButton.innerHTML = '<kbd>&#10005;</kbd>'; // Close icon (X)
+                }}
             }});
 
             // Handle URL hash on page load to display the corresponding module examples or welcome page

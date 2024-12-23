@@ -165,7 +165,7 @@ Notes:
       browsing experience.
 
 Author:
-    - **INRAE\\Olivier Vitrac**
+    - **INRAE\Olivier Vitrac**
     - **Email:** olivier.vitrac@agroparistech.fr
     - **Last Revised:** 2024-12-21
 
@@ -192,7 +192,7 @@ output_file = &#34;index_matlab.html&#34;
 PIZZA3_VERSION = &#34;Pizza3 v.0.99&#34;
 CONTACT = &#34;INRAE\\olivier.vitrac@agroparistech.fr&#34;
 
-# CSS Style as per user request with explicit header h1 color
+# CSS Style with toggle button integration and dynamic sidebar collapse
 CSS_STYLE = &#34;&#34;&#34;
 body {
     font-family: &#39;Segoe UI&#39;, Arial, sans-serif; 
@@ -206,29 +206,63 @@ header {
     background: #4CAF50; 
     color: #fff; 
     padding: 10px;
+    position: relative; /* For positioning the toggle button */
 }
 header h1 {
     margin: 0; 
     font-size: 1.5em;
     color: #fff; /* Explicitly set to white */
+    padding-left: 50px; /* Space for the toggle button */
 }
 #content {
     display: flex;
     height: calc(100vh - 50px); /* Adjusted for header height */
+    transition: all 0.3s ease; /* Enable transitions for smooth animations */
 }
 #nav {
-    min-width: 250px;
+    width: 300px; /* Set a fixed width */
     background: #fff;
     border-right: 1px solid #ddd;
     padding: 20px;
     overflow-y: auto;
     box-sizing: border-box;
+    transition: width 0.3s ease, padding 0.3s ease; /* Transition for smooth animations */
+    flex-shrink: 0; /* Prevent flexbox from shrinking */
+}
+#nav.collapsed {
+    width: 0; /* Hide the sidebar completely */
+    padding: 20px 0; /* Optionally adjust padding */
 }
 #main {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
     box-sizing: border-box;
+    transition: all 0.3s ease; /* Enable transitions for smooth animations */
+}
+header .toggle-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%); /* Center the button vertically */
+    left: 10px; /* Place the button on the left */
+    background-color: #4CAF50; /* Green background */
+    border: none;
+    color: white; /* Ensure the hamburger icon is white */
+    padding: 10px 12px; /* Adjust padding for larger button */
+    cursor: pointer;
+    font-size: 1.2em; /* Increase font size for better visibility */
+    border-radius: 4px;
+    z-index: 1001; /* Ensure the button is above other elements */
+}
+header .toggle-btn:hover {
+    background-color: #45a049;
+}
+header .toggle-btn kbd {
+    font-family: &#39;Arial&#39;, sans-serif; /* Match the header font */
+    color: white; /* Ensure the hamburger icon is white */
+    font-size: 1.2em; /* Same size as the button text */
+    background: none; /* Remove any background styling from &lt;kbd&gt; */
+    border: none; /* Remove any borders from &lt;kbd&gt; */
 }
 h1 {
     font-size: 1.8em;
@@ -337,6 +371,35 @@ tr:nth-child(odd) {
 .string {
     color: #a31515;
 }
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    #nav {
+        position: absolute;
+        left: 0;
+        top: 50px; /* Height of the header */
+        height: calc(100% - 50px);
+        z-index: 1000;
+    }
+    #nav.collapsed {
+        width: 0; /* Hide the sidebar completely */
+        padding: 20px 0; /* Adjust padding */
+    }
+    #main {
+        flex: 1;
+    }
+    /* Add overlay when sidebar is open on mobile */
+    body.nav-open::before {
+        content: &#34;&#34;;
+        position: fixed;
+        top: 50px;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 50px);
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+}
 &#34;&#34;&#34;
 
 # JavaScript for toggle functionality and dynamic content display
@@ -390,12 +453,45 @@ function toggleCollapsible() {
     }
 }
 
-// Handle internal links to load in the same panel
-document.addEventListener(&#39;click&#39;, function(e) {
-    if (e.target.tagName === &#39;A&#39; &amp;&amp; e.target.getAttribute(&#39;href&#39;).startsWith(&#39;#&#39;)) {
-        e.preventDefault();
-        var targetId = e.target.getAttribute(&#39;href&#39;).substring(1);
-        loadDoc(targetId);
+// Toggle Sidebar Functionality
+const toggleButton = document.getElementById(&#39;toggleSidebar&#39;);
+const nav = document.getElementById(&#39;nav&#39;);
+
+toggleButton.addEventListener(&#39;click&#39;, () =&gt; {
+    nav.classList.toggle(&#39;collapsed&#39;);
+    document.body.classList.toggle(&#39;nav-open&#39;); // Toggle overlay on small screens
+    // Change icon based on sidebar state
+    if(nav.classList.contains(&#39;collapsed&#39;)) {
+        toggleButton.innerHTML = &#39;&lt;kbd&gt;&amp;#9776;&lt;/kbd&gt;&#39;; // Hamburger icon
+        toggleButton.setAttribute(&#39;aria-expanded&#39;, &#39;false&#39;);
+    } else {
+        toggleButton.innerHTML = &#39;&lt;kbd&gt;&amp;#10005;&lt;/kbd&gt;&#39;; // Close icon (X)
+        toggleButton.setAttribute(&#39;aria-expanded&#39;, &#39;true&#39;);
+    }
+});
+
+// Handle URL hash on page load to display the corresponding documentation or welcome page
+window.addEventListener(&#39;load&#39;, function() {
+    const hash = window.location.hash.substring(1);
+    const docs = document.querySelectorAll(&#39;.doc-content&#39;);
+    if(hash) {
+        docs.forEach(doc =&gt; {
+            if(doc.id === hash) {
+                doc.style.display = &#39;block&#39;;
+            } else {
+                doc.style.display = &#39;none&#39;;
+            }
+        });
+        // If sidebar is open on small screens, ensure it&#39;s visible
+        if (window.innerWidth &lt;= 768 &amp;&amp; !nav.classList.contains(&#39;collapsed&#39;)) {
+            document.body.classList.add(&#39;nav-open&#39;);
+        }
+    } else {
+        // Show welcome content if no hash is present
+        const welcome = document.getElementById(&#39;welcome-message&#39;);
+        if(welcome) {
+            welcome.style.display = &#39;block&#39;;
+        }
     }
 });
 &#34;&#34;&#34;
@@ -641,7 +737,7 @@ for fpath in matlab_files:
     docs_html += html_doc + &#34;\n&#34;
     docs_html += &#34;&lt;/div&gt;\n&#34;
 
-# Generate index.html
+# Generate index_matlab.html
 index_file = os.path.join(output_dir, output_file)
 with open(index_file, &#34;w&#34;, encoding=&#34;utf-8&#34;) as fout:
     fout.write(&#34;&lt;!DOCTYPE html&gt;\n&lt;html lang=&#39;en&#39;&gt;\n&lt;head&gt;\n&#34;)
@@ -650,7 +746,13 @@ with open(index_file, &#34;w&#34;, encoding=&#34;utf-8&#34;) as fout:
     fout.write(&#34;&lt;title&gt;Pizza3 Matlab Documentation&lt;/title&gt;\n&#34;)
     fout.write(f&#34;&lt;style&gt;{CSS_STYLE}&lt;/style&gt;\n&#34;)
     fout.write(&#34;&lt;/head&gt;\n&lt;body&gt;\n&#34;)
-    fout.write(&#34;&lt;header&gt;&lt;h1&gt;Pizza3 Documentation&lt;/h1&gt;&lt;/header&gt;\n&#34;)
+    fout.write(&#34;&lt;header&gt;\n&#34;)
+    fout.write(&#34;    &lt;!-- Toggle Sidebar Button --&gt;\n&#34;)
+    fout.write(&#34;    &lt;button class=&#39;toggle-btn&#39; id=&#39;toggleSidebar&#39; aria-label=&#39;Toggle Sidebar&#39; aria-expanded=&#39;false&#39;&gt;\n&#34;)
+    fout.write(&#34;        &lt;kbd&gt;&amp;#9776;&lt;/kbd&gt;\n&#34;)
+    fout.write(&#34;    &lt;/button&gt;\n&#34;)
+    fout.write(&#34;    &lt;h1&gt;Pizza3 Documentation&lt;/h1&gt;\n&#34;)
+    fout.write(&#34;&lt;/header&gt;\n&#34;)
     fout.write(&#34;&lt;div id=&#39;content&#39;&gt;\n&#34;)
     fout.write(&#34;&lt;div id=&#39;nav&#39;&gt;\n&#34;)
     fout.write(f&#34;&lt;p&gt;&lt;strong&gt;Version:&lt;/strong&gt; {html.escape(PIZZA3_VERSION)}&lt;/p&gt;\n&#34;)
@@ -678,7 +780,7 @@ with open(index_file, &#34;w&#34;, encoding=&#34;utf-8&#34;) as fout:
     fout.write(&#34;&lt;p&gt;Back to the &lt;a href=&#39;index.html&#39;&gt;Python&#39;Pizza3 documentation&lt;/a&gt;.&lt;/p&gt;\n&#34;)
     fout.write(&#34;&lt;hr&gt;\n&#34;)
     fout.write(&#34;&lt;p&gt;&lt;i&gt;When no function is selected, you see this welcome page.&lt;/i&gt;&lt;/p&gt;\n&#34;)
-    # print the date
+    # Print the date
     current_datetime = datetime.now()
     formatted_datetime = current_datetime.strftime(&#34;%Y-%m-%d %H:%M:%S&#34;)
     fout.write(f&#34;Generated on: {formatted_datetime}&#34;)

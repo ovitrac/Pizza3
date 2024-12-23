@@ -5,6 +5,7 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>Pizza3 Documentation Index</title>
     <style>
+    /* General Styles */
     body {
         font-family: 'Segoe UI', Arial, sans-serif; 
         margin: 0; 
@@ -17,29 +18,44 @@
         background: #4CAF50; 
         color: #fff; 
         padding: 10px;
+        position: relative; /* For positioning the toggle button */
     }
     header h1 {
         margin: 0; 
         font-size: 1.5em;
+        color: #fff; /* Explicitly set to white */
+        padding-left: 50px; /* Space for the toggle button */
     }
+    /* Sidebar Styles */
     #content {
         display: flex;
-        height: 100vh;
+        height: calc(100vh - 50px); /* Adjusted for header height */
+        transition: all 0.3s ease; /* Enable transitions for smooth animations */
     }
     #nav {
-        min-width: 250px; 
-        background: #fff; 
-        border-right: 1px solid #ddd; 
-        padding: 20px;
-        overflow-y: auto; 
-        box-sizing: border-box;
-    }
-    #main {
-        flex: 1; 
+        width: 300px; /* Set a fixed width */
+        background: #fff;
+        border-right: 1px solid #ddd;
         padding: 20px;
         overflow-y: auto;
         box-sizing: border-box;
+        transition: width 0.3s ease, padding 0.3s ease; /* Transition for smooth width and padding changes */
+        position: relative; /* Ensure it stays in place when collapsing */
+        z-index: 1000; /* To overlay on small screens */
     }
+    #nav.collapsed {
+        width: 0; /* Hide the sidebar by setting width to 0 */
+        padding: 0; /* Remove padding to allow full collapse */
+        overflow: hidden; /* Hide overflowing content */
+    }
+    #main {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        box-sizing: border-box;
+        transition: margin-left 0.3s ease; /* Smooth transition when sidebar collapses */
+    }
+    /* Folder Styles */
     h2 {
         color: #333; 
         border-bottom: 2px solid #4CAF50; 
@@ -108,8 +124,8 @@
         top: 0;
         left: 0;
         width: 100%;
-        background-color: #ff4d4d; /* fffae6 Light yellow background */
-        color: #333; /* Dark text color */
+        background-color: #ff4d4d; /* Red background */
+        color: #fff; /* White text */
         padding: 15px 20px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         display: flex;
@@ -117,23 +133,23 @@
         align-items: center;
         z-index: 1000; /* Ensures the banner stays on top */
         font-family: Arial, sans-serif;
-        z-index: 1000;
+        box-sizing: border-box; /* Ensure padding is included in width */
     }
     .notification-banner a {
-        color: #1a73e8; /* Blue color for the link */
-        text-decoration: none;
+        color: #ffffff; /* White color for the link */
+        text-decoration: underline;
         font-weight: bold;
     }
     .notification-banner a:hover {
-    text-decoration: underline;
+        color: #dddddd; /* Light gray on hover */
     }
     .close-button {
         position: absolute;
-        right: 60px;
+        right: 40px; /* Adjusted from 20px to 50px for visibility */
         top: 15px;
         background: none;
         border: none;
-        font-size: 32px;
+        font-size: 24px;
         font-weight: bold;
         color: #ffffff;
         cursor: pointer;
@@ -142,29 +158,66 @@
     .close-button:hover {
         color: #dddddd;
     }
-    .notification-banner {
-        transition: all 0.3s ease;
+    /* Toggle Sidebar Button */
+    .toggle-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%); /* Center the button vertically */
+        left: 10px; /* Place the button on the left */
+        background-color: #4CAF50; /* Green background */
+        border: none;
+        color: white; /* Ensure the hamburger icon is white */
+        padding: 10px 12px; /* Adjust padding for larger button */
+        cursor: pointer;
+        font-size: 1.2em; /* Increase font size for better visibility */
+        border-radius: 4px;
+        z-index: 1001; /* Ensure the button is above other elements */
     }
-
-    .notification-banner a {
-        transition: color 0.3s ease;
+    .toggle-btn:hover {
+        background-color: #45a049;
     }
-
-    .notification-banner a:hover {
-        color: #0056b3; /* Darker blue on hover */
+    .toggle-btn kbd {
+        font-family: 'Arial', sans-serif; /* Match the header font */
+        color: white; /* Ensure the hamburger icon is white */
+        font-size: 1.2em; /* Same size as the button text */
+        background: none; /* Remove any background styling from <kbd> */
+        border: none; /* Remove any borders from <kbd> */
     }
-    /* Media Queries for Responsiveness */
-    @media (max-width: 600px) {
-      .notification-banner {
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-      }
-
-      .close-button {
-        position: static;
-        margin-top: 10px;
-      }
+    /* Responsive Design for Sidebar */
+    @media screen and (max-width: 768px) {
+        #nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px; /* Ensure the width remains consistent */
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            background: #fff;
+            border-right: 1px solid #ddd;
+            padding: 20px; /* Default padding */
+        }
+        #nav.collapsed {
+            transform: translateX(-100%);
+            width: 250px; /* Maintain width for small screens */
+            padding: 20px; /* Maintain padding */
+        }
+        #nav.expanded {
+            transform: translateX(0);
+            width: 250px;
+            padding: 20px;
+        }
+        /* Overlay when sidebar is open */
+        body.nav-open::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
     }
     </style>
     <!-- Include Marked.js from CDN -->
@@ -181,116 +234,130 @@
             content.style.display = "none";
         }
     };
+    
+    // Function to close the notification banner
+    function closeBanner() {
+        var banner = document.getElementById('notification-banner');
+        if (banner) {
+            banner.style.display = 'none';
+        }
+    }
     </script>
 </head>
 <body>
-    <header>
-      <h1>Pizza3 Documentation Index</h1>
-    </header>
-    <div id="content">
-      <div id="nav">
-        <p><strong>Version:</strong> Pizza3 v.0.99</p>
-        <p><strong>Maintained by:</strong> INRAE\olivier.vitrac@agroparistech.fr</p>
-        <hr>
-<ul class="folder-list">
-<li class="folder">
-<div class="folder-title" onclick="toggleFolder(this)">(root)</div>
-<ul class="folder-content">
-<li class="file"><a href="assembly.html">assembly</a></li>
-<li class="file"><a href="datatemplate3.html">datatemplate3</a></li>
-<li class="file"><a href="dump_case4.html">dump_case4</a></li>
-<li class="file"><a href="dumpreduce.html">dumpreduce</a></li>
-<li class="file"><a href="dumptemplate.html">dumptemplate</a></li>
-<li class="file"><a href="dumptemplate3.html">dumptemplate3</a></li>
-<li class="file"><a href="example.html">example</a></li>
-<li class="file"><a href="example2.html">example2</a></li>
-<li class="file"><a href="geometry.html">geometry</a></li>
-<li class="file"><a href="globules.html">globules</a></li>
-<li class="file"><a href="restartsmd2smd.html">restartsmd2smd</a></li>
-<li class="file"><a href="setup.html">setup</a></li>
-<li class="file"><a href="wokshop4.html">wokshop4</a></li>
-<li class="file"><a href="workersupervisor.html">workersupervisor</a></li>
-<li class="file"><a href="workshop0.html">workshop0</a></li>
-<li class="file"><a href="workshop1.html">workshop1</a></li>
-<li class="file"><a href="workshop2.html">workshop2</a></li>
-</ul>
-</li>
-<li class="folder">
-<div class="folder-title" onclick="toggleFolder(this)">pizza</div>
-<ul class="folder-content">
-<li class="file"><a href="pizza/data3.html">data3</a></li>
-<li class="file"><a href="pizza/dforcefield.html">dforcefield</a></li>
-<li class="file"><a href="pizza/dscript.html">dscript</a></li>
-<li class="file"><a href="pizza/dump3.html">dump3</a></li>
-<li class="file"><a href="pizza/forcefield.html">forcefield</a></li>
-<li class="file"><a href="pizza/generic.html">generic</a></li>
-<li class="file"><a href="pizza/group.html">group</a></li>
-<li class="file"><a href="pizza/raster.html">raster</a></li>
-<li class="file"><a href="pizza/region.html">region</a></li>
-<li class="file"><a href="pizza/script.html">script</a></li>
-</ul>
-</li>
-<li class="folder">
-<div class="folder-title" onclick="toggleFolder(this)">pizza/private</div>
-<ul class="folder-content">
-<li class="file"><a href="pizza/private/mstruct.html">mstruct</a></li>
-<li class="file"><a href="pizza/private/utils.html">utils</a></li>
-</ul>
-</li>
-<li class="folder">
-<div class="folder-title" onclick="toggleFolder(this)">sandbox</div>
-<ul class="folder-content">
-<li class="file"><a href="sandbox/tmp_group.html">tmp_group</a></li>
-<li class="file"><a href="sandbox/workshop4.html">workshop4</a></li>
-</ul>
-</li>
-<li class="folder">
-<div class="folder-title" onclick="toggleFolder(this)">utils</div>
-<ul class="folder-content">
-<li class="file"><a href="utils/SPHtools.html">SPHtools</a></li>
-<li class="file"><a href="utils/generate_all.html">generate_all</a></li>
-<li class="file"><a href="utils/generate_examples.html">generate_examples</a></li>
-<li class="file"><a href="utils/generate_manifest.html">generate_manifest</a></li>
-<li class="file"><a href="utils/generate_manifest_in.html">generate_manifest_in</a></li>
-<li class="file"><a href="utils/generate_matlab_docs.html">generate_matlab_docs</a></li>
-<li class="file"><a href="utils/generate_mermaid.html">generate_mermaid</a></li>
-<li class="file"><a href="utils/generate_mini_manifest.html">generate_mini_manifest</a></li>
-<li class="file"><a href="utils/generate_post_docs.html">generate_post_docs</a></li>
-<li class="file"><a href="utils/generate_requirements.html">generate_requirements</a></li>
-<li class="file"><a href="utils/generate_setup.html">generate_setup</a></li>
-<li class="file"><a href="utils/generate_simple_manifest.html">generate_simple_manifest</a></li>
-<li class="file"><a href="utils/mermaid.html">mermaid</a></li>
-</ul>
-</li>
-<li class="folder">
-<div class="folder-title" onclick="toggleFolder(this)">utils/obsolete</div>
-<ul class="folder-content">
-<li class="file"><a href="utils/obsolete/fileEntity.html">fileEntity</a></li>
-<li class="file"><a href="utils/obsolete/manisfestManager.html">manisfestManager</a></li>
-</ul>
-</li>
-</ul>
-      </div>
-        <!-- Notification Banner -->
-        <div id="notification-banner" class="notification-banner">
+    <!-- Notification Banner -->
+    <div id="notification-banner" class="notification-banner">
         <span>
             If you were looking for the documentation of post- and pre-processing tools in Matlab, use this 
             <a href="./index_matlab.html" target="_blank">link</a> instead.
         </span>
         <button class="close-button" onclick="closeBanner()">&times;</button>
+    </div>
+
+    <header>
+        <!-- Toggle Sidebar Button -->
+        <button class='toggle-btn' id='toggleSidebar' aria-label='Toggle Sidebar' aria-expanded='false'>
+            <kbd>&#9776;</kbd>
+        </button>
+        <h1>Pizza3 Documentation Index</h1>
+    </header>
+    <div id='content'>
+        <div id='nav'>
+            <p><strong>Version:</strong> Pizza3 v.0.99</p>
+            <p><strong>Maintained by:</strong> INRAE\olivier.vitrac@agroparistech.fr</p>
+            <hr>
+<ul class="folder-list">
+<li class="folder">
+<div class="folder-title" onclick="toggleFolder(this)">(root)</div>
+<ul class="folder-content">
+<li class="file"><a href="assembly.html" target="_blankpy">assembly</a></li>
+<li class="file"><a href="datatemplate3.html" target="_blankpy">datatemplate3</a></li>
+<li class="file"><a href="dump_case4.html" target="_blankpy">dump_case4</a></li>
+<li class="file"><a href="dumpreduce.html" target="_blankpy">dumpreduce</a></li>
+<li class="file"><a href="dumptemplate.html" target="_blankpy">dumptemplate</a></li>
+<li class="file"><a href="dumptemplate3.html" target="_blankpy">dumptemplate3</a></li>
+<li class="file"><a href="example.html" target="_blankpy">example</a></li>
+<li class="file"><a href="example2.html" target="_blankpy">example2</a></li>
+<li class="file"><a href="geometry.html" target="_blankpy">geometry</a></li>
+<li class="file"><a href="globules.html" target="_blankpy">globules</a></li>
+<li class="file"><a href="restartsmd2smd.html" target="_blankpy">restartsmd2smd</a></li>
+<li class="file"><a href="setup.html" target="_blankpy">setup</a></li>
+<li class="file"><a href="wokshop4.html" target="_blankpy">wokshop4</a></li>
+<li class="file"><a href="workersupervisor.html" target="_blankpy">workersupervisor</a></li>
+<li class="file"><a href="workshop0.html" target="_blankpy">workshop0</a></li>
+<li class="file"><a href="workshop1.html" target="_blankpy">workshop1</a></li>
+<li class="file"><a href="workshop2.html" target="_blankpy">workshop2</a></li>
+</ul>
+</li>
+<li class="folder">
+<div class="folder-title" onclick="toggleFolder(this)">pizza</div>
+<ul class="folder-content">
+<li class="file"><a href="pizza/data3.html" target="_blankpy">data3</a></li>
+<li class="file"><a href="pizza/dforcefield.html" target="_blankpy">dforcefield</a></li>
+<li class="file"><a href="pizza/dscript.html" target="_blankpy">dscript</a></li>
+<li class="file"><a href="pizza/dump3.html" target="_blankpy">dump3</a></li>
+<li class="file"><a href="pizza/forcefield.html" target="_blankpy">forcefield</a></li>
+<li class="file"><a href="pizza/generic.html" target="_blankpy">generic</a></li>
+<li class="file"><a href="pizza/group.html" target="_blankpy">group</a></li>
+<li class="file"><a href="pizza/raster.html" target="_blankpy">raster</a></li>
+<li class="file"><a href="pizza/region.html" target="_blankpy">region</a></li>
+<li class="file"><a href="pizza/script.html" target="_blankpy">script</a></li>
+</ul>
+</li>
+<li class="folder">
+<div class="folder-title" onclick="toggleFolder(this)">pizza/private</div>
+<ul class="folder-content">
+<li class="file"><a href="pizza/private/mstruct.html" target="_blankpy">mstruct</a></li>
+<li class="file"><a href="pizza/private/utils.html" target="_blankpy">utils</a></li>
+</ul>
+</li>
+<li class="folder">
+<div class="folder-title" onclick="toggleFolder(this)">sandbox</div>
+<ul class="folder-content">
+<li class="file"><a href="sandbox/tmp_group.html" target="_blankpy">tmp_group</a></li>
+<li class="file"><a href="sandbox/workshop4.html" target="_blankpy">workshop4</a></li>
+</ul>
+</li>
+<li class="folder">
+<div class="folder-title" onclick="toggleFolder(this)">utils</div>
+<ul class="folder-content">
+<li class="file"><a href="utils/SPHtools.html" target="_blankpy">SPHtools</a></li>
+<li class="file"><a href="utils/convert_py_to_html.html" target="_blankpy">convert_py_to_html</a></li>
+<li class="file"><a href="utils/generate_all.html" target="_blankpy">generate_all</a></li>
+<li class="file"><a href="utils/generate_examples.html" target="_blankpy">generate_examples</a></li>
+<li class="file"><a href="utils/generate_manifest.html" target="_blankpy">generate_manifest</a></li>
+<li class="file"><a href="utils/generate_manifest_in.html" target="_blankpy">generate_manifest_in</a></li>
+<li class="file"><a href="utils/generate_matlab_docs.html" target="_blankpy">generate_matlab_docs</a></li>
+<li class="file"><a href="utils/generate_mermaid.html" target="_blankpy">generate_mermaid</a></li>
+<li class="file"><a href="utils/generate_mini_manifest.html" target="_blankpy">generate_mini_manifest</a></li>
+<li class="file"><a href="utils/generate_post_docs.html" target="_blankpy">generate_post_docs</a></li>
+<li class="file"><a href="utils/generate_requirements.html" target="_blankpy">generate_requirements</a></li>
+<li class="file"><a href="utils/generate_setup.html" target="_blankpy">generate_setup</a></li>
+<li class="file"><a href="utils/generate_simple_manifest.html" target="_blankpy">generate_simple_manifest</a></li>
+<li class="file"><a href="utils/mermaid.html" target="_blankpy">mermaid</a></li>
+</ul>
+</li>
+<li class="folder">
+<div class="folder-title" onclick="toggleFolder(this)">utils/obsolete</div>
+<ul class="folder-content">
+<li class="file"><a href="utils/obsolete/fileEntity.html" target="_blankpy">fileEntity</a></li>
+<li class="file"><a href="utils/obsolete/manisfestManager.html" target="_blankpy">manisfestManager</a></li>
+</ul>
+</li>
+</ul>
         </div>
-      <div id="main">
-        <h2>Welcome to Pizza3 Documentation</h2>
-        <p>Select a Python module from the left panel to view its documentation. Click on a folder to expand/collapse its contents. <br/><i>Matlab/Octave codes for pre_ and post-preocessing are not listed here.</i></p>
-        <hr>
-        <!-- Embed the raw Markdown in a script block -->
-        <div id="markdown-content"></div>
-        <script>
-          // Sample Markdown content with Mermaid diagram and table
-          const markdownContent = `
+        <div id='main'>
+            <h2>Welcome to Pizza3 Documentation</h2>
+            <p>Select a Python module from the left panel to view its documentation. Click on a folder to expand/collapse its contents. <br/><i>Matlab/Octave codes for pre_ and post-preocessing are not listed here.</i></p>
+            <hr>
+            <!-- Embed the raw Markdown in a script block -->
+            <div id="markdown-content"></div>
+            <script>
+                // Define the markdownContent variable with the processed Markdown
+                const markdownContent = `
 # Pizza Modules Documentation
 
-Generated on: **2024-12-21 21:47:32**
+Generated on: **2024-12-23 17:10:13**
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
 
@@ -2243,28 +2310,62 @@ ulsph --> water
 | \`statussection\` | \`tmpwrite\` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
 | \`statussection\` | \`write\` | Write the script to a file. | 39 | 0.99991 |
 
-          `;
-        
-          // Render the Markdown content
-          const markdownDiv = document.getElementById('markdown-content');
-          markdownDiv.innerHTML = marked.parse(markdownContent);
-          // Initialize Mermaid after Markdown is rendered
-          mermaid.initialize({ startOnLoad: true });
-        </script>
-        <div id="markdown-content"></div>
-        <footer>
-            <p>Current date:<strong> <script>document.write(new Date().toLocaleDateString())</script></strong></p>
-        </footer>
-      </div>
+                `;
+            
+                // Render the Markdown content
+                const markdownDiv = document.getElementById('markdown-content');
+                if (markdownDiv) {
+                    markdownDiv.innerHTML = marked.parse(markdownContent);
+                    // Initialize Mermaid after Markdown is rendered
+                    mermaid.initialize({ startOnLoad: true });
+                }
+            </script>
+            <footer>
+                <p>Current date:<strong> <script>document.write(new Date().toLocaleDateString())</script></strong></p>
+            </footer>
+        </div>
     </div>
     <script>
-        // Function to close the notification banner
-        function closeBanner() {
-        var banner = document.getElementById('notification-banner');
-        if (banner) {
-            banner.style.display = 'none';
-        }
-        }
+        // Toggle Sidebar Functionality
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggleButton = document.getElementById('toggleSidebar');
+            const nav = document.getElementById('nav');
+            const body = document.body;
+
+            if (toggleButton && nav) {
+                toggleButton.addEventListener('click', () => {
+                    if (window.innerWidth > 768) {
+                        // For large screens, toggle 'collapsed' class to adjust width
+                        nav.classList.toggle('collapsed');
+                        // Change icon based on sidebar state
+                        if(nav.classList.contains('collapsed')) {
+                            toggleButton.innerHTML = '<kbd>&#9776;</kbd>'; // Hamburger icon
+                            toggleButton.setAttribute('aria-expanded', 'false');
+                        } else {
+                            toggleButton.innerHTML = '<kbd>&#10005;</kbd>'; // Close icon (X)
+                            toggleButton.setAttribute('aria-expanded', 'true');
+                        }
+                    } else {
+                        // For small screens, toggle 'expanded' class to overlay sidebar
+                        nav.classList.toggle('expanded');
+                        body.classList.toggle('nav-open'); // Toggle overlay
+                        // Change icon based on sidebar state
+                        if(nav.classList.contains('expanded')) {
+                            toggleButton.innerHTML = '<kbd>&#10005;</kbd>'; // Close icon (X)
+                            toggleButton.setAttribute('aria-expanded', 'true');
+                        } else {
+                            toggleButton.innerHTML = '<kbd>&#9776;</kbd>'; // Hamburger icon
+                            toggleButton.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                });
+            } else {
+                console.error("Toggle button or navigation sidebar not found.");
+            }
+
+            // No need to attach additional event listeners for folder toggling
+            // since the folders have inline onclick="toggleFolder(this)"
+        });
     </script>
 </body>
 </html>
