@@ -7,7 +7,7 @@ pdocme.sh - Automated Documentation Generation Script for Pizza3
 Author:       Olivier Vitrac
 Maintainer:   INRAE\olivier.vitrac@agroparistech.fr
 Version:      0.99
-Last Updated: 2024-12-23
+Last Updated: 2024-12-26
 License:      MIT License
 
 ==========================================================================
@@ -292,7 +292,7 @@ while read -r module; do
     # Check if the HTML file exists
     if [[ ! -f "$module_output_file" ]]; then
         echo "pdoc failed for $module. Generating raw HTML with syntax highlighting..."
-        convert_py_to_html.py "$module" "$module_output_file"
+        ./convert_py_to_html.py "$module" "$module_output_file"
     else
         echo "HTML successfully created for $module"
     fi

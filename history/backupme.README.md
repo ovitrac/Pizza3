@@ -2,7 +2,7 @@
 
 **User:** olivi@LX-Olivier2023  
 **Backup Path:** /home/olivi/billy/python_opensource  
-**Backup Date:** 2024-12-26 11:01:18  
+**Backup Date:** 2024-12-26 12:07:46  
 
 ## Rules Applied
 | Inclusion Rules   | Exclusion Rules                         |
@@ -11,39 +11,40 @@
 | `*.asv          ` | `./tmp                                ` |
 | `*.m~           ` | `./sandbox                            ` |
 | `*.pynb         ` | `./debug                              ` |
-| `*.py           ` | `./.git                               ` |
-| `*.sh           ` | `./.vscode                            ` |
-| `*.txt          ` | `./__all__                            ` |
-| `*.md           ` | `./__pycache__                        ` |
-| `*.html         ` | `/home/olivi/billy/python_opensource/h...` |
-| `*.json         ` | `/home/olivi/billy/python_opensource/r...` |
-| `*.css          ` | `/home/olivi/billy/python_opensource/p...` |
-| `*.manifest     ` | `/home/olivi/billy/python_opensource/p...` |
+| `*.py           ` | `./obsolete                           ` |
+| `*.sh           ` | `./.git                               ` |
+| `*.txt          ` | `./.vscode                            ` |
+| `*.md           ` | `./.spyproject                        ` |
+| `*.html         ` | `./__all__                            ` |
+| `*.json         ` | `./__pycache__                        ` |
+| `*.css          ` | `/home/olivi/billy/python_opensource/h...` |
+| `*.manifest     ` | `/home/olivi/billy/python_opensource/r...` |
+|                   | `/home/olivi/billy/python_opensource/p...` |
+|                   | `/home/olivi/billy/python_opensource/p...` |
 |                   | `*.log                                ` |
 |                   | `*.zip                                ` |
 |                   | `backupme.README.md                   ` |
 
-### Summary of Files by Extension (Total Files: 292, Total Size: 28.11 MB)
+### Summary of Files by Extension (Total Files: 286, Total Size: 27.96 MB)
 | Extension      | Count      |  Total Size  |
 |----------------|------------|--------------|
-| `txt         ` | 7          | 18.12 kB     |
-| `sh          ` | 16         | 94.62 kB     |
-| `py          ` | 58         | 1.51 MB      |
+| `txt         ` | 7          | 18.35 kB     |
+| `sh          ` | 15         | 93.03 kB     |
+| `py          ` | 55         | 1.43 MB      |
 | `md          ` | 36         | 379.48 kB    |
 | `m           ` | 74         | 754.87 kB    |
 | `manifest    ` | 5          | 62.60 kB     |
 | `json        ` | 2          | 2.97 kB      |
-| `html        ` | 93         | 25.31 MB     |
+| `html        ` | 91         | 25.25 MB     |
 | `css         ` | 1          | 4.33 kB      |
 
-### Summary of Files by Folder (Total Files: 292, Total Size: 28.11 MB)
+### Summary of Files by Folder (Total Files: 286, Total Size: 27.96 MB)
 |                                      Folder                                      |    Count   |  Total Size  |
 |------------------------------------------------------------------------------------|------------|--------------|
 | `videos                                                                          ` | 1          | 493 B        |
-| `utils/obsolete                                                                  ` | 3          | 22.77 kB     |
 | `utils/Files_moved_to_Post                                                       ` | 5          | 17.29 kB     |
 | `utils/css                                                                       ` | 2          | 4.83 kB      |
-| `utils                                                                           ` | 26         | 246.51 kB    |
+| `utils                                                                           ` | 26         | 246.88 kB    |
 | `post/notebook/history                                                           ` | 1          | 1.63 MB      |
 | `post/html                                                                       ` | 3          | 5.74 MB      |
 | `post/dumps/pub1/numericalViscosimeter_reference_ulsphBulk_hertzBoundary         ` | 3          | 1.35 kB      |
@@ -53,14 +54,12 @@
 | `post                                                                            ` | 68         | 719.74 kB    |
 | `pizza/src/original                                                              ` | 4          | 72.25 kB     |
 | `pizza/src                                                                       ` | 3          | 55.48 kB     |
-| `pizza/private/obsolete                                                          ` | 1          | 58.11 kB     |
 | `pizza/private                                                                   ` | 3          | 67.97 kB     |
 | `pizza.dscript.examples                                                          ` | 5          | 12.62 kB     |
 | `pizza                                                                           ` | 12         | 967.04 kB    |
 | `misc                                                                            ` | 5          | 27.52 kB     |
 | `examples                                                                        ` | 1          | 408 B        |
-| `docs/utils/obsolete                                                             ` | 2          | 68.94 kB     |
-| `docs/utils                                                                      ` | 16         | 539.25 kB    |
+| `docs/utils                                                                      ` | 16         | 539.29 kB    |
 | `docs/post                                                                       ` | 5          | 5.82 MB      |
 | `docs/pizza/private                                                              ` | 2          | 223.45 kB    |
 | `docs/pizza                                                                      ` | 10         | 4.40 MB      |
@@ -114,80 +113,78 @@
 ### Folder: docs (25 files, 2.36 MB)
 | File                                     | Size        | Last Modified       |
 |------------------------------------------|-------------|---------------------|
-| [assembly.html](../docs/assembly.html) | 8.33 kB    | 2024-12-23 17:10:16  |
+| [assembly.html](../docs/assembly.html) | 8.33 kB    | 2024-12-26 12:02:09  |
 | [assembly.html](../docs/old-doc/assembly.html) | 7.97 kB    | 2022-03-23 09:10:32  |
-| [class_examples_details.json](../docs/class_examples_details.json) | 2.54 kB    | 2024-12-23 17:10:13  |
-| [class_examples.html](../docs/class_examples.html) | 208.62 kB  | 2024-12-23 17:10:13  |
-| [convert_py_to_html.html](../docs/utils/convert_py_to_html.html) | 14.68 kB   | 2024-12-23 17:10:59  |
+| [class_examples_details.json](../docs/class_examples_details.json) | 2.54 kB    | 2024-12-26 12:02:08  |
+| [class_examples.html](../docs/class_examples.html) | 208.62 kB  | 2024-12-26 12:02:08  |
+| [convert_py_to_html.html](../docs/utils/convert_py_to_html.html) | 14.73 kB   | 2024-12-26 12:02:32  |
 | [data3.html](../docs/old-doc/data3.html) | 65.45 kB   | 2022-05-17 21:47:28  |
-| [data3.html](../docs/pizza/data3.html) | 167.52 kB  | 2024-12-23 17:10:36  |
-| [datatemplate3.html](../docs/datatemplate3.html) | 15.93 kB   | 2024-12-23 17:10:17  |
-| [dforcefield.html](../docs/pizza/dforcefield.html) | 462.58 kB  | 2024-12-23 17:10:37  |
-| [dscript.html](../docs/pizza/dscript.html) | 788.36 kB  | 2024-12-23 17:10:39  |
+| [data3.html](../docs/pizza/data3.html) | 167.52 kB  | 2024-12-26 12:02:20  |
+| [datatemplate3.html](../docs/datatemplate3.html) | 15.93 kB   | 2024-12-26 12:02:10  |
+| [dforcefield.html](../docs/pizza/dforcefield.html) | 462.58 kB  | 2024-12-26 12:02:20  |
+| [dscript.html](../docs/pizza/dscript.html) | 788.36 kB  | 2024-12-26 12:02:21  |
 | [dump3.html](../docs/old-doc/dump3.html) | 178.33 kB  | 2022-05-17 21:47:29  |
-| [dump3.html](../docs/pizza/dump3.html) | 189.78 kB  | 2024-12-23 17:10:40  |
-| [dump_case4.html](../docs/dump_case4.html) | 16.76 kB   | 2024-12-23 17:10:19  |
-| [dumpreduce.html](../docs/dumpreduce.html) | 16.30 kB   | 2024-12-23 17:10:20  |
-| [dumptemplate3.html](../docs/dumptemplate3.html) | 22.28 kB   | 2024-12-23 17:10:21  |
-| [dumptemplate.html](../docs/dumptemplate.html) | 17.36 kB   | 2024-12-23 17:10:22  |
-| [example2.html](../docs/example2.html) | 48.04 kB   | 2024-12-23 17:10:23  |
-| [example.html](../docs/example.html) | 44.76 kB   | 2024-12-23 17:10:25  |
+| [dump3.html](../docs/pizza/dump3.html) | 189.78 kB  | 2024-12-26 12:02:22  |
+| [dump_case4.html](../docs/dump_case4.html) | 16.76 kB   | 2024-12-26 12:02:10  |
+| [dumpreduce.html](../docs/dumpreduce.html) | 16.30 kB   | 2024-12-26 12:02:11  |
+| [dumptemplate3.html](../docs/dumptemplate3.html) | 22.28 kB   | 2024-12-26 12:02:12  |
+| [dumptemplate.html](../docs/dumptemplate.html) | 17.36 kB   | 2024-12-26 12:02:12  |
+| [example2.html](../docs/example2.html) | 48.04 kB   | 2024-12-26 12:02:13  |
+| [example.html](../docs/example.html) | 44.76 kB   | 2024-12-26 12:02:14  |
 | [fileEntity.html](../docs/utils/fileEntity.html) | 13.92 kB   | 2024-12-10 11:47:49  |
-| [fileEntity.html](../docs/utils/obsolete/fileEntity.html) | 13.92 kB   | 2024-12-23 17:11:02  |
 | [forcefield.html](../docs/old-doc/forcefield.html) | 74.43 kB   | 2022-05-17 21:47:29  |
-| [forcefield.html](../docs/pizza/forcefield.html) | 209.13 kB  | 2024-12-23 17:10:41  |
-| [generate_all.html](../docs/utils/generate_all.html) | 19.29 kB   | 2024-12-23 17:10:59  |
-| [generate_examples.html](../docs/utils/generate_examples.html) | 69.22 kB   | 2024-12-23 17:10:59  |
-| [generate_manifest.html](../docs/utils/generate_manifest.html) | 120.11 kB  | 2024-12-23 17:11:00  |
-| [generate_manifest_in.html](../docs/utils/generate_manifest_in.html) | 16.77 kB   | 2024-12-23 17:10:59  |
-| [generate_matlab_docs.html](../docs/utils/generate_matlab_docs.html) | 45.98 kB   | 2024-12-23 17:11:00  |
-| [generate_mermaid.html](../docs/utils/generate_mermaid.html) | 28.72 kB   | 2024-12-23 17:11:00  |
-| [generate_mini_manifest.html](../docs/utils/generate_mini_manifest.html) | 14.89 kB   | 2024-12-23 17:11:01  |
-| [generate_post_docs.html](../docs/utils/generate_post_docs.html) | 47.68 kB   | 2024-12-23 17:11:01  |
-| [generate_requirements.html](../docs/utils/generate_requirements.html) | 18.16 kB   | 2024-12-23 17:11:01  |
-| [generate_setup.html](../docs/utils/generate_setup.html) | 19.32 kB   | 2024-12-23 17:11:01  |
-| [generate_simple_manifest.html](../docs/utils/generate_simple_manifest.html) | 14.62 kB   | 2024-12-23 17:11:02  |
+| [forcefield.html](../docs/pizza/forcefield.html) | 209.13 kB  | 2024-12-26 12:02:23  |
+| [generate_all.html](../docs/utils/generate_all.html) | 19.29 kB   | 2024-12-26 12:02:32  |
+| [generate_examples.html](../docs/utils/generate_examples.html) | 69.22 kB   | 2024-12-26 12:02:32  |
+| [generate_manifest.html](../docs/utils/generate_manifest.html) | 120.11 kB  | 2024-12-26 12:02:32  |
+| [generate_manifest_in.html](../docs/utils/generate_manifest_in.html) | 16.77 kB   | 2024-12-26 12:02:32  |
+| [generate_matlab_docs.html](../docs/utils/generate_matlab_docs.html) | 45.98 kB   | 2024-12-26 12:02:32  |
+| [generate_mermaid.html](../docs/utils/generate_mermaid.html) | 28.72 kB   | 2024-12-26 12:02:32  |
+| [generate_mini_manifest.html](../docs/utils/generate_mini_manifest.html) | 14.89 kB   | 2024-12-26 12:02:33  |
+| [generate_post_docs.html](../docs/utils/generate_post_docs.html) | 47.68 kB   | 2024-12-26 12:02:33  |
+| [generate_requirements.html](../docs/utils/generate_requirements.html) | 18.16 kB   | 2024-12-26 12:02:33  |
+| [generate_setup.html](../docs/utils/generate_setup.html) | 19.32 kB   | 2024-12-26 12:02:33  |
+| [generate_simple_manifest.html](../docs/utils/generate_simple_manifest.html) | 14.62 kB   | 2024-12-26 12:02:33  |
 | [generic.html](../docs/old-doc/generic.html) | 23.77 kB   | 2022-05-17 21:47:30  |
-| [generic.html](../docs/pizza/generic.html) | 30.91 kB   | 2024-12-23 17:10:42  |
-| [geometry.html](../docs/geometry.html) | 12.04 kB   | 2024-12-23 17:10:32  |
+| [generic.html](../docs/pizza/generic.html) | 30.91 kB   | 2024-12-26 12:02:23  |
+| [geometry.html](../docs/geometry.html) | 12.04 kB   | 2024-12-26 12:02:18  |
 | [geometry.html](../docs/old-doc/geometry.html) | 7.26 kB    | 2022-03-18 19:34:14  |
-| [globules.html](../docs/globules.html) | 9.92 kB    | 2024-12-23 17:10:34  |
-| [group.html](../docs/pizza/group.html) | 648.58 kB  | 2024-12-23 17:10:44  |
-| [index.html](../docs/index.html) | 168.66 kB  | 2024-12-23 17:11:08  |
-| [index_matlab.html](../docs/index_matlab.html) | 1.35 MB    | 2024-12-23 17:11:00  |
-| [index_post.html](../docs/post/index_post.html) | 86.59 kB   | 2024-12-23 17:10:13  |
+| [globules.html](../docs/globules.html) | 9.92 kB    | 2024-12-26 12:02:19  |
+| [group.html](../docs/pizza/group.html) | 648.58 kB  | 2024-12-26 12:02:24  |
+| [index.html](../docs/index.html) | 168.66 kB  | 2024-12-26 12:02:36  |
+| [index_matlab.html](../docs/index_matlab.html) | 1.35 MB    | 2024-12-26 12:02:32  |
+| [index_post.html](../docs/post/index_post.html) | 86.59 kB   | 2024-12-26 12:02:08  |
 | [__init__.html](../docs/old-doc/__init__.html) | 7.01 kB    | 2022-05-17 21:47:31  |
-| [manifest.json](../docs/post/manifest.json) | 440 B      | 2024-12-23 17:10:13  |
+| [manifest.json](../docs/post/manifest.json) | 440 B      | 2024-12-26 12:02:08  |
 | [manisfestManager.html](../docs/utils/manisfestManager.html) | 55.01 kB   | 2024-12-10 11:47:50  |
-| [manisfestManager.html](../docs/utils/obsolete/manisfestManager.html) | 55.01 kB   | 2024-12-23 17:11:02  |
-| [mermaid.html](../docs/utils/mermaid.html) | 10.08 kB   | 2024-12-23 17:11:02  |
-| [modules_withexamples_list.txt](../docs/modules_withexamples_list.txt) | 234 B      | 2024-12-23 17:10:13  |
-| [mstruct.html](../docs/pizza/private/mstruct.html) | 209.84 kB  | 2024-12-23 17:10:45  |
+| [mermaid.html](../docs/utils/mermaid.html) | 10.08 kB   | 2024-12-26 12:02:33  |
+| [modules_withexamples_list.txt](../docs/modules_withexamples_list.txt) | 234 B      | 2024-12-26 12:02:08  |
+| [mstruct.html](../docs/pizza/private/mstruct.html) | 209.84 kB  | 2024-12-26 12:02:24  |
 | [Pizza3.manifest](../docs/Pizza3.manifest) | 99 B       | 2024-12-10 16:31:41  |
-| [pizza_classes_documentation.md](../docs/pizza_classes_documentation.md) | 147.20 kB  | 2024-12-23 17:10:15  |
+| [pizza_classes_documentation.md](../docs/pizza_classes_documentation.md) | 147.20 kB  | 2024-12-26 12:02:09  |
 | [Pizza.region.html](../docs/old-doc/Pizza.region.html) | 271.77 kB  | 2023-06-28 14:53:42  |
 | [Pizza.region.md](../docs/old-doc/Pizza.region.md) | 50.57 kB   | 2023-06-28 14:39:38  |
 | [POST_example1.html](../docs/post/POST_example1.html) | 764.56 kB  | 2023-09-01 16:12:56  |
 | [POST_example2.html](../docs/post/POST_example2.html) | 1.99 MB    | 2023-09-07 08:29:16  |
 | [POST_example3.html](../docs/post/POST_example3.html) | 3.00 MB    | 2023-09-13 21:24:46  |
 | [raster.html](../docs/old-doc/raster.html) | 259.21 kB  | 2022-05-17 21:47:27  |
-| [raster.html](../docs/pizza/raster.html) | 269.51 kB  | 2024-12-23 17:10:47  |
+| [raster.html](../docs/pizza/raster.html) | 269.51 kB  | 2024-12-26 12:02:26  |
 | [README.md](../docs/README.md) | 622 B      | 2024-12-12 13:40:40  |
-| [region.html](../docs/pizza/region.html) | 1.04 MB    | 2024-12-23 17:10:53  |
-| [restartsmd2smd.html](../docs/restartsmd2smd.html) | 23.22 kB   | 2024-12-23 17:10:57  |
+| [region.html](../docs/pizza/region.html) | 1.04 MB    | 2024-12-26 12:02:29  |
+| [restartsmd2smd.html](../docs/restartsmd2smd.html) | 23.22 kB   | 2024-12-26 12:02:31  |
 | [script.html](../docs/old-doc/script.html) | 226.53 kB  | 2022-05-17 21:47:33  |
-| [script.html](../docs/pizza/script.html) | 676.02 kB  | 2024-12-23 17:10:56  |
-| [setup.html](../docs/setup.html) | 7.23 kB    | 2024-12-23 17:10:58  |
-| [SPHtools.html](../docs/utils/SPHtools.html) | 30.78 kB   | 2024-12-23 17:11:03  |
+| [script.html](../docs/pizza/script.html) | 676.02 kB  | 2024-12-26 12:02:30  |
+| [setup.html](../docs/setup.html) | 7.23 kB    | 2024-12-26 12:02:31  |
+| [SPHtools.html](../docs/utils/SPHtools.html) | 30.78 kB   | 2024-12-26 12:02:34  |
 | [struct.html](../docs/old-doc/struct.html) | 14.67 kB   | 2022-05-17 21:47:31  |
-| [utils.html](../docs/pizza/private/utils.html) | 13.61 kB   | 2024-12-23 17:10:45  |
-| [wokshop4.html](../docs/wokshop4.html) | 24.31 kB   | 2024-12-23 17:11:04  |
-| [workersupervisor.html](../docs/workersupervisor.html) | 6.86 kB    | 2024-12-23 17:11:04  |
+| [utils.html](../docs/pizza/private/utils.html) | 13.61 kB   | 2024-12-26 12:02:25  |
+| [wokshop4.html](../docs/wokshop4.html) | 24.31 kB   | 2024-12-26 12:02:34  |
+| [workersupervisor.html](../docs/workersupervisor.html) | 6.86 kB    | 2024-12-26 12:02:34  |
 | [workshop0.html](../docs/old-doc/workshop0.html) | 82.67 kB   | 2022-05-17 21:47:34  |
-| [workshop0.html](../docs/workshop0.html) | 82.49 kB   | 2024-12-23 17:11:05  |
+| [workshop0.html](../docs/workshop0.html) | 82.49 kB   | 2024-12-26 12:02:35  |
 | [workshop1.html](../docs/old-doc/workshop1.html) | 69.08 kB   | 2022-05-17 21:47:34  |
-| [workshop1.html](../docs/workshop1.html) | 68.32 kB   | 2024-12-23 17:11:06  |
-| [workshop2.html](../docs/workshop2.html) | 88.18 kB   | 2024-12-23 17:11:08  |
+| [workshop1.html](../docs/workshop1.html) | 68.32 kB   | 2024-12-26 12:02:36  |
+| [workshop2.html](../docs/workshop2.html) | 88.18 kB   | 2024-12-26 12:02:36  |
 | [WS1.html](../docs/old-doc/WS1.html) | 105.13 kB  | 2022-04-01 14:22:13  |
 | [WS1.md](../docs/old-doc/WS1.md) | 7.95 kB    | 2022-04-01 14:21:49  |
 | [WS4.html](../docs/old-doc/WS4.html) | 93.39 kB   | 2023-07-26 14:23:14  |
@@ -218,61 +215,53 @@
 ### Folder: docs/pizza (10 files, 4.40 MB)
 | File                                     | Size        | Last Modified       |
 |------------------------------------------|-------------|---------------------|
-| [data3.html](../docs/pizza/data3.html) | 167.52 kB  | 2024-12-23 17:10:36  |
-| [dforcefield.html](../docs/pizza/dforcefield.html) | 462.58 kB  | 2024-12-23 17:10:37  |
-| [dscript.html](../docs/pizza/dscript.html) | 788.36 kB  | 2024-12-23 17:10:39  |
-| [dump3.html](../docs/pizza/dump3.html) | 189.78 kB  | 2024-12-23 17:10:40  |
-| [forcefield.html](../docs/pizza/forcefield.html) | 209.13 kB  | 2024-12-23 17:10:41  |
-| [generic.html](../docs/pizza/generic.html) | 30.91 kB   | 2024-12-23 17:10:42  |
-| [group.html](../docs/pizza/group.html) | 648.58 kB  | 2024-12-23 17:10:44  |
-| [mstruct.html](../docs/pizza/private/mstruct.html) | 209.84 kB  | 2024-12-23 17:10:45  |
-| [raster.html](../docs/pizza/raster.html) | 269.51 kB  | 2024-12-23 17:10:47  |
-| [region.html](../docs/pizza/region.html) | 1.04 MB    | 2024-12-23 17:10:53  |
-| [script.html](../docs/pizza/script.html) | 676.02 kB  | 2024-12-23 17:10:56  |
-| [utils.html](../docs/pizza/private/utils.html) | 13.61 kB   | 2024-12-23 17:10:45  |
+| [data3.html](../docs/pizza/data3.html) | 167.52 kB  | 2024-12-26 12:02:20  |
+| [dforcefield.html](../docs/pizza/dforcefield.html) | 462.58 kB  | 2024-12-26 12:02:20  |
+| [dscript.html](../docs/pizza/dscript.html) | 788.36 kB  | 2024-12-26 12:02:21  |
+| [dump3.html](../docs/pizza/dump3.html) | 189.78 kB  | 2024-12-26 12:02:22  |
+| [forcefield.html](../docs/pizza/forcefield.html) | 209.13 kB  | 2024-12-26 12:02:23  |
+| [generic.html](../docs/pizza/generic.html) | 30.91 kB   | 2024-12-26 12:02:23  |
+| [group.html](../docs/pizza/group.html) | 648.58 kB  | 2024-12-26 12:02:24  |
+| [mstruct.html](../docs/pizza/private/mstruct.html) | 209.84 kB  | 2024-12-26 12:02:24  |
+| [raster.html](../docs/pizza/raster.html) | 269.51 kB  | 2024-12-26 12:02:26  |
+| [region.html](../docs/pizza/region.html) | 1.04 MB    | 2024-12-26 12:02:29  |
+| [script.html](../docs/pizza/script.html) | 676.02 kB  | 2024-12-26 12:02:30  |
+| [utils.html](../docs/pizza/private/utils.html) | 13.61 kB   | 2024-12-26 12:02:25  |
 
 ### Folder: docs/pizza/private (2 files, 223.45 kB)
 | File                                     | Size        | Last Modified       |
 |------------------------------------------|-------------|---------------------|
-| [mstruct.html](../docs/pizza/private/mstruct.html) | 209.84 kB  | 2024-12-23 17:10:45  |
-| [utils.html](../docs/pizza/private/utils.html) | 13.61 kB   | 2024-12-23 17:10:45  |
+| [mstruct.html](../docs/pizza/private/mstruct.html) | 209.84 kB  | 2024-12-26 12:02:24  |
+| [utils.html](../docs/pizza/private/utils.html) | 13.61 kB   | 2024-12-26 12:02:25  |
 
 ### Folder: docs/post (5 files, 5.82 MB)
 | File                                     | Size        | Last Modified       |
 |------------------------------------------|-------------|---------------------|
-| [index_post.html](../docs/post/index_post.html) | 86.59 kB   | 2024-12-23 17:10:13  |
-| [manifest.json](../docs/post/manifest.json) | 440 B      | 2024-12-23 17:10:13  |
+| [index_post.html](../docs/post/index_post.html) | 86.59 kB   | 2024-12-26 12:02:08  |
+| [manifest.json](../docs/post/manifest.json) | 440 B      | 2024-12-26 12:02:08  |
 | [POST_example1.html](../docs/post/POST_example1.html) | 764.56 kB  | 2023-09-01 16:12:56  |
 | [POST_example2.html](../docs/post/POST_example2.html) | 1.99 MB    | 2023-09-07 08:29:16  |
 | [POST_example3.html](../docs/post/POST_example3.html) | 3.00 MB    | 2023-09-13 21:24:46  |
 
-### Folder: docs/utils (16 files, 539.25 kB)
+### Folder: docs/utils (16 files, 539.29 kB)
 | File                                     | Size        | Last Modified       |
 |------------------------------------------|-------------|---------------------|
-| [convert_py_to_html.html](../docs/utils/convert_py_to_html.html) | 14.68 kB   | 2024-12-23 17:10:59  |
+| [convert_py_to_html.html](../docs/utils/convert_py_to_html.html) | 14.73 kB   | 2024-12-26 12:02:32  |
 | [fileEntity.html](../docs/utils/fileEntity.html) | 13.92 kB   | 2024-12-10 11:47:49  |
-| [fileEntity.html](../docs/utils/obsolete/fileEntity.html) | 13.92 kB   | 2024-12-23 17:11:02  |
-| [generate_all.html](../docs/utils/generate_all.html) | 19.29 kB   | 2024-12-23 17:10:59  |
-| [generate_examples.html](../docs/utils/generate_examples.html) | 69.22 kB   | 2024-12-23 17:10:59  |
-| [generate_manifest.html](../docs/utils/generate_manifest.html) | 120.11 kB  | 2024-12-23 17:11:00  |
-| [generate_manifest_in.html](../docs/utils/generate_manifest_in.html) | 16.77 kB   | 2024-12-23 17:10:59  |
-| [generate_matlab_docs.html](../docs/utils/generate_matlab_docs.html) | 45.98 kB   | 2024-12-23 17:11:00  |
-| [generate_mermaid.html](../docs/utils/generate_mermaid.html) | 28.72 kB   | 2024-12-23 17:11:00  |
-| [generate_mini_manifest.html](../docs/utils/generate_mini_manifest.html) | 14.89 kB   | 2024-12-23 17:11:01  |
-| [generate_post_docs.html](../docs/utils/generate_post_docs.html) | 47.68 kB   | 2024-12-23 17:11:01  |
-| [generate_requirements.html](../docs/utils/generate_requirements.html) | 18.16 kB   | 2024-12-23 17:11:01  |
-| [generate_setup.html](../docs/utils/generate_setup.html) | 19.32 kB   | 2024-12-23 17:11:01  |
-| [generate_simple_manifest.html](../docs/utils/generate_simple_manifest.html) | 14.62 kB   | 2024-12-23 17:11:02  |
+| [generate_all.html](../docs/utils/generate_all.html) | 19.29 kB   | 2024-12-26 12:02:32  |
+| [generate_examples.html](../docs/utils/generate_examples.html) | 69.22 kB   | 2024-12-26 12:02:32  |
+| [generate_manifest.html](../docs/utils/generate_manifest.html) | 120.11 kB  | 2024-12-26 12:02:32  |
+| [generate_manifest_in.html](../docs/utils/generate_manifest_in.html) | 16.77 kB   | 2024-12-26 12:02:32  |
+| [generate_matlab_docs.html](../docs/utils/generate_matlab_docs.html) | 45.98 kB   | 2024-12-26 12:02:32  |
+| [generate_mermaid.html](../docs/utils/generate_mermaid.html) | 28.72 kB   | 2024-12-26 12:02:32  |
+| [generate_mini_manifest.html](../docs/utils/generate_mini_manifest.html) | 14.89 kB   | 2024-12-26 12:02:33  |
+| [generate_post_docs.html](../docs/utils/generate_post_docs.html) | 47.68 kB   | 2024-12-26 12:02:33  |
+| [generate_requirements.html](../docs/utils/generate_requirements.html) | 18.16 kB   | 2024-12-26 12:02:33  |
+| [generate_setup.html](../docs/utils/generate_setup.html) | 19.32 kB   | 2024-12-26 12:02:33  |
+| [generate_simple_manifest.html](../docs/utils/generate_simple_manifest.html) | 14.62 kB   | 2024-12-26 12:02:33  |
 | [manisfestManager.html](../docs/utils/manisfestManager.html) | 55.01 kB   | 2024-12-10 11:47:50  |
-| [manisfestManager.html](../docs/utils/obsolete/manisfestManager.html) | 55.01 kB   | 2024-12-23 17:11:02  |
-| [mermaid.html](../docs/utils/mermaid.html) | 10.08 kB   | 2024-12-23 17:11:02  |
-| [SPHtools.html](../docs/utils/SPHtools.html) | 30.78 kB   | 2024-12-23 17:11:03  |
-
-### Folder: docs/utils/obsolete (2 files, 68.94 kB)
-| File                                     | Size        | Last Modified       |
-|------------------------------------------|-------------|---------------------|
-| [fileEntity.html](../docs/utils/obsolete/fileEntity.html) | 13.92 kB   | 2024-12-23 17:11:02  |
-| [manisfestManager.html](../docs/utils/obsolete/manisfestManager.html) | 55.01 kB   | 2024-12-23 17:11:02  |
+| [mermaid.html](../docs/utils/mermaid.html) | 10.08 kB   | 2024-12-26 12:02:33  |
+| [SPHtools.html](../docs/utils/SPHtools.html) | 30.78 kB   | 2024-12-26 12:02:34  |
 
 ### Folder: examples (1 files, 408 B)
 | File                                     | Size        | Last Modified       |
@@ -312,7 +301,6 @@
 | [README.md](../pizza/README.md) | 852 B      | 2024-12-12 13:40:40  |
 | [region.py](../pizza/region.py) | 192.49 kB  | 2024-12-09 14:51:35  |
 | [script.py](../pizza/script.py) | 150.72 kB  | 2024-12-09 14:32:13  |
-| [struct.py](../pizza/private/obsolete/struct.py) | 58.11 kB   | 2024-11-16 15:17:33  |
 | [utils.py](../pizza/private/utils.py) | 2.94 kB    | 2024-12-08 00:06:30  |
 
 ### Folder: pizza.dscript.examples (5 files, 12.62 kB)
@@ -329,13 +317,7 @@
 |------------------------------------------|-------------|---------------------|
 | [mstruct.py](../pizza/private/mstruct.py) | 64.34 kB   | 2024-12-08 18:32:30  |
 | [README.md](../pizza/private/README.md) | 715 B      | 2024-12-12 13:40:40  |
-| [struct.py](../pizza/private/obsolete/struct.py) | 58.11 kB   | 2024-11-16 15:17:33  |
 | [utils.py](../pizza/private/utils.py) | 2.94 kB    | 2024-12-08 00:06:30  |
-
-### Folder: pizza/private/obsolete (1 files, 58.11 kB)
-| File                                     | Size        | Last Modified       |
-|------------------------------------------|-------------|---------------------|
-| [struct.py](../pizza/private/obsolete/struct.py) | 58.11 kB   | 2024-11-16 15:17:33  |
 
 ### Folder: pizza/src (3 files, 55.48 kB)
 | File                                     | Size        | Last Modified       |
@@ -550,14 +532,13 @@
 |------------------------------------------|-------------|---------------------|
 | [example2bis_.html](../post/notebook/history/example2bis_.html) | 1.63 MB    | 2023-09-10 22:03:11  |
 
-### Folder: utils (26 files, 246.51 kB)
+### Folder: utils (26 files, 246.88 kB)
 | File                                     | Size        | Last Modified       |
 |------------------------------------------|-------------|---------------------|
 | [backupme_legacy.sh](../utils/backupme_legacy.sh) | 484 B      | 2024-12-26 08:06:04  |
-| [backupme.sh](../utils/backupme.sh) | 25.57 kB   | 2024-12-26 08:14:17  |
-| [convert_py_to_html.py](../utils/convert_py_to_html.py) | 3.89 kB    | 2024-12-23 17:08:48  |
+| [backupme.sh](../utils/backupme.sh) | 25.67 kB   | 2024-12-26 10:59:46  |
+| [convert_py_to_html.py](../utils/convert_py_to_html.py) | 3.93 kB    | 2024-12-26 12:04:26  |
 | [create_default_manifest.sh](../utils/create_default_manifest.sh) | 4.17 kB    | 2024-12-10 16:47:16  |
-| [fileEntity.py](../utils/obsolete/fileEntity.py) | 4.43 kB    | 2022-03-22 22:23:49  |
 | [generate_all.py](../utils/generate_all.py) | 5.50 kB    | 2024-12-12 12:55:15  |
 | [generate_all.sh](../utils/generate_all.sh) | 2.12 kB    | 2024-12-08 17:00:20  |
 | [generate_diagrams.sh](../utils/generate_diagrams.sh) | 4.36 kB    | 2024-12-20 11:32:11  |
@@ -577,15 +558,13 @@
 | [interp2SPH.m](../utils/Files_moved_to_Post/interp2SPH.m) | 2.24 kB    | 2023-02-20 22:28:18  |
 | [interp3SPH.m](../utils/Files_moved_to_Post/interp3SPH.m) | 3.96 kB    | 2023-02-21 11:00:54  |
 | [kernelSPH.m](../utils/Files_moved_to_Post/kernelSPH.m) | 3.37 kB    | 2023-04-01 14:25:14  |
-| [manisfestManager.py](../utils/obsolete/manisfestManager.py) | 16.65 kB   | 2022-03-22 23:43:51  |
 | [mermaid.py](../utils/mermaid.py) | 1.56 kB    | 2024-12-09 15:17:06  |
 | [packing.m](../utils/Files_moved_to_Post/packing.m) | 6.25 kB    | 2023-02-20 12:54:11  |
 | [packSPH.m](../utils/Files_moved_to_Post/packSPH.m) | 1.46 kB    | 2023-02-20 21:13:45  |
-| [pdocme2.sh](../utils/obsolete/pdocme2.sh) | 1.69 kB    | 2024-12-08 21:43:20  |
-| [pdocme.sh](../utils/pdocme.sh) | 24.04 kB   | 2024-12-23 17:19:40  |
+| [pdocme.sh](../utils/pdocme.sh) | 24.04 kB   | 2024-12-26 12:04:19  |
 | [pizza3.css](../utils/css/pizza3.css) | 4.33 kB    | 2024-12-26 00:47:02  |
 | [README.md](../utils/css/README.md) | 516 B      | 2024-12-26 10:47:45  |
-| [README.txt](../utils/README.txt) | 2.75 kB    | 2024-12-21 21:33:33  |
+| [README.txt](../utils/README.txt) | 2.98 kB    | 2024-12-26 11:07:04  |
 | [refresh_alldocs.sh](../utils/refresh_alldocs.sh) | 3.59 kB    | 2024-12-21 16:40:43  |
 | [refresh_allreleases.sh](../utils/refresh_allreleases.sh) | 4.68 kB    | 2024-12-20 15:58:12  |
 | [SPHtools.py](../utils/SPHtools.py) | 7.98 kB    | 2023-02-21 21:31:41  |
@@ -604,13 +583,6 @@
 | [kernelSPH.m](../utils/Files_moved_to_Post/kernelSPH.m) | 3.37 kB    | 2023-04-01 14:25:14  |
 | [packing.m](../utils/Files_moved_to_Post/packing.m) | 6.25 kB    | 2023-02-20 12:54:11  |
 | [packSPH.m](../utils/Files_moved_to_Post/packSPH.m) | 1.46 kB    | 2023-02-20 21:13:45  |
-
-### Folder: utils/obsolete (3 files, 22.77 kB)
-| File                                     | Size        | Last Modified       |
-|------------------------------------------|-------------|---------------------|
-| [fileEntity.py](../utils/obsolete/fileEntity.py) | 4.43 kB    | 2022-03-22 22:23:49  |
-| [manisfestManager.py](../utils/obsolete/manisfestManager.py) | 16.65 kB   | 2022-03-22 23:43:51  |
-| [pdocme2.sh](../utils/obsolete/pdocme2.sh) | 1.69 kB    | 2024-12-08 21:43:20  |
 
 ### Folder: videos (1 files, 493 B)
 | File                                     | Size        | Last Modified       |

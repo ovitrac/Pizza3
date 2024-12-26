@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
     convert_py_to_html.py
     =====================
@@ -46,7 +48,7 @@
     Author:
         - **INRAE\Olivier Vitrac**
         - **Email:** olivier.vitrac@agroparistech.fr
-        - **Last Revised:** 2024-12-23
+        - **Last Revised:** 2024-12-26
         
 """
 
