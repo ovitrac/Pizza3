@@ -1,10 +1,15 @@
 # Directory for small utilities
 # backup, maintenance, synchronization
-# INRAE\Olivier Vitrac - 2024-12-21
+# INRAE\Olivier Vitrac - 2024-12-26
 
 # *********************************************************
 # All files are intented to be run from Pizza3/utils
 # ********************************************************
+
+Use ./backupme.sh -y
+    to backup all important codes and documentation
+    --> history/backupme.README.html, backupme.README.md      <-- reports with links
+    --> history/utils_backup_user@host_YYYY_MM_DD__HH-SS.zip  <-- backup
 
 
 Use ./generate_diagrams.sh
