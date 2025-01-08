@@ -1,6 +1,6 @@
 # Pizza Modules Documentation
 
-Generated on: **2025-01-08 09:30:03**
+Generated on: **2025-01-08 19:03:37**
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
 
@@ -445,6 +445,7 @@ struct --> scriptobjectgroup
 | `dscript` | `set_all_variables` | Ensures that all variables in the templates are added to the global definitions with default values if they are not already defined. | 11 | 1.0 |
 | `dscript` | `values` | Return the ScriptTemplate objects in TEMPLATE. | 3 | 1.0 |
 | `dscript` | `var_info` | Analyze and gather comprehensive information about variables used in the script. | 130 | 1.0 |
+| `dscript` | `write` | Writes the provided script content to a specified file in a given folder, with a header if necessary. | 86 | 1.0 |
 | `lambdaScriptdata` | `__init__` | Constructor for lambdaScriptdata. It forces the parent's _returnerror parameter to False. | 19 | 1.0 |
 | `lamdaScript` | `__init__` | Initialize a new `lambdaScript` instance. | 66 | 1.0 |
 

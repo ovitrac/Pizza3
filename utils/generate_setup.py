@@ -94,7 +94,7 @@ def generate_setup_py(parent_dir, output_file, dependencies):
 
 setup(
     name="Pizza3",
-    version="0.99.99",
+    version="1.00.01",
     description="A LAMMPS toolkit",
     author="Olivier Vitrac",
     author_email="olivier.vitrac@agroparistech.fr",

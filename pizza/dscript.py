@@ -3427,7 +3427,6 @@ class dscript:
     # Write Method -- added on 2024-09-05
     # ------------
     @staticmethod
-    @staticmethod
     def write(scriptcontent, filename=None, foldername=None, overwrite=False):
         """
         Writes the provided script content to a specified file in a given folder, with a header if necessary.

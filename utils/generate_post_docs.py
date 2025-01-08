@@ -454,7 +454,7 @@ def generate_documentation(manifest):
     introductory_text = """
     <h1>Pizza3 POST Documentation Index</h1>
     <p>Select a POST example from the left panel to view its documentation. You can have access to the <a href="../index_matlab.html">POST tools documentation here</a>.</p>
-    <p><strong>Version:</strong> Pizza3 v.0.99</p>
+    <p><strong>Version:</strong> Pizza3 v.1.00</p>
     <p><strong>Maintained by:</strong> INRAE\\olivier.vitrac@agroparistech.fr</p>
     """
 

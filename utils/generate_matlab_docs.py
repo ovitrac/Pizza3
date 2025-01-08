@@ -89,7 +89,7 @@ if not os.path.isfile("pdocme.sh"):
 mainfolder = os.path.realpath(os.path.join(".."))
 output_dir = os.path.join(mainfolder, "html")
 output_file = "index_matlab.html"
-PIZZA3_VERSION = "Pizza3 v.0.99"
+PIZZA3_VERSION = "Pizza3 v.1.00"
 CONTACT = "INRAE\\olivier.vitrac@agroparistech.fr"
 
 # CSS Style with toggle button integration and dynamic sidebar collapse

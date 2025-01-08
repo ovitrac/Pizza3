@@ -20,6 +20,9 @@
 
 ---
 
+<details>
+
+<summary>Overview (click to expand)</summary>
 
 ## 🧠 **Part I: Philosophy and Principles (Overview)**
 
@@ -45,9 +48,13 @@ All objects in <kbd>Pizza3</kbd> have **scripting and static compiling capabilit
 - 📜 **Generate input/output scripts and dumps** using classes like `pizza.data()` and `pizza.dump()`.
 - 🔬 **Perform advanced spatial/temporal analysis** using the MATLAB/Octave-based library in the `post/` folder.
 
+</details>
+
 ---
 
+<details>
 
+<summary>Workshops and Examples (click to expand)</summary>
 
 ## 🏗️ **Part II: Illustrations** (Workshops and Examples)
 
@@ -596,9 +603,15 @@ A block of fluid is squeezed between two surfaces, the lower surface is "sensing
 
 <img src="https://github.com/ovitrac/Pizza3/raw/main/examples/shearing.png" style="zoom:33%;" />
 
+</details>
+
 ---
 
-## 🔗Part 3. Overview of classes used in workshops
+<details>
+
+<summary>Object-Oriented Design (click to expand)</summary>
+
+## 🔗Part III. Overview of Classes used in Workshops
 
 
 
@@ -844,11 +857,13 @@ R = data(Y,step)
 R.write("../tmp/data.myfirstrestart.lmp")
 ```
 
-
-
-
+</details>
 
 ---
+
+<details>
+
+<summary>list of contributors</summary>
 
 > 🖋️ **Contributors:**
 >
@@ -858,7 +873,9 @@ R.write("../tmp/data.myfirstrestart.lmp")
 > - INRAE\Han Chen ([han.chen@inrae.fr](mailto:han.chen@inrae.fr))
 > - community contributors
 
-$ 2024-12-21 $
+</details>
+
+$ 2025-01-08 $
 
 ---
 

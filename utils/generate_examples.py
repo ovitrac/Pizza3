@@ -325,7 +325,7 @@ def generate_full_html(nav_html, content_html, base_css, pygments_css, generatio
 </header>
 <div id='content'>
 <div id='nav'>
-<p><strong>Version:</strong> Pizza3 v.0.99</p>
+<p><strong>Version:</strong> Pizza3 v.1.00</p>
 <p><strong>Maintained by:</strong> INRAE\\olivier.vitrac@agroparistech.fr</p>
 <hr>
 {nav_html}

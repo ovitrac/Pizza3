@@ -6,7 +6,7 @@ pdocme.sh - Automated Documentation Generation Script for Pizza3
 
 Author:       Olivier Vitrac
 Maintainer:   INRAE\olivier.vitrac@agroparistech.fr
-Version:      0.99
+Version:      1.00
 Last Updated: 2024-12-26
 License:      MIT License
 
@@ -190,7 +190,7 @@ mainfolder="$(realpath ../)"
 # Configuration
 output_dir="$mainfolder/html"
 PYTHON_VERSION="3.10"
-PIZZA3_VERSION="Pizza3 v.0.99"
+PIZZA3_VERSION="Pizza3 v.1.00"
 CONTACT="INRAE\\olivier.vitrac@agroparistech.fr"
 tmp_file="tmp.pdocme.txt"
 nav_file="folders.nav"
@@ -605,11 +605,66 @@ cat > "$index_file" <<EOF
             z-index: 999;
         }
     }
+
+    /* Added 2025-01-08: Style adjustments for Mermaid containers */
+    .mermaid-container {
+        position: relative; /* so absolutely-positioned children use this as a reference */
+        margin-bottom: 20px;
+        width: 100%;
+        border: 1px solid #ddd;
+        overflow: hidden;
+    }
+
+    .mermaid-container svg {
+        width: 100%;              /* Full width */
+        height: auto;             /* Automatic height based on content */
+        display: block;           /* Remove any inline spacing */
+    }
+
+    .mermaid-container .svg-pan-zoom-control-icons {
+        position: absolute;  /* positions them relative to .mermaid-container */
+        top: 10px;           /* adjust to your liking */
+        right: 10px;         /* align to the right side of the container */
+        z-index: 10;         /* ensure they're above the SVG */
+    }
+
+    .mermaid-container .svg-pan-zoom-control-icons button {
+    background: rgba(255, 255, 255, 0.3); /* Partially transparent */
+    border: none;
+    margin: 2px;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 10; /* Ensure buttons are above the SVG */
+    position: relative; /* Prevent issues with stacking contexts */
+    box-shadow: none; /* Avoid unwanted shadows */
+    transition: background 0.2s ease; /* Smooth transition for hover */
+    }
+
+    .mermaid-container .svg-pan-zoom-control-icons button:hover {
+        background: rgba(255, 255, 255, 0.6); /* More opaque on hover */
+        transition: background 0.2s ease; /* Smooth transition */
+    }
+
+    .mermaid-container .svg-pan-zoom-control-background {
+    fill-opacity: 0.2;
+    }
+
+    /* Cursor styles for pan and zoom */
+    .svg-pan-zoom_viewport {
+        cursor: grab;
+    }
+    .svg-pan-zoom_viewport:active {
+        cursor: grabbing;
+    }
     </style>
     <!-- Include Marked.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
     <!-- Include Mermaid.js from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <!-- Include svg-pan-zoom from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+    <!-- Banner and Sidebar -->
     <script>
     // Toggle visibility of folder contents
     function toggleFolder(el) {
@@ -620,7 +675,6 @@ cat > "$index_file" <<EOF
             content.style.display = "none";
         }
     };
-    
     // Function to close the notification banner
     function closeBanner() {
         var banner = document.getElementById('notification-banner');
@@ -678,13 +732,74 @@ cat "$processed_markdown" >> "$index_file"
 cat >> "$index_file" <<'EOF'
                 `;
             
-                // Render the Markdown content
-                const markdownDiv = document.getElementById('markdown-content');
-                if (markdownDiv) {
-                    markdownDiv.innerHTML = marked.parse(markdownContent);
-                    // Initialize Mermaid after Markdown is rendered
-                    mermaid.initialize({ startOnLoad: true });
+                // Function to initialize pan and zoom on Mermaid diagrams
+                function initializePanZoom() {
+                    const mermaidContainers = document.querySelectorAll('.mermaid-container');
+                    mermaidContainers.forEach((container) => {
+                        const svg = container.querySelector('svg');
+                        if (!svg) return;
+                        // Let’s remove potential fixed attributes first
+                        svg.removeAttribute('height');
+                        svg.removeAttribute('width');
+                        // Temporarily force the SVG to auto-size
+                        svg.style.height = 'auto';
+                        svg.style.width  = 'auto';
+                        // Measure bounding box after a short delay or next animation frame
+                        requestAnimationFrame(() => {
+                        const bbox = svg.getBBox();
+                        // If you want to limit the max container height, do so here
+                        container.style.height = Math.ceil(bbox.height + 20) + 'px';
+                        svg.style.height = Math.ceil(bbox.height) + 'px';
+                        svg.style.width = "100%"
+
+                        // Now that container is sized, initialize svg-pan-zoom
+                        svgPanZoom(svg, {
+                            zoomEnabled: true,
+                            controlIconsEnabled: true,
+                            fit: true,
+                            center: true,
+                            minZoom: 0.5,
+                            maxZoom: 5
+                        });
+                        });
+                    });
+                    }
+                // Function to render Markdown and initialize Mermaid and PanZoom
+                function renderContent() {
+                    const markdownDiv = document.getElementById('markdown-content');
+                    if (markdownDiv) {
+                        // Parse and set the Markdown content
+                        markdownDiv.innerHTML = marked.parse(markdownContent);
+
+                        // Initialize Mermaid without auto-start
+                        mermaid.initialize({
+                            startOnLoad: false,
+                            theme: 'default',
+                            flowchart: {
+                                useMaxWidth: true,
+                                htmlLabels: true
+                            }
+                        });
+                        // Find all Mermaid diagrams
+                        const mermaidDiagrams = markdownDiv.querySelectorAll('.mermaid');
+                        mermaidDiagrams.forEach((diagram) => {
+                            // Wrap each Mermaid diagram in a container
+                            const container = document.createElement('div');
+                            container.classList.add('mermaid-container');
+                            diagram.parentNode.insertBefore(container, diagram);
+                            container.appendChild(diagram);
+                        });
+                        // Render Mermaid diagrams
+                        mermaid.run().then(() => {
+                            // Initialize Pan and Zoom after Mermaid has rendered
+                            initializePanZoom();
+                        }).catch((error) => {
+                            console.error("Mermaid initialization error:", error);
+                        });
+                    }
                 }
+                // Render the content
+                renderContent();
             </script>
             <footer>
                 <p>Current date:<strong> <script>document.write(new Date().toLocaleDateString())</script></strong></p>
@@ -728,7 +843,6 @@ cat >> "$index_file" <<'EOF'
             } else {
                 console.error("Toggle button or navigation sidebar not found.");
             }
-
             // No need to attach additional event listeners for folder toggling
             // since the folders have inline onclick="toggleFolder(this)"
         });
