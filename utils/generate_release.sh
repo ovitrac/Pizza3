@@ -11,7 +11,7 @@
 # Configuration Section
 # -----------------------------------
 
-VERSION="0.99"
+VERSION="1.00"
 MANIFEST_FILE="$(realpath ../Pizza3.simple.manifest)"
 RELEASE_FOLDER="$(realpath ../release)"
 OUTPUT_FILE="Pizza3_v${VERSION}.zip"

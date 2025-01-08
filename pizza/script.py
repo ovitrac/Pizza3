@@ -102,11 +102,11 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.99991"
+__version__ = "1.0"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-12-09 (community)
+# INRAE\Olivier Vitrac - rev. 2025-01-02 (community)
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -154,20 +154,26 @@ __version__ = "0.99991"
 # 2024-12-01 standarize scripting features, automatically call script/pscript methods
 # 2024-12-02 standardize script.header(), pscript.header() and dscript.header()
 # 2024-12-09 get-metadata() use globals()
-
+# 2025-01-02 improve + and | for script and pipescript
+# 2025-01-04 add VariableOccurrences, pipescript.list_values(), pipescript.list_multiple_values(), pipescript.plot_value_distribution()
+# 2025-01-06 script.dscript() forces autorefresh=False to prevent automatic assignement of variables not definet yet (see dscript.ScriptTemplate constructor)
+# 2025-01-07 add VariableOccurrences.export() in Markdown and HTML, pipescript.generate_report() (version 1.0)
 
 # %% Dependencies
-import os, datetime, socket, getpass, tempfile, types, re
+import os, sys, datetime, socket, getpass, tempfile, types, re, inspect
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate
 from shutil import copy as copyfile
+# To facilitate data review with `VariableOccurrences` class
+from collections import defaultdict
+import matplotlib.pyplot as plt
 
 
 # All forcefield parameters are stored à la Matlab in a structure
 from pizza.private.mstruct import param,struct
 from pizza.forcefield import *
 
-__all__ = ['CallableScript', 'boundarysection', 'discretizationsection', 'dumpsection', 'forcefield', 'frame_header', 'geometrysection', 'get_metadata', 'get_tmp_location', 'globalsection', 'initializesection', 'integrationsection', 'interactionsection', 'none', 'param', 'paramauto', 'parameterforcefield', 'picker', 'pipescript', 'remove_comments', 'rigidwall', 'runsection', 'saltTLSPH', 'script', 'scriptdata', 'scriptobject', 'scriptobjectgroup', 'smd', 'solidfood', 'span', 'statussection', 'struct', 'tlsph', 'ulsph', 'water']
+__all__ = ['CallableScript', 'VariableOccurrences', 'boundarysection', 'discretizationsection', 'dumpsection', 'forcefield', 'frame_header', 'geometrysection', 'get_metadata', 'get_tmp_location', 'globalsection', 'initializesection', 'integrationsection', 'interactionsection', 'is_scalar', 'make_hashable', 'none', 'param', 'parameterforcefield', 'picker', 'pipescript', 'remove_comments', 'rigidwall', 'runsection', 'saltTLSPH', 'script', 'scriptdata', 'scriptobject', 'scriptobjectgroup', 'smd', 'solidfood', 'span', 'statussection', 'struct', 'tlsph', 'ulsph', 'water']
 
 
 
@@ -457,6 +463,22 @@ def frame_header(
     return "\n".join(commented_lines)+"\n"
 
 
+def make_hashable(val):
+    """
+    Recursively converts lists and dictionaries to tuples to make them hashable.
+    """
+    if isinstance(val, list):
+        return tuple(make_hashable(item) for item in val)
+    elif isinstance(val, dict):
+        return tuple(sorted((k, make_hashable(v)) for k, v in val.items()))
+    return val
+
+def is_scalar(val):
+    """
+    Determines if a value is scalar (not a list, dict, or tuple).
+    """
+    return not isinstance(val, (list, dict, tuple))
+
 
 # descriptor for callable script
 class CallableScript:
@@ -494,6 +516,553 @@ class CallableScript:
         return self.func(instance, printflag=printflag, verbosity=verbosity)
 
 
+
+# This class encapsulates the raw data and provides utility methods for analyzing variable occurrences.
+class VariableOccurrences:
+    """
+    The `VariableOccurrences` class encapsulates raw data and provides utility methods for analyzing variable occurrences
+    across various scopes. It is designed to handle both single and multiple variables, supporting flexible data structures
+    and analysis operations.
+
+    Class Methods:
+    --------------
+    - `__init__(data, variables=None)`: Initializes the class with raw data and optional variable names.
+    - `_determine_scopes()`: Determines the unique scopes present across all variables.
+    - `get_raw_data()`: Returns the raw data as provided during initialization.
+    - `get_steps_with_value(value, within_list=False)`: Retrieves steps where the variable equals the specified value.
+    - `get_all_values()`: Retrieves all unique values of the variable(s).
+    - `get_all_elements_in_lists()`: Retrieves all unique elements within list-type variable values.
+    - `get_usage_count(value, within_list=False)`: Counts occurrences of a specific value.
+    - `get_steps_with_value_in_scope(variable, scope, value, within_list=False)`: Retrieves steps where a variable equals a value within a specific scope.
+    - `summarize()`: Summarizes the occurrences of variables, including counts and unique elements.
+    - `export(filename=None, scopes='all', variables='all', include_headers=True, return_content=False)`:
+      Exports variable occurrences as Markdown, plain text, or HTML.
+
+    Attributes:
+    -----------
+    - `data`: Dictionary containing the raw variable data.
+      - Single variable: `{'scope1': [...], 'scope2': [...]}`.
+      - Multiple variables: `{'var1': {...}, 'var2': {...}, ...}`.
+    - `variables`: List of variable names managed by the instance.
+    - `scopes`: List of unique scopes across all variables.
+
+    Usage:
+    ------
+    The class is useful for tracking and analyzing variable values across different contexts, such as configuration files,
+    programming environments, or simulation data. It supports advanced querying, summary generation, and export functionality.
+
+    Example:
+    --------
+    # Initialize with single variable
+    data = {'global': [(0, 1), (1, 2)], 'local': [(0, 3), (1, 4)]}
+    vo = VariableOccurrences(data, variables="var1")
+
+    # Initialize with multiple variables
+    data = {
+        "var1": {"global": [(0, 1), (1, 2)], "local": [(0, 3), (1, 4)]},
+        "var2": {"global": [1, 2], "local": [3, 4]},
+    }
+    vo = VariableOccurrences(data)
+
+    # Query steps where a value is present
+    steps = vo.get_steps_with_value(2)
+
+    # Export data to a Markdown file
+    vo.export("output.md")
+    """
+
+    def __init__(self, data, variables=None):
+        """
+        Initializes the VariableOccurrences object.
+
+        Parameters:
+        - data:
+            - For single variable: dict with scopes as keys and lists of values or a single value.
+            - For multiple variables: dict mapping variable names to their respective scope data.
+        - variables (str or list/tuple, optional):
+            - If single variable: string representing the variable name.
+            - If multiple variables: list or tuple of variable names.
+            - If None: assumes data is for multiple variables without specifying names.
+        """
+        if variables is None:
+            # Assume data is a dict mapping variable names to their scope data
+            if not isinstance(data, dict):
+                raise ValueError("For multiple variables, data must be a dict mapping variable names to their scope data.")
+            self.variables = list(data.keys())
+            self.data = data  # {var1: {scope1: [...], scope2: [...]}, var2: {...}, ...}
+        elif isinstance(variables, str):
+            # Single variable case
+            self.variables = [variables]
+            if not isinstance(data, dict):
+                raise ValueError("For single variable, data must be a dict with scopes as keys and lists of values or single values as values.")
+            self.data = {variables: data}  # {var: {scope1: [...], scope2: [...], ...}}
+        elif isinstance(variables, (list, tuple)):
+            # Multiple variables specified
+            if not isinstance(data, dict):
+                raise ValueError("For multiple variables, data must be a dict mapping variable names to their scope data.")
+            if set(variables) > set(data.keys()):
+                missing_vars = set(variables) - set(data.keys())
+                raise ValueError(f"Data does not contain entries for variables: {', '.join(missing_vars)}")
+            self.variables = list(variables)
+            self.data = {var: data[var] for var in variables}  # {var1: {...}, var2: {...}, ...}
+        else:
+            raise ValueError("Parameter 'variables' must be a string, list, tuple, or None.")
+
+        self.scopes = self._determine_scopes()
+
+    def _determine_scopes(self):
+        """Determines the unique scopes present across all variables."""
+        scopes = set()
+        for var in self.variables:
+            var_scopes = self.data[var].keys()
+            scopes.update(scope.lower() for scope in var_scopes)
+        return sorted(list(scopes))
+
+    def get_raw_data(self):
+        """
+        Returns the raw data.
+
+        Returns:
+        - The raw data as provided during initialization.
+        """
+        return self.data
+
+    def get_steps_with_value(self, value, within_list=False):
+        """
+        Retrieves the steps where the variable equals the specified value.
+
+        Parameters:
+        - value: The value to search for.
+        - within_list (bool): If True, searches for the value within list-type variable values.
+
+        Returns:
+        - If single variable:
+            - A dict with scopes as keys and lists of step indices or values as values.
+        - If multiple variables:
+            - A dict mapping each variable name to their respective scope-step/value mappings.
+        """
+        result = {}
+        for var in self.variables:
+            var_result = {}
+            for scope, occurrences in self.data[var].items():
+                if is_scalar(occurrences):
+                    # Scalar value
+                    if within_list:
+                        continue  # Cannot search within a scalar
+                    if occurrences == value:
+                        var_result[scope] = occurrences
+                elif isinstance(occurrences, list):
+                    # List of values or list of tuples
+                    steps = []
+                    for item in occurrences:
+                        if isinstance(item, tuple) and len(item) == 2:
+                            step, val = item
+                            if within_list:
+                                if isinstance(val, list) and value in val:
+                                    steps.append(step)
+                            else:
+                                if val == value:
+                                    steps.append(step)
+                        else:
+                            # List of values
+                            if within_list:
+                                if isinstance(item, list) and value in item:
+                                    steps.append(item)
+                            else:
+                                if item == value:
+                                    steps.append(item)
+                    if steps:
+                        var_result[scope] = steps
+                else:
+                    # Other types (e.g., dict), can be extended as needed
+                    pass
+            if var_result:
+                result[var] = var_result
+        return result
+
+    def get_all_values(self):
+        """
+        Retrieves all unique values of the variable(s).
+
+        Returns:
+        - A dict mapping each variable to its set of unique values per scope.
+        """
+        result = {}
+        for var in self.variables:
+            var_unique = {}
+            for scope, occurrences in self.data[var].items():
+                unique_vals = set()
+                if is_scalar(occurrences):
+                    unique_vals.add(occurrences)
+                elif isinstance(occurrences, list):
+                    for item in occurrences:
+                        if isinstance(item, tuple) and len(item) == 2:
+                            _, val = item
+                            hashable_val = make_hashable(val)
+                            unique_vals.add(hashable_val)
+                        else:
+                            hashable_val = make_hashable(item)
+                            unique_vals.add(hashable_val)
+                var_unique[scope] = unique_vals
+            result[var] = var_unique
+        return result
+
+    def get_all_elements_in_lists(self):
+        """
+        Retrieves all unique elements within list-type variable values.
+
+        Returns:
+        - A dict mapping each variable to its set of unique elements in lists per scope.
+        """
+        result = {}
+        for var in self.variables:
+            var_elements = {}
+            for scope, occurrences in self.data[var].items():
+                unique_elems = set()
+                if is_scalar(occurrences):
+                    if isinstance(occurrences, list):
+                        unique_elems.update(occurrences)
+                elif isinstance(occurrences, list):
+                    for item in occurrences:
+                        if isinstance(item, tuple) and len(item) == 2:
+                            _, val = item
+                            if isinstance(val, list):
+                                unique_elems.update(val)
+                        elif isinstance(item, list):
+                            unique_elems.update(item)
+                var_elements[scope] = unique_elems
+            result[var] = var_elements
+        return result
+
+    def get_usage_count(self, value, within_list=False):
+        """
+        Counts how many times a specific value is used.
+
+        Parameters:
+        - value: The value to count.
+        - within_list (bool): If True, counts occurrences within list-type variable values.
+
+        Returns:
+        - If single variable:
+            - A dict with scopes as keys and integer counts or counts of values as values.
+        - If multiple variables:
+            - A dict mapping each variable name to their respective scope-count/value mappings.
+        """
+        result = {}
+        for var in self.variables:
+            var_count = {}
+            for scope, occurrences in self.data[var].items():
+                count = 0
+                if is_scalar(occurrences):
+                    if within_list:
+                        if isinstance(occurrences, list) and value in occurrences:
+                            count += 1
+                    else:
+                        if occurrences == value:
+                            count += 1
+                elif isinstance(occurrences, list):
+                    for item in occurrences:
+                        if isinstance(item, tuple) and len(item) == 2:
+                            _, val = item
+                            if within_list:
+                                if isinstance(val, list) and value in val:
+                                    count += 1
+                            else:
+                                if val == value:
+                                    count += 1
+                        else:
+                            if within_list:
+                                if isinstance(item, list) and value in item:
+                                    count += 1
+                            else:
+                                if item == value:
+                                    count += 1
+                if count > 0:
+                    var_count[scope] = count
+            if var_count:
+                result[var] = var_count
+        return result
+
+    def get_steps_with_value_in_scope(self, variable, scope, value, within_list=False):
+        """
+        Retrieves the steps within a specific scope where the variable equals the specified value.
+
+        Parameters:
+        - variable (str): The variable name.
+        - scope (str): The scope to search within ("static", "global", "local").
+        - value: The value to search for.
+        - within_list (bool): If True, searches for the value within list-type variable values.
+
+        Returns:
+        - A list of step indices or values where the variable equals the value within the specified scope.
+        """
+        if variable not in self.variables:
+            raise ValueError(f"Variable '{variable}' is not managed by this instance.")
+
+        scope = scope.lower()
+        occurrences = self.data[variable].get(scope, [])
+        steps = []
+
+        if is_scalar(occurrences):
+            if within_list:
+                if isinstance(occurrences, list) and value in occurrences:
+                    steps.append(occurrences)
+            else:
+                if occurrences == value:
+                    steps.append(occurrences)
+        elif isinstance(occurrences, list):
+            for item in occurrences:
+                if isinstance(item, tuple) and len(item) == 2:
+                    step, val = item
+                    if within_list:
+                        if isinstance(val, list) and value in val:
+                            steps.append(step)
+                    else:
+                        if val == value:
+                            steps.append(step)
+                else:
+                    if within_list:
+                        if isinstance(item, list) and value in item:
+                            steps.append(item)
+                    else:
+                        if item == value:
+                            steps.append(item)
+        return steps
+
+    def summarize(self):
+        """
+        Provides a summary of the variable occurrences.
+
+        Returns:
+        - A dict mapping each variable to their respective summaries per scope.
+        """
+        summary = {}
+        for var in self.variables:
+            var_summary = {}
+            for scope, occurrences in self.data[var].items():
+                unique_vals = set()
+                unique_elements = set()
+                value_counts = defaultdict(int)
+                element_counts = defaultdict(int)
+
+                if is_scalar(occurrences):
+                    # Scalar value
+                    hashable_val = make_hashable(occurrences)
+                    unique_vals.add(hashable_val)
+                    value_counts[hashable_val] += 1
+                    if isinstance(occurrences, list):
+                        unique_elements.update(occurrences)
+                        for elem in occurrences:
+                            element_counts[elem] += 1
+                elif isinstance(occurrences, list):
+                    for item in occurrences:
+                        if isinstance(item, tuple) and len(item) == 2:
+                            # Tuple: (step, value)
+                            step, val = item
+                            hashable_val = make_hashable(val)
+                            unique_vals.add(hashable_val)
+                            value_counts[hashable_val] += 1
+                            if isinstance(val, list):
+                                unique_elements.update(val)
+                                for elem in val:
+                                    element_counts[elem] += 1
+                            elif isinstance(val, dict):
+                                # Handle nested dictionaries if necessary
+                                for sub_val in val.values():
+                                    if isinstance(sub_val, list):
+                                        unique_elements.update(sub_val)
+                                        for elem in sub_val:
+                                            element_counts[elem] += 1
+                        else:
+                            # Direct value
+                            hashable_val = make_hashable(item)
+                            unique_vals.add(hashable_val)
+                            value_counts[hashable_val] += 1
+                            if isinstance(item, list):
+                                unique_elements.update(item)
+                                for elem in item:
+                                    element_counts[elem] += 1
+                            elif isinstance(item, dict):
+                                for sub_val in item.values():
+                                    if isinstance(sub_val, list):
+                                        unique_elements.update(sub_val)
+                                        for elem in sub_val:
+                                            element_counts[elem] += 1
+                else:
+                    # Other types can be handled here if needed
+                    pass
+
+                var_summary[scope] = {
+                    "total_occurrences": len(occurrences),
+                    "unique_values": unique_vals,
+                    "unique_elements_in_lists": unique_elements,
+                    "value_counts": dict(value_counts),
+                    "element_counts_in_lists": dict(element_counts)
+                }
+            summary[var] = var_summary
+        return summary
+
+    def export(self, filename=None, scopes='all', variables='all', include_headers=True, return_content=False):
+        """
+        Exports the variable occurrences to a file or returns the content as a string.
+
+        Parameters:
+        - filename (str, optional): Path to the output file. Must end with .md, .txt, or .html. Required if return_content is False.
+        - scopes (str or list/tuple, optional): 'all', a single scope string, or a list of scope strings. Defaults to 'all'.
+        - variables (str or list/tuple, optional): 'all', a single variable string, or a list of variable strings. Defaults to 'all'.
+        - include_headers (bool, optional): If True, includes headers in the exported content. Defaults to True.
+        - return_content (bool, optional): If True, returns the content as a string instead of writing to a file. Defaults to False.
+
+        Returns:
+        - str: The exported content as a string if return_content is True.
+        - None: Writes to file if return_content is False.
+
+        Raises:
+        - ValueError: If 'filename' is not provided when return_content is False.
+        - ValueError: If 'scopes' or 'variables' are of incorrect types.
+        """
+        # Determine file extension if filename is provided
+        if filename:
+            _, ext = os.path.splitext(filename)
+            ext = ext.lower()
+
+            if ext in ['.md', '.txt']:
+                export_format = 'markdown'
+            elif ext == '.html':
+                export_format = 'html'
+            else:
+                raise ValueError("Unsupported file extension. Supported extensions are .md, .txt, and .html.")
+        elif not return_content:
+            raise ValueError("Filename must be provided if return_content is False.")
+
+        # Determine scopes
+        if isinstance(scopes, str):
+            if scopes.lower() == 'all':
+                selected_scopes = self.scopes
+            else:
+                selected_scopes = [scopes.lower()]
+        elif isinstance(scopes, (list, tuple)):
+            scopes_lower = [s.lower() for s in scopes]
+            if 'all' in scopes_lower:
+                selected_scopes = self.scopes
+            else:
+                selected_scopes = scopes_lower
+        else:
+            raise ValueError("Parameter 'scopes' must be a string or a list/tuple of strings.")
+
+        # Determine variables
+        if isinstance(variables, str):
+            if variables.lower() == 'all':
+                selected_variables = self.variables
+            else:
+                if variables not in self.variables:
+                    print(f"Warning: Variable '{variables}' not managed by this instance.")
+                    selected_variables = []
+                else:
+                    selected_variables = [variables]
+        elif isinstance(variables, (list, tuple)):
+            variables_lower = [v for v in variables]
+            selected_variables = [v for v in variables_lower if v in self.variables]
+            missing_vars = set(variables_lower) - set(selected_variables)
+            if missing_vars:
+                print(f"Warning: Variables '{', '.join(missing_vars)}' not managed by this instance.")
+        else:
+            raise ValueError("Parameter 'variables' must be a string or a list/tuple of strings.")
+
+        # Generate content
+        content = ""
+        if include_headers:
+            if export_format == 'markdown':
+                content += f"## Variable: `{self.variables[0]}`\n\n" if len(self.variables) == 1 else ""
+            elif export_format == 'html':
+                content += f"<h2>Variable: {self.variables[0]}</h2>\n" if len(self.variables) == 1 else ""
+
+        summary = self.summarize()
+        for var in selected_variables:
+            if include_headers:
+                if export_format == 'markdown':
+                    content += f"### Variable: `{var}`\n\n"
+                elif export_format == 'html':
+                    content += f"<h3>Variable: {var}</h3>\n"
+            var_summary = summary[var]
+            for scope, details in var_summary.items():
+                if scope not in selected_scopes:
+                    continue
+                if include_headers or True:
+                    if export_format == 'markdown':
+                        content += f"#### Scope: {scope.capitalize()}\n\n"
+                    elif export_format == 'html':
+                        content += f"<h4>Scope: {scope.capitalize()}</h4>\n"
+                # Add content based on format
+                if export_format == 'markdown':
+                    content += f"- **Total Occurrences**: {details['total_occurrences']}\n"
+                    unique_vals_formatted = ', '.join(map(str, details['unique_values']))
+                    content += f"- **Unique Values**: {unique_vals_formatted}\n"
+                    if details['unique_elements_in_lists']:
+                        unique_elems_formatted = ', '.join(map(str, details['unique_elements_in_lists']))
+                        content += f"- **Unique Elements in Lists**: {unique_elems_formatted}\n\n"
+                        # Element Counts Table
+                        content += "**Element Counts in Lists:**\n\n"
+                        content += "| Element | Count |\n"
+                        content += "|---------|-------|\n"
+                        for elem, count in details['element_counts_in_lists'].items():
+                            content += f"| {elem} | {count} |\n"
+                        content += "\n"
+                elif export_format == 'html':
+                    content += "<ul>"
+                    content += f"<li><strong>Total Occurrences</strong>: {details['total_occurrences']}</li>"
+                    unique_vals_formatted = ', '.join(map(str, details['unique_values']))
+                    content += f"<li><strong>Unique Values</strong>: {unique_vals_formatted}</li>"
+                    if details['unique_elements_in_lists']:
+                        unique_elems_formatted = ', '.join(map(str, details['unique_elements_in_lists']))
+                        content += f"<li><strong>Unique Elements in Lists</strong>: {unique_elems_formatted}</li>"
+                    content += "</ul>\n"
+
+                    if details['element_counts_in_lists']:
+                        content += "<h5>Element Counts in Lists:</h5>\n"
+                        content += "<table>\n<tr><th>Element</th><th>Count</th></tr>\n"
+                        for elem, count in details['element_counts_in_lists'].items():
+                            content += f"<tr><td>{elem}</td><td>{count}</td></tr>\n"
+                        content += "</table>\n"
+
+            # Add a horizontal line between variables
+            if include_headers and len(selected_variables) > 1:
+                if export_format == 'markdown':
+                    content += "\n---\n\n"
+                elif export_format == 'html':
+                    content += "<hr/>\n"
+
+        # Handle format-specific headers
+        if return_content:
+            if export_format == 'markdown':
+                return content
+            elif export_format == 'html':
+                return f"<html><head><meta charset='UTF-8'><title>Variable Report</title></head><body>{content}</body></html>"
+        else:
+            if not filename:
+                raise ValueError("Filename must be provided if return_content is False.")
+
+            # Determine export format based on file extension
+            if ext in ['.md', '.txt']:
+                export_format = 'markdown'
+            elif ext == '.html':
+                export_format = 'html'
+            else:
+                raise ValueError("Unsupported file extension. Supported extensions are .md, .txt, and .html.")
+
+            # Prepare full content for HTML
+            if export_format == 'html' and not include_headers:
+                full_content = f"<!DOCTYPE html>\n<html>\n<head>\n<meta charset='UTF-8'>\n<title>Variable Report</title>\n</head>\n<body>\n{content}\n</body>\n</html>"
+            else:
+                full_content = content
+
+            # Write to file
+            try:
+                with open(filename, 'w', encoding='utf-8') as file:
+                    file.write(full_content)
+                print(f"Report successfully generated at '{filename}'.")
+            except Exception as e:
+                raise Exception(f"Failed to write the report to '{filename}': {e}")
 
 
 # %% Top generic classes for storing script data and objects
@@ -2134,6 +2703,22 @@ class pipescript:
     dscript(self, verbose=None, **USER)
         Convert the current pipescript into a dscript object
 
+    header(self, verbose=True,verbosity=None, style=4):
+        Generate a formatted header for the pipescript file.
+
+    list_values(self, varname, what="all"):
+        List all occurrences and values of a variable across the pipeline scripts.
+
+    list_multiple_values(self, varnames, what="all"):
+        List all occurrences and values of multiple variables across the pipeline scripts.
+
+    plot_value_distribution(self, varname, what="all"):
+        Plot the distribution of values for a given variable across specified scopes.
+
+    generate_report(self, filename, varnames=None, scopes="all"):
+        Generate a comprehensive report for specified variables and writes it to a file.
+
+
     Static Methods:
     ---------------
     join(liste):
@@ -2319,18 +2904,23 @@ class pipescript:
 
     def __add__(self,s):
         """ overload + as pipe with copy """
-        if isinstance(s,pipescript):
+        from pizza.dscript import dscript
+        if isinstance(s,(pipescript,script)):
             dup = deepduplicate(self)
             return dup | s      # + or | are synonyms
+        elif isinstance(s,scriptobject):
+            return self + s.script(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
+        elif isinstance(s,dscript):
+            return self + s.pipescript(printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)
         else:
-            raise TypeError("The operand should be a pipescript")
+            raise TypeError(f"The operand should be a pipescript/script/dscript/scriptobjectgroup and not '{type(s).__name__}'")
 
     def __iadd__(self,s):
         """ overload += as pipe without copy """
         if isinstance(s,pipescript):
             return self | s      # + or | are synonyms
         else:
-            raise TypeError("The operand should be a pipescript")
+            raise TypeError(f"The operand should be a pipescript and not '{type(s).__name__}'")
 
     def __mul__(self,ntimes):
         """ overload * as multiple pipes with copy """
@@ -2340,7 +2930,8 @@ class pipescript:
                 for n in range(1,ntimes): res += self
             return res
         else:
-            raise TypeError("The operand should be a pipescript")
+            raise TypeError(f"The operand should be a pipescript and not '{type(s).__name__}'")
+
 
 
     def __or__(self, s):
@@ -2395,9 +2986,12 @@ class pipescript:
                 leftarg.executed.append(False)
             return leftarg
 
+
+
     def __str__(self):
         """ string representation """
         return f"pipescript containing {self.n} scripts with {self.nrun} executed[*]"
+
 
     def __repr__(self):
         """ display method """
@@ -2905,7 +3499,7 @@ class pipescript:
        return myscript.write(file, printflag=printflag, verbose=verbose, overwrite=overwrite)
 
 
-    def dscript(self, name=None, printflag=None, verbose=None, verbosity=None, **USER):
+    def dscript(self, name=None, printflag=None, verbose=None, verbosity=None, clean="fixing", **USER):
         """
         Convert the current pipescript object to a dscript object.
 
@@ -2923,6 +3517,10 @@ class pipescript:
         verbose : bool, optional
             Controls verbosity of the dynamic scripts in the resulting dscript object.
             If None, the verbosity setting of the pipescript will be used.
+
+        clean : "fixing" or "removing"
+            - 'removing': Completely remove the empty step from TEMPLATE.
+            - 'fixing': Replace the content of the empty step with a comment.
 
         **USER : scriptobjectdata(), optional
             Additional user-defined variables that can override existing static variables
@@ -2993,7 +3591,8 @@ class pipescript:
                 content=content,
                 definitions = lambdaScriptdata(**local_static_updates),
                 verbose=self.verbose if verbose is None else verbose,
-                userid=self.name[i]
+                userid=self.name[i],
+                autorefresh=False # prevent the replacement by default values ${}
             )
 
             # Set eval=True only if variables are detected in the template
@@ -3011,7 +3610,11 @@ class pipescript:
         # Assign the filtered definitions along with USER variables to outd.DEFINITIONS
         outd.DEFINITIONS = lambdaScriptdata(**filtered_definitions)
 
+        # Clean the entries for empty templates
+        outd.clean(verbose=verbose,behavior=clean)
+
         return outd
+
 
 
     def header(self, verbose=True,verbosity=None, style=4):
@@ -3047,6 +3650,332 @@ class pipescript:
 
         # Use the shared method to format the header
         return frame_header(lines,style=style)
+
+
+
+    def list_values(self, varname=None, what="all"):
+        """
+        Lists all occurrences and values of a specified variable or all variables across the pipeline scripts.
+
+        Parameters:
+        - varname (str, optional): The name of the variable to search for. If None, all variables are listed.
+        - what (str or list/tuple, optional): Specifies the scopes to search in.
+                                             Can be "static", "global", "local", "all",
+                                             or a list/tuple of any combination of these.
+
+        Returns:
+        - VariableOccurrences: If varname is specified, returns a VariableOccurrences instance for that variable.
+        - dict of VariableOccurrences: If varname is None, returns a dictionary mapping each variable name to its VariableOccurrences instance.
+        """
+        # Normalize 'what' to a list for uniform processing
+        if isinstance(what, str):
+            if what.lower() == "all":
+                scopes = ["static", "global", "local"]
+            else:
+                scopes = [what.lower()]
+        elif isinstance(what, (list, tuple)):
+            scopes_lower = [s.lower() for s in what]
+            if 'all' in scopes_lower:
+                scopes = ["static", "global", "local"]
+            else:
+                scopes = scopes_lower
+        else:
+            raise ValueError("Parameter 'what' must be a string or a list/tuple of strings.")
+
+        # Initialize data structures
+        if varname:
+            # Single variable case
+            if len(scopes) == 1:
+                data = []
+            else:
+                data = {}
+                for scope in scopes:
+                    data[scope] = []
+
+            # Iterate over each script in the pipeline
+            for i, script in enumerate(self.listscript):
+                # Retrieve variables for each scope
+                static_vars = self.listUSER[i] if i < len(self.listUSER) else {}
+                global_vars = getattr(script, 'DEFINITIONS', {})
+                local_vars = getattr(script, 'USER', {})
+
+                scope_vars = {
+                    "static": static_vars,
+                    "global": global_vars,
+                    "local": local_vars
+                }
+
+                # Check each requested scope
+                for scope in scopes:
+                    vars_dict = scope_vars.get(scope, {})
+                    if varname in vars_dict.keys():
+                        value = getattr(vars_dict,varname)
+                        if len(scopes) == 1:
+                            data.append((i, value))
+                        else:
+                            data[scope].append((i, value))
+
+            # Return a VariableOccurrences instance for the specified variable
+            return VariableOccurrences(data, variables=varname)
+
+        else:
+            # All variables case
+            all_vars = set()
+
+            # First, collect all variable names across specified scopes and scripts
+            for i, script in enumerate(self.listscript):
+                # Retrieve variables for each scope
+                static_vars = self.listUSER[i] if i < len(self.listUSER) else {}
+                global_vars = getattr(script, 'DEFINITIONS', {})
+                local_vars = getattr(script, 'USER', {})
+
+                scope_vars = {
+                    "static": static_vars,
+                    "global": global_vars,
+                    "local": local_vars
+                }
+
+                for scope in scopes:
+                    vars_dict = scope_vars.get(scope, {})
+                    all_vars.update(vars_dict.keys())
+
+            # Initialize a dictionary to hold VariableOccurrences for each variable
+            variables_data = {}
+            for var in all_vars:
+                var_data = {}
+                for scope in scopes:
+                    var_data[scope] = []
+                variables_data[var] = var_data
+
+            # Iterate again to populate the data for each variable
+            for i, script in enumerate(self.listscript):
+                # Retrieve variables for each scope
+                static_vars = self.listUSER[i] if i < len(self.listUSER) else {}
+                global_vars = getattr(script, 'DEFINITIONS', {})
+                local_vars = getattr(script, 'USER', {})
+
+                scope_vars = {
+                    "static": static_vars,
+                    "global": global_vars,
+                    "local": local_vars
+                }
+
+                for scope in scopes:
+                    vars_dict = scope_vars.get(scope, {})
+                    for var, value in vars_dict.items():
+                        variables_data[var][scope].append((i, value))
+
+            # Convert each variable's data into a VariableOccurrences instance
+            variables_occurrences = {}
+            for var, data in variables_data.items():
+                variables_occurrences[var] = VariableOccurrences(data, variables=var)
+
+            return variables_occurrences
+
+
+
+    def list_multiple_values(self, varnames, what="all"):
+        """
+        Lists all occurrences and values of multiple variables across the pipeline scripts.
+
+        Parameters:
+        - varnames (list): A list of variable names to search for.
+        - what (str or list/tuple): Specifies the scopes to search in.
+                                     Can be "static", "global", "local", "all",
+                                     or a list/tuple of any combination of these.
+
+        Returns:
+        - dict: A dictionary mapping each variable name to its VariableOccurrences object.
+        """
+        if not isinstance(varnames, (list, tuple)):
+            raise ValueError("Parameter 'varnames' must be a list or tuple of strings.")
+
+        return self.list_values(varname=varnames, what=what)
+
+
+
+    def plot_multiple_value_distributions(self, varnames, what="all", separate_plots=True):
+        """
+        Plots the distribution of elements for multiple variables across specified scopes.
+
+        Parameters:
+        - varnames (list): A list of variable names to plot.
+        - what (str or list/tuple): Specifies the scopes to include in the plot.
+                                     Can be "static", "global", "local", "all",
+                                     or a list/tuple of any combination of these.
+        - separate_plots (bool): If True, plots each variable in a separate subplot.
+                                 If False, combines all variables in a single plot for comparison.
+        """
+        if not isinstance(varnames, (list, tuple)):
+            raise ValueError("Parameter 'varnames' must be a list or tuple of strings.")
+
+        # Retrieve VariableOccurrences instances
+        multiple_vars = self.list_multiple_values(varnames, what=what)
+
+        if separate_plots:
+            num_vars = len(multiple_vars)
+            fig, axes = plt.subplots(num_vars, 1, figsize=(10, 5 * num_vars))
+            if num_vars == 1:
+                axes = [axes]  # Make it iterable
+
+            for ax, (var, vo) in zip(axes, multiple_vars.items()):
+                summary = vo.summarize()[var]
+                for scope, details in summary.items():
+                    elements = list(details.get('unique_elements_in_lists', []))
+                    counts = [details['element_counts_in_lists'][elem] for elem in elements]
+                    ax.bar(elements, counts, label=scope)
+                ax.set_xlabel('Element')
+                ax.set_ylabel('Count')
+                ax.set_title(f"Distribution of elements in '{var}'")
+                ax.legend()
+
+            plt.tight_layout()
+            plt.show()
+
+        else:
+            plt.figure(figsize=(12, 8))
+            for var, vo in multiple_vars.items():
+                summary = vo.summarize()[var]
+                for scope, details in summary.items():
+                    elements = list(details.get('unique_elements_in_lists', []))
+                    counts = [details['element_counts_in_lists'][elem] for elem in elements]
+                    plt.bar([f"{var}_{elem}" for elem in elements], counts, label=f"{var} - {scope}")
+
+            plt.xlabel('Element')
+            plt.ylabel('Count')
+            plt.title("Distribution of elements in multiple variables")
+            plt.legend()
+            plt.xticks(rotation=45, ha='right')
+            plt.tight_layout()
+            plt.show()
+
+
+    def generate_report(self, filename, varnames=None, scopes="all"):
+        """
+        Generates a comprehensive report for specified variables and writes it to a file.
+
+        Parameters:
+        - filename (str): Path to the output report file. Must end with .md, .txt, or .html.
+        - varnames (str or list/tuple, optional): Variable name(s) to include in the report. Defaults to 'all'.
+        - scopes (str or list/tuple, optional): 'all', a single scope string, or a list of scope strings. Defaults to 'all'.
+
+        Raises:
+        - ValueError: If 'filename' has an unsupported extension.
+        - Exception: For other unforeseen errors.
+        """
+        # Validate filename extension
+        _, ext = os.path.splitext(filename)
+        ext = ext.lower()
+
+        if ext not in ['.md', '.txt', '.html']:
+            raise ValueError("Unsupported file extension. Supported extensions are .md, .txt, and .html.")
+
+        # Determine format based on extension
+        if ext in ['.md', '.txt']:
+            export_format = 'markdown'
+        elif ext == '.html':
+            export_format = 'html'
+
+        # Determine variables to include
+        if varnames is None or (isinstance(varnames, (list, tuple)) and len(varnames) == 0):
+            variables = 'all'
+        else:
+            variables = varnames  # Can be a string or a list/tuple
+
+        # Retrieve VariableOccurrences instances
+        if variables == 'all':
+            variables_occurrences = self.list_values(varname=None, what=scopes)
+        else:
+            # Normalize varnames to a list
+            if isinstance(variables, str):
+                variables = [variables]
+            elif isinstance(variables, (list, tuple)):
+                variables = list(variables)
+            else:
+                raise ValueError("Parameter 'varnames' must be a string or a list/tuple of strings.")
+
+            variables_occurrences = {}
+            for var in variables:
+                vo = self.list_values(varname=var, what=scopes)
+                if vo and var in vo.variables:
+                    variables_occurrences[var] = vo
+                else:
+                    print(f"Warning: Variable '{var}' not found in the specified scopes.")
+
+        # Initialize report content
+        report_content = ""
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        caller = "generate_report"
+
+        # Add report header
+        if export_format == 'markdown':
+            report_content += f"# Comprehensive Variable Report\n\n"
+            report_content += f"**Generated on {timestamp} by {caller}**\n\n"
+        elif export_format == 'html':
+            # Define CSS for HTML
+            css = """
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                }
+                h1, h2, h3, h4, h5 {
+                    color: #333;
+                }
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin-bottom: 40px;
+                }
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }
+                th {
+                    background-color: #4CAF50;
+                    color: white;
+                }
+                tr:nth-child(even){background-color: #f2f2f2;}
+                tr:hover {background-color: #ddd;}
+            </style>
+            """
+            report_content += f"<!DOCTYPE html>\n<html>\n<head>\n<meta charset='UTF-8'>\n<title>Comprehensive Variable Report</title>\n{css}\n</head>\n<body>\n"
+            report_content += f"<h1>Comprehensive Variable Report</h1>\n"
+            report_content += f"<h2>Generated on {timestamp} by {caller}</h2>\n"
+
+        # Assemble report content using VariableOccurrences.export()
+        for var, vo in variables_occurrences.items():
+            # Export content without headers and get as string
+            var_content = vo.export(filename=filename, # use to identify the format based on its extension
+                                    scopes=scopes,
+                                    variables=var,
+                                    include_headers=False,
+                                    return_content=True)
+
+            if export_format == 'markdown':
+                # Add variable header
+                report_content += f"## Variable: `{var}`\n\n"
+                report_content += var_content + "\n\n"
+                report_content += "---\n\n"  # Horizontal line between variables
+            elif export_format == 'html':
+                # Add variable header
+                report_content += f"<h2>Variable: {var}</h2>\n"
+                report_content += var_content + "\n<hr/>\n"  # Horizontal line between variables
+
+        # Finalize HTML content
+        if export_format == 'html':
+            report_content += "</body>\n</html>"
+
+        # Write report to file
+        try:
+            with open(filename, 'w', encoding='utf-8') as file:
+                file.write(report_content)
+            print(f"Report successfully generated at '{filename}'.")
+        except Exception as e:
+            raise Exception(f"Failed to write the report to '{filename}': {e}")
+
+
 
 # %% Child classes of script sessions (to be derived)
 # navigate with the outline tab through the different classes

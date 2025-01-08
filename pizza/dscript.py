@@ -22,6 +22,29 @@ The output of `pizza.dscript.script()` is a complete script instance, similar to
 These scripts can be managed like any pizza.script, allowing you to combine them using the `+` or `|`
 operators and integrate them into **pizza.pipescripts** for building complex, multi-step workflows.
 
+Scripts/scriptlets piped with the operator "|" (pipe) are called pipescripts and are indexed with their
+own variable space (static/global/local). Dscript objects preserve only some of these features with two
+levels only (global/local).
+
+UPDATE Pizza 1.0
+-----------------
+Starting with Pizza 1.0, `pizza.pipescript` (P) and `pizza.dscript` (D) objects are fully interoperable, and one
+can be converted converted into the other using pipescript.dscript() and discript.piperscript(). P objects are
+automatacally generated as soon as P and D objects are combined. P objects manage dynamically forcefields and
+interactions between paticles/beads whereas D objects manage them statically (fixed script). D objects must be
+preferred to save to disk a script with zero-Python code. The format used is simular to the one used for forcefields
+(see pizza.forcefield).
+
+A previous script saved as a file can be reused dynamically, see example:
+```Python
+    previoussteps = dscript.load(dscriptfilename)
+    beadtype = previoussteps.search("ID",previoussteps.list_values("ID"),"beadtype")
+```
+
+A common interface list_values() enables to explore (text, graphics) the variables in scope (static/global/local).
+D objects have a specific method D.var_info(details=True) and D.print_var_info(what=...) to track eventual
+bugs.
+
 Key Features:
 -------------
 1. **Dynamic Script Generation**:
@@ -747,11 +770,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.99991"
+__version__ = "1.0"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-12-09 (community)
+# INRAE\Olivier Vitrac - rev. 2025-01-07 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -778,14 +801,23 @@ __version__ = "0.99991"
 # 2024-12-03 improve the logics of dscript.parse(), dscript.save() on real cases
 # 2024-12-04 preparation for major release
 # 2024-12-09 get-metadata() use globals()
+# 2025-01-01 implement search(), list_values()
+# 2025-01-02 add protection to search() to remove $ in output dict, update + and | to handle scriptobjectgroup
+# 2025-01-05 consolidation and improve compatibility with pizza.script incl. the use of VariableOccurrences
+# 2025-01-06 split dscipt.save() so that it uses var_info() as a standard method to retrive variable information
+# 2025-01-07 fine tunning of dscipt.save(), add print dscript.print_var_info() - version 1.0
 
 # Dependencies
 import os, getpass, socket, time, datetime
 import re, string, random, copy, hashlib
+from copy import copy as duplicate
+from copy import deepcopy as deepduplicate
+from collections import defaultdict
+from datetime import datetime
 from pizza.private.mstruct import paramauto
-from pizza.script import script, scriptdata, pipescript, remove_comments, span, frame_header
+from pizza.script import script, scriptdata, pipescript, scriptobjectgroup, remove_comments, span, frame_header, VariableOccurrences
 
-__all__ = ['ScriptTemplate', 'autoname', 'dscript', 'frame_header', 'get_metadata', 'lambdaScriptdata', 'lamdaScript', 'paramauto', 'pipescript', 'remove_comments', 'script', 'scriptdata', 'span']
+__all__ = ['ScriptTemplate', 'VariableOccurrences', 'autoname', 'dscript', 'frame_header', 'get_metadata', 'lambdaScriptdata', 'lamdaScript', 'paramauto', 'pipescript', 'remove_comments', 'script', 'scriptdata', 'scriptobjectgroup', 'span']
 
 
 # %% Private Functions
@@ -1215,8 +1247,6 @@ class ScriptTemplate:
                 content = remove_comments(content, split_lines=True,comment_chars=comment_chars)  # Split string by newlines into list of strings
         elif not isinstance(content, list) or not all(isinstance(item, str) for item in content):
             raise TypeError("The 'content' attribute must be a string or a list of strings.")
-        # Assign content to the object
-        self.content = content
         # Update attributes with any additional keyword arguments passed in
         self.attributes.update(kwargs)
         # Detect variables in the content
@@ -1229,6 +1259,8 @@ class ScriptTemplate:
                     break  # No need to continue checking once we know eval should be set
         # Assign userid (optional)
         self.userid = userid if userid is not None else autoname(3)
+        # Assign content to the object
+        self.content = content if content != [] else [f"# <empty content> for key {self.userid}"]
 
 
     def _calculate_content_hash(self, content):
@@ -1530,7 +1562,7 @@ class ScriptTemplate:
 
 
 
-    def do(self, protected=True, softrun=False, USER=lambdaScriptdata()):
+    def do(self, protected=True, softrun=False,globaldefinitions=lambdaScriptdata(),USER=lambdaScriptdata(),**kwargs):
         """
         Executes or prepares the script template content based on its attributes and the `softrun` flag.
 
@@ -1605,9 +1637,9 @@ class ScriptTemplate:
 
         # Perform full processing when softrun is False
         if cond:
-            if self.attributes.get("eval", False):
+            if self.attributes.get("eval", True):
                 #return "\n".join([self.definitions.formateval(line, protected) for line in self.content])
-                inputs = self.definitions + USER
+                inputs = globaldefinitions + self.definitions + USER + lambdaScriptdata(**kwargs)
                 for k in inputs.keys():
                     if isinstance(inputs.getattr(k),list):
                         inputs.setattr(k,"% "+span(inputs.getattr(k)))
@@ -1653,7 +1685,7 @@ class ScriptTemplate:
         use globaldefinitions to add a list of global variables/definitions
 
         """
-        if self.attributes["detectvar"] and isinstance(self.content, list) and self.definitions:
+        if self.attributes["detectvar"] and isinstance(self.content, list) and self.definitions and self._autorefresh:
             variables = self.detect_variables()
             for varname in variables:
                 if (varname not in self.definitions) and (varname not in globaldefinitions):
@@ -1905,6 +1937,20 @@ class dscript:
         structure of the provided string, ensuring the correct format and key conversions
         when necessary.
 
+    search(self, primary_key, value, foreign_key, include_global=True, multiple='first', verbose=False):
+        Searches for foreign key values associated with given primary key value(s).
+
+    list_values(self, key, include_global=True):
+        Lists all unique values taken by a specified key across all steps and optionally
+        in global definitions.
+
+    var_info(self):
+        Analyzes and gathers comprehensive information about variables used in the script.
+
+    print_var_info(self, what='all', output_file=None, overwrite=False):
+        Prints or saves a neatly formatted table of variable information based on the analysis from `var_info()`.
+
+
     Example:
     --------
     # Create a dscript object
@@ -2072,10 +2118,11 @@ class dscript:
 
         # Handle slicing
         elif isinstance(key, slice):
-            new_dscript = dscript(name=f"{self.name}_slice_{key.start}_{key.stop}")
+            new_dscript = deepduplicate(self)
+            new_dscript.name = f"{self.name}_slice_{key.start}_{key.stop}"
             keys = list(self.TEMPLATE.keys())
-            for k in keys[key]:
-                new_dscript.TEMPLATE[k] = self.TEMPLATE[k]
+            sliced_keys = keys[key]
+            new_dscript.TEMPLATE = {k: self.TEMPLATE[k] for k in sliced_keys}
             return new_dscript
 
         # Handle integer indexing with support for negative indices
@@ -2231,15 +2278,18 @@ class dscript:
         the TEMPLATE and DEFINITIONS of both. This operation avoids deep copying
         of definitions by creating a new lambdaScriptdata instance from the definitions.
 
+        when other is not a dscript, self is converted into a script before being combined with +
+
         Parameters:
         -----------
-        other : dscript
+        other : dscript, script, scriptobjectgroup, pipescript
             The other dscript object to concatenate with the current one.
 
         Returns:
         --------
-        result : dscript
+        result : dscript (or a script)
             A new dscript object with the concatenated TEMPLATE and merged DEFINITIONS.
+            A script object is returned when other is not a dscript object.
 
         Raises:
         -------
@@ -2271,12 +2321,44 @@ class dscript:
                 # Merge the local TEMPLATE definitions from `other`
                 result.TEMPLATE[new_key].definitions = lambdaScriptdata(**other.TEMPLATE[key].definitions)
             return result
-        elif isinstance(other,script):
-            return self.script() + script
+        elif isinstance(other,(script,scriptobjectgroup)):
+            return self.script() + other
         elif isinstance(other,pipescript):
-            return self.pipescript() | script
+            return self.pipescript(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity) | other
         else:
             raise TypeError(f"Cannot concatenate 'dscript' with '{type(other).__name__}'")
+
+
+    def __or__(self, other):
+        """
+        Pipes a dscript object with other objects.
+        When other is a dscript object, both objects are concatenated (+) before being converted into a pipescript object
+        When other is a script, pipescript or scriptobjectgroup, self is converted into a pipescript
+
+        Parameters:
+        -----------
+        other : dscript, script, scriptobjectgroup, pipescript
+            The other dscript object to concatenate with the current one.
+
+        Returns:
+        --------
+        result : a pipescript
+
+        Raises:
+        -------
+        TypeError:
+            If the other object is not an instance of dscript, script, pipescript
+        """
+        if isinstance(other, dscript):
+            tmp = self + other
+            return tmp.pipescript(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
+        elif isinstance(other,(script,pipescript)):
+            return self.pipescript(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity) | other
+        elif isinstance(other,scriptobjectgroup):
+            return self.pipescript(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity) | other.script()
+        else:
+            raise TypeError(f"Cannot pipe 'dscript' with '{type(other).__name__}'")
+
 
 
     def __call__(self, *keys):
@@ -2404,11 +2486,11 @@ class dscript:
         output = [header]
         non_empty_lines = 0
         ignored_lines = 0
-        accumulated_definitions = lambdaScriptdata() if return_definitions else None
+        accumulated_definitions = self.DEFINITIONS if return_definitions else None
 
         for key, template in self.TEMPLATE.items():
             # Process each template with softrun if enabled, otherwise use full processing
-            result = template.do(softrun=softrun,USER=lambdaScriptdata(**USER))
+            result = template.do(softrun=softrun,globaldefinitions=self.DEFINITIONS,USER=lambdaScriptdata(**USER))
             if result:
                 # Apply comment removal based on verbosity
                 final_result = result if verbose else remove_comments(result,comment_chars=comment_chars)
@@ -2487,11 +2569,13 @@ class dscript:
 
         # Loop over all keys in TEMPLATE and combine them
         combined_pipescript = None
+        localvariables = scriptdata()
         for key in self.keys():
             # Create a new dscript object with only the current key in TEMPLATE
             focused_dscript = dscript(name=f"{self.name}:{key}")
             focused_dscript.TEMPLATE[key] = self.TEMPLATE[key]
-            focused_dscript.TEMPLATE[key].definitions = scriptdata(**self.TEMPLATE[key].definitions)
+            localvariables = localvariables+scriptdata(**self.TEMPLATE[key].definitions)
+            focused_dscript.TEMPLATE[key].definitions = localvariables
             focused_dscript.DEFINITIONS = scriptdata(**self.DEFINITIONS)
             focused_dscript.SECTIONS = self.SECTIONS[:]
             focused_dscript.section = self.section
@@ -2576,14 +2660,14 @@ class dscript:
         lines += [
             "",
             f"Generated on: {getpass.getuser()}@{socket.gethostname()}:{os.getcwd()}",
-            f"{datetime.datetime.now().strftime('%A, %B %d, %Y at %H:%M:%S')}",
+            f"{datetime.now().strftime('%A, %B %d, %Y at %H:%M:%S')}",
         ]
         # Use the shared frame_header function to format the framed content
         return frame_header(lines, style=style)
 
 
 
-    # Generator -- added on 2024-10-17
+    # Generator
     # -----------
     def generator(self):
         """
@@ -2596,7 +2680,524 @@ class dscript:
         return self.save(generatoronly=True)
 
 
-    # Save Method -- added on 2024-09-04
+    # Information on variables
+    # ------------------------
+    def var_info(self):
+        """
+        Analyze and gather comprehensive information about variables used in the script.
+
+        This method performs a sophisticated analysis of both global and local variables within
+        the script. It identifies variable usage, overrides, defaults, and counts the number of
+        different values each variable holds across various templates.
+
+        The analysis considers two scopes:
+        - **Global:** Variables defined in the global definitions (`self.DEFINITIONS`).
+        - **Local:** Variables defined within each template's definitions.
+
+        Returns:
+            dict: A dictionary named `varnfo` where each key is a variable name and the value is
+                  another dictionary containing detailed information about that variable. The structure
+                  of `varnfo` is as follows:
+
+                  {
+                      "variable_name": {
+                          "value": <initial_value_from_global>,
+                          "updatedvalue": <current_value_after_overrides>,
+                          "is_default": <bool>,
+                          "first_def": <template_index_or_None>,
+                          "first_use": <template_index>,
+                          "first_val": <value_at_first_use>,
+                          "override_index": <template_index_or_None>,
+                          "is_global": <bool>,
+                          "value_counter": <int>
+                          etc.
+                      },
+                      ...
+                  }
+
+                  **Field Descriptions:**
+                  - `value`: Initial value of the variable from global definitions (if applicable).
+                  - `updatedvalue`: Current value after any overrides in local templates.
+                  - `is_default`: Indicates if the variable is set to a default value.
+                  - `first_def`: The index of the first template where the variable is defined locally.
+                  - `first_use`: The index of the first template where the variable is used.
+                  - `first_val`: The value of the variable at its first use.
+                  - `override_index`: The index of the template where the variable was overridden (if any).
+                  - `is_autodef`: Flag, True if ${variable} is defined automatically as ${variable}
+                  - `is_empty`: Flag,  True if the variable is empty (None,"",[], etc.)
+                  - `is_global`: Indicates if the variable originates from global definitions.
+                  - `value_counter`: Counts the number of different values the variable has across templates.
+                  - `first_use_isglobal` : Flag, True if the global value is used at first use
+                  - `set_in`: Lists all template indices values where the variable is assigned/changed,
+                  - `set_as`: Lists assigned values as reported in `set_in`,
+                  - `values`: Lists variable changes (template index, refvalue),
+                  - `used_in`: Lists template indices where the variable is used
+
+        Raises:
+            AttributeError: If `self.DEFINITIONS` does not have the specified key.
+        """
+
+        start_time = time.time()  # Start the timer
+
+        # Initialize definitions with self.DEFINITIONS
+        allvars = self.DEFINITIONS
+
+        # Temporary dictionary to track global variable information
+        varnfo = {}
+
+        # Loop over each template item to detect and record variable usage and overrides
+        for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
+            # Detect variables used in this template
+            used_variables = script_template.detect_variables()
+
+            # Check each variable used in this template
+            for var in used_variables:
+                # Get global and local values for the variable
+                global_value = getattr(allvars, var, None)
+                local_value = getattr(script_template.definitions, var, None)
+                is_autodef = global_value == f"${{{var}}}"
+                is_global = var in allvars  # Check if the variable originates in global space
+                is_empty = global_value in (None,"",[],[""])
+                is_default = is_global and (is_empty or is_autodef)
+
+                # If the variable is not yet tracked, initialize its info
+                if var not in varnfo:
+                    initialcounter = 1 if local_value is None or local_value==global_value else 2
+                    first_use_isglobal = initialcounter==1
+                    refvalue = global_value if first_use_isglobal else local_value
+                    override_index = template_index if ((local_value is not None) and not first_use_isglobal and not is_default) else None
+                    varnfo[var] = {
+                        "value": refvalue,        # Initial value from allvars if exists
+                        "updatedvalue": refvalue, # Initial value from allvars if exists
+                        "is_default": is_default,     # Check if it’s set to a default value
+                        "first_def": None,            # First definition (to be updated later)
+                        "first_use": template_index,  # First time the variable is used
+                        "first_val": refvalue,        # First value
+                        "override_index": override_index,  # Set override if defined locally
+                        "is_autodef": is_autodef,     # automatic definition ${variable}
+                        "is_empty": is_empty,         # Track if the variable is empty (None,"",[], etc.)
+                        "is_global": is_global,       # Track if the variable originates as global
+                        "value_counter": initialcounter, # Count the number of different values
+                        "first_use_isglobal": first_use_isglobal, # True if the global value is used at first use
+                        "set_in": [template_index],
+                        "set_as": [refvalue],
+                        "values":[(template_index, refvalue)],
+                        "used_in": [template_index]
+                    }
+                else:
+                    # Update `override_index` if the variable is defined locally and its value changes
+                    varnfo[var]["used_in"].append(template_index)
+                    if local_value is not None:
+                        # Check if the local value differs from the tracked value in varnfo
+                        current_value = varnfo[var]["updatedvalue"] # varnfo[var]["value"]
+                        if current_value != local_value:
+                            varnfo[var]["override_index"] = template_index
+                            varnfo[var]["updatedvalue"] = local_value  # Update the tracked value
+                            varnfo[var]["value_counter"] += 1
+                            varnfo[var]["set_in"].append(template_index)
+                            varnfo[var]["set_as"].append(local_value)
+                            varnfo[var]["values"].append((template_index, local_value))
+
+        # Second loop: Update `first_def` for all variables
+        for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
+            local_definitions = script_template.definitions.keys()
+            for var in local_definitions:
+                if var in varnfo and varnfo[var]["first_def"] is None:
+                    varnfo[var]["first_def"] = template_index
+                    varnfo[var]["first_val"] = getattr(script_template.definitions, var)
+
+        execution_time = time.time() - start_time  # Calculate the execution time in seconds
+
+        if self.verbose:
+            print(f"Variable analysis completed in {execution_time:.4f} seconds.")
+
+        return varnfo
+
+
+    def print_var_info(self, what='all', output_file=None, overwrite=False):
+        """
+        Print or save a neatly formatted table of variable information based on the analysis from `var_info()`.
+
+        This method retrieves variable information using the `var_info()` method and presents it in a
+        Markdown-compatible table or an HTML table. Users can choose to display information for all variables
+        or a specific subset by providing a list of variable names. Additionally, users can opt to save the
+        table to a file with options to control file extension, path validity, and overwrite behavior.
+
+        Parameters
+        ----------
+        what : str or list of str, optional
+            Specifies which variables' information to print.
+            - If set to 'all' (default), information for all variables is displayed.
+            - If set to a list of variable names, only those variables are displayed.
+
+        output_file : str, optional
+            The path to the file where the table will be saved.
+            - If set to `None` (default), the table is printed to the console.
+            - If a file path is provided, the table is saved to the specified file.
+
+        overwrite : bool, default=False
+            Determines whether to overwrite the file if it already exists.
+            - If `False` and the file exists, a `FileExistsError` is raised.
+            - If `True`, the existing file is overwritten.
+
+        Raises
+        ------
+        ValueError
+            - If `what` is neither `'all'` nor a list of strings.
+            - If the file extension is neither `.md`, `.txt`, nor `.html`.
+        FileNotFoundError
+            If the specified directory in `output_file` does not exist.
+        PermissionError
+            If the specified path is not writable.
+        FileExistsError
+            If the file exists and `overwrite` is set to `False`.
+        IOError
+            If an error occurs during file writing.
+        """
+        # Retrieve the variable information dictionary
+        varnfo = self.var_info()
+
+        # Determine which variables to display
+        if what == 'all':
+            variables_to_print = list(varnfo.keys())
+        elif isinstance(what, list):
+            # Ensure all items in the list are strings
+            if not all(isinstance(var, str) for var in what):
+                raise ValueError("All items in the 'what' list must be strings representing variable names.")
+            variables_to_print = what
+        else:
+            raise ValueError("Parameter 'what' must be either 'all' or a list of variable names.")
+
+        # Filter out variables that are not present in varnfo
+        missing_vars = [var for var in variables_to_print if var not in varnfo]
+        if missing_vars:
+            print(f"Warning: The following variables were not found and will be skipped: {missing_vars}")
+            # Remove missing variables from the list
+            variables_to_print = [var for var in variables_to_print if var in varnfo]
+
+        if not variables_to_print:
+            print("No variables to display.")
+            return
+
+        # Define the headers based on varnfo fields
+        headers = [
+            "Variable Name",
+            "Value",
+            "Updated Value",
+            "Is Default",
+            "First Def",
+            "First Use",
+            "First Val",
+            "Override Index",
+            "Is Autodef",
+            "Is Empty",
+            "Is Global",
+            "Value Counter",
+            "First Use IsGlobal",
+            "Set In",
+            "Set As",
+            "Values",
+            "Used In"
+        ]
+
+        # Initialize a list to hold all rows
+        table_rows = []
+
+        # Populate the table rows with variable information
+        for var in variables_to_print:
+            info = varnfo[var]
+            row = [
+                var,
+                self._format_field(info.get("value")),
+                self._format_field(info.get("updatedvalue")),
+                self._format_field(info.get("is_default")),
+                self._format_field(info.get("first_def")),
+                self._format_field(info.get("first_use")),
+                self._format_field(info.get("first_val")),
+                self._format_field(info.get("override_index")),
+                self._format_field(info.get("is_autodef")),
+                self._format_field(info.get("is_empty")),
+                self._format_field(info.get("is_global")),
+                self._format_field(info.get("value_counter")),
+                self._format_field(info.get("first_use_isglobal")),
+                self._format_list(info.get("set_in")),
+                self._format_list(info.get("set_as")),
+                self._format_values(info.get("values")),
+                self._format_list(info.get("used_in"))
+            ]
+            table_rows.append(row)
+
+        # Calculate the maximum width for each column
+        column_widths = [len(header) for header in headers]
+        for row in table_rows:
+            for idx, cell in enumerate(row):
+                cell_length = len(str(cell))
+                if cell_length > column_widths[idx]:
+                    column_widths[idx] = cell_length
+
+        # Build the Markdown table
+        # Header row
+        header_row = "| " + " | ".join(f"{header.ljust(column_widths[idx])}" for idx, header in enumerate(headers)) + " |"
+        # Separator row
+        separator_row = "|-" + "-|-".join('-' * column_widths[idx] for idx in range(len(headers))) + "-|"
+        # Data rows
+        data_rows = [
+            "| " + " | ".join(f"{str(cell).ljust(column_widths[idx])}" for idx, cell in enumerate(row)) + " |"
+            for row in table_rows
+        ]
+
+        # Combine all parts for Markdown
+        markdown_table = "\n".join([header_row, separator_row] + data_rows)
+
+        # Generate HTML table if needed
+        html_table = None
+        if output_file:
+            _, file_extension = os.path.splitext(output_file)
+            file_extension = file_extension.lower()
+
+            if file_extension not in ['.md', '.txt', '.html', '']:
+                raise ValueError("File extension must be either '.md', '.txt', or '.html'.")
+
+            if file_extension == '':
+                # Default to .md
+                output_file += '.md'
+                file_extension = '.md'
+
+            # Extract directory from the output_file path
+            directory = os.path.dirname(os.path.abspath(output_file))
+            if directory and not os.path.exists(directory):
+                raise FileNotFoundError(f"The directory '{directory}' does not exist.")
+
+            if directory and not os.access(directory, os.W_OK):
+                raise PermissionError(f"The directory '{directory}' is not writable.")
+
+            # Check if the file exists
+            if os.path.exists(output_file) and not overwrite:
+                raise FileExistsError(f"The file '{output_file}' already exists and overwrite is set to False.")
+
+            # Prepare title and timestamp
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            title = f"{self.name} - Variable Information"
+            subtitle = f"Generated on {timestamp} by {self.userid}"
+
+            if file_extension == '.html':
+                # Build HTML table with embedded CSS
+                html_table = self._build_html_table(headers, table_rows, column_widths, title, subtitle)
+            else:
+                # For Markdown and TXT, prepare content with title and timestamp
+                content = f"# {title}\n\n"
+                content += f"**{subtitle}**\n\n"
+                content += markdown_table + "\n"
+
+        # If output_file is not specified, print to console
+        if output_file is None:
+            # Print title and timestamp
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            title = f"{self.name} - Variable Information"
+            subtitle = f"Generated on {timestamp} by {self.userid}"
+            print(f"### {title}\n")
+            print(f"**{subtitle}**\n")
+            # Print the Markdown table
+            print(markdown_table)
+        else:
+            # Save to file based on extension
+            try:
+                if file_extension in ['.md', '.txt']:
+                    # Prepare content with title and timestamp
+                    content = f"# {title}\n\n"
+                    content += f"**{subtitle}**\n\n"
+                    content += markdown_table + "\n"
+
+                    # Write to file
+                    with open(output_file, 'w', encoding='utf-8') as f:
+                        f.write(content)
+                    print(f"Variable information successfully written to '{output_file}'.")
+                elif file_extension == '.html':
+                    # Write HTML content
+                    with open(output_file, 'w', encoding='utf-8') as f:
+                        f.write(html_table)
+                    print(f"Variable information successfully written to '{output_file}'.")
+            except IOError as e:
+                raise IOError(f"An error occurred while writing to the file: {e}")
+
+    def _build_html_table(self, headers, table_rows, column_widths, title, subtitle):
+        """
+        Helper method to build an HTML table with embedded CSS.
+
+        Parameters
+        ----------
+        headers : list of str
+            The table headers.
+        table_rows : list of list
+            The table data rows.
+        column_widths : list of int
+            The maximum width for each column.
+        title : str
+            The title of the table.
+        subtitle : str
+            The subtitle containing timestamp and user information.
+
+        Returns
+        -------
+        str
+            The complete HTML content as a string.
+        """
+        # Define CSS styles for the HTML table
+        css_styles = """
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+            h1 {
+                text-align: center;
+            }
+            h2 {
+                text-align: center;
+                color: gray;
+            }
+            .table-container {
+                overflow-x: auto;
+                max-height: 2400px;
+                overflow-y: auto;
+                border: 1px solid #ddd;
+                padding: 10px;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                table-layout: fixed;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                word-wrap: break-word;
+            }
+            tr:nth-child(even){background-color: #f2f2f2;}
+            tr:hover {background-color: #ddd;}
+            th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: left;
+                background-color: #4CAF50;
+                color: white;
+            }
+        </style>
+        """
+
+        # Start building HTML content
+        html_content = f"<!DOCTYPE html>\n<html>\n<head>\n<meta charset='UTF-8'>\n<title>{title}</title>\n{css_styles}\n</head>\n<body>\n"
+
+        # Add title and subtitle
+        html_content += f"<h1>{title}</h1>\n"
+        html_content += f"<h2>{subtitle}</h2>\n"
+
+        # Add table container
+        html_content += "<div class='table-container'>\n"
+
+        # Start table
+        html_content += "<table>\n"
+
+        # Header row
+        html_content += "  <tr>\n"
+        for header in headers:
+            html_content += f"    <th>{header}</th>\n"
+        html_content += "  </tr>\n"
+
+        # Data rows
+        for row in table_rows:
+            html_content += "  <tr>\n"
+            for cell in row:
+                html_content += f"    <td>{self._escape_html(str(cell))}</td>\n"
+            html_content += "  </tr>\n"
+
+        # End table and container
+        html_content += "</table>\n</div>\n"
+
+        # End body and html
+        html_content += "</body>\n</html>"
+
+        return html_content
+
+    def _escape_html(self, text):
+        """
+        Helper method to escape HTML special characters in text.
+
+        Parameters
+        ----------
+        text : str
+            The text to escape.
+
+        Returns
+        -------
+        str
+            The escaped text.
+        """
+        import html
+        return html.escape(text)
+
+    def _format_field(self, field):
+        """
+        Helper method to format individual fields for the table.
+
+        Parameters
+        ----------
+        field : Any
+            The field value to format.
+
+        Returns
+        -------
+        str
+            The formatted string representation of the field.
+        """
+        if field is None:
+            return "None"
+        elif isinstance(field, bool):
+            return "True" if field else "False"
+        else:
+            return str(field)
+
+    def _format_list(self, lst):
+        """
+        Helper method to format list-type fields for the table.
+
+        Parameters
+        ----------
+        lst : list or None
+            The list to format.
+
+        Returns
+        -------
+        str
+            Comma-separated string of list items or an empty string if the list is None or empty.
+        """
+        if not lst:
+            return ""
+        return ", ".join(str(item) for item in lst)
+
+    def _format_values(self, values):
+        """
+        Helper method to format the 'values' field, which is a list of tuples.
+
+        Parameters
+        ----------
+        values : list of tuples or None
+            The list of (template_index, value) tuples.
+
+        Returns
+        -------
+        str
+            Comma-separated string of "template_index: value" pairs or an empty string if None or empty.
+        """
+        if not values:
+            return ""
+        return ", ".join(f"{idx}: {val}" for idx, val in values)
+
+    # ... [Other existing methods] ...
+
+
+
+    # Save Method
     # -----------
     def save(self, filename=None, foldername=None, overwrite=False, generatoronly=False, onlyusedvariables=True):
         """
@@ -2697,68 +3298,17 @@ class dscript:
         global_params += "}\n"
 
         # Initialize definitions with self.DEFINITIONS
-        allvars = self.DEFINITIONS
+        #allvars = self.DEFINITIONS
 
         # Temporary dictionary to track global variable information
-        global_var_info = {}
-
-        # Loop over each template item to detect and record variable usage and overrides
-        for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
-            # Detect variables used in this template
-            used_variables = script_template.detect_variables()
-
-            # Loop over each template item to detect and record variable usage and overrides
-            for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
-                # Detect variables used in this template
-                used_variables = script_template.detect_variables()
-
-                # Check each variable used in this template
-                for var in used_variables:
-                    # Get global and local values for the variable
-                    global_value = getattr(allvars, var, None)
-                    local_value = getattr(script_template.definitions, var, None)
-                    is_global = var in allvars  # Check if the variable originates in global space
-                    is_default = is_global and (
-                        global_value is None or global_value == "" or global_value == f"${{{var}}}"
-                    )
-
-                    # If the variable is not yet tracked, initialize its info
-                    if var not in global_var_info:
-                        global_var_info[var] = {
-                            "value": global_value,       # Initial value from allvars if exists
-                            "updatedvalue": global_value,# Initial value from allvars if exists
-                            "is_default": is_default,    # Check if it’s set to a default value
-                            "first_def": None,           # First definition (to be updated later)
-                            "first_use": template_index, # First time the variable is used
-                            "first_val": global_value,
-                            "override_index": template_index if local_value is not None else None,  # Set override if defined locally
-                            "is_global": is_global       # Track if the variable originates as global
-                        }
-                    else:
-                        # Update `override_index` if the variable is defined locally and its value changes
-                        if local_value is not None:
-                            # Check if the local value differs from the tracked value in global_var_info
-                            current_value = global_var_info[var]["value"]
-                            if current_value != local_value:
-                                global_var_info[var]["override_index"] = template_index
-                                global_var_info[var]["updatedvalue"] = local_value  # Update the tracked value
-
-
-            # Second loop: Update `first_def` for all variables
-            for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
-                local_definitions = script_template.definitions.keys()
-                for var in local_definitions:
-                    if var in global_var_info and global_var_info[var]["first_def"] is None:
-                        global_var_info[var]["first_def"] = template_index
-                        global_var_info[var]["first_val"] = getattr(script_template.definitions, var)
-
+        vinfo = self.var_info()
 
         # Filter global definitions based on usage, overrides, and first_def
+        #  and info["is_default"]
         filtered_globals = {
-            var: info for var, info in global_var_info.items()
-            if (info["is_global"] or info["is_default"]) and (info["override_index"] is None)
+            var: info for var, info in vinfo.items()
+            if ((info["is_global"]and not info["is_empty"]) and (info["first_use_isglobal"]) and (info["override_index"] is None))
             }
-
 
         # Generate the definitions output based on filtered globals
         definitions = f"\n# GLOBAL DEFINITIONS (number of definitions={len(filtered_globals)})\n"
@@ -2766,8 +3316,8 @@ class dscript:
             if info["is_default"] and (info["first_def"]>info["first_use"] if info["first_def"] else True):
                 definitions += f"{var} = ${{{var}}}  # value assumed to be defined outside this DSCRIPT file\n"
             else:
-                value = info["first_val"] #info["value"]
-                if value in ["", None]:
+                value = info["first_val"]   #info["value"]
+                if info["is_empty"]:        #value in ["", None]
                     definitions += f'{var} = ""\n'
                 elif isinstance(value, str):
                     safe_value = value.replace('\\', '\\\\').replace('\n', '\\n')
@@ -2778,7 +3328,8 @@ class dscript:
         # Template (number of lines/items)
         printsinglecontent = False
         template = f"\n# TEMPLATES (number of items={len(self.TEMPLATE)})\n"
-        for key, script_template in self.TEMPLATE.items():
+        #for key, script_template in self.TEMPLATE.items():
+        for template_index, (key, script_template) in enumerate(self.TEMPLATE.items()):
             # Get local template definitions and detected variables
             template_vars = script_template.definitions
             used_variables = script_template.detect_variables()
@@ -2788,16 +3339,20 @@ class dscript:
             # Write template-specific definitions only if they meet the updated conditions
             for var in template_vars.keys():
                 # Conditions for adding a variable to the local template and to `allvars`
-                if (var in used_variables or not onlyusedvariables) and (
-                    script_template.is_variable_set_value_only(var) and
-                    (var not in allvars or getattr(template_vars, var) != getattr(allvars, var))
-                ):
+                if (var in used_variables or not onlyusedvariables) \
+                   and (template_index in vinfo[var]["set_in"]) \
+                   and (var not in filtered_globals):
+                # if (var in used_variables or not onlyusedvariables) and (
+                #    script_template.is_variable_set_value_only(var) and
+                #    (var not in allvars or getattr(template_vars, var) != getattr(allvars, var))
+                #):
                     # Start local definitions section if this is the first local variable for the template
                     if not islocal:
                         template += f"\n# LOCAL DEFINITIONS for key '{key}'\n"
                         islocal = True
                     # Retrieve and process the variable value
-                    value = getattr(template_vars, var)
+                    # value = getattr(template_vars, var)
+                    value = next((ref for idx, ref in vinfo[var]["values"] if idx == template_index), None)
                     if value in ["", None]:
                         template += f'{var} = ""\n'  # Set empty or None values as ""
                     elif isinstance(value, str):
@@ -2808,7 +3363,7 @@ class dscript:
                     # Add the variable to valid_local_vars for selective update of allvars
                     valid_local_vars.setattr(var, value)
             # Update allvars only with filtered, valid local variables
-            allvars += valid_local_vars
+            # allvars += valid_local_vars
 
             # Write the template content
             if isinstance(script_template.content, list):
@@ -2964,7 +3519,7 @@ class dscript:
     # Load Method and its Parsing Rules -- added on 2024-09-04
     # ---------------------------------
     @classmethod
-    def load(cls, filename, foldername=None, numerickeys=True):
+    def load(cls, filename, foldername=None, numerickeys=True, verbose=True, debug=False):
         """
         Load a script instance from a text file.
 
@@ -2981,6 +3536,12 @@ class dscript:
         numerickeys : bool, default=True
             If True, numeric string keys in the template section are automatically converted into integers.
             For example, the key "0" would be converted into the integer 0.
+
+        verbose : bool, default=True
+            If `True`, the parser keep comments inside templates and template blocks.
+
+        debug : bool, default=False
+            If True, print parsed lines for refining/tracking the parsing of block and single lines
 
         Returns
         -------
@@ -3034,7 +3595,7 @@ class dscript:
         # Call parsesyntax to parse the file content
         fname = os.path.basename(filepath)  # Extracts the filename (e.g., "myscript.txt")
         name, _ = os.path.splitext(fname)   # Removes the extension, e.g., "myscript
-        return cls.parsesyntax(content, name, numerickeys)
+        return cls.parsesyntax(content, name=name, numerickeys=numerickeys, verbose=verbose, debug=debug)
 
 
 
@@ -3042,7 +3603,7 @@ class dscript:
     # ---------------------------------
     @classmethod
     def parsesyntax(cls, content, name=None, numerickeys=True, verbose=False, authentification=True,
-                    comment_chars="#%",continuation_marker="..."):
+                    debug=False, comment_chars="#%",continuation_marker="..."):
         """
         Parse a DSCRIPT script from a string content.
 
@@ -3057,8 +3618,8 @@ class dscript:
         numerickeys : bool, default=True
             If `True`, numeric string keys in the template section are automatically converted into integers.
 
-        verbose : bool, default=False
-            If `True`, the parser will output warnings for unrecognized lines outside of blocks.
+        verbose : bool, default=True
+            If `True`, the parser keep comments inside templates and template blocks.
 
         authentification : bool, default=True
             If `True`, the parser is expected that the first non empty line is # DSCRIPT SAVE FILE
@@ -3071,7 +3632,8 @@ class dscript:
             A string containing characters to indicate line continuation
             Any characters after the continuation marker are considered comment and are theorefore ignored
 
-
+        debug : bool, default=False
+            Print parsed lines for refining the parsing of block lines
 
         Returns
         -------
@@ -3408,6 +3970,7 @@ class dscript:
         for idx, line in enumerate(lines):
             line_number += 1
             line_content = line.rstrip('\n')
+            if debug: print(f"RAW L{line_number}    :{line_content}\n")
 
             # Determine if we're inside a template block
             if inside_template_block:
@@ -3426,6 +3989,7 @@ class dscript:
                     trimmed_content = line_content[:endofline_index].rstrip()
                     if trimmed_content:
                         current_template_content.append(trimmed_content)
+                        if debug:print(f"A|DEBUG L{line_number}:{trimmed_content}\n")
                     continue
                 elif code_line.endswith("]"):  # End of multi-line block
                     closing_index = code_line.rindex(']')
@@ -3434,6 +3998,7 @@ class dscript:
                     # Append any valid content before `]`, if non-empty
                     if trimmed_content:
                         current_template_content.append(trimmed_content)
+                        if debug:print(f"B|DEBUG L{line_number}:{trimmed_content}\n")
 
                     # End of template block
                     content = '\n'.join(current_template_content)
@@ -3455,6 +4020,8 @@ class dscript:
                 else:
                     # Append the entire original line content if not ending with `...` or `]`
                     current_template_content.append(line_content)
+                    if debug:print(f"C|DEBUG L{line_number}:{line_content}\n")
+
                 continue
 
             # Not inside a template block
@@ -3500,6 +4067,7 @@ class dscript:
                             content_line = remainder_code[:closing_index].strip()
                             if content_line:
                                 current_template_content.append(content_line)
+                                if debug:print(f"D|DEBUG L{line_number}:{content_line}\n")
                             content = '\n'.join(current_template_content)
                             template[current_template_key] = ScriptTemplate(
                                 content=content,
@@ -3516,6 +4084,7 @@ class dscript:
                             continue
                         else:
                             current_template_content.append(remainder)
+                            if debug:print(f"E|DEBUG L{line_number}:{remainder}\n")
                     last_successful_line = line_number
                 continue
 
@@ -3565,17 +4134,23 @@ class dscript:
                 setattr(current_var_value, key, convertedvalue)
                 continue
 
-            # Handle single-line templates
-            template_match = re.match(r'^(\w+)\s*:\s*(.+)', stripped)
+            # Handle single-line templates (updated on 20250104 to handle empty content)
+            template_match = re.match(r'^(\w+)\s*:\s*(.*)', stripped)
             if template_match:
                 key, content = template_match.groups()
+                content = content.strip()  # Strip whitespace for consistency
+                if not content:
+                    content = f"# empty <step {key}>"
+                    if debug: print(f"F|DEBUG L{line_number}:Empty content detected for key: {key}, default value assigned\n")
+                if debug: print(f"F|DEBUG L{line_number}:{content}\n")
                 template[key] = ScriptTemplate(
-                    content = content.strip(),
+                    content = content,
                     autorefresh = False,
                     definitions=LOCALdefinitions,
                     verbose=verbose,
                     userid=key)
                 template[key].refreshvar(globaldefinitions=GLOBALdefinitions)
+                if debug:print(f"G|DEBUG L{line_number}:{template[key].content}\n")
                 LOCALdefinitions = lambdaScriptdata()
                 last_successful_line = line_number
                 continue
@@ -3583,6 +4158,8 @@ class dscript:
             # Unrecognized line
             if verbose:
                 print(f"Warning: Unrecognized line at {line_number}: {line_content}")
+                if debug:
+                    raise ValueError(f'ERROR: stripped content "{stripped}"')
             last_successful_line = line_number
             continue
 
@@ -4102,7 +4679,9 @@ class dscript:
                 all_variables.update(detected_vars)  # Add the detected variables to the set
         return sorted(all_variables)  # Return a sorted list of unique variables
 
-    def add_dynamic_script(self, key, content="", userid=None, definitions=None, verbose=None, **USER):
+
+
+    def add_dynamic_script(self, key, content="", userid=None, definitions=None, verbose=None, autorefresh=True, **USER):
         """
         Add a dynamic script step to the dscript object.
 
@@ -4116,6 +4695,9 @@ class dscript:
             The merged variable space (STATIC + GLOBAL + LOCAL).
         verbose : bool, optional
             If None, self.verbose will be used. Controls verbosity of the template.
+        autorefresh : bool, optional
+            If True, detected variables (e.g., var) and undefined are assiged to their default value (e.g., ${var})
+            Default = True
         USER : dict
             Additional user variables that override the definitions for this step.
         """
@@ -4129,6 +4711,7 @@ class dscript:
             definitions=self.DEFINITIONS+definitions,
             verbose=verbose,
             userid = key if userid is None else userid,
+            autorefresh=autorefresh,
             **USER
         )
 
@@ -4185,6 +4768,496 @@ class dscript:
                 if var not in self.DEFINITIONS:
                     # Add undefined variables with their default value
                     self.DEFINITIONS.setattr(var, f"${{{var}}}")  # Set default as ${varname}
+
+
+
+
+    def search(self, primary_key, value, foreign_key, include_global=True, multiple='all', protection=False, verbose=False):
+        """
+        Search for foreign/definition key values associated with given primary key/definition value(s).
+
+        This method searches through the global definitions first and then traverses local steps in sequential order
+        to find matches for the specified primary key and retrieves the corresponding foreign key values.
+        It also identifies available foreign keys in steps where the primary key exists but the desired foreign key is missing.
+
+        Parameters:
+            primary_key (str):
+                The primary key to search for in the definitions.
+            value (str, int, float, or list of these types):
+                The value(s) associated with the primary key.
+            foreign_key (str):
+                The foreign key whose value is to be retrieved.
+            include_global (bool, optional):
+                If True, include global definitions in the search.
+                Defaults to True.
+            multiple (str, optional):
+                Strategy for handling multiple matches. Options are:
+                - 'first': Return the first match found.
+                - 'last': Return the last match found.
+                - 'all': Return all matches in a list.
+                Defaults to 'all'.
+            protection (bool, optional):
+                If False (default), removes the '$' prefix from the keys in the returned dictionary.
+                If True, retains the '$' prefix.
+                Defaults to False.
+            verbose (bool, optional):
+                If True, prints warnings about missing foreign keys and available alternative keys.
+                Defaults to False.
+
+        Returns:
+            dict or scalar or None:
+                - If multiple values are provided, returns a dictionary mapping each value to its foreign key value(s).
+                - If a single value is provided:
+                    - Returns a single foreign key value if 'multiple' is 'first' or 'last'.
+                    - Returns a list of all matching foreign key values if 'multiple' is 'all'.
+                - Returns None if no matches are found.
+
+        Raises:
+            TypeError:
+                If the provided value is not of type str, int, or float, or if value list contains invalid types.
+            ValueError:
+                If an invalid option is provided for 'multiple'.
+        """
+        # Validate 'multiple' parameter
+        if multiple not in {'first', 'last', 'all'}:
+            raise ValueError("Parameter 'multiple' must be one of 'first', 'last', or 'all'.")
+
+        # Normalize 'value' to a list for uniform processing
+        if isinstance(value, (str, int, float)):
+            values = [value]
+            single_value = True
+        elif isinstance(value, list):
+            if not all(isinstance(v, (str, int, float)) for v in value):
+                raise TypeError("All elements in 'value' list must be of type str, int, or float.")
+            values = value
+            single_value = False
+        else:
+            raise TypeError(f"'value' must be of type str, int, float, or list of these types, got {type(value).__name__}")
+
+        # Initialize the result containers
+        matched_foreign_keys = {}  # key: value, value: single or list of foreign_key values
+        available_foreign_keys_set = set()  # set of foreign keys available where primary exists but desired foreign_key missing
+
+        # Keys to exclude when listing available foreign keys
+        excluded_keys = {'_evaluation', '_excludedattr', '_protection', '_returnerror'}
+
+        # Function to add a match to the results based on the 'multiple' strategy
+        def add_match(val, rvalue):
+            if multiple == 'all':
+                if val in matched_foreign_keys:
+                    if isinstance(matched_foreign_keys[val], list):
+                        matched_foreign_keys[val].append(rvalue)
+                    else:
+                        matched_foreign_keys[val] = [matched_foreign_keys[val], rvalue]
+                else:
+                    matched_foreign_keys[val] = [rvalue]
+            elif multiple == 'first':
+                if val not in matched_foreign_keys:
+                    matched_foreign_keys[val] = rvalue
+            elif multiple == 'last':
+                matched_foreign_keys[val] = rvalue
+
+        # Start with global definitions if included
+        if include_global:
+            global_definitions = self.DEFINITIONS
+            if hasattr(global_definitions, primary_key):
+                primary_value = getattr(global_definitions, primary_key)
+
+                # Handle multiple primary key values within the global definitions
+                if isinstance(primary_value, (list, tuple, set)):
+                    primary_values = primary_value
+                else:
+                    primary_values = [primary_value]
+
+                for pv in primary_values:
+                    for val in values:
+                        if pv == val:
+                            # Check if the foreign key exists in global definitions
+                            if hasattr(global_definitions, foreign_key):
+                                rvalue = getattr(global_definitions, foreign_key)
+                                add_match(val, rvalue)
+                            else:
+                                # Collect available foreign keys in global definitions, excluding specified keys
+                                available_keys = [
+                                    k for k in global_definitions.__dict__
+                                    if k != primary_key and k not in excluded_keys
+                                ]
+                                available_foreign_keys_set.update(available_keys)
+
+        # Then, traverse through local steps in sequential order
+        for istep in range(len(self)):
+            step_definitions = self[istep].definitions
+
+            # Check if the primary key exists in the local definitions
+            if hasattr(step_definitions, primary_key):
+                primary_value = getattr(step_definitions, primary_key)
+
+                # Handle multiple primary key values within the definition
+                if isinstance(primary_value, (list, tuple, set)):
+                    primary_values = primary_value
+                else:
+                    primary_values = [primary_value]
+
+                for pv in primary_values:
+                    for val in values:
+                        if pv == val:
+                            # Check if the foreign key exists
+                            if hasattr(step_definitions, foreign_key):
+                                rvalue = getattr(step_definitions, foreign_key)
+                                add_match(val, rvalue)
+                            else:
+                                # Collect available foreign keys in this step, excluding specified keys
+                                available_keys = [
+                                    k for k in step_definitions.__dict__
+                                    if k != primary_key and k not in excluded_keys
+                                ]
+                                available_foreign_keys_set.update(available_keys)
+
+        # Process the matched_foreign_keys based on 'multiple' strategy
+        if single_value:
+            if values[0] in matched_foreign_keys:
+                if multiple == 'all':
+                    # If only one match, return scalar; else, list
+                    matches = matched_foreign_keys[values[0]]
+                    if len(matches) == 1:
+                        matches = matches[0]
+                else:
+                    matches = matched_foreign_keys[values[0]]
+            else:
+                matches = None
+        else:
+            matches = {}
+            for val in values:
+                if val in matched_foreign_keys:
+                    if multiple == 'all':
+                        if len(matched_foreign_keys[val]) == 1:
+                            matches[val] = matched_foreign_keys[val][0]
+                        else:
+                            matches[val] = matched_foreign_keys[val]
+                    else:
+                        matches[val] = matched_foreign_keys[val]
+                else:
+                    matches[val] = None  # Or handle differently if needed
+
+        # If there are available foreign keys, report them as an error message
+        if available_foreign_keys_set and verbose:
+            available_keys_sorted = sorted(list(available_foreign_keys_set))
+            print(f"Warning: In some steps, the foreign key '{foreign_key}' is missing where the primary key '{primary_key}' exists.")
+            print(f"Available foreign keys in those steps: {available_keys_sorted}")
+
+        # If no matches found, print a message
+        if (single_value and matches is None) or (not single_value and all(v is None for v in matches.values())):
+            if verbose:
+                print(f"No matches found for primary key '{primary_key}' with value(s) '{value}'.")
+            return None
+
+        # Handle protection flag: remove '$' prefix from keys if protection=False
+        if not single_value and isinstance(matches, dict):
+            processed_matches = {}
+            for k, v in matches.items():
+                if not protection and isinstance(k, str):
+                    # Remove any leading '$' and surrounding spaces
+                    new_key = k.lstrip('$').strip()
+                else:
+                    new_key = k
+                processed_matches[new_key] = v
+            return processed_matches
+        else:
+            # For single value searches, return matches as-is
+            return matches
+
+
+
+
+    def list_values(self, key, include_global=True, verbose=False, order='stable', details=False):
+        """
+        List all unique values taken by a specified key across global definitions and all steps in sequential order.
+
+        Parameters:
+            key (str): The key whose values are to be listed.
+            include_global (bool, optional): If True, include global definitions in the search. Defaults to True.
+            verbose (bool, optional): If True, print warnings about steps where the key is missing and list available keys. Defaults to False.
+            order (str, optional): The order in which to list the unique values. Options are 'stable', 'ascend', 'descend'. Defaults to 'stable'.
+            details (bool, optional): If True, return a VariableOccurrences object containing detailed occurrence information. If False, return a list or scalar as before. Defaults to False.
+
+        Returns:
+            list or scalar or VariableOccurrences or None:
+                - If `details=False`:
+                    - Returns a list of unique values associated with the key, ordered as specified.
+                    - If only one unique value exists, returns it as a scalar.
+                    - Returns None if the key is not found in any global or step definitions.
+                - If `details=True`:
+                    - Returns a VariableOccurrences object containing detailed occurrence information across scopes.
+        """
+        # Validate 'order' parameter
+        if order not in {'stable', 'ascend', 'descend'}:
+            raise ValueError("Parameter 'order' must be one of 'stable', 'ascend', or 'descend'.")
+
+        excluded_keys = {'_evaluation', '_excludedattr', '_protection', '_returnerror'}
+
+        unique_values = []
+        seen_values = set()
+
+        available_keys_set = set()
+
+        # Helper function to compare lists
+        def lists_are_equal(list1, list2):
+            return list1 == list2
+
+        # Function to add a key_value to unique_values
+        def add_value(kv):
+            if isinstance(kv, list):
+                # Convert list to tuple for hashability
+                try:
+                    kv_tuple = tuple(kv)
+                    if kv_tuple not in seen_values:
+                        unique_values.append(kv.copy())  # Append a copy to preserve the list
+                        seen_values.add(kv_tuple)
+                except TypeError:
+                    # If list contains unhashable items, compare manually
+                    if not any(lists_are_equal(kv, existing) for existing in unique_values if isinstance(existing, list)):
+                        unique_values.append(kv.copy())
+            else:
+                if kv not in seen_values:
+                    unique_values.append(kv)
+                    seen_values.add(kv)
+
+        # Data structures for detailed occurrences
+        occurrences_data = defaultdict(list)  # {'global': [value], 'local': [(step, value), ...]}
+
+        # Include global definitions
+        if include_global and hasattr(self.DEFINITIONS, key):
+            key_value = getattr(self.DEFINITIONS, key)
+            if isinstance(key_value, list):
+                add_value(key_value)
+                if details:
+                    occurrences_data['global'] = key_value.copy()
+            else:
+                add_value(key_value)
+                if details:
+                    occurrences_data['global'] = key_value
+        elif include_global and verbose:
+            # Collect available keys in global definitions, excluding specified keys
+            available_keys = [
+                k for k in self.DEFINITIONS.__dict__
+                if k != key and k not in excluded_keys
+            ]
+            available_keys_set.update(available_keys)
+
+        # Traverse through steps
+        for step_key, step in self.TEMPLATE.items():
+            if hasattr(step.definitions, key):
+                key_value = getattr(step.definitions, key)
+                if isinstance(key_value, list):
+                    add_value(key_value)
+                    if details:
+                        occurrences_data['local'].append((step_key, key_value.copy()))
+                else:
+                    add_value(key_value)
+                    if details:
+                        occurrences_data['local'].append((step_key, key_value))
+            else:
+                if verbose:
+                    # Collect available keys in this step, excluding specified keys
+                    available_keys = [
+                        k for k in step.definitions.__dict__
+                        if k != key and k not in excluded_keys
+                    ]
+                    available_keys_set.update(available_keys)
+
+        # Verbose warnings
+        if verbose and available_keys_set:
+            available_keys_sorted = sorted(list(available_keys_set))
+            print(f"Warning: The key '{key}' is missing in some steps or global definitions.")
+            print(f"Available keys in those contexts: {available_keys_sorted}")
+
+        # Ordering
+        if order == 'stable':
+            ordered_values = unique_values
+        else:
+            # To sort, ensure all elements are of the same type
+            try:
+                if all(isinstance(v, list) for v in unique_values):
+                    if order == 'ascend':
+                        ordered_values = sorted(unique_values)
+                    else:
+                        ordered_values = sorted(unique_values, reverse=True)
+                elif all(isinstance(v, type(unique_values[0])) for v in unique_values):
+                    if order == 'ascend':
+                        ordered_values = sorted(unique_values)
+                    else:
+                        ordered_values = sorted(unique_values, reverse=True)
+                else:
+                    raise TypeError
+            except TypeError:
+                if verbose:
+                    print("Warning: Cannot sort values due to mixed or non-comparable types. Returning values in their original order.")
+                ordered_values = unique_values
+
+        if details:
+            # Prepare data for VariableOccurrences
+            # Convert defaultdict to regular dict
+            occurrences_dict = dict(occurrences_data)
+
+            if key.lower() == "all":
+                # Collect all keys and their occurrences
+                all_keys = set()
+                # Include global definitions if specified
+                if include_global:
+                    global_keys = set(self.DEFINITIONS.__dict__.keys()) - excluded_keys
+                    all_keys.update(global_keys)
+                # Include keys from all steps
+                for step in self.TEMPLATE.values():
+                    step_keys = set(step.definitions.__dict__.keys()) - excluded_keys
+                    all_keys.update(step_keys)
+
+                # Remove the 'all' key itself if present
+                all_keys.discard("all")
+
+                variables_data = {}
+                for var in all_keys:
+                    var_data = defaultdict(list)
+                    # Include global definitions
+                    if include_global and hasattr(self.DEFINITIONS, var):
+                        var_value = getattr(self.DEFINITIONS, var)
+                        if isinstance(var_value, list):
+                            var_data['global'].append(var_value.copy())  # Directly append the value
+                        else:
+                            var_data['global'].append(var_value)
+                    # Traverse through steps
+                    for step_key, step in self.TEMPLATE.items():
+                        if hasattr(step.definitions, var):
+                            var_value = getattr(step.definitions, var)
+                            if isinstance(var_value, list):
+                                var_data['local'].append((step_key, var_value.copy()))
+                            else:
+                                var_data['local'].append((step_key, var_value))
+                    variables_data[var] = dict(var_data)
+                return VariableOccurrences(variables_data, variables=None)  # variables=None implies multiple variables
+
+            else:
+                # Single variable case
+                return VariableOccurrences(occurrences_dict, variables=key)
+
+        # Determine return value
+        if not unique_values:
+            if verbose:
+                print(f"No values found for key '{key}' in any step or global definitions.")
+            return None
+        elif len(unique_values) == 1:
+            return unique_values[0]
+        else:
+            return ordered_values
+
+
+
+    def flattenvariables(self):
+        """
+        Flatten the variable definitions for each step based on usage and precedence.
+
+        This method ensures that for each step:
+            - Only the variables used in the template are present in `self[i].definitions`.
+            - The value of each variable is determined based on the following precedence:
+                1. Global Definitions (`self.DEFINITIONS`)
+                2. Current Step Definitions (`self[i].definitions`)
+                3. Previous Step Definitions (`self[i-1].definitions`, etc.)
+                4. Protected Variables (`"$variable_name"`)
+
+        The method updates `self[i].definitions` to include only the necessary variables with their resolved values.
+        Unused variables are removed from each step's definitions after resolution, **excluding** protected attributes.
+
+        Raises:
+            AttributeError: If a step or global definitions lack the necessary attributes.
+        """
+        # Define the set of protected attributes that must never be removed
+        excluded_keys = {'_evaluation', '_excludedattr', '_protection', '_returnerror'}
+
+        # Initialize local_definitions with a copy of global definitions to prevent mutation
+        local_definitions = lambdaScriptdata(**self.DEFINITIONS.__dict__)
+
+        # Iterate through each step in order
+        for i in range(len(self)):
+            step = self[i]
+            step_definitions = step.definitions
+
+            # Detect variables used in the current step's template
+            variables_used = step.detect_variables()
+
+            # Temporary dictionary to store resolved variable values
+            resolved_vars = {}
+
+            # Resolve each variable's value based on precedence
+            for var in variables_used:
+                if hasattr(step_definitions, var):
+                    # Variable defined in the current step's definitions
+                    resolved_vars[var] = getattr(step_definitions, var)
+                elif hasattr(local_definitions, var):
+                    # Variable inherited from previous definitions (global or prior steps)
+                    resolved_vars[var] = getattr(local_definitions, var)
+                else:
+                    # Variable not found; assign protected format
+                    resolved_vars[var] = f"${var}"
+
+            # Remove any variables in step_definitions not in variables_used and not in excluded_keys
+            existing_vars = list(step_definitions.__dict__.keys())
+            for var in existing_vars:
+                if var not in variables_used and var not in excluded_keys:
+                    delattr(step_definitions, var)
+
+            # Assign resolved variables to step_definitions
+            for var, value in resolved_vars.items():
+                setattr(step_definitions, var, value)
+
+            # Update local_definitions by merging with step_definitions
+            # Only variables used in this step are updated in local_definitions
+            local_definitions = local_definitions + step_definitions
+
+
+
+    def clean(self, behavior='fixing', verbose=False):
+        """
+        Clean the TEMPLATE by removing or fixing empty steps.
+
+        An empty step is defined as one where its content is [], "", or None.
+
+        Parameters:
+            behavior (str, optional):
+                Determines the action to perform on empty steps.
+                - 'removing': Completely remove the empty step from TEMPLATE.
+                - 'fixing': Replace the content of the empty step with a comment.
+                Defaults to 'fixing'.
+            verbose (bool, optional):
+                If True, prints informational messages about the actions taken.
+                If False, operates silently.
+                Defaults to False.
+
+        Raises:
+            ValueError:
+                If the provided behavior is not 'removing' or 'fixing'.
+        """
+        # Validate the 'behavior' parameter
+        if behavior not in {'removing', 'fixing'}:
+            raise ValueError("Parameter 'behavior' must be either 'removing' or 'fixing'.")
+
+        # Iterate over a list of keys to avoid RuntimeError due to dict size change during iteration
+        for key in list(self.TEMPLATE.keys()):
+            step = self.TEMPLATE[key]
+            content = step.content
+
+            # Check if the step is empty
+            if content in [[], "", None,[""],[None],[[]]]:
+                if behavior == 'removing':
+                    # Remove the step entirely from TEMPLATE
+                    del self.TEMPLATE[key]
+                    if verbose:
+                        print(f"Removed empty step: {key}")
+                elif behavior == 'fixing':
+                    # Replace the content with a default comment
+                    step.content = [f"# empty <step {key}>"]
+                    if verbose:
+                        print(f"Fixed empty step: {key} by adding a comment.")
+
+
 
 
 # %% debug section - generic code to test methods (press F5)

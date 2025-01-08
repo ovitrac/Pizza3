@@ -286,7 +286,7 @@ else:
     from pizza.private.PIL import Image, ImagePalette
     PILavailable = True
 
-__all__ = ['Circle', 'Collection', 'Diamond', 'Hexagon', 'Pentagon', 'Rectangle', 'Triangle', 'arc', 'collection', 'coregeometry', 'coreshell', 'emulsion', 'genericpolygon', 'imagesc', 'ind2rgb', 'linear', 'overlay', 'raster', 'scatter']
+__all__ = ['Circle', 'Collection', 'Diamond', 'Hexagon', 'Pentagon', 'Rectangle', 'Triangle', 'arc', 'collection', 'coregeometry', 'coreshell', 'data3', 'emulsion', 'genericpolygon', 'imagesc', 'ind2rgb', 'linear', 'overlay', 'raster', 'scatter', 'struct']
 
 
 def _rotate(x0,y0,xc,yc,angle):

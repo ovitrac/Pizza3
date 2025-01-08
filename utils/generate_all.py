@@ -8,13 +8,14 @@ Generates backup files with __all__ definitions in utils/__all__/ for review.
 
 # Maintained by INRAE\\olivier.vitrac@agroparistech.fr
 # Revision history: 2024-12-08
+# 2025-01-07 fix extract_symbols by adding package_root
 
 import os
 import inspect
 import pkgutil
 import sys
 
-def extract_symbols(module_name):
+def extract_symbols(module_name,package_root):
     """
     Extracts all public symbols (classes, functions, variables) from a module,
     restricting to symbols defined in the module itself.
@@ -26,10 +27,10 @@ def extract_symbols(module_name):
             # Skip private symbols and ensure the object is defined in the current module
             if name.startswith("_"):
                 continue
-            
+
             # Include only symbols where the __module__ attribute matches the module_name
             origin = getattr(obj, "__module__", None)
-            if origin == module_name:
+            if origin is not None and origin.startswith(package_root): # origin == module_name:
                 symbols.append(name)
 
         return symbols
@@ -113,11 +114,11 @@ def generate_all_for_package(package_name, base_path, package_root, all_dir):
             module_full_name = f"{package_name}.{module_name}"
             print(f"Processing module: {module_full_name}")
 
-            symbols = extract_symbols(module_full_name)
+            symbols = extract_symbols(module_full_name,package_root)
             if symbols:
                 # Write a backup __all__ file in utils/__all__/
                 write_backup_all(module_full_name, symbols, all_dir)
-                
+
                 # Update the module file with the __all__ variable
                 update_module_with_all(module_full_name, symbols, base_path, package_root)
             else:

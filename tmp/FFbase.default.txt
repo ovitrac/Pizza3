@@ -1,0 +1,26 @@
+# DFORCEFIELD SAVE FILE
+
+base_class="tlsph"
+beadtype = 1
+userid = "FFbase"
+version = 0.1
+
+# Description of the forcefield
+description:{forcefield="LAMMPS:SMD - solid, liquid, rigid forcefields (continuum mechanics)", style="SMD:TLSPH - total Lagrangian for solids", material="dforcefield beads - SPH-like"}
+
+# Name of the forcefield
+name:{forcefield="LAMMPS:SMD", style="tlsph", material="dforcefield"}
+
+# Parameters for the forcefield
+Cp = 1.0
+q1 = 1.0
+contact_scale = 1.5
+nu = 0.3
+rho = 1050
+Hg = 10.0
+hardening = 0
+q2 = 0.0
+c0 = 10.0
+contact_stiffness = 2.5*${c0}^2*${rho}
+E = 50*${c0}^2*${rho}
+sigma_yield = 0.1*${E}

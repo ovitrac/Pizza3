@@ -1,0 +1,87 @@
+# ╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║          PIZZA.SCRIPT FILE v1.0 | License: GPLv3 | Email: olivier.vitrac@agroparistech.fr         ║
+# ║═══════════════════════════════════════════════════════════════════════════════════════════════════║
+# ║  <script:pipescript:script:LammpsHeaderBox:headerinit->script:LammpsFooterPreview:footerpreview>  ║
+# ║                         Initialized with 37 definitions | Verbosity: None                         ║
+# ║                              Persistent file: "True" | Folder: "/tmp"                             ║
+# ║═══════════════════════════════════════════════════════════════════════════════════════════════════║
+# ║                   Generated on: olivi@LX-Olivier2023:/home/olivi/han/dev/Pizza3                   ║
+# ║                              Wednesday, January 08, 2025 at 09:28:39                              ║
+# ╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
+ 
+
+#============================================================================================#
+#                         PIPESCRIPT with 17 scripts | Verbosity: 1                          #
+#============================================================================================#
+#  From: <script:LammpsHeaderBox:headerinit> To: <script:LammpsFooterPreview:footerpreview>  #
+#============================================================================================#
+
+# [1 of 17 from 0:16] <script:LammpsHeaderBox:headerinit>
+dimension    3
+units        si
+boundary     f f f
+atom_style   smd
+atom_modify  map array
+comm_modify  vel yes
+neigh_modify every 10 delay 0 check yes
+newton       off
+
+# [2 of 17 from 0:16] <script:LammpsHeaderLattice:headerlattice>
+lattice sc 0.001 spacing 0.001 0.001 0.001
+
+# [3 of 17 from 0:16] <script:LammpsHeaderBox:headerbox>
+region box block -0.04 0.04 -0.04 0.04 -0.03 0.03 units box
+create_box	3 box
+
+# [4 of 17 from 0:16] <script:LammpsVariables:variable> :: no content
+
+# [5 of 17 from 0:16] <script:LammpsVariables:variable> :: no content
+
+# [6 of 17 from 0:16] <script:LammpsVariables:variable> :: no content
+
+# [7 of 17 from 0:16] <script:LammpsRegion:region>
+region LowerCylinder cylinder z 0 0 0.03 -0.03 -0.01 units box
+
+# [8 of 17 from 0:16] <script:LammpsRegion:region>
+region CentralCylinder cylinder z 0 0 0.03 -0.01 0.01 units box
+
+# [9 of 17 from 0:16] <script:LammpsRegion:region>
+region UpperCylinder cylinder z 0 0 0.03 0.01 0.03 units box
+
+# [10 of 17 from 0:16] <script:LammpsCreate:create>
+create_atoms 1 region LowerCylinder
+
+# [11 of 17 from 0:16] <script:LammpsCreate:create>
+create_atoms 2 region CentralCylinder
+
+# [12 of 17 from 0:16] <script:LammpsCreate:create>
+create_atoms 3 region UpperCylinder
+
+# [13 of 17 from 0:16] <script:1+2+3:dscript>
+group lower type 1
+group middle type 2
+group upper type 3
+group all union lower middle upper
+group external subtract all middle
+
+# [14 of 17 from 0:16] <script:<dscript:group:beadtype=1,2,3:mass>:collection:dscript>
+mass 1 2.0
+mass 2 1.0
+mass 3 1.0
+
+# [15 of 17 from 0:16] <script:<dscript:group:1+2+3:count>:variables:dscript>
+variable n_all equal "count(all)"
+variable n_lower equal "count(lower)"
+variable n_middle equal "count(middle)"
+variable n_upper equal "count(upper)"
+
+# [16 of 17 from 0:16] <script:<dscript:group:1+2+3:count>:printvariables:dscript>
+print "Number of atoms in all: ${n_all}"
+print "Number of atoms in lower: ${n_lower}"
+print "Number of atoms in middle: ${n_middle}"
+print "Number of atoms in upper: ${n_upper}"
+
+# [17 of 17 from 0:16] <script:LammpsFooterPreview:footerpreview>
+dump initial_dump all custom 1 dump.initial.region_SimulationBox id type x y z
+run 0
+

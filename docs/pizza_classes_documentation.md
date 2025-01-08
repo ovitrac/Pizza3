@@ -1,6 +1,6 @@
 # Pizza Modules Documentation
 
-Generated on: **2024-12-26 12:43:19**
+Generated on: **2025-01-08 09:30:03**
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
 
@@ -95,6 +95,7 @@ ScriptTemplate
 Sphere
 USERSMD
 Union
+VariableOccurrences
 boundarysection
 coregeometry
 coreshell
@@ -176,6 +177,7 @@ object --> CallableScript
 object --> Collection
 object --> Operation
 object --> ScriptTemplate
+object --> VariableOccurrences
 object --> coregeometry
 object --> data
 object --> dforcefield
@@ -301,49 +303,50 @@ struct --> scriptobject
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| (module-level) | `autoname` | generate automatically names | 3 | 0.9972 |
-| (module-level) | `remove_comments` | Removes comments from a single or multi-line string. Handles quotes and escaped characters. | 68 | 0.9972 |
-| `dforcefield` | `__add__` | Concatenate dforcefield attributes, i | 38 | 0.9972 |
-| `dforcefield` | `__contains__` | Check if an attribute exists in the dforcefield instance or its parameters. | 3 | 0.9972 |
-| `dforcefield` | `__copy__` | Shallow copy method for dforcefield. | 15 | 0.9972 |
-| `dforcefield` | `__deepcopy__` | Deep copy method for dforcefield. | 21 | 0.9972 |
-| `dforcefield` | `__getattr__` | Shorthand for accessing parameters, base class attributes, or attributes in 'name' and 'description'. If an attribute exists in both 'name' and 'description', their contents are combined with a newline. | 28 | 0.9972 |
-| `dforcefield` | `__hasattr__` | Check if an attribute exists in the dforcefield instance, class, parameters, or the base class. | 15 | 0.9972 |
-| `dforcefield` | `__init__` | Initialize a dynamic forcefield with default or custom values. | 166 | 0.9972 |
-| `dforcefield` | `__iter__` | Iterate over all keys, including those in the merged struct, parameters, and scalar attributes. | 11 | 0.9972 |
-| `dforcefield` | `__len__` | Return the number of parameters in the forcefield. This will use the len method of parameters. | 6 | 0.9972 |
-| `dforcefield` | `__or__` | Overload | pipe operator in dscript | 6 | 0.9972 |
-| `dforcefield` | `__repr__` | Custom __repr__ method that indicates it is a dforcefield instance and provides information about the base class, name, and parameters dynamically. | 55 | 0.9972 |
-| `dforcefield` | `__setattr__` | Shorthand for setting attributes. Attributes specific to dforcefield are handled separately. New attributes are added to parameters if they are not part of the dforcefield-specific attributes. | 27 | 0.9972 |
-| `dforcefield` | `__str__` | Return str(self). | 3 | 0.9972 |
-| `dforcefield` | `_inject_attributes` | Inject dforcefield attributes into the base class, bypassing __setattr__. | 22 | 0.9972 |
-| `dforcefield` | `base_repr` | Returns the representation of the base_class. | 4 | 0.9972 |
-| `dforcefield` | `combine_parameters` | Combine GLOBAL, LOCAL, and RULES to get the current parameter configuration. | 5 | 0.9972 |
-| `dforcefield` | `compare` | Compare the current instance with another dforcefield instance, including RULES, GLOBAL, and LOCAL. | 142 | 0.9972 |
-| `dforcefield` | `copy` | Create a new instance of dforcefield with the option to override key attributes including RULES, GLOBAL, and LOCAL. | 34 | 0.9972 |
-| `dforcefield` | `detectVariables` | Detects variables in the form ${variable} from the outputs of pair_style, pair_diagcoeff, and pair_offdiagcoeff. | 30 | 0.9972 |
-| `dforcefield` | `dispmax` | optimize display | 8 | 0.9972 |
-| `dforcefield` | `get_global` | Return the GLOBAL parameters for this dforcefield instance. | 3 | 0.9972 |
-| `dforcefield` | `get_local` | Return the LOCAL parameters for this dforcefield instance. | 3 | 0.9972 |
-| `dforcefield` | `get_rules` | Return the RULES parameters for this dforcefield instance. | 3 | 0.9972 |
-| `dforcefield` | `items` | Return an iterator over (key, value) pairs from the merged struct, parameters, and scalar attributes. | 16 | 0.9972 |
-| `dforcefield` | `keys` | Return the keys of the merged struct, parameters, and scalar attributes. | 8 | 0.9972 |
-| `dforcefield` | `missingVariables` | List missing variables (undefined in parameters). | 46 | 0.9972 |
-| `dforcefield` | `pair_diagcoeff` | Delegate pair_diagcoeff to the base class, ensuring it uses the correct attributes. | 6 | 0.9972 |
-| `dforcefield` | `pair_offdiagcoeff` | Delegate pair_offdiagcoeff to the base class, ensuring it uses the correct attributes. | 6 | 0.9972 |
-| `dforcefield` | `pair_style` | Delegate pair_style to the base class, ensuring it uses the correct attributes. | 6 | 0.9972 |
-| `dforcefield` | `reset` | Reset the dforcefield instance to its initial state, reapplying the default values including RULES, GLOBAL, and LOCAL. | 22 | 0.9972 |
-| `dforcefield` | `save` | Save the dforcefield instance to a file with a header, formatted content, and the base_class. | 99 | 0.9972 |
-| `dforcefield` | `scriptobject` | Method to return a scriptobject based on the current dforcefield instance. | 77 | 0.9972 |
-| `dforcefield` | `set_global` | Update the GLOBAL parameters and adjust the combined parameters accordingly. | 17 | 0.9972 |
-| `dforcefield` | `set_local` | Update the LOCAL parameters and adjust the combined parameters accordingly. | 17 | 0.9972 |
-| `dforcefield` | `set_rules` | Update the RULES parameters and adjust the combined parameters accordingly. | 17 | 0.9972 |
-| `dforcefield` | `show` | Show the corresponding base_class forcefield definition | 4 | 0.9972 |
-| `dforcefield` | `to_dict` | Serialize the dforcefield instance to a dictionary, including RULES, GLOBAL, and LOCAL. | 24 | 0.9972 |
-| `dforcefield` | `update` | Update multiple attributes of the dforcefield instance at once, including RULES, GLOBAL, and LOCAL. | 16 | 0.9972 |
-| `dforcefield` | `update_parameters` | Update self.parameters by combining GLOBAL, LOCAL, RULES, and USER parameters. | 6 | 0.9972 |
-| `dforcefield` | `validate` | Validate the dforcefield instance to ensure all required attributes are set. | 14 | 0.9972 |
-| `dforcefield` | `values` | Return the values of the merged struct, parameters, and scalar attributes. | 8 | 0.9972 |
+| (module-level) | `autoname` | generate automatically names | 3 | 0.99995 |
+| (module-level) | `remove_comments` | Removes comments from a single or multi-line string. Handles quotes and escaped characters. | 68 | 0.99995 |
+| `dforcefield` | `__add__` | Concatenate dforcefield attributes, i | 38 | 0.99995 |
+| `dforcefield` | `__contains__` | Check if an attribute exists in the dforcefield instance or its parameters. | 3 | 0.99995 |
+| `dforcefield` | `__copy__` | Shallow copy method for dforcefield. | 15 | 0.99995 |
+| `dforcefield` | `__deepcopy__` | Deep copy method for dforcefield. | 21 | 0.99995 |
+| `dforcefield` | `__getattr__` | Shorthand for accessing parameters, base class attributes, or attributes in 'name' and 'description'. If an attribute exists in both 'name' and 'description', their contents are combined with a newline. | 28 | 0.99995 |
+| `dforcefield` | `__hasattr__` | Check if an attribute exists in the dforcefield instance, class, parameters, or the base class. | 15 | 0.99995 |
+| `dforcefield` | `__init__` | Initialize a dynamic forcefield with default or custom values. | 169 | 0.99995 |
+| `dforcefield` | `__iter__` | Iterate over all keys, including those in the merged struct, parameters, and scalar attributes. | 11 | 0.99995 |
+| `dforcefield` | `__len__` | Return the number of parameters in the forcefield. This will use the len method of parameters. | 6 | 0.99995 |
+| `dforcefield` | `__or__` | Overload | pipe operator in dscript | 6 | 0.99995 |
+| `dforcefield` | `__repr__` | Custom __repr__ method that provides a detailed representation of the dforcefield instance, excluding attributes that start with an underscore (_). | 71 | 0.99995 |
+| `dforcefield` | `__setattr__` | Shorthand for setting attributes. Attributes specific to dforcefield are handled separately. New attributes are added to parameters if they are not part of the dforcefield-specific attributes. | 27 | 0.99995 |
+| `dforcefield` | `__str__` | Return str(self). | 3 | 0.99995 |
+| `dforcefield` | `_inject_attributes` | Inject dforcefield attributes into the base class, bypassing __setattr__. | 22 | 0.99995 |
+| `dforcefield` | `base_repr` | Returns the representation of the base_class. | 4 | 0.99995 |
+| `dforcefield` | `combine_parameters` | Combine GLOBAL, LOCAL, and RULES to get the current parameter configuration. | 5 | 0.99995 |
+| `dforcefield` | `compare` | Compare the current instance with another dforcefield instance, including RULES, GLOBAL, and LOCAL. | 142 | 0.99995 |
+| `dforcefield` | `copy` | Create a new instance of dforcefield with the option to override key attributes including RULES, GLOBAL, and LOCAL. | 34 | 0.99995 |
+| `dforcefield` | `detectVariables` | Detects variables in the form ${variable} from the outputs of pair_style, pair_diagcoeff, and pair_offdiagcoeff. | 30 | 0.99995 |
+| `dforcefield` | `dispmax` | optimize display | 8 | 0.99995 |
+| `dforcefield` | `generator` | Generate the forcefield definition as a formatted string without traceability features. | 55 | 0.99995 |
+| `dforcefield` | `get_global` | Return the GLOBAL parameters for this dforcefield instance. | 3 | 0.99995 |
+| `dforcefield` | `get_local` | Return the LOCAL parameters for this dforcefield instance. | 3 | 0.99995 |
+| `dforcefield` | `get_rules` | Return the RULES parameters for this dforcefield instance. | 3 | 0.99995 |
+| `dforcefield` | `items` | Return an iterator over (key, value) pairs from the merged struct, parameters, and scalar attributes. | 16 | 0.99995 |
+| `dforcefield` | `keys` | Return the keys of the merged struct, parameters, and scalar attributes. | 8 | 0.99995 |
+| `dforcefield` | `missingVariables` | List missing variables (undefined in parameters). | 46 | 0.99995 |
+| `dforcefield` | `pair_diagcoeff` | Delegate pair_diagcoeff to the base class, ensuring it uses the correct attributes. | 6 | 0.99995 |
+| `dforcefield` | `pair_offdiagcoeff` | Delegate pair_offdiagcoeff to the base class, ensuring it uses the correct attributes. | 6 | 0.99995 |
+| `dforcefield` | `pair_style` | Delegate pair_style to the base class, ensuring it uses the correct attributes. | 6 | 0.99995 |
+| `dforcefield` | `reset` | Reset the dforcefield instance to its initial state, reapplying the default values including RULES, GLOBAL, and LOCAL. | 22 | 0.99995 |
+| `dforcefield` | `save` | Save the dforcefield instance to a file using the generated forcefield definition. | 116 | 0.99995 |
+| `dforcefield` | `scriptobject` | Method to return a scriptobject based on the current dforcefield instance. | 77 | 0.99995 |
+| `dforcefield` | `set_global` | Update the GLOBAL parameters and adjust the combined parameters accordingly. | 17 | 0.99995 |
+| `dforcefield` | `set_local` | Update the LOCAL parameters and adjust the combined parameters accordingly. | 17 | 0.99995 |
+| `dforcefield` | `set_rules` | Update the RULES parameters and adjust the combined parameters accordingly. | 17 | 0.99995 |
+| `dforcefield` | `show` | Show the corresponding base_class forcefield definition | 4 | 0.99995 |
+| `dforcefield` | `to_dict` | Serialize the dforcefield instance to a dictionary, including RULES, GLOBAL, and LOCAL. | 24 | 0.99995 |
+| `dforcefield` | `update` | Update multiple attributes of the dforcefield instance at once, including RULES, GLOBAL, and LOCAL. | 16 | 0.99995 |
+| `dforcefield` | `update_parameters` | Update self.parameters by combining GLOBAL, LOCAL, RULES, and USER parameters. | 6 | 0.99995 |
+| `dforcefield` | `validate` | Validate the dforcefield instance to ensure all required attributes are set. | 14 | 0.99995 |
+| `dforcefield` | `values` | Return the values of the merged struct, parameters, and scalar attributes. | 8 | 0.99995 |
 
 ## Module `pizza.dscript`
 
@@ -351,6 +354,7 @@ struct --> scriptobject
 ```mermaid
 graph TD;
 ScriptTemplate
+VariableOccurrences
 dscript
 lambdaScriptdata
 lamdaScript
@@ -359,8 +363,10 @@ paramauto
 pipescript
 script
 scriptdata
+scriptobjectgroup
 struct
 object --> ScriptTemplate
+object --> VariableOccurrences
 object --> dscript
 object --> pipescript
 object --> script
@@ -370,6 +376,7 @@ param --> scriptdata
 paramauto --> lambdaScriptdata
 script --> lamdaScript
 struct --> param
+struct --> scriptobjectgroup
 ```
 
 **[Class Examples for `pizza/dscript.py` (46)](class_examples.html#pizza_dscript)**
@@ -378,56 +385,68 @@ struct --> param
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| (module-level) | `autoname` | generate automatically names | 3 | 0.99991 |
-| (module-level) | `get_metadata` | Return a dictionary of explicitly defined metadata. | 15 | 0.99991 |
-| `ScriptTemplate` | `__getattr__` | Handles attribute retrieval, checking the following in order: 1. If 'name' is in default_attributes, return the value from attributes if it exists, otherwise return the default value from default_attributes. 2. If 'name' is 'content', return the content (or an empty string if content is not set). 3. If 'name' exists in the attributes dictionary, return its value. 4. If attributes itself exists in __dict__, return the value from attributes if 'name' is found. 5. If all previous checks fail, raise an AttributeError indicating that 'name' is not found. | 39 | 0.99991 |
-| `ScriptTemplate` | `__init__` | Initializes a new `ScriptTemplate` object. | 96 | 0.99991 |
-| `ScriptTemplate` | `__repr__` | Return repr(self). | 87 | 0.99991 |
-| `ScriptTemplate` | `__setattr__` | Implement setattr(self, name, value). | 24 | 0.99991 |
-| `ScriptTemplate` | `__str__` | Return str(self). | 3 | 0.99991 |
-| `ScriptTemplate` | `_calculate_content_hash` | Generate hash for content. | 3 | 0.99991 |
-| `ScriptTemplate` | `_invalidate_cache` | Reset all cache entries. | 10 | 0.99991 |
-| `ScriptTemplate` | `_update_content` | Helper to set _content and _content_hash, refreshing cache as necessary. | 19 | 0.99991 |
-| `ScriptTemplate` | `check_variables` | Checks for undefined variables in the ScriptTemplate instance. | 56 | 0.99991 |
-| `ScriptTemplate` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 19 | 0.99991 |
-| `ScriptTemplate` | `do` | Executes or prepares the script template content based on its attributes and the `softrun` flag. | 89 | 0.99991 |
-| `ScriptTemplate` | `is_variable_defined` | Checks if a specified variable is defined (either as a default value or a set value). | 29 | 0.99991 |
-| `ScriptTemplate` | `is_variable_set_value_only` | Checks if a specified variable is defined and set to a specific (non-default) value. | 31 | 0.99991 |
-| `ScriptTemplate` | `refreshvar` | Detects variables in the content and adds them to definitions if needed. This method ensures that variables like ${varname} are correctly detected and added to the definitions if they are missing. | 14 | 0.99991 |
-| `dscript` | `__add__` | Concatenates two dscript objects, creating a new dscript object that combines the TEMPLATE and DEFINITIONS of both. This operation avoids deep copying of definitions by creating a new lambdaScriptdata instance from the definitions. | 52 | 0.99991 |
-| `dscript` | `__call__` | Extracts subobjects from the dscript based on the provided keys. | 35 | 0.99991 |
-| `dscript` | `__contains__` |  | 2 | 0.99991 |
-| `dscript` | `__copy__` | copy method | 6 | 0.99991 |
-| `dscript` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `dscript` | `__delitem__` |  | 2 | 0.99991 |
-| `dscript` | `__getattr__` |  | 16 | 0.99991 |
-| `dscript` | `__getitem__` | Implements index-based retrieval, slicing, or reordering for dscript objects. | 47 | 0.99991 |
-| `dscript` | `__init__` | Initializes a new `dscript` object. | 65 | 0.99991 |
-| `dscript` | `__iter__` |  | 2 | 0.99991 |
-| `dscript` | `__len__` |  | 2 | 0.99991 |
-| `dscript` | `__repr__` | Representation of dscript object with additional properties. | 20 | 0.99991 |
-| `dscript` | `__setattr__` | Implement setattr(self, name, value). | 24 | 0.99991 |
-| `dscript` | `__setitem__` |  | 7 | 0.99991 |
-| `dscript` | `__str__` | Return str(self). | 4 | 0.99991 |
-| `dscript` | `add_dynamic_script` | Add a dynamic script step to the dscript object. | 29 | 0.99991 |
-| `dscript` | `check_all_variables` | Checks for undefined variables for each TEMPLATE key in the dscript object. | 38 | 0.99991 |
-| `dscript` | `createEmptyVariables` | Creates empty variables in DEFINITIONS if they don't already exist. | 14 | 0.99991 |
-| `dscript` | `detect_all_variables` | Detects all variables across all templates in the dscript object. | 20 | 0.99991 |
-| `dscript` | `do` | Executes or previews all `ScriptTemplate` instances in `TEMPLATE`, concatenating their processed content. Allows for optional headers and footers based on verbosity settings, and offers a preliminary preview mode with `softrun`. Accumulates definitions across all templates if `return_definitions=True`. | 101 | 0.99991 |
-| `dscript` | `generator` | Returns ------- STR generated code corresponding to dscript (using dscript syntax/language). | 9 | 0.99991 |
-| `dscript` | `get_attributes_by_index` | Returns the attributes of the ScriptTemplate at the specified index. | 4 | 0.99991 |
-| `dscript` | `get_content_by_index` | Returns the content of the ScriptTemplate at the specified index. | 45 | 0.99991 |
-| `dscript` | `header` | Generate a formatted header for the DSCRIPT file. | 63 | 0.99991 |
-| `dscript` | `items` |  | 2 | 0.99991 |
-| `dscript` | `keys` | Return the keys of the TEMPLATE. | 3 | 0.99991 |
-| `dscript` | `pipescript` | Returns a pipescript object by combining script objects corresponding to the given keys. | 69 | 0.99991 |
-| `dscript` | `reorder` | Reorder the TEMPLATE lines according to a list of indices. | 10 | 0.99991 |
-| `dscript` | `save` | Save the current script instance to a text file. | 268 | 0.99991 |
-| `dscript` | `script` | returns the corresponding script | 10 | 0.99991 |
-| `dscript` | `set_all_variables` | Ensures that all variables in the templates are added to the global definitions with default values if they are not already defined. | 11 | 0.99991 |
-| `dscript` | `values` | Return the ScriptTemplate objects in TEMPLATE. | 3 | 0.99991 |
-| `lambdaScriptdata` | `__init__` | Constructor for lambdaScriptdata. It forces the parent's _returnerror parameter to False. | 19 | 0.99991 |
-| `lamdaScript` | `__init__` | Initialize a new `lambdaScript` instance. | 66 | 0.99991 |
+| (module-level) | `autoname` | generate automatically names | 3 | 1.0 |
+| (module-level) | `get_metadata` | Return a dictionary of explicitly defined metadata. | 15 | 1.0 |
+| `ScriptTemplate` | `__getattr__` | Handles attribute retrieval, checking the following in order: 1. If 'name' is in default_attributes, return the value from attributes if it exists, otherwise return the default value from default_attributes. 2. If 'name' is 'content', return the content (or an empty string if content is not set). 3. If 'name' exists in the attributes dictionary, return its value. 4. If attributes itself exists in __dict__, return the value from attributes if 'name' is found. 5. If all previous checks fail, raise an AttributeError indicating that 'name' is not found. | 39 | 1.0 |
+| `ScriptTemplate` | `__init__` | Initializes a new `ScriptTemplate` object. | 96 | 1.0 |
+| `ScriptTemplate` | `__repr__` | Return repr(self). | 87 | 1.0 |
+| `ScriptTemplate` | `__setattr__` | Implement setattr(self, name, value). | 24 | 1.0 |
+| `ScriptTemplate` | `__str__` | Return str(self). | 3 | 1.0 |
+| `ScriptTemplate` | `_calculate_content_hash` | Generate hash for content. | 3 | 1.0 |
+| `ScriptTemplate` | `_invalidate_cache` | Reset all cache entries. | 10 | 1.0 |
+| `ScriptTemplate` | `_update_content` | Helper to set _content and _content_hash, refreshing cache as necessary. | 19 | 1.0 |
+| `ScriptTemplate` | `check_variables` | Checks for undefined variables in the ScriptTemplate instance. | 56 | 1.0 |
+| `ScriptTemplate` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 19 | 1.0 |
+| `ScriptTemplate` | `do` | Executes or prepares the script template content based on its attributes and the `softrun` flag. | 89 | 1.0 |
+| `ScriptTemplate` | `is_variable_defined` | Checks if a specified variable is defined (either as a default value or a set value). | 29 | 1.0 |
+| `ScriptTemplate` | `is_variable_set_value_only` | Checks if a specified variable is defined and set to a specific (non-default) value. | 31 | 1.0 |
+| `ScriptTemplate` | `refreshvar` | Detects variables in the content and adds them to definitions if needed. This method ensures that variables like ${varname} are correctly detected and added to the definitions if they are missing. | 14 | 1.0 |
+| `dscript` | `__add__` | Concatenates two dscript objects, creating a new dscript object that combines the TEMPLATE and DEFINITIONS of both. This operation avoids deep copying of definitions by creating a new lambdaScriptdata instance from the definitions. | 55 | 1.0 |
+| `dscript` | `__call__` | Extracts subobjects from the dscript based on the provided keys. | 35 | 1.0 |
+| `dscript` | `__contains__` |  | 2 | 1.0 |
+| `dscript` | `__copy__` | copy method | 6 | 1.0 |
+| `dscript` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `dscript` | `__delitem__` |  | 2 | 1.0 |
+| `dscript` | `__getattr__` |  | 16 | 1.0 |
+| `dscript` | `__getitem__` | Implements index-based retrieval, slicing, or reordering for dscript objects. | 48 | 1.0 |
+| `dscript` | `__init__` | Initializes a new `dscript` object. | 65 | 1.0 |
+| `dscript` | `__iter__` |  | 2 | 1.0 |
+| `dscript` | `__len__` |  | 2 | 1.0 |
+| `dscript` | `__or__` | Pipes a dscript object with other objects. When other is a dscript object, both objects are concatenated (+) before being converted into a pipescript object When other is a script, pipescript or scriptobjectgroup, self is converted into a pipescript | 29 | 1.0 |
+| `dscript` | `__repr__` | Representation of dscript object with additional properties. | 20 | 1.0 |
+| `dscript` | `__setattr__` | Implement setattr(self, name, value). | 24 | 1.0 |
+| `dscript` | `__setitem__` |  | 7 | 1.0 |
+| `dscript` | `__str__` | Return str(self). | 4 | 1.0 |
+| `dscript` | `_build_html_table` | Helper method to build an HTML table with embedded CSS. | 98 | 1.0 |
+| `dscript` | `_escape_html` | Helper method to escape HTML special characters in text. | 16 | 1.0 |
+| `dscript` | `_format_field` | Helper method to format individual fields for the table. | 20 | 1.0 |
+| `dscript` | `_format_list` | Helper method to format list-type fields for the table. | 17 | 1.0 |
+| `dscript` | `_format_values` | Helper method to format the 'values' field, which is a list of tuples. | 17 | 1.0 |
+| `dscript` | `add_dynamic_script` | Add a dynamic script step to the dscript object. | 33 | 1.0 |
+| `dscript` | `check_all_variables` | Checks for undefined variables for each TEMPLATE key in the dscript object. | 38 | 1.0 |
+| `dscript` | `clean` | Clean the TEMPLATE by removing or fixing empty steps. | 42 | 1.0 |
+| `dscript` | `createEmptyVariables` | Creates empty variables in DEFINITIONS if they don't already exist. | 14 | 1.0 |
+| `dscript` | `detect_all_variables` | Detects all variables across all templates in the dscript object. | 20 | 1.0 |
+| `dscript` | `do` | Executes or previews all `ScriptTemplate` instances in `TEMPLATE`, concatenating their processed content. Allows for optional headers and footers based on verbosity settings, and offers a preliminary preview mode with `softrun`. Accumulates definitions across all templates if `return_definitions=True`. | 101 | 1.0 |
+| `dscript` | `flattenvariables` | Flatten the variable definitions for each step based on usage and precedence. | 60 | 1.0 |
+| `dscript` | `generator` | Returns ------- STR generated code corresponding to dscript (using dscript syntax/language). | 9 | 1.0 |
+| `dscript` | `get_attributes_by_index` | Returns the attributes of the ScriptTemplate at the specified index. | 4 | 1.0 |
+| `dscript` | `get_content_by_index` | Returns the content of the ScriptTemplate at the specified index. | 45 | 1.0 |
+| `dscript` | `header` | Generate a formatted header for the DSCRIPT file. | 63 | 1.0 |
+| `dscript` | `items` |  | 2 | 1.0 |
+| `dscript` | `keys` | Return the keys of the TEMPLATE. | 3 | 1.0 |
+| `dscript` | `list_values` | List all unique values taken by a specified key across global definitions and all steps in sequential order. | 179 | 1.0 |
+| `dscript` | `pipescript` | Returns a pipescript object by combining script objects corresponding to the given keys. | 71 | 1.0 |
+| `dscript` | `print_var_info` | Print or save a neatly formatted table of variable information based on the analysis from `var_info()`. | 205 | 1.0 |
+| `dscript` | `reorder` | Reorder the TEMPLATE lines according to a list of indices. | 10 | 1.0 |
+| `dscript` | `save` | Save the current script instance to a text file. | 222 | 1.0 |
+| `dscript` | `script` | returns the corresponding script | 10 | 1.0 |
+| `dscript` | `search` | Search for foreign/definition key values associated with given primary key/definition value(s). | 193 | 1.0 |
+| `dscript` | `set_all_variables` | Ensures that all variables in the templates are added to the global definitions with default values if they are not already defined. | 11 | 1.0 |
+| `dscript` | `values` | Return the ScriptTemplate objects in TEMPLATE. | 3 | 1.0 |
+| `dscript` | `var_info` | Analyze and gather comprehensive information about variables used in the script. | 130 | 1.0 |
+| `lambdaScriptdata` | `__init__` | Constructor for lambdaScriptdata. It forces the parent's _returnerror parameter to False. | 19 | 1.0 |
+| `lamdaScript` | `__init__` | Initialize a new `lambdaScript` instance. | 66 | 1.0 |
 
 ## Module `pizza.dump3`
 
@@ -1626,6 +1645,7 @@ ulsph --> water
 ```mermaid
 graph TD;
 CallableScript
+VariableOccurrences
 boundarysection
 discretizationsection
 dumpsection
@@ -1657,6 +1677,7 @@ water
 forcefield --> smd
 none --> rigidwall
 object --> CallableScript
+object --> VariableOccurrences
 object --> forcefield
 object --> pipescript
 object --> script
@@ -1691,265 +1712,281 @@ ulsph --> water
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| (module-level) | `frame_header` | Format the header content into an ASCII framed box with customizable properties. | 147 | 0.99991 |
-| (module-level) | `get_metadata` | Return a dictionary of explicitly defined metadata. | 15 | 0.99991 |
-| (module-level) | `<lambda>` |  | 1 | 0.99991 |
-| (module-level) | `picker` |  | 1 | 0.99991 |
-| (module-level) | `remove_comments` | Removes comments from a single or multi-line string, handling quotes, escaped characters, and line continuation. | 101 | 0.99991 |
-| (module-level) | `span` |  | 2 | 0.99991 |
-| `CallableScript` | `__call__` | Call self as a function. | 3 | 0.99991 |
-| `CallableScript` | `__get__` |  | 3 | 0.99991 |
-| `CallableScript` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 0.99991 |
-| `boundarysection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `boundarysection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `boundarysection` | `__copy__` | copy method | 6 | 0.99991 |
-| `boundarysection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `boundarysection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `boundarysection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `boundarysection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `boundarysection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `boundarysection` | `__repr__` | disp method | 22 | 0.99991 |
-| `boundarysection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `boundarysection` | `__str__` | string representation | 3 | 0.99991 |
-| `boundarysection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `boundarysection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `boundarysection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `boundarysection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `boundarysection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `boundarysection` | `printheader` | print header | 7 | 0.99991 |
-| `boundarysection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `boundarysection` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `discretizationsection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `discretizationsection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `discretizationsection` | `__copy__` | copy method | 6 | 0.99991 |
-| `discretizationsection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `discretizationsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `discretizationsection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `discretizationsection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `discretizationsection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `discretizationsection` | `__repr__` | disp method | 22 | 0.99991 |
-| `discretizationsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `discretizationsection` | `__str__` | string representation | 3 | 0.99991 |
-| `discretizationsection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `discretizationsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `discretizationsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `discretizationsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `discretizationsection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `discretizationsection` | `printheader` | print header | 7 | 0.99991 |
-| `discretizationsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `discretizationsection` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `dumpsection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `dumpsection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `dumpsection` | `__copy__` | copy method | 6 | 0.99991 |
-| `dumpsection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `dumpsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `dumpsection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `dumpsection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `dumpsection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `dumpsection` | `__repr__` | disp method | 22 | 0.99991 |
-| `dumpsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `dumpsection` | `__str__` | string representation | 3 | 0.99991 |
-| `dumpsection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `dumpsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `dumpsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `dumpsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `dumpsection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `dumpsection` | `printheader` | print header | 7 | 0.99991 |
-| `dumpsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `dumpsection` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `geometrysection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `geometrysection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `geometrysection` | `__copy__` | copy method | 6 | 0.99991 |
-| `geometrysection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `geometrysection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `geometrysection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `geometrysection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `geometrysection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `geometrysection` | `__repr__` | disp method | 22 | 0.99991 |
-| `geometrysection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `geometrysection` | `__str__` | string representation | 3 | 0.99991 |
-| `geometrysection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `geometrysection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `geometrysection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `geometrysection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `geometrysection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `geometrysection` | `printheader` | print header | 7 | 0.99991 |
-| `geometrysection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `geometrysection` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `globalsection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `globalsection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `globalsection` | `__copy__` | copy method | 6 | 0.99991 |
-| `globalsection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `globalsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `globalsection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `globalsection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `globalsection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `globalsection` | `__repr__` | disp method | 22 | 0.99991 |
-| `globalsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `globalsection` | `__str__` | string representation | 3 | 0.99991 |
-| `globalsection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `globalsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `globalsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `globalsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `globalsection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `globalsection` | `printheader` | print header | 7 | 0.99991 |
-| `globalsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `globalsection` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `initializesection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `initializesection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `initializesection` | `__copy__` | copy method | 6 | 0.99991 |
-| `initializesection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `initializesection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `initializesection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `initializesection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `initializesection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `initializesection` | `__repr__` | disp method | 22 | 0.99991 |
-| `initializesection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `initializesection` | `__str__` | string representation | 3 | 0.99991 |
-| `initializesection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `initializesection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `initializesection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `initializesection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `initializesection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `initializesection` | `printheader` | print header | 7 | 0.99991 |
-| `initializesection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `initializesection` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `integrationsection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `integrationsection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `integrationsection` | `__copy__` | copy method | 6 | 0.99991 |
-| `integrationsection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `integrationsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `integrationsection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `integrationsection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `integrationsection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `integrationsection` | `__repr__` | disp method | 22 | 0.99991 |
-| `integrationsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `integrationsection` | `__str__` | string representation | 3 | 0.99991 |
-| `integrationsection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `integrationsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `integrationsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `integrationsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `integrationsection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `integrationsection` | `printheader` | print header | 7 | 0.99991 |
-| `integrationsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `integrationsection` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `interactionsection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `interactionsection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `interactionsection` | `__copy__` | copy method | 6 | 0.99991 |
-| `interactionsection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `interactionsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `interactionsection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `interactionsection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `interactionsection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `interactionsection` | `__repr__` | disp method | 22 | 0.99991 |
-| `interactionsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `interactionsection` | `__str__` | string representation | 3 | 0.99991 |
-| `interactionsection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `interactionsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `interactionsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `interactionsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `interactionsection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `interactionsection` | `printheader` | print header | 7 | 0.99991 |
-| `interactionsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `interactionsection` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `pipescript` | `__add__` | overload + as pipe with copy | 7 | 0.99991 |
-| `pipescript` | `__copy__` | copy method | 6 | 0.99991 |
-| `pipescript` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `pipescript` | `__getitem__` | return the ith or slice element(s) of the pipe | 24 | 0.99991 |
-| `pipescript` | `__iadd__` | overload += as pipe without copy | 6 | 0.99991 |
-| `pipescript` | `__init__` | constructor | 26 | 0.99991 |
-| `pipescript` | `__len__` | len() method | 3 | 0.99991 |
-| `pipescript` | `__mul__` | overload * as multiple pipes with copy | 9 | 0.99991 |
-| `pipescript` | `__or__` | Overload | pipe operator in pipescript | 51 | 0.99991 |
-| `pipescript` | `__repr__` | display method | 29 | 0.99991 |
-| `pipescript` | `__setitem__` | modify the ith element of the pipe p[4] = [] removes the 4th element p[4:7] = [] removes the elements from position 4 to 6 p[2:4] = p[0:2] copy the elements 0 and 1 in positions 2 and 3 p[[3,4]]=p[0] | 58 | 0.99991 |
-| `pipescript` | `__str__` | string representation | 3 | 0.99991 |
-| `pipescript` | `clear` |  | 16 | 0.99991 |
-| `pipescript` | `do` | Execute the pipeline or a part of the pipeline and generate the LAMMPS script. | 118 | 0.99991 |
-| `pipescript` | `do_legacy` | Execute the pipeline or a part of the pipeline and generate the LAMMPS script. | 99 | 0.99991 |
-| `pipescript` | `dscript` | Convert the current pipescript object to a dscript object. | 107 | 0.99991 |
-| `pipescript` | `getUSER` | getUSER get USER variable getUSER(idx,varname) | 9 | 0.99991 |
-| `pipescript` | `header` | Generate a formatted header for the pipescript file. | 33 | 0.99991 |
-| `pipescript` | `join` | join a combination scripts and pipescripts within a pipescript p = pipescript.join([s1,s2,p3,p4,p5...]) | 19 | 0.99991 |
-| `pipescript` | `rename` | rename scripts in the pipe p.rename(idx=[0,2,3],name=["A","B","C"]) | 17 | 0.99991 |
-| `pipescript` | `script` | script the pipeline or parts of the pipeline s = p.script() s = p.script([0,2]) | 50 | 0.99991 |
-| `pipescript` | `setUSER` | setUSER sets USER variables setUSER(idx,varname,varvalue) | 9 | 0.99991 |
-| `pipescript` | `write` | Write the combined script to a file. | 27 | 0.99991 |
-| `runsection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `runsection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `runsection` | `__copy__` | copy method | 6 | 0.99991 |
-| `runsection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `runsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `runsection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `runsection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `runsection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `runsection` | `__repr__` | disp method | 22 | 0.99991 |
-| `runsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `runsection` | `__str__` | string representation | 3 | 0.99991 |
-| `runsection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `runsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `runsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `runsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `runsection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `runsection` | `printheader` | print header | 7 | 0.99991 |
-| `runsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `runsection` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `script` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `script` | `__and__` | overload and operator | 7 | 0.99991 |
-| `script` | `__copy__` | copy method | 6 | 0.99991 |
-| `script` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `script` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `script` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `script` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `script` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `script` | `__repr__` | disp method | 22 | 0.99991 |
-| `script` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `script` | `__str__` | string representation | 3 | 0.99991 |
-| `script` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `script` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `script` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `script` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `script` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `script` | `printheader` | print header | 7 | 0.99991 |
-| `script` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `script` | `write` | Write the script to a file. | 39 | 0.99991 |
-| `scriptobject` | `__add__` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 12 | 0.99991 |
-| `scriptobject` | `__eq__` | Return self==value. | 3 | 0.99991 |
-| `scriptobject` | `__ge__` | Return self>=value. | 2 | 0.99991 |
-| `scriptobject` | `__gt__` | Return self>value. | 2 | 0.99991 |
-| `scriptobject` | `__init__` | constructor | 30 | 0.99991 |
-| `scriptobject` | `__le__` | Return self<=value. | 2 | 0.99991 |
-| `scriptobject` | `__lt__` | Return self<value. | 2 | 0.99991 |
-| `scriptobject` | `__ne__` | Return self!=value. | 2 | 0.99991 |
-| `scriptobject` | `__or__` | overload | or for pipe | 6 | 0.99991 |
-| `scriptobject` | `__str__` | string representation | 3 | 0.99991 |
-| `scriptobjectgroup` | `__add__` | overload + | 32 | 0.99991 |
-| `scriptobjectgroup` | `__init__` | SOG constructor | 18 | 0.99991 |
-| `scriptobjectgroup` | `__or__` | overload | or for pipe | 6 | 0.99991 |
-| `scriptobjectgroup` | `__str__` | string representation | 3 | 0.99991 |
-| `scriptobjectgroup` | `group_generator` | Generate and return a group object. | 28 | 0.99991 |
-| `scriptobjectgroup` | `<lambda>` |  | 1 | 0.99991 |
-| `scriptobjectgroup` | `mass` | Generates LAMMPS mass commands for each unique beadtype in the collection. | 89 | 0.99991 |
-| `scriptobjectgroup` | `<lambda>` |  | 1 | 0.99991 |
-| `scriptobjectgroup` | `select` | select bead from a keep beadlist | 11 | 0.99991 |
-| `scriptobjectgroup` | `struct` | create a group with name | 10 | 0.99991 |
-| `statussection` | `__add__` | overload addition operator | 24 | 0.99991 |
-| `statussection` | `__and__` | overload and operator | 7 | 0.99991 |
-| `statussection` | `__copy__` | copy method | 6 | 0.99991 |
-| `statussection` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `statussection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 0.99991 |
-| `statussection` | `__mul__` | overload * operator | 8 | 0.99991 |
-| `statussection` | `__or__` | overload | or for pipe | 19 | 0.99991 |
-| `statussection` | `__pow__` | overload ** operator | 8 | 0.99991 |
-| `statussection` | `__repr__` | disp method | 22 | 0.99991 |
-| `statussection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 0.99991 |
-| `statussection` | `__str__` | string representation | 3 | 0.99991 |
-| `statussection` | `_iadd__` | overload addition operator | 8 | 0.99991 |
-| `statussection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 0.99991 |
-| `statussection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 0.99991 |
-| `statussection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.99991 |
-| `statussection` | `header` | Generate a formatted header for the script file. | 37 | 0.99991 |
-| `statussection` | `printheader` | print header | 7 | 0.99991 |
-| `statussection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 0.99991 |
-| `statussection` | `write` | Write the script to a file. | 39 | 0.99991 |
+| (module-level) | `frame_header` | Format the header content into an ASCII framed box with customizable properties. | 147 | 1.0 |
+| (module-level) | `get_metadata` | Return a dictionary of explicitly defined metadata. | 15 | 1.0 |
+| (module-level) | `<lambda>` |  | 1 | 1.0 |
+| (module-level) | `is_scalar` | Determines if a value is scalar (not a list, dict, or tuple). | 5 | 1.0 |
+| (module-level) | `make_hashable` | Recursively converts lists and dictionaries to tuples to make them hashable. | 9 | 1.0 |
+| (module-level) | `picker` |  | 1 | 1.0 |
+| (module-level) | `remove_comments` | Removes comments from a single or multi-line string, handling quotes, escaped characters, and line continuation. | 101 | 1.0 |
+| (module-level) | `span` |  | 2 | 1.0 |
+| `CallableScript` | `__call__` | Call self as a function. | 3 | 1.0 |
+| `CallableScript` | `__get__` |  | 3 | 1.0 |
+| `CallableScript` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 1.0 |
+| `VariableOccurrences` | `__init__` | Initializes the VariableOccurrences object. | 38 | 1.0 |
+| `VariableOccurrences` | `_determine_scopes` | Determines the unique scopes present across all variables. | 7 | 1.0 |
+| `VariableOccurrences` | `export` | Exports the variable occurrences to a file or returns the content as a string. | 161 | 1.0 |
+| `VariableOccurrences` | `get_all_elements_in_lists` | Retrieves all unique elements within list-type variable values. | 26 | 1.0 |
+| `VariableOccurrences` | `get_all_values` | Retrieves all unique values of the variable(s). | 26 | 1.0 |
+| `VariableOccurrences` | `get_raw_data` | Returns the raw data. | 8 | 1.0 |
+| `VariableOccurrences` | `get_steps_with_value` | Retrieves the steps where the variable equals the specified value. | 52 | 1.0 |
+| `VariableOccurrences` | `get_steps_with_value_in_scope` | Retrieves the steps within a specific scope where the variable equals the specified value. | 45 | 1.0 |
+| `VariableOccurrences` | `get_usage_count` | Counts how many times a specific value is used. | 48 | 1.0 |
+| `VariableOccurrences` | `summarize` | Provides a summary of the variable occurrences. | 72 | 1.0 |
+| `boundarysection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `boundarysection` | `__and__` | overload and operator | 7 | 1.0 |
+| `boundarysection` | `__copy__` | copy method | 6 | 1.0 |
+| `boundarysection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `boundarysection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `boundarysection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `boundarysection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `boundarysection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `boundarysection` | `__repr__` | disp method | 22 | 1.0 |
+| `boundarysection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `boundarysection` | `__str__` | string representation | 3 | 1.0 |
+| `boundarysection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `boundarysection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `boundarysection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `boundarysection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `boundarysection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `boundarysection` | `printheader` | print header | 7 | 1.0 |
+| `boundarysection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `boundarysection` | `write` | Write the script to a file. | 39 | 1.0 |
+| `discretizationsection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `discretizationsection` | `__and__` | overload and operator | 7 | 1.0 |
+| `discretizationsection` | `__copy__` | copy method | 6 | 1.0 |
+| `discretizationsection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `discretizationsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `discretizationsection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `discretizationsection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `discretizationsection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `discretizationsection` | `__repr__` | disp method | 22 | 1.0 |
+| `discretizationsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `discretizationsection` | `__str__` | string representation | 3 | 1.0 |
+| `discretizationsection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `discretizationsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `discretizationsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `discretizationsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `discretizationsection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `discretizationsection` | `printheader` | print header | 7 | 1.0 |
+| `discretizationsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `discretizationsection` | `write` | Write the script to a file. | 39 | 1.0 |
+| `dumpsection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `dumpsection` | `__and__` | overload and operator | 7 | 1.0 |
+| `dumpsection` | `__copy__` | copy method | 6 | 1.0 |
+| `dumpsection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `dumpsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `dumpsection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `dumpsection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `dumpsection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `dumpsection` | `__repr__` | disp method | 22 | 1.0 |
+| `dumpsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `dumpsection` | `__str__` | string representation | 3 | 1.0 |
+| `dumpsection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `dumpsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `dumpsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `dumpsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `dumpsection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `dumpsection` | `printheader` | print header | 7 | 1.0 |
+| `dumpsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `dumpsection` | `write` | Write the script to a file. | 39 | 1.0 |
+| `geometrysection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `geometrysection` | `__and__` | overload and operator | 7 | 1.0 |
+| `geometrysection` | `__copy__` | copy method | 6 | 1.0 |
+| `geometrysection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `geometrysection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `geometrysection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `geometrysection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `geometrysection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `geometrysection` | `__repr__` | disp method | 22 | 1.0 |
+| `geometrysection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `geometrysection` | `__str__` | string representation | 3 | 1.0 |
+| `geometrysection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `geometrysection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `geometrysection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `geometrysection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `geometrysection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `geometrysection` | `printheader` | print header | 7 | 1.0 |
+| `geometrysection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `geometrysection` | `write` | Write the script to a file. | 39 | 1.0 |
+| `globalsection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `globalsection` | `__and__` | overload and operator | 7 | 1.0 |
+| `globalsection` | `__copy__` | copy method | 6 | 1.0 |
+| `globalsection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `globalsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `globalsection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `globalsection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `globalsection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `globalsection` | `__repr__` | disp method | 22 | 1.0 |
+| `globalsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `globalsection` | `__str__` | string representation | 3 | 1.0 |
+| `globalsection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `globalsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `globalsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `globalsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `globalsection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `globalsection` | `printheader` | print header | 7 | 1.0 |
+| `globalsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `globalsection` | `write` | Write the script to a file. | 39 | 1.0 |
+| `initializesection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `initializesection` | `__and__` | overload and operator | 7 | 1.0 |
+| `initializesection` | `__copy__` | copy method | 6 | 1.0 |
+| `initializesection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `initializesection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `initializesection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `initializesection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `initializesection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `initializesection` | `__repr__` | disp method | 22 | 1.0 |
+| `initializesection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `initializesection` | `__str__` | string representation | 3 | 1.0 |
+| `initializesection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `initializesection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `initializesection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `initializesection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `initializesection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `initializesection` | `printheader` | print header | 7 | 1.0 |
+| `initializesection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `initializesection` | `write` | Write the script to a file. | 39 | 1.0 |
+| `integrationsection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `integrationsection` | `__and__` | overload and operator | 7 | 1.0 |
+| `integrationsection` | `__copy__` | copy method | 6 | 1.0 |
+| `integrationsection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `integrationsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `integrationsection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `integrationsection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `integrationsection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `integrationsection` | `__repr__` | disp method | 22 | 1.0 |
+| `integrationsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `integrationsection` | `__str__` | string representation | 3 | 1.0 |
+| `integrationsection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `integrationsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `integrationsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `integrationsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `integrationsection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `integrationsection` | `printheader` | print header | 7 | 1.0 |
+| `integrationsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `integrationsection` | `write` | Write the script to a file. | 39 | 1.0 |
+| `interactionsection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `interactionsection` | `__and__` | overload and operator | 7 | 1.0 |
+| `interactionsection` | `__copy__` | copy method | 6 | 1.0 |
+| `interactionsection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `interactionsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `interactionsection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `interactionsection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `interactionsection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `interactionsection` | `__repr__` | disp method | 22 | 1.0 |
+| `interactionsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `interactionsection` | `__str__` | string representation | 3 | 1.0 |
+| `interactionsection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `interactionsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `interactionsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `interactionsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `interactionsection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `interactionsection` | `printheader` | print header | 7 | 1.0 |
+| `interactionsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `interactionsection` | `write` | Write the script to a file. | 39 | 1.0 |
+| `pipescript` | `__add__` | overload + as pipe with copy | 12 | 1.0 |
+| `pipescript` | `__copy__` | copy method | 6 | 1.0 |
+| `pipescript` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `pipescript` | `__getitem__` | return the ith or slice element(s) of the pipe | 24 | 1.0 |
+| `pipescript` | `__iadd__` | overload += as pipe without copy | 6 | 1.0 |
+| `pipescript` | `__init__` | constructor | 26 | 1.0 |
+| `pipescript` | `__len__` | len() method | 3 | 1.0 |
+| `pipescript` | `__mul__` | overload * as multiple pipes with copy | 9 | 1.0 |
+| `pipescript` | `__or__` | Overload | pipe operator in pipescript | 51 | 1.0 |
+| `pipescript` | `__repr__` | display method | 29 | 1.0 |
+| `pipescript` | `__setitem__` | modify the ith element of the pipe p[4] = [] removes the 4th element p[4:7] = [] removes the elements from position 4 to 6 p[2:4] = p[0:2] copy the elements 0 and 1 in positions 2 and 3 p[[3,4]]=p[0] | 58 | 1.0 |
+| `pipescript` | `__str__` | string representation | 3 | 1.0 |
+| `pipescript` | `clear` |  | 16 | 1.0 |
+| `pipescript` | `do` | Execute the pipeline or a part of the pipeline and generate the LAMMPS script. | 118 | 1.0 |
+| `pipescript` | `do_legacy` | Execute the pipeline or a part of the pipeline and generate the LAMMPS script. | 99 | 1.0 |
+| `pipescript` | `dscript` | Convert the current pipescript object to a dscript object. | 115 | 1.0 |
+| `pipescript` | `generate_report` | Generates a comprehensive report for specified variables and writes it to a file. | 124 | 1.0 |
+| `pipescript` | `getUSER` | getUSER get USER variable getUSER(idx,varname) | 9 | 1.0 |
+| `pipescript` | `header` | Generate a formatted header for the pipescript file. | 33 | 1.0 |
+| `pipescript` | `join` | join a combination scripts and pipescripts within a pipescript p = pipescript.join([s1,s2,p3,p4,p5...]) | 19 | 1.0 |
+| `pipescript` | `list_multiple_values` | Lists all occurrences and values of multiple variables across the pipeline scripts. | 17 | 1.0 |
+| `pipescript` | `list_values` | Lists all occurrences and values of a specified variable or all variables across the pipeline scripts. | 118 | 1.0 |
+| `pipescript` | `plot_multiple_value_distributions` | Plots the distribution of elements for multiple variables across specified scopes. | 54 | 1.0 |
+| `pipescript` | `rename` | rename scripts in the pipe p.rename(idx=[0,2,3],name=["A","B","C"]) | 17 | 1.0 |
+| `pipescript` | `script` | script the pipeline or parts of the pipeline s = p.script() s = p.script([0,2]) | 50 | 1.0 |
+| `pipescript` | `setUSER` | setUSER sets USER variables setUSER(idx,varname,varvalue) | 9 | 1.0 |
+| `pipescript` | `write` | Write the combined script to a file. | 27 | 1.0 |
+| `runsection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `runsection` | `__and__` | overload and operator | 7 | 1.0 |
+| `runsection` | `__copy__` | copy method | 6 | 1.0 |
+| `runsection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `runsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `runsection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `runsection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `runsection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `runsection` | `__repr__` | disp method | 22 | 1.0 |
+| `runsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `runsection` | `__str__` | string representation | 3 | 1.0 |
+| `runsection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `runsection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `runsection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `runsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `runsection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `runsection` | `printheader` | print header | 7 | 1.0 |
+| `runsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `runsection` | `write` | Write the script to a file. | 39 | 1.0 |
+| `script` | `__add__` | overload addition operator | 24 | 1.0 |
+| `script` | `__and__` | overload and operator | 7 | 1.0 |
+| `script` | `__copy__` | copy method | 6 | 1.0 |
+| `script` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `script` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `script` | `__mul__` | overload * operator | 8 | 1.0 |
+| `script` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `script` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `script` | `__repr__` | disp method | 22 | 1.0 |
+| `script` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `script` | `__str__` | string representation | 3 | 1.0 |
+| `script` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `script` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `script` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `script` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `script` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `script` | `printheader` | print header | 7 | 1.0 |
+| `script` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `script` | `write` | Write the script to a file. | 39 | 1.0 |
+| `scriptobject` | `__add__` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 12 | 1.0 |
+| `scriptobject` | `__eq__` | Return self==value. | 3 | 1.0 |
+| `scriptobject` | `__ge__` | Return self>=value. | 2 | 1.0 |
+| `scriptobject` | `__gt__` | Return self>value. | 2 | 1.0 |
+| `scriptobject` | `__init__` | constructor | 30 | 1.0 |
+| `scriptobject` | `__le__` | Return self<=value. | 2 | 1.0 |
+| `scriptobject` | `__lt__` | Return self<value. | 2 | 1.0 |
+| `scriptobject` | `__ne__` | Return self!=value. | 2 | 1.0 |
+| `scriptobject` | `__or__` | overload | or for pipe | 6 | 1.0 |
+| `scriptobject` | `__str__` | string representation | 3 | 1.0 |
+| `scriptobjectgroup` | `__add__` | overload + | 32 | 1.0 |
+| `scriptobjectgroup` | `__init__` | SOG constructor | 18 | 1.0 |
+| `scriptobjectgroup` | `__or__` | overload | or for pipe | 6 | 1.0 |
+| `scriptobjectgroup` | `__str__` | string representation | 3 | 1.0 |
+| `scriptobjectgroup` | `group_generator` | Generate and return a group object. | 28 | 1.0 |
+| `scriptobjectgroup` | `<lambda>` |  | 1 | 1.0 |
+| `scriptobjectgroup` | `mass` | Generates LAMMPS mass commands for each unique beadtype in the collection. | 89 | 1.0 |
+| `scriptobjectgroup` | `<lambda>` |  | 1 | 1.0 |
+| `scriptobjectgroup` | `select` | select bead from a keep beadlist | 11 | 1.0 |
+| `scriptobjectgroup` | `struct` | create a group with name | 10 | 1.0 |
+| `statussection` | `__add__` | overload addition operator | 24 | 1.0 |
+| `statussection` | `__and__` | overload and operator | 7 | 1.0 |
+| `statussection` | `__copy__` | copy method | 6 | 1.0 |
+| `statussection` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `statussection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.0 |
+| `statussection` | `__mul__` | overload * operator | 8 | 1.0 |
+| `statussection` | `__or__` | overload | or for pipe | 19 | 1.0 |
+| `statussection` | `__pow__` | overload ** operator | 8 | 1.0 |
+| `statussection` | `__repr__` | disp method | 22 | 1.0 |
+| `statussection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.0 |
+| `statussection` | `__str__` | string representation | 3 | 1.0 |
+| `statussection` | `_iadd__` | overload addition operator | 8 | 1.0 |
+| `statussection` | `detect_variables` | Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'. | 22 | 1.0 |
+| `statussection` | `do` | Generate the LAMMPS script based on the current configuration. | 58 | 1.0 |
+| `statussection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.0 |
+| `statussection` | `header` | Generate a formatted header for the script file. | 37 | 1.0 |
+| `statussection` | `printheader` | print header | 7 | 1.0 |
+| `statussection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.0 |
+| `statussection` | `write` | Write the script to a file. | 39 | 1.0 |
 

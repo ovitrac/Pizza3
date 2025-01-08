@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 
-# Bash launcher to generate __all__ variables for Pizza3 modules
+# ----------------------------------------------------------
+#                      W A R N I N G
+# ----------------------------------------------------------
+# Legacy/obsolete code for refreshing all pdoc files (html).
+# Use pdocme.sh or refresh_alldocs.sh instead
+# Use generate_all.py to  __all__ variables in modules
+# ----------------------------------------------------------
+
 # Maintained by INRAE\olivier.vitrac@agroparistech.fr
-# Revision history: 2024-12-08
+# Revision history: 2024-12-06, 2025-01-08
 
 # Typical file structure
 
@@ -19,12 +26,6 @@
 # ├── tmp/
 # │   ├── debug.py
 
-
-#!/usr/bin/env bash
-
-# Bash launcher to generate __all__ variables for Pizza3 modules
-# Maintained by INRAE\olivier.vitrac@agroparistech.fr
-# Revision history: 2024-12-06
 
 # Ensure the script is run from Pizza3/utils/
 if [[ ! -f "pdocme.sh" ]]; then
@@ -68,6 +69,10 @@ additional_paths=(
 
 # Set PYTHONPATH dynamically
 export PYTHONPATH=$(IFS=:; echo "${additional_paths[*]}")
+
+# To fix MESA loader
+# libstdc++.so.6 file is located in /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
 
 # Build find command with exclusions
 find_cmd="find \"$mainfolder\" -type f -name \"*.py\""

@@ -1,0 +1,233 @@
+# DSCRIPT SAVE FILE
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════╗
+# ║  PIZZA.DSCRIPT FILE v1.0 | License: GPLv3 | Email: olivier.vitrac@agroparistech.fr  ║
+# ║═════════════════════════════════════════════════════════════════════════════════════║
+# ║                                    Name: rplwIXoo                                   ║
+# ║                Path: /home/olivi/han/dev/Pizza3/tmp/example2bis.d.txt               ║
+# ║═════════════════════════════════════════════════════════════════════════════════════║
+# ║            Generated on: olivi@LX-Olivier2023:/home/olivi/han/dev/Pizza3            ║
+# ║                       Wednesday, January 08, 2025 at 09:41:30                       ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+# GLOBAL PARAMETERS (8 parameters)
+{
+    SECTIONS = ['DYNAMIC'],
+    section = 0,
+    position = 0,
+    role = 'dscript instance',
+    description = 'dynamic script',
+    userid = 'script:example2.d_slice_None_-1:0:script:LammpsHeaderBox:headerinit...script:LammpsFooterPreview:footerpreview...script:example2.d_slice_-1_None:16:script:LammpsHeaderBox:headerinit...script:LammpsFooterPreview:footerpreview',
+    version = 1.0,
+    verbose = True
+}
+
+
+# GLOBAL DEFINITIONS (number of definitions=26)
+boundary = ['f', 'f', 'f']
+comm_modify = ['vel', 'yes']
+atom_modify = ['map', 'array']
+dimension = 3
+atom_style = $smd
+neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
+newton = $off
+lattice_style = $sc
+lattice_spacing = [0.001, 0.001, 0.001]
+lattice_scale = 0.001
+xmin = -0.04
+boxid = $box
+zmax = 0.03
+nbeads = 3
+ymin = -0.04
+zmin = -0.03
+boxunits_arg = $units box
+ymax = 0.04
+xmax = 0.04
+style = $cylinder
+mass = 1.0
+n_all = ${n_all}  # value assumed to be defined outside this DSCRIPT file
+n_middle = ${n_middle}  # value assumed to be defined outside this DSCRIPT file
+n_upper = ${n_upper}  # value assumed to be defined outside this DSCRIPT file
+n_lower = ${n_lower}  # value assumed to be defined outside this DSCRIPT file
+previewfilename = $dump.initial.region_SimulationBox
+
+
+# TEMPLATES (number of items=18)
+
+# LOCAL DEFINITIONS for key '0'
+units = $si
+
+0: [
+    dimension    ${dimension}
+    units        ${units}
+    boundary     ${boundary}
+    atom_style   ${atom_style}
+    atom_modify  ${atom_modify}
+    comm_modify  ${comm_modify}
+    neigh_modify ${neigh_modify}
+    newton       ${newton}
+ ]
+
+1: lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
+
+2: [
+    region ${boxid} block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax} ${boxunits_arg}
+    create_box	${nbeads} ${boxid}
+ ]
+
+3: # empty <step 3>
+4: # empty <step 4>
+5: # empty <step 5>
+
+# LOCAL DEFINITIONS for key '6'
+units = $ units box
+ID = $LowerCylinder
+args = ['z', 0, 0, 0.03, -0.03, -0.01]
+side = ""
+move = ""
+rotate = ""
+open = ""
+6: region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+
+# LOCAL DEFINITIONS for key '7'
+ID = $CentralCylinder
+args = ['z', 0, 0, 0.03, -0.01, 0.01]
+7: region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+
+# LOCAL DEFINITIONS for key '8'
+ID = $UpperCylinder
+args = ['z', 0, 0, 0.03, 0.01, 0.03]
+8: region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+
+# LOCAL DEFINITIONS for key '9'
+ID = $LowerCylinder
+beadtype = 1
+9: create_atoms ${beadtype} region ${ID}
+
+# LOCAL DEFINITIONS for key '10'
+ID = $CentralCylinder
+beadtype = 2
+10: create_atoms ${beadtype} region ${ID}
+
+# LOCAL DEFINITIONS for key '11'
+ID = $UpperCylinder
+beadtype = 3
+11: create_atoms ${beadtype} region ${ID}
+
+12: [
+    group lower type 1
+    group middle type 2
+    group upper type 3
+    group all union lower middle upper
+    group external subtract all middle
+ ]
+
+13: [
+    mass 1 2.0
+    mass 2 ${mass}
+    mass 3 ${mass}
+ ]
+
+14: [
+    variable n_all equal "count(all)"
+    variable n_lower equal "count(lower)"
+    variable n_middle equal "count(middle)"
+    variable n_upper equal "count(upper)"
+ ]
+
+15: [
+    print "Number of atoms in all: ${n_all}"
+    print "Number of atoms in lower: ${n_lower}"
+    print "Number of atoms in middle: ${n_middle}"
+    print "Number of atoms in upper: ${n_upper}"
+ ]
+
+16: [
+    # ===== [ BEGIN GROUP SECTION ] =====================================================================================
+    
+    #	Definition of group 1:lowerAtoms
+    #	=lowerAtoms
+    #	Similar groups: lowerAtoms
+    group 	 lowerAtoms 	type 	 1
+    
+    #	Definition of group 2:centralAtoms
+    #	=centralAtoms
+    #	Similar groups: centralAtoms
+    group 	 centralAtoms 	type 	 2
+    
+    #	Definition of group 3:upperAtoms
+    #	=upperAtoms
+    #	Similar groups: upperAtoms
+    group 	 upperAtoms 	type 	 3
+    
+    # ===== [ END GROUP SECTION ] =======================================================================================
+    
+    
+    # [1:lowerAtoms] PAIR STYLE SMD
+    pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
+    smd/tlsph smd/hertz 1.5
+    
+    # [1:lowerAtoms x 1:lowerAtoms] Diagonal pair coefficient tlsph
+    pair_coeff      1 1 smd/tlsph *COMMON 1050 10500000.0 0.3 1.0 0.0 10.0 1.0 &
+    *STRENGTH_LINEAR_PLASTIC 1050000.0 0 &
+    *EOS_LINEAR &
+    *END
+    
+    # [2:centralAtoms x 2:centralAtoms] Diagonal pair coefficient tlsph
+    pair_coeff      2 2 smd/tlsph *COMMON 1000 2500000.0 0.3 1.0 0.0 10.0 1.0 &
+    *STRENGTH_LINEAR_PLASTIC 250000.0 0 &
+    *EOS_LINEAR &
+    *END
+    
+    # [3:upperAtoms x 3:upperAtoms] Diagonal pair coefficient tlsph
+    pair_coeff      3 3 smd/tlsph *COMMON 1300 65000000.0 0.1 1.0 0.0 10.0 1.0 &
+    *STRENGTH_LINEAR_PLASTIC 6500000.0 0 &
+    *EOS_LINEAR &
+    *END
+    
+    # [1:lowerAtoms x 2:centralAtoms] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 2 smd/hertz 262500.0
+    
+    # [1:lowerAtoms x 3:upperAtoms] Off-diagonal pair coefficient (generic)
+    pair_coeff      1 3 smd/hertz 262500.0
+    
+    # [2:centralAtoms x 3:upperAtoms] Off-diagonal pair coefficient (generic)
+    pair_coeff      2 3 smd/hertz 250000.0
+    
+    # ===== [ END FORCEFIELD SECTION ] ==================================================================================
+ ]
+
+17: [
+    dump initial_dump all custom 1 ${previewfilename} id type x y z
+    run 0
+ ]
+
+# ATTRIBUTES (number of items with explicit attributes=18)
+0:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+1:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+2:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+3:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+4:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+5:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+6:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+7:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+8:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+9:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+10:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+11:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+12:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+13:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+14:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+15:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+16:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+17:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+
+
+# +---------------------------------------------+
+# |         DSCRIPT SAVE FILE generator         |
+# |  Non-empty lines           186              |
+# |  Execution time (seconds)  0.0004           |
+# +---------------------------------------------+

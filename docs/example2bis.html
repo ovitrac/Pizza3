@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>example2bis API documentation</title>
+<meta name="description" content="Follow-up Example: Introducing Physics via Forcefields (Example2bis) …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>example2bis</code></h1>
+</header>
+<section id="section-intro">
+<h3 id="follow-up-example-introducing-physics-via-forcefields-example2bis">Follow-up Example: Introducing Physics via Forcefields (Example2bis)</h3>
+<p>This script builds upon Example2 by introducing <strong>physics</strong> into the simulation through the use of forcefields. It demonstrates the integration of forcefields into the simulation workflow, their customization for different regions, and their incorporation into the overall LAMMPS script.</p>
+<hr>
+<h3 id="objective"><strong>Objective</strong></h3>
+<p>The goal of this example is to extend the functionality of Example2 by adding:
+1. <strong>Forcefield Definitions:</strong> Introduce physical properties for simulation particles.
+2. <strong>Customization:</strong> Derive region-specific forcefields with modified physical parameters.
+3. <strong>Integration:</strong> Incorporate forcefields into the LAMMPS script dynamically.
+4. <strong>Analysis and Debugging:</strong> Explore variables and generate detailed reports.</p>
+<hr>
+<h3 id="key-features"><strong>Key Features</strong></h3>
+<ul>
+<li><strong>Forcefield Initialization:</strong> Create and customize forcefields programmatically or using DSCRIPT syntax.</li>
+<li><strong>Dynamic Region-Specific Adjustments:</strong> Modify forcefield parameters for different subregions.</li>
+<li><strong>Script Integration:</strong> Combine forcefields with previous simulation steps.</li>
+<li><strong>Debugging:</strong> Analyze variable occurrences and validate workflow consistency.</li>
+</ul>
+<p>Last revision 2025-01-07
+Author: INRAE\olivier.vitrac@agroparistech.fr</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+### Follow-up Example: Introducing Physics via Forcefields (Example2bis)
+
+This script builds upon Example2 by introducing **physics** into the simulation through the use of forcefields. It demonstrates the integration of forcefields into the simulation workflow, their customization for different regions, and their incorporation into the overall LAMMPS script.
+
+---
+
+### **Objective**
+
+The goal of this example is to extend the functionality of Example2 by adding:
+1. **Forcefield Definitions:** Introduce physical properties for simulation particles.
+2. **Customization:** Derive region-specific forcefields with modified physical parameters.
+3. **Integration:** Incorporate forcefields into the LAMMPS script dynamically.
+4. **Analysis and Debugging:** Explore variables and generate detailed reports.
+
+---
+
+### **Key Features**
+
+- **Forcefield Initialization:** Create and customize forcefields programmatically or using DSCRIPT syntax.
+- **Dynamic Region-Specific Adjustments:** Modify forcefield parameters for different subregions.
+- **Script Integration:** Combine forcefields with previous simulation steps.
+- **Debugging:** Analyze variable occurrences and validate workflow consistency.
+
+Last revision 2025-01-07
+Author: INRAE\olivier.vitrac@agroparistech.fr
+&#34;&#34;&#34;
+
+# Import necessary modules
+from pizza.forcefield import parameterforcefield, tlsph
+from pizza.generic import generic
+from pizza.dforcefield import dforcefield
+from pizza.dscript import dscript
+
+# %% LOAD PREVIOUS SCRIPT
+&#34;&#34;&#34;
+Load the DSCRIPT file from example2.py to reuse its definitions, such as regions and bead types.
+&#34;&#34;&#34;
+dscriptfilename = &#34;tmp/example2.d.txt&#34;
+previoussteps = dscript.load(dscriptfilename)
+
+# Extract bead type mappings and region arguments from the previous script
+beadtype = previoussteps.search(&#34;ID&#34;, previoussteps.list_values(&#34;ID&#34;), &#34;beadtype&#34;)
+
+# Additional control (for debugging purposes)
+region_args = previoussteps.list_values(&#39;args&#39;, details=True).get_raw_data()
+
+# %% DEFINE BASE FORCEFIELD
+&#34;&#34;&#34;
+Create a default forcefield using `parameterforcefield` and `dforcefield`.
+This serves as the base forcefield for all regions.
+&#34;&#34;&#34;
+FFbase_parameters = parameterforcefield(
+    base_class=tlsph,         # Forcefield class: Total Lagrangian Smoothed Particle Hydrodynamics
+    rho=1050,                 # Density
+    c0=10.0,                  # Speed of sound
+    E=&#34;50*${c0}^2*${rho}&#34;,    # Elastic modulus
+    nu=0.3,                   # Poisson&#39;s ratio
+    q1=1.0, q2=0.0,           # Artificial viscosity parameters
+    Hg=10.0, Cp=1.0,          # Heat capacity and specific energy
+    sigma_yield=&#34;0.1*${E}&#34;,   # Yield stress
+    hardening=0,              # Hardening coefficient
+    contact_scale=1.5,        # Contact scale
+    contact_stiffness=&#34;2.5*${c0}^2*${rho}&#34;  # Contact stiffness
+)
+FFbase = dforcefield(userid=&#34;FFbase&#34;, **FFbase_parameters)
+
+# Save the base forcefield for future reuse
+FFbase.save(&#34;FFbase.default.txt&#34;, foldername=&#34;./tmp&#34;, overwrite=True, verbose=False)
+
+# Reload the base forcefield to demonstrate file management
+FFbase = dforcefield.load(&#34;FFbase.default.txt&#34;, foldername=&#34;./tmp&#34;)
+
+# %% DEFINE REGION-SPECIFIC FORCEFIELDS
+&#34;&#34;&#34;
+Create specialized forcefields for each region by copying the base forcefield
+and modifying region-specific properties.
+&#34;&#34;&#34;
+FFlower = FFbase.copy(
+    beadtype=beadtype[&#34;LowerCylinder&#34;],  # Assign bead type
+    userid=&#34;LowerCylinder&#34;,             # Unique identifier
+    E=&#34;2*&#34;+FFbase.parameters.E,         # Increase elastic modulus
+    rho=1050                            # Same density as base
+)
+
+FFcentral = FFbase.copy(
+    beadtype=beadtype[&#34;CentralCylinder&#34;],
+    userid=&#34;CentralCylinder&#34;,
+    E=&#34;0.5*&#34;+FFbase.parameters.E,
+    rho=1000                            # Reduced density
+)
+
+FFupper = FFbase.copy(
+    beadtype=beadtype[&#34;UpperCylinder&#34;],
+    userid=&#34;UpperCylinder&#34;,
+    E=&#34;10*&#34;+FFbase.parameters.E,        # Much stiffer material
+    rho=1300, nu=0.1                    # Higher density, lower Poisson&#39;s ratio
+)
+
+# %% ASSIGN FORCEFIELDS TO GROUPS
+&#34;&#34;&#34;
+Assign the specialized forcefields to atom groups and prepare them for the LAMMPS script.
+&#34;&#34;&#34;
+blower = FFlower.scriptobject(name=&#34;lowerAtoms&#34;, group=&#34;lowerAtoms&#34;)
+bcentral = FFcentral.scriptobject(name=&#34;centralAtoms&#34;, group=&#34;centralAtoms&#34;)
+bupper = FFupper.scriptobject(name=&#34;upperAtoms&#34;, group=&#34;upperAtoms&#34;)
+
+# Combine all forcefield group scripts into a single collection
+bcollection = blower + bcentral + bupper
+
+# %% UPDATE SCRIPT WITH FORCEFIELDS
+&#34;&#34;&#34;
+Integrate the new forcefields into the previous script using `pipescript`.
+The forcefields are added before the final steps of the previous script.
+&#34;&#34;&#34;
+updatedScript = previoussteps[:-1] | bcollection | previoussteps[-1:]
+
+# Write the updated LAMMPS script to a file
+updatedScriptfile = updatedScript.write(&#34;tmp/example2bis.txt&#34;, verbosity=1, overwrite=True)
+print(f&#34;The updated LAMMPS script (example2bis) is available here:\n{updatedScriptfile}&#34;)
+
+# %% ANALYZE VARIABLES IN THE UPDATED SCRIPT
+&#34;&#34;&#34;
+Extract and analyze occurrences of variables like &#39;args&#39; and &#39;move&#39; from the updated script.
+&#34;&#34;&#34;
+args_values = updatedScript.list_values(&#34;args&#34;).get_raw_data()
+move_count = updatedScript.list_values(&#34;move&#34;).get_usage_count(&#34;&#34;)
+
+# %% CONVERT TO DSCRIPT AND SAVE
+&#34;&#34;&#34;
+Convert the updated script to DSCRIPT format for future reuse and reverse engineering.
+&#34;&#34;&#34;
+DupdatedScript = updatedScript.dscript(verbose=True)
+DupdatedScriptFile = DupdatedScript.save(&#34;tmp/example2bis.d.txt&#34;, overwrite=True)
+print(f&#34;The updated DSCRIPT (example2bis) is available here:\n{DupdatedScriptFile}&#34;)
+
+# %% VERIFY REVERSIBILITY
+&#34;&#34;&#34;
+Reload the updated DSCRIPT file and regenerate the LAMMPS script to ensure consistency.
+&#34;&#34;&#34;
+Drev2bis = dscript.load(DupdatedScriptFile)
+Srev2bis = Drev2bis.pipescript(verbose=False)
+
+# Variable control (for eventual debugging)
+allvars = Srev2bis.list_values()
+allvars[&#34;args&#34;].export(&#34;tmp/exaple2bis.rev.args.html&#34;)
+repr(allvars[&#34;args&#34;])
+Srev2bis.generate_report(&#34;tmp/example2bis.rev.var.html&#34;)
+
+# Save the reversed script for control
+revUpdatedScriptfile = Srev2bis.write(&#34;tmp/example2bis.rev.txt&#34;, verbosity=0, overwrite=True)
+print(f&#34;The updated and reversed LAMMPS script is available here:\n{revUpdatedScriptfile}&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="example2bis.FFbase"><code class="name">var <span class="ident">FFbase</span></code></dt>
+<dd>
+<div class="desc"><p>Create specialized forcefields for each region by copying the base forcefield
+and modifying region-specific properties.</p></div>
+</dd>
+<dt id="example2bis.FFupper"><code class="name">var <span class="ident">FFupper</span></code></dt>
+<dd>
+<div class="desc"><p>Assign the specialized forcefields to atom groups and prepare them for the LAMMPS script.</p></div>
+</dd>
+<dt id="example2bis.bcollection"><code class="name">var <span class="ident">bcollection</span></code></dt>
+<dd>
+<div class="desc"><p>Integrate the new forcefields into the previous script using <code>pipescript</code>.
+The forcefields are added before the final steps of the previous script.</p></div>
+</dd>
+<dt id="example2bis.move_count"><code class="name">var <span class="ident">move_count</span></code></dt>
+<dd>
+<div class="desc"><p>Convert the updated script to DSCRIPT format for future reuse and reverse engineering.</p></div>
+</dd>
+<dt id="example2bis.region_args"><code class="name">var <span class="ident">region_args</span></code></dt>
+<dd>
+<div class="desc"><p>Create a default forcefield using <code>parameterforcefield</code> and <code>dforcefield</code>.
+This serves as the base forcefield for all regions.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#follow-up-example-introducing-physics-via-forcefields-example2bis">Follow-up Example: Introducing Physics via Forcefields (Example2bis)</a></li>
+<li><a href="#objective">Objective</a></li>
+<li><a href="#key-features">Key Features</a></li>
+</ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="">
+<li><code><a title="example2bis.FFbase" href="#example2bis.FFbase">FFbase</a></code></li>
+<li><code><a title="example2bis.FFupper" href="#example2bis.FFupper">FFupper</a></code></li>
+<li><code><a title="example2bis.bcollection" href="#example2bis.bcollection">bcollection</a></code></li>
+<li><code><a title="example2bis.move_count" href="#example2bis.move_count">move_count</a></code></li>
+<li><code><a title="example2bis.region_args" href="#example2bis.region_args">region_args</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,124 @@
+# ╔════════════════════════════════════════════════════════════════════════════════════════╗
+# ║  PIZZA.SCRIPT FILE v0.99991 | License: GPLv3 | Email: olivier.vitrac@agroparistech.fr  ║
+# ║════════════════════════════════════════════════════════════════════════════════════════║
+# ║    <script:pipescript:script:LammpsHeaderBox:headerinit->script:S7:run:run:dscript>    ║
+# ║                   Initialized with 40 definitions | Verbosity: None                    ║
+# ║                        Persistent file: "True" | Folder: "/tmp"                        ║
+# ║════════════════════════════════════════════════════════════════════════════════════════║
+# ║             Generated on: olivi@LX-Olivier2023:/home/olivi/han/dev/Pizza3              ║
+# ║                         Monday, December 23, 2024 at 16:54:13                          ║
+# ╚════════════════════════════════════════════════════════════════════════════════════════╝
+ 
+
+#=============================================================================#
+#                  PIPESCRIPT with 24 scripts | Verbosity: 1                  #
+#=============================================================================#
+#  From: <script:LammpsHeaderBox:headerinit> To: <script:S7:run:run:dscript>  #
+#=============================================================================#
+
+# [1 of 24 from 0:23] <script:LammpsHeaderBox:headerinit>
+dimension    3
+units        si
+boundary     f f f
+atom_style   smd
+atom_modify  map array
+comm_modify  vel yes
+neigh_modify every 10 delay 0 check yes
+newton       off
+
+# [2 of 24 from 0:23] <script:LammpsHeaderLattice:headerlattice>
+lattice sc 0.0008271 spacing 0.0008271 0.0008271 0.0008271
+
+# [3 of 24 from 0:23] <script:LammpsHeaderBox:headerbox>
+region box block -0.03 0.03 -0.01 0.01 -0.03 0.03
+create_box	3 box
+
+# [4 of 24 from 0:23] <script:LammpsVariables:variable> :: no content
+
+# [5 of 24 from 0:23] <script:LammpsVariables:variable> :: no content
+
+# [6 of 24 from 0:23] <script:LammpsVariables:variable> :: no content
+
+# [7 of 24 from 0:23] <script:LammpsRegion:region>
+region LowerCylinder cylinder z 0.0 0.0 36.27130939426913 0.0 6.045218232378189
+
+# [8 of 24 from 0:23] <script:LammpsRegion:region>
+region CentralCylinder cylinder z 0.0 0.0 36.27130939426913 6.045218232378189 18.135654697134566
+
+# [9 of 24 from 0:23] <script:LammpsRegion:region>
+region UpperCylinder cylinder z 0.0 0.0 36.27130939426913 18.135654697134566 24.180872929512756
+
+# [10 of 24 from 0:23] <script:LammpsCreate:create>
+create_atoms 1 region LowerCylinder
+
+# [11 of 24 from 0:23] <script:LammpsCreate:create>
+create_atoms 2 region CentralCylinder
+
+# [12 of 24 from 0:23] <script:LammpsCreate:create>
+create_atoms 3 region UpperCylinder
+
+# [13 of 24 from 0:23] <script:S2:forcefield:scriptobject>
+group 	 lower 	type 	 1
+group 	 solid 	type 	 1 2 3
+group 	 fixed 	type 	 1
+group 	 middle 	type 	 2
+group 	 movable 	type 	 2 3
+group 	 upper 	type 	 3
+pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
+smd/tlsph smd/hertz 1.5
+pair_coeff      1 1 smd/tlsph *COMMON 1000 10000.0 0.3 1.0 2.0 10.0 1000.0 &
+*STRENGTH_LINEAR_PLASTIC 1000.0 0 &
+*EOS_LINEAR &
+*END
+pair_coeff      2 2 smd/tlsph *COMMON 1000 5000.0 0.3 1.0 2.0 10.0 1000.0 &
+*STRENGTH_LINEAR_PLASTIC 500.0 0 &
+*EOS_LINEAR &
+*END
+pair_coeff      3 3 smd/tlsph *COMMON 1000 40000.0 0.3 1.0 2.0 10.0 1000.0 &
+*STRENGTH_LINEAR_PLASTIC 4000.0 0 &
+*EOS_LINEAR &
+*END
+pair_coeff      1 2 smd/hertz 250.0000000000001
+pair_coeff      1 3 smd/hertz 250.0000000000001
+pair_coeff      2 3 smd/hertz 125.00000000000003
+
+# [14 of 24 from 0:23] <script:S3:customgroup:dscript>
+group all union lower middle upper
+group external subtract all middle
+
+# [15 of 24 from 0:23] <script:S4:dynamics:moveinit:dscript>
+velocity all set 0.0 0.0 0.0 units box
+
+# [16 of 24 from 0:23] <script:S4:dynamics:movelower:dscript>
+fix fix_lower lower setforce 0.0 0.0 0.0
+
+# [17 of 24 from 0:23] <script:S4:dynamics:moveupper:dscript>
+fix move_upper upper move wiggle 0.0 0.0 0.001 1.0 units box
+
+# [18 of 24 from 0:23] <script:S4:dynamics:intinit:dscript>
+fix dtfix all smd/adjust_dt 0.1
+
+# [19 of 24 from 0:23] <script:S4:dynamics:intset:dscript>
+fix integration_fix all smd/integrate_tlsph
+
+# [20 of 24 from 0:23] <script:S4:dynamics:compute:dscript>
+compute S all smd/tlsph_stress
+compute E all smd/tlsph_strain
+compute nn all smd/tlsph_num_neighs
+
+# [21 of 24 from 0:23] <script:S5:dump:dumpinit:dscript>
+dump dump_id all custom 50 dump.LAMMPS id type x y z vx vy vz &
+c_S[1] c_S[2] c_S[4] c_nn &
+c_E[1] c_E[2] c_E[4] &
+vx vy vz
+
+# [22 of 24 from 0:23] <script:S5:dump:dumpset:dscript>
+dump_modify dump_id first yes
+
+# [23 of 24 from 0:23] <script:S6:thermo:thermo:dscript>
+thermo 100
+thermo_style custom step dt f_dtfix v_strain
+
+# [24 of 24 from 0:23] <script:S7:run:run:dscript>
+run 5000
+

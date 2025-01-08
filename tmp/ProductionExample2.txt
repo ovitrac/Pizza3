@@ -1,0 +1,61 @@
+# DSCRIPT SAVE FILE
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║  PIZZA.DSCRIPT FILE v0.99992 | License: GPLv3 | Email: olivier.vitrac@agroparistech.fr  ║
+# ║═════════════════════════════════════════════════════════════════════════════════════════║
+# ║                                 Name: ProductionExample2                                ║
+# ║              Path: /home/olivi/han/dev/Pizza3/pizza/ProductionExample2.txt              ║
+# ║═════════════════════════════════════════════════════════════════════════════════════════║
+# ║           Generated on: olivi@LX-Olivier2023:/home/olivi/han/dev/Pizza3/pizza           ║
+# ║                           Monday, January 06, 2025 at 10:10:21                          ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+# GLOBAL PARAMETERS (8 parameters)
+{
+    SECTIONS = ['DYNAMIC'],
+    section = 0,
+    position = 0,
+    role = 'dscript instance',
+    description = 'dynamic script',
+    userid = 'dscript',
+    version = 0.99992,
+    verbose = False
+}
+
+
+# GLOBAL DEFINITIONS (number of definitions=8)
+neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
+comm_modify = ['vel', 'yes']
+atom_style = ${atom_style}  # value assumed to be defined outside this DSCRIPT file
+dimension = 3
+boundary = ['sm', 'sm', 'sm']
+newton = $off
+atom_modify = ['map', 'array']
+units = $si
+
+
+# TEMPLATES (number of items=1)
+
+code: [
+    dimension    ${dimension}
+    units        ${units}
+    boundary     ${boundary}
+    atom_style   ${atom_style}
+    atom_modify  ${atom_modify}
+    comm_modify  ${comm_modify}
+    neigh_modify ${neigh_modify}
+    newton       ${newton}
+ ]
+
+# ATTRIBUTES (number of items with explicit attributes=1)
+code:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+
+
+# +---------------------------------------------+
+# |         DSCRIPT SAVE FILE generator         |
+# |  Non-empty lines           43               |
+# |  Execution time (seconds)  0.0004           |
+# +---------------------------------------------+

@@ -1,0 +1,68 @@
+# DSCRIPT SAVE FILE
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════════╗
+# ║  PIZZA.DSCRIPT FILE v0.99992 | License: GPLv3 | Email: olivier.vitrac@agroparistech.fr  ║
+# ║═════════════════════════════════════════════════════════════════════════════════════════║
+# ║                                 Name: ProductionExample                                 ║
+# ║               Path: /home/olivi/han/dev/Pizza3/pizza/ProductionExample.txt              ║
+# ║═════════════════════════════════════════════════════════════════════════════════════════║
+# ║           Generated on: olivi@LX-Olivier2023:/home/olivi/han/dev/Pizza3/pizza           ║
+# ║                           Monday, January 06, 2025 at 10:10:21                          ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+# GLOBAL PARAMETERS (8 parameters)
+{
+    SECTIONS = ['DYNAMIC'],
+    section = 0,
+    position = 0,
+    role = 'dscript instance',
+    description = 'dynamic script',
+    userid = 'dscript',
+    version = 0.99992,
+    verbose = False
+}
+
+
+# GLOBAL DEFINITIONS (number of definitions=8)
+dimension = 3
+units = $si
+boundary = ['sm', 'sm', 'sm']
+atom_style = $smd
+atom_modify = ['map', 'array']
+comm_modify = ['vel', 'yes']
+neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
+newton = $off
+
+
+# TEMPLATES (number of items=9)
+
+0: # <empty content> for key 0
+dim: dimension    ${dimension}
+unit: units        ${units}
+bound: boundary     ${boundary}
+astyle: atom_style   ${atom_style}
+amod: atom_modify  ${atom_modify}
+cmod: comm_modify  ${comm_modify}
+nmod: neigh_modify ${neigh_modify}
+newton: newton       ${newton}
+
+# ATTRIBUTES (number of items with explicit attributes=9)
+0:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+dim:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+unit:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+bound:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+astyle:{facultative=False, eval=False, readonly=False, condition='${atom_style}', condeval=False, detectvar=True}
+amod:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+cmod:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+nmod:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+newton:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+
+
+# +---------------------------------------------+
+# |         DSCRIPT SAVE FILE generator         |
+# |  Non-empty lines           50               |
+# |  Execution time (seconds)  0.0008           |
+# +---------------------------------------------+

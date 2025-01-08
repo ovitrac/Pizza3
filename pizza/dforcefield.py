@@ -158,7 +158,7 @@ Usage Example:
     '''
 
     # Parse the forcefield from text
-    parsed_ff = dforcefield.parse(ff_text)
+    parsed_ff = dforcefield.parsesyntax(ff_text)
     print(parsed_ff.script)  # Outputs the raw content from the pair_* methods
 
     # Check missing variables
@@ -252,11 +252,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9972"
+__version__ = "0.99995"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-10-12 (community)
+# INRAE\Olivier Vitrac - rev. 2025-01-01 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -265,6 +265,9 @@ __version__ = "0.9972"
 # 2024-09-14 major update fully compatible with scriptobject, script
 # 2024-09-21 fully compatible with forcefields of class generic
 # 2024-10-12 add |
+# 2024-12-30 rename parse as generator, parsesyntax and authentificaiton (consistent with dscript)
+# 2024-12-31 add base_class_name
+# 2025-01-01 update the copy method to pass updated parameters
 
 
 # Dependencies
@@ -356,6 +359,7 @@ def remove_comments(content, split_lines=False):
         return '\n'.join(processed_lines)  # Join lines back into a single string
 
 
+
 # %% Main class
 class dforcefield:
     """
@@ -386,6 +390,7 @@ class dforcefield:
     - `GLOBAL` (genericdata): Stores global parameters that apply to the entire forcefield.
     - `LOCAL` (genericdata): Contains local parameters specific to certain forcefield interactions.
     - `USER` (scriptdata): Contains USER parameters for scriptobject
+    - `base_class_name` (str): Returns the name of the base_class as a lowercase string
 
     Methods:
     --------
@@ -396,9 +401,10 @@ class dforcefield:
     - **`pair_style`**: Delegates the pair style computation to the `base_class`.
     - **`pair_diagcoeff`**: Delegates diagonal pair coefficient computation to the `base_class`.
     - **`pair_offdiagcoeff`**: Delegates off-diagonal pair coefficient computation to the `base_class`.
+    - **`generator`**: Generates the forcefield definition as a formatted string without traceability features.
     - **`save`**: Saves the forcefield instance to a file, with headers, attributes, and parameters.
     - **`load`**: Loads a `dforcefield` instance from a file and validates its format.
-    - **`parse`**: Parses content of a forcefield file to create a new `dforcefield` instance.
+    - **`parsesyntax`**: Parses content of a forcefield file to create a new `dforcefield` instance.
     - **`copy`**: Creates a copy of the current instance, optionally overriding core attributes.
     - **`compare`**: Compares the current instance with another `dforcefield` instance, showing differences.
     - **`missingVariables`**: Lists undefined variables in `parameters`.
@@ -466,7 +472,7 @@ class dforcefield:
     def __init__(self, base_class=None, beadtype=1, userid=None, USER=parameterforcefield(),
                  name=None, description=None, version=0.1, additional_modules=None,
                  printflag=False, verbose=False,
-                 GLOBAL=None, LOCAL=None, **kwargs):
+                 GLOBAL=None, LOCAL=None, RULES=None, **kwargs):
         """
         Initialize a dynamic forcefield with default or custom values.
 
@@ -487,7 +493,10 @@ class dforcefield:
         # Initialize GLOBAL and LOCAL containers
         self.GLOBAL = GLOBAL if GLOBAL else genericdata()
         self.LOCAL = LOCAL if LOCAL else genericdata()
-        self.RULES = genericdata()  # Initialize RULES, to be populated later if applicable
+        if RULES is None:
+            self.RULES = genericdata()  # Initialize RULES, to be populated later if applicable
+        else:
+            self.RULES = RULES # side effect are expected if the user supply non compatible data (2025-01-02)
 
         # Initialize USER containter (which is used by scriptobject)
         self.USER = scriptdata()
@@ -1058,59 +1067,76 @@ class dforcefield:
 
     def __repr__(self):
         """
-        Custom __repr__ method that indicates it is a dforcefield instance and provides information
-        about the base class, name, and parameters dynamically.
+        Custom __repr__ method that provides a detailed representation of the dforcefield instance,
+        excluding attributes that start with an underscore (_).
         """
         base_class_name = self.base_class.__class__.__name__ if self.base_class else "None"
-        # Generate the name table dynamically (iterating over key-value pairs)
-        sep = "  "+"-"*20+":"+"-"*30
-        name_table = sep + "[ BEADTYPE ]\n"
-        key = "beadtype"
-        name_table += f"  {key:<20}: {self.beadtype}\n"
-        name_table += sep + "[ FF CLASS (read only) ]\n"
-        # Generate the name table dynamically (iterating over key-value pairs)
+        sep = "  " + "-" * 20 + ":" + "-" * 30
+
+        # Start building the representation string
+        repr_str = f'forcefield "{self.userid}" derived from "{base_class_name}"\n\n'
+
+        # [BEADTYPE] Section
+        repr_str += f"{sep}[ BEADTYPE ]\n"
+        repr_str += f"  {'beadtype':<20}: {self.beadtype}\n\n"
+
+        # [FF CLASS (read only)] Section
+        repr_str += f"{sep}[ FF CLASS (read only) ]\n"
+        # Iterate over attributes in merged_name_description, exclude those starting with '_'
         for key, value in self.merged_name_description.items():
-            # Check if the value is a list (when the field exists in both name and description)
+            if key.startswith('_'):
+                continue  # Skip private attributes
+
+            # Handle list values (multiple entries for the same key)
             if isinstance(value, list):
                 for idx, val in enumerate(value):
                     value_lines = self.dispmax(val).splitlines()
-
-                    # Apply {key:<20} to the first line of the first item in the list
                     if idx == 0:
-                        name_table += f"  {key:<20}: {value_lines[0]}\n"
+                        repr_str += f"  {key:<20}: {value_lines[0]}\n"
                     else:
-                        name_table += f"  {'':<20}  {value_lines[0]}\n"  # Align subsequent items
-                    # Handle multi-line values within each list item
+                        repr_str += f"  {'':<20}  {value_lines[0]}\n"
                     for line in value_lines[1:]:
-                        name_table += f"  {'':<20}  {line}\n"  # Indent the remaining lines
+                        repr_str += f"  {'':<20}  {line}\n"
             else:
-                # Handle non-list values
                 value_lines = self.dispmax(value).splitlines()
-                # Apply {key:<20} to the first line and indent the subsequent lines
-                name_table += f"  {key:<20}: {value_lines[0]}\n"  # First line with key aligned
+                repr_str += f"  {key:<20}: {value_lines[0]}\n"
                 for line in value_lines[1:]:
-                    name_table += f"  {'':<20}  {line}\n"  # Indent the remaining lines
-        # Evaluate all values of parameters
-        tmp = self.parameters.eval()
-        tmpkey= ""
-        # Generate the parameters table dynamically (iterating over key-value pairs)
-        parameters_table = sep+ "[ PARAMS ]\n"
-        missing = 0
-        for key, value in self.parameters.items():  # Assuming parameters is a class with __dict__
-            parameters_table += f"  {key:<20}: {value}"  # Align the keys and values dynamically
-            if isinstance(value,str):
-                if value=="${"+key+"}":
-                    parameters_table += "\t < implicit definition >\n"
-                    missing += 1
-                else:
-                    parameters_table += f"\n  {tmpkey:<20}= {self.dispmax(tmp.getattr(key))}\n"
-            else:
-                parameters_table += "\n"
-        parameters_table += sep+f" >> {len(self.parameters)} definitions ({missing} missing)\n"
+                    repr_str += f"  {'':<20}  {line}\n"
 
-        # Combine the name and parameters table with a general instance representation
-        print(f'\ndforcefield "{self.userid}" derived from "{base_class_name}"\n{name_table}{parameters_table}\n')
+        repr_str += "\n"
+
+        # [PARAMS] Section
+        repr_str += f"{sep}[ PARAMS ]\n"
+        missing = 0
+
+        for key, value in self.parameters.items():
+            # Skip private parameters
+            if key.startswith('_'):
+                continue
+
+            repr_str += f"  {key:<20}: {value}\n"
+
+            # If the value is an expression, evaluate and display the result
+            if isinstance(value, str) and "${" in value and "}" in value:
+                try:
+                    # Replace placeholders with actual parameter values
+                    expr = value
+                    for param_key, param_val in self.parameters.items():
+                        expr = expr.replace(f"${{{param_key}}}", str(param_val))
+                    # Evaluate the expression safely
+                    evaluated = eval(expr, {"__builtins__": {}}, {})
+                    repr_str += f"                        = {evaluated}\n"
+                except Exception:
+                    # If evaluation fails, skip displaying the result
+                    pass
+
+        # Count missing definitions (assuming missing parameters are marked somehow)
+        # For demonstration, we'll assume 'missing' is already correctly set
+        total_definitions = len(self.parameters)
+        repr_str += f"\n{sep} >> {total_definitions} definitions ({missing} missing)\n"
+        print(repr_str)
         return self.__str__()
+
 
     def base_repr(self):
         """Returns the representation of the base_class."""
@@ -1247,14 +1273,14 @@ class dforcefield:
         new_version = version if version is not None else self.version
         if new_userid == self.userid:
             new_userid = new_userid + " (copy)"
-        # USER is computed by combining self.parameters + USER + parameterforcefield(**kwargs)
-        new_parameters = self.parameters + USER
-
+        # updated USER
+        new_USER = self.parameters + USER
+        # updated parameters
+        new_parameters = self.parameters + parameterforcefield(**kwargs)
         # Combine or override RULES, GLOBAL, and LOCAL if provided
         new_rules = RULES if RULES is not None else self.RULES
         new_global = GLOBAL if GLOBAL is not None else self.GLOBAL
         new_local = LOCAL if LOCAL is not None else self.LOCAL
-
         # Create and return the new instance with overridden values
         return self.__class__(
             base_class=self.base_class.__class__,
@@ -1263,11 +1289,11 @@ class dforcefield:
             name=new_name,
             description=new_description,
             version=new_version,
-            USER=new_parameters,
+            USER=new_USER,
             RULES=new_rules,
             GLOBAL=new_global,
             LOCAL=new_local,
-            **kwargs
+            **new_parameters
         )
 
 
@@ -1547,125 +1573,223 @@ class dforcefield:
 
 
 
-    def save(self, filename=None, foldername=None, overwrite=False):
+    def generator(self):
         """
-        Save the dforcefield instance to a file with a header, formatted content, and the base_class.
+        Generate the forcefield definition as a formatted string without traceability features.
+
+        Returns:
+        --------
+        str: A string containing the formatted forcefield definition, including headers for attributes,
+             descriptions, names, and parameters, but excluding traceability information such as host, date, and user.
+
+        Example Output:
+        ---------------
+        base_class="tlsph"
+        beadtype = 1
+        userid = "dynamic_water"
+        version = 1.0
+
+        # Description of the forcefield
+        description:{forcefield="LAMMPS:SMD", style="tlsph", material="water"}
+
+        # Name of the forcefield
+        name:{forcefield="LAMMPS:SMD", material="water"}
+
+        # Parameters for the forcefield
+        rho = 1000
+        E = "5*${c0}^2*${rho}"
+        nu = 0.3
+        """
+        # Construct forcefield attributes
+        attributes = (
+            f'base_class="{self.base_class.__class__.__name__}"\n'
+            f'beadtype = {self.beadtype}\n'
+            f'userid = "{self.userid}"\n'
+            f'version = {self.version}\n\n'
+        )
+
+        # Construct description
+        description = (
+            '# Description of the forcefield\n'
+            f'description:{{' + ', '.join(f'{key}="{value}"' for key, value in self.description.items()) + '}\n\n'
+        )
+
+        # Construct name
+        name = (
+            '# Name of the forcefield\n'
+            f'name:{{' + ', '.join(f'{key}="{value}"' for key, value in self.name.items()) + '}\n\n'
+        )
+
+        # Construct parameters
+        parameters = '# Parameters for the forcefield\n'
+        for key, value in self.parameters.items():
+            parameters += f'{key} = {value}\n'
+
+        # Combine all parts
+        content = attributes + description + name + parameters
+        return content
+
+
+
+    def save(self, filename=None, foldername=None, overwrite=False, verbose=True, extension=".txt"):
+        """
+        Save the dforcefield instance to a file using the generated forcefield definition.
 
         Args:
         -----
         filename (str): The name of the file to save. Defaults to self.userid if not provided.
         foldername (str): The folder in which to save the file. Defaults to a temporary directory.
         overwrite (bool): Whether to overwrite the file if it already exists. Defaults to False.
+        verbose (bool): Whether to include traceability features (host, date, user) in the saved file.
+                        Defaults to True.
+        extension (str): The file extension to use. Defaults to ".txt".
 
         Raises:
         -------
-        ValueError: If base_class is None or not a subclass of forcefield.
         FileExistsError: If the file already exists and overwrite is False.
 
         Notes:
         ------
-        The file format follows a specific structure for saving forcefield attributes, base_class,
-        name, description, and parameters.
+        The saved file will always include the mandatory line "# DFORCEFIELD SAVE FILE".
+        If verbose is True, a header with traceability information (host, date, user) will be included.
+        The file extension can be customized via the 'extension' parameter.
 
-        Example Output: (without the comments)
+        Example Output when verbose=True:
         ---------------
         # DFORCEFIELD SAVE FILE
-        base_class = "tlsph"
+        # generated on 2024-12-30 by user@host
+        #
+        #   userid = "dynamic_water"
+
+        base_class="tlsph"
         beadtype = 1
         userid = "dynamic_water"
         version = 1.0
 
+        # Description of the forcefield
         description:{forcefield="LAMMPS:SMD", style="tlsph", material="water"}
+
+        # Name of the forcefield
         name:{forcefield="LAMMPS:SMD", material="water"}
 
+        # Parameters for the forcefield
+        rho = 1000
+        E = "5*${c0}^2*${rho}"
+        nu = 0.3
+
+        Example Output when verbose=False:
+        ---------------
+        # DFORCEFIELD SAVE FILE
+
+        base_class="tlsph"
+        beadtype = 1
+        userid = "dynamic_water"
+        version = 1.0
+
+        # Description of the forcefield
+        description:{forcefield="LAMMPS:SMD", style="tlsph", material="water"}
+
+        # Name of the forcefield
+        name:{forcefield="LAMMPS:SMD", material="water"}
+
+        # Parameters for the forcefield
         rho = 1000
         E = "5*${c0}^2*${rho}"
         nu = 0.3
         """
-
-        # Use self.userid if filename is not provided
+        # Determine filename
         if filename is None:
             filename = self.userid
+        if not filename.endswith(extension):
+            filename += extension
 
-        # Ensure the filename ends with '.txt'
-        if not filename.endswith('.txt'):
-            filename += '.txt'
-
-        # Default folder to tempdir if foldername is not provided
+        # Determine foldername
         if foldername is None:
             foldername = tempfile.gettempdir()
 
-        # Construct full path
+        # Construct full file path
         if not os.path.isabs(filename):
             filepath = os.path.join(foldername, filename)
         else:
             filepath = filename
 
-        # Check if file already exists, raise exception if it does and overwrite is False
+        # Check if file exists
         if os.path.exists(filepath) and not overwrite:
             raise FileExistsError(f"The file '{filepath}' already exists.")
 
-        # Header with current date, username, and host
-        user = getpass.getuser()
-        host = socket.gethostname()
-        date = datetime.now().strftime('%Y-%m-%d')
-        header = f"# DFORCEFIELD SAVE FILE\n# generated on {date} by {user}@{host}\n"
-        header += f'#\tuserid = "{self.userid}"\n'
-        header += f'#\tpath = "{filepath}"\n\n'
+        # Generate forcefield content
+        content = self.generator()
 
-        # Open the file for writing
+        # Initialize content with mandatory header
+        final_content = '# DFORCEFIELD SAVE FILE\n'
+
+        if verbose:
+            user = getpass.getuser()
+            host = socket.gethostname()
+            date = datetime.now().strftime('%Y-%m-%d')
+
+            # Construct traceability header
+            trace_header = (
+                f'# generated on {date} by {user}@{host}\n'
+                f'#\n'
+                f'#   userid = "{self.userid}"\n\n'
+            )
+            final_content += trace_header
+        else:
+            final_content += '\n'
+
+        # Append forcefield content
+        final_content += content
+
+        # Write content to file
         with open(filepath, 'w') as f:
-            # Write the header
-            f.write(header)
+            f.write(final_content)
 
-            # Write beadtype, userid, and version with comments
-            f.write("# Forcefield attributes\n")
-            f.write(f'base_class="{self.base_class.__class__.__name__}"\n')
-            f.write(f"beadtype = {self.beadtype}\n")
-            f.write(f"userid = {self.userid}\n")
-            f.write(f"version = {self.version}\n\n")
-
-            # Write description with comment
-            f.write("# Description of the forcefield\n")
-            f.write("description:{")
-            f.write(", ".join(f'{key}="{value}"' for key, value in self.description.items()))
-            f.write("}\n\n")
-
-            # Write name with comment
-            f.write("# Name of the forcefield\n")
-            f.write("name:{")
-            f.write(", ".join(f'{key}="{value}"' for key, value in self.name.items()))
-            f.write("}\n\n")
-
-            # Write parameters with comment
-            f.write("# Parameters for the forcefield\n")
-            for key, value in self.parameters.items():
-                f.write(f"{key} = {value}\n")
-
-        # return filepath
-        print(f"\nScript saved to {filepath}")
-
+        print(f'\nForcefield saved to {filepath}')
         return filepath
 
 
 
     @classmethod
-    def load(cls, filename, foldername=None):
+    def load(cls, filename, foldername=None, authentication=True):
         """
         Load a dforcefield instance from a file with more control over the folder location and file validation.
 
         Args:
-            filename (str): The name of the file to load. The '.txt' extension will be added if not present.
-            foldername (str): The folder from which to load the file. Defaults to a temporary directory.
+        -----
+        filename (str): The name of the file to load. The 'extension' parameter will be used if not present.
+        foldername (str): The folder from which to load the file. Defaults to a temporary directory.
+        authentication (bool): Whether to authenticate the file by checking the mandatory header line.
+                            Defaults to True. If False, bypasses the authentication and parses the content directly.
 
         Returns:
-            dforcefield: A new dforcefield instance parsed from the file content.
+        --------
+        dforcefield: A new dforcefield instance parsed from the file content.
+
+        Raises:
+        -------
+        FileNotFoundError: If the file does not exist.
+        ValueError: If authentication is True and the file does not start with the mandatory header.
+
+        Notes:
+        ------
+        - The method checks for the mandatory line "# DFORCEFIELD SAVE FILE" at the beginning of the file.
+        If authentication is False, this check is bypassed, allowing parsing of content generated by generate().
+        - The file extension is expected to be '.txt' by default unless specified otherwise in the filename.
+
+        Example Usage:
+        --------------
+        >>> ff = dforcefield.load("forcefield.txt", authentication=True)
         """
-        # Step 0: Validate and construct filepath
+        # Determine file extension and ensure it ends with '.txt'
         if not filename.endswith('.txt'):
             filename += '.txt'
+
+        # Determine foldername
         if foldername is None:
             foldername = tempfile.gettempdir()
+
+        # Construct full file path
         if not os.path.isabs(filename):
             filepath = os.path.join(foldername, filename)
         else:
@@ -1679,23 +1803,21 @@ class dforcefield:
         with open(filepath, 'r') as f:
             content = f.read()
 
-        # Extract the filename and name
-        fname = os.path.basename(filepath)  # Extracts the filename (e.g., "forcefield.txt")
-        name, _ = os.path.splitext(fname)   # Removes the extension, e.g., "forcefield"
-
         # Call the parse method to create a new dforcefield instance
-        return cls.parse(content)
+        return cls.parsesyntax(content, authentication=authentication)
+
 
 
     @classmethod
-    def parse(cls, content):
+    def parsesyntax(cls, content, authentication=True):
         """
         Parse the string content of a forcefield file to create a dforcefield instance.
 
-        Parameters:
-        -----------
-        content : str
-            The string content to be parsed.
+        Args:
+        -----
+        content (str): The string content to be parsed.
+        authentication (bool): Whether to authenticate the content by checking the mandatory header line.
+                               Defaults to True. If False, bypasses the authentication.
 
         Returns:
         --------
@@ -1705,35 +1827,48 @@ class dforcefield:
         Raises:
         -------
         ValueError
-            If the content does not start with the correct magic line or if the format is invalid,
-            or if base_class is not a valid subclass of forcefield.
+            - If authentication is True and the content does not start with the correct mandatory header line.
+            - If the content format is invalid.
+            - If base_class is not a valid subclass of forcefield.
 
         Notes:
         ------
         - Handles different sections including parameters, name, and description.
-        - Accepts empty lines, comments, and the use of { } for attributes.
+        - Accepts empty lines and comments.
+        - Uses { } for attributes blocks.
+        - If authentication is False, it does not check for the mandatory header line.
+        - Recognizes `beadtype`, `userid`, and `version` as special attributes. If they are not present,
+          they are included in the `parameters`.
+
+        Example Usage:
+        --------------
+        >>> ff = dforcefield.parsesyntax(content_string, authentication=True)
         """
         # Split the content into lines
         lines = content.splitlines()
         lines = [line for line in lines if line.strip()]  # Remove blank or empty lines
+
         # Raise an error if no content is left after removing blank lines
         if not lines:
             raise ValueError("File/Content is empty or only contains blank lines.")
 
         # Initialize containers for parsed data
         inside_global_params = False
+        global_params_content = ""
         parameters = {}
-        attributes = {}
         description = {}
         name = {}
-        base_class = None
+        base_class_name = None
 
         # Step 1: Authenticate the file by checking the first line
-        if not lines[0].strip().startswith("# DFORCEFIELD SAVE FILE"):
-            raise ValueError("File/Content is not a valid DFORCEFIELD file.")
+        if authentication:
+            if not lines[0].strip().startswith("# DFORCEFIELD SAVE FILE"):
+                raise ValueError("File/Content is not a valid DFORCEFIELD file.")
+            # Remove the mandatory header line from processing
+            lines = lines[1:]
 
         # Step 2: Process each line dynamically
-        for line in lines[1:]:
+        for line in lines:
             stripped = line.strip()
 
             # Ignore empty lines and comments
@@ -1743,71 +1878,129 @@ class dforcefield:
             # Remove trailing comments
             stripped = remove_comments(stripped)
 
-            # Step 3: Detect base_class
-            if stripped.startswith("base_class="):
-                base_class_name = stripped.split("=", 1)[1].strip().strip('"')
-                # Dynamically set the base class based on the string value (e.g., "tlsph")
-                base_class = cls._load_base_class(base_class_name)
-                if base_class is None or not issubclass(base_class, forcefield):
-                    raise ValueError(f"Invalid base_class: '{base_class_name}' must be a subclass of forcefield.")
-                continue
+            # Handle description and name blocks first to avoid parsing them as parameters
+            if stripped.startswith("description:{"):
+                desc_content = stripped[len("description:{"):].strip()
+                # Check if the block ends on the same line
+                if desc_content.endswith("}"):
+                    desc_content = desc_content[:-1].strip()
+                    cls._parse_struct_block(desc_content, description)
+                else:
+                    # Multiline description block
+                    desc_content = desc_content
+                    while not stripped.endswith("}"):
+                        next_line = next(iter(lines), "").strip()
+                        stripped = next_line
+                        desc_content += " " + cls.remove_comments(next_line)
+                    desc_content = desc_content[:-1].strip()
+                    cls._parse_struct_block(desc_content, description)
+                continue  # Skip further processing for this line
 
-            # Step 4: Handle global parameters inside {...}
+            if stripped.startswith("name:{"):
+                name_content = stripped[len("name:{"):].strip()
+                # Check if the block ends on the same line
+                if name_content.endswith("}"):
+                    name_content = name_content[:-1].strip()
+                    cls._parse_struct_block(name_content, name)
+                else:
+                    # Multiline name block
+                    name_content = name_content
+                    while not stripped.endswith("}"):
+                        next_line = next(iter(lines), "").strip()
+                        stripped = next_line
+                        name_content += " " + cls.remove_comments(next_line)
+                    name_content = name_content[:-1].strip()
+                    cls._parse_struct_block(name_content, name)
+                continue  # Skip further processing for this line
+
+            # Handle global parameters inside {...}
             if stripped.startswith("{"):
                 inside_global_params = True
-                global_params_content = stripped[stripped.index('{') + 1:].strip()
-
+                global_params_content = stripped[1:].strip()
+                # Check if the block ends on the same line
                 if '}' in global_params_content:
-                    global_params_content = global_params_content[:global_params_content.index('}')].strip()
+                    global_params_content = global_params_content.split('}', 1)[0].strip()
                     inside_global_params = False
-                    cls._parse_global_params(global_params_content.strip(), attributes)
-                    global_params_content = ""  # Reset for the next block
-                continue
+                    cls._parse_global_params(global_params_content, parameters)
+                    global_params_content = ""
+                continue  # Skip further processing for this line
 
             if inside_global_params:
-                if stripped.endswith("}"):
-                    global_params_content += " " + stripped[:stripped.index('}')].strip()
+                if '}' in stripped:
+                    global_params_content += " " + stripped.split('}', 1)[0].strip()
                     inside_global_params = False
-                    cls._parse_global_params(global_params_content.strip(), attributes)
+                    cls._parse_global_params(global_params_content, parameters)
                     global_params_content = ""
                 else:
                     global_params_content += " " + stripped
-                continue
+                continue  # Continue to next line
 
-            # Step 5: Detect the start of name or description blocks
-            if stripped.startswith("description:{"):
-                desc_content = stripped.split("description:")[1].strip()[1:-1]
-                cls._parse_struct_block(desc_content, description)
-                continue
-
-            if stripped.startswith("name:{"):
-                name_content = stripped.split("name:")[1].strip()[1:-1]
-                cls._parse_struct_block(name_content, name)
-                continue
-
-            # Step 6: Handle parameters in key=value format
+            # Handle key-value pairs
             if "=" in stripped:
                 key, value = stripped.split("=", 1)
                 key = key.strip()
-                value = value.strip().strip('"')
-                parameters[key] = cls._convert_value(value)
+                value = value.strip().strip('"').strip("'")
+                if key == "base_class":
+                    # Store the class name, do not load
+                    base_class_name = value
+                elif key in {"beadtype", "userid", "version"}:
+                    parameters[key] = cls._convert_value(value)
+                else:
+                    parameters[key] = cls._convert_value(value)
+                continue  # Skip further processing for this line
 
-        # Step 7: Validate base_class and create a new dforcefield instance
-        if base_class is None:
+        # Step 3: Handle special attributes (beadtype, userid, version)
+        # Extract beadtype
+        beadtype = parameters.pop('beadtype', None)
+        if beadtype is not None:
+            try:
+                beadtype = int(beadtype)
+            except ValueError:
+                raise ValueError(f"Invalid value for beadtype: {beadtype}. It must be an integer.")
+        else:
+            beadtype = 1  # Default value
+            parameters['beadtype'] = beadtype
+
+        # Extract userid
+        userid = parameters.pop('userid', None)
+        if userid is not None:
+            userid = str(userid)
+        else:
+            userid = "unknown"  # Default value
+            parameters['userid'] = userid
+
+        # Extract version
+        version = parameters.pop('version', None)
+        if version is not None:
+            try:
+                version = float(version)
+            except ValueError:
+                raise ValueError(f"Invalid value for version: {version}. It must be a float.")
+        else:
+            version = 0.1  # Default value
+            parameters['version'] = version
+
+        # Step 4: Validate base_class and create a new dforcefield instance
+        if base_class_name is None:
             raise ValueError("base_class must be specified and valid in the forcefield file.")
 
-        # Step 8: Create and return the new dforcefield instance
+        #♠ Dynamically set the base class based on the string value (e.g., "tlsph")
+        resolved_base_class  = cls._load_base_class(base_class_name)
+        if resolved_base_class  is None or not issubclass(resolved_base_class, forcefield):
+            raise ValueError(f"Invalid base_class: '{value}' must be a subclass of forcefield.")
+
+        # Step 6: Create and return the new dforcefield instance
         newFF = cls(
-            base_class=base_class,
-            beadtype=int(attributes.get('beadtype', 1)),
-            userid=attributes.get('userid', "unknown"),
+            base_class=resolved_base_class,
+            beadtype=beadtype,
+            userid=userid,
             name=struct(**name),
             description=struct(**description),
-            version=float(attributes.get('version', 0.1)),
+            version=version,
             USER=parameterforcefield(**parameters)
         )
 
-        # Step 9: detect variables in templates and propagates undefined variables
+        # Step 6: Detect variables in templates and propagate undefined variables
         dvars = newFF.detectVariables()
         newFF.parameters = dvars + newFF.parameters
         return newFF
@@ -2212,6 +2405,18 @@ class dforcefield:
         return copie # return copied instance
 
 
+    @property
+    def base_class_name(self):
+        """
+        Returns the name of the base_class as a lowercase string.
+
+        Returns:
+            str: The lowercase name of the base_class.
+        """
+        if isinstance(self.base_class, forcefield):
+            return self.base_class.__class__.__name__.lower()
+        else:
+            raise TypeError("base_class is not an instance of a forcefield subclass.")
 # %% DEBUG
 # ===================================================
 # main()
@@ -2363,7 +2568,7 @@ rho = 1000
 E = "5*${c0}^2*${rho}"
 nu = 0.3
 """
-    parsed_forcefield = dforcefield.parse(content)
+    parsed_forcefield = dforcefield.parsesyntax(content)
     print(parsed_forcefield.script)
 
     # create a script object

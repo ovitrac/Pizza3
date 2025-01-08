@@ -499,7 +499,7 @@ else:
     from pizza.private.PIL import Image, ImagePalette
     PILavailable = True
 
-__all__ = [&#39;Circle&#39;, &#39;Collection&#39;, &#39;Diamond&#39;, &#39;Hexagon&#39;, &#39;Pentagon&#39;, &#39;Rectangle&#39;, &#39;Triangle&#39;, &#39;arc&#39;, &#39;collection&#39;, &#39;coregeometry&#39;, &#39;coreshell&#39;, &#39;emulsion&#39;, &#39;genericpolygon&#39;, &#39;imagesc&#39;, &#39;ind2rgb&#39;, &#39;linear&#39;, &#39;overlay&#39;, &#39;raster&#39;, &#39;scatter&#39;]
+__all__ = [&#39;Circle&#39;, &#39;Collection&#39;, &#39;Diamond&#39;, &#39;Hexagon&#39;, &#39;Pentagon&#39;, &#39;Rectangle&#39;, &#39;Triangle&#39;, &#39;arc&#39;, &#39;collection&#39;, &#39;coregeometry&#39;, &#39;coreshell&#39;, &#39;data3&#39;, &#39;emulsion&#39;, &#39;genericpolygon&#39;, &#39;imagesc&#39;, &#39;ind2rgb&#39;, &#39;linear&#39;, &#39;overlay&#39;, &#39;raster&#39;, &#39;scatter&#39;, &#39;struct&#39;]
 
 
 def _rotate(x0,y0,xc,yc,angle):
@@ -3302,6 +3302,867 @@ f&#34;The external radius={rshell} cannot be smaller than the shell thickness={t
 </ul>
 </li>
 </ul>
+</dd>
+<dt id="raster.data"><code class="flex name class">
+<span>class <span class="ident">data3</span></span>
+<span>(</span><span>*list)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class data:
+
+    # --------------------------------------------------------------------
+
+    def __init__(self, *list):
+        self.nselect = 1
+
+        if len(list) == 0:
+
+        # ========================================
+        # Default Constructor (empty object)
+        # ========================================
+
+            self.title = &#34;LAMMPS data file&#34;
+            self.names = {}
+            self.headers = {}
+            self.sections = {}
+            self.flist = []
+            self.restart = False
+            return
+
+        elif isinstance(list[0],dump):
+
+        # ========================================
+        # Constructor from an existing DUMP object
+        # ========================================
+
+            X = list[0]     # supplied dump object
+            t = X.time()
+            nt = len(t)
+            if len(list)&gt;1:
+                tselect = list[1]
+                if tselect not in t:
+                    raise ValueError(&#34;the input time is not available in the dump object&#34;)
+            else:
+                tselect = t[-1]
+            itselect = next(i for i in range(nt) if t[i]==tselect)
+            # set object title
+            self.title = &#39;LAMMPS data file (restart from &#34;%s&#34; t = %0.5g (frame %d of %d))&#39; %  \
+                (X.flist[0],tselect,itselect,nt)
+            # set default names                       ------------- HEADERS SECTION -------------
+            self.names = {}
+            X.tselect.one(tselect)
+            snap = X.snaps[itselect]
+            # set headers
+            self.headers = {    &#39;atoms&#39;: snap.natoms,
+                                &#39;atom types&#39;: X.minmax(&#34;type&#34;)[1],
+                                &#39;xlo xhi&#39;: (snap.xlo, snap.xhi),
+                                &#39;ylo yhi&#39;: (snap.ylo, snap.yhi),
+                                &#39;zlo zhi&#39;: (snap.zlo, snap.zhi)}
+            # Default sections
+            self.sections = {}
+            # set atoms (specific to your style/kind) ------------- ATOMS SUBSECTION -------------
+            template_atoms = {&#34;smd&#34;: [&#34;id&#34;,&#34;type&#34;,&#34;mol&#34;,&#34;c_vol&#34;, &#34;mass&#34;, &#34;radius&#34;,
+                                      &#34;c_contact_radius&#34;, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;, &#34;f_1[1]&#34;, &#34;f_1[2]&#34;, &#34;f_1[3]&#34;] }
+            if X.kind(template_atoms[&#34;smd&#34;]):
+                for col in template_atoms[&#34;smd&#34;]:
+                    self.append(&#34;Atoms&#34;, X.vecs(tselect, col), col in [&#34;id&#34;,&#34;type&#34;,&#34;mol&#34;],col)
+            else:
+                raise ValueError(&#34;Please add your ATOMS section in the constructor&#34;)
+            # set velocities (if required)           ------------- VELOCITIES SUBSECTION -------------
+            template_velocities = {&#34;smd&#34;: [&#34;id&#34;,&#34;vx&#34;,&#34;vy&#34;,&#34;vz&#34;]}
+            if X.kind(template_atoms[&#34;smd&#34;]):
+                if X.kind(template_velocities[&#34;smd&#34;]):
+                    for col in template_velocities[&#34;smd&#34;]:
+                        self.append(&#34;Velocities&#34;, X.vecs(tselect, col), col == &#34;id&#34;,col)
+                else:
+                    raise ValueError(&#34;the velocities are missing for the style SMD&#34;)
+            # store filename
+            self.flist = list[0].flist
+            self.restart = True
+            return
+
+        # ===========================================================
+        # Regular constructor from DATA file (supplied as filename)
+        # ===========================================================
+
+        flist = list
+        file = list[0]
+        if file[-3:] == &#34;.gz&#34;:
+            f = popen(&#34;%s -c %s&#34; % (PIZZA_GUNZIP, file), &#34;r&#34;)
+        else:
+            f = open(file)
+
+        self.title = f.readline()
+        self.names = {}
+
+        headers = {}
+        while 1:
+            line = f.readline()
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            found = 0
+            for keyword in hkeywords:
+                if line.find(keyword) &gt;= 0:
+                    found = 1
+                    words = line.split()
+                    if (
+                        keyword == &#34;xlo xhi&#34;
+                        or keyword == &#34;ylo yhi&#34;
+                        or keyword == &#34;zlo zhi&#34;
+                    ):
+                        headers[keyword] = (float(words[0]), float(words[1]))
+                    elif keyword == &#34;xy xz yz&#34;:
+                        headers[keyword] = (
+                            float(words[0]),
+                            float(words[1]),
+                            float(words[2]),
+                        )
+                    else:
+                        headers[keyword] = int(words[0])
+            if not found:
+                break
+
+        sections = {}
+        while 1:
+            found = 0
+            for pair in skeywords:
+                keyword, length = pair[0], pair[1]
+                if keyword == line:
+                    found = 1
+                    if length not in headers: #if not headers.has_key(length):
+                        raise ValueError(&#34;data section %s has no matching header value&#34; % line)
+                    f.readline()
+                    list = []
+                    for i in range(headers[length]):
+                        list.append(f.readline())
+                    sections[keyword] = list
+            if not found:
+                raise ValueError(&#34;invalid section %s in data file&#34; % line)
+            f.readline()
+            line = f.readline()
+            if not line:
+                break
+            line = line.strip()
+
+        f.close()
+        self.headers = headers
+        self.sections = sections
+        self.flist = flist
+        self.restart = False
+
+    # --------------------------------------------------------------------
+    # Display method (added OV - 2022-02-03)
+    def __repr__(self):
+        if self.sections == {} or self.headers == {}:
+            ret = &#34;empty %s&#34; % self.title
+            print(ret)
+            return ret
+        if self.restart:
+            kind = &#34;restart&#34;
+        else:
+            kind = &#34;source&#34;
+        print(&#34;Data file: %s\n\tcontains %d atoms from %d atom types\n\twith box = [%0.4g %0.4g %0.4g %0.4g %0.4g %0.4g]&#34;
+              % (self.flist[0],
+                 self.headers[&#39;atoms&#39;],
+                 self.headers[&#39;atom types&#39;],
+                 self.headers[&#39;xlo xhi&#39;][0],
+                 self.headers[&#39;xlo xhi&#39;][1],
+                 self.headers[&#39;ylo yhi&#39;][0],
+                 self.headers[&#39;ylo yhi&#39;][1],
+                 self.headers[&#39;zlo zhi&#39;][0],
+                 self.headers[&#39;zlo zhi&#39;][1],
+                 ) )
+        print(&#34;\twith the following sections:&#34;)
+        for sectionname in self.sections.keys():
+            print(&#34;\t\t&#34; +self.dispsection(sectionname,False))
+        ret = &#39;LAMMPS data object including %d atoms (%d types, %s=&#34;%s&#34;)&#39; \
+            % (self.headers[&#39;atoms&#39;],self.maxtype(),kind,self.flist[0])
+        return ret
+
+
+    # --------------------------------------------------------------------
+    # assign names to atom columns
+
+    def map(self, *pairs):
+        if len(pairs) % 2 != 0:
+            raise ValueError (&#34;data map() requires pairs of mappings&#34;)
+        for i in range(0, len(pairs), 2):
+            j = i + 1
+            self.names[pairs[j]] = pairs[i] - 1
+
+    # --------------------------------------------------------------------
+    # extract info from data file fields
+
+    def get(self, *list):
+        if len(list) == 1:
+            field = list[0]
+            array = []
+            lines = self.sections[field]
+            for line in lines:
+                words = line.split()
+                values = map(float, words)
+                array.append(values)
+            return array
+        elif len(list) == 2:
+            field = list[0]
+            n = list[1] - 1
+            vec = []
+            lines = self.sections[field]
+            for line in lines:
+                words = line.split()
+                vec.append(float(words[n]))
+            return vec
+        else:
+            raise ValueError(&#34;invalid arguments for data.get()&#34;)
+
+    # --------------------------------------------------------------------
+    # reorder columns in a data file field
+
+    def reorder(self, name, *order):
+        &#34;&#34;&#34; reorder columns: reorder(&#34;section&#34;,colidxfirst,colidxsecond,colidxthird,...)  &#34;&#34;&#34;
+        if name not in self.sections:
+            raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+        n = len(order)
+        print(&#34;&gt;&gt; reorder for %d columns&#34; % n)
+        natoms = len(self.sections[name])
+        oldlines = self.sections[name]
+        newlines = natoms * [&#34;&#34;]
+        for index in order:
+            for i in range(len(newlines)):
+                words = oldlines[i].split()
+                newlines[i] += words[index - 1] + &#34; &#34;
+        for i in range(len(newlines)):
+            newlines[i] += &#34;\n&#34;
+        self.sections[name] = newlines
+
+    # --------------------------------------------------------------------
+    # replace a column of named section with vector of values
+    # the number of data is checked and repeated for scalars (added 2022-02-04)
+
+    def replace(self, name, icol, vector):
+        &#34;&#34;&#34; replace column values: replace(&#34;section&#34;,columnindex,vectorofvalues) with columnindex=1..ncolumns &#34;&#34;&#34;
+        lines = self.sections[name]
+        nlines = len(lines)
+        if name not in self.sections:
+            raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+        if not isinstance(vector,list): vector = [vector]
+        if len(vector)==1: vector = vector * nlines
+        if len(vector) != nlines:
+            raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                             (len(vector),name,nlines))
+        newlines = []
+        j = icol - 1
+        for i in range(nlines):
+            line = lines[i]
+            words = line.split()
+            words[j] = str(vector[i])
+            newline = &#34; &#34;.join(words) + &#34;\n&#34;
+            newlines.append(newline)
+        self.sections[name] = newlines
+
+    # --------------------------------------------------------------------
+    # append a column of named section with vector of values (added 2022-02-04)
+
+    def append(self, name, vector, forceinteger = False, propertyname=None):
+        &#34;&#34;&#34; append a new column: X.append(&#34;section&#34;,vectorofvalues,forceinteger=False,propertyname=None) &#34;&#34;&#34;
+        if name not in self.sections:
+            self.sections[name] = []
+            print(&#39;Add section [%s] - file=&#34;%s&#34;&#39; % (name,self.title) )
+        lines = self.sections[name]
+        nlines = len(lines)
+        if not isinstance(vector,list) and not isinstance(vector,np.ndarray):
+            vector = [vector]
+        if propertyname != None:
+            print(&#39;\t&gt; Add &#34;%s&#34; (%d values) to [%s]&#39; % (propertyname,len(vector),name))
+        else:
+            print(&#39;\t&gt; Add %d values (no name) to [%s]&#39; % (len(vector),name))
+        newlines = []
+        if nlines == 0:           # empty atoms section, create first column
+            nlines = len(vector)  # new column length = input column length
+            for i in range(nlines):
+                if forceinteger:
+                    line = str(int(vector[i]))
+                else:
+                    line = str(vector[i])
+                newlines.append(line)
+        else:
+            if len(vector)==1: vector = vector * nlines
+            if len(vector) != nlines:
+                raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                                 (len(vector),name,nlines))
+            for i in range(nlines):
+                line = lines[i]
+                words = line.split()
+                if forceinteger:
+                    words.append(str(int(vector[i])))
+                else:
+                    words.append(str(vector[i]))
+                newline = &#34; &#34;.join(words) + &#34;\n&#34;
+                newlines.append(newline)
+        self.sections[name] = newlines
+
+
+    # --------------------------------------------------------------------
+    # disp section info (added 2022-02-04)
+
+    def dispsection(self, name,flaghead=True):
+        &#34;&#34;&#34; display section info: X.dispsection(&#34;sectionname&#34;) &#34;&#34;&#34;
+        lines = self.sections[name]
+        nlines = len(lines)
+        line = lines[0]
+        words = line.split()
+        ret = &#39;&#34;%s&#34;: %d x %d values&#39; % (name,nlines,len(words))
+
+        if flaghead: ret = &#34;LAMMPS data section &#34;+ret
+        return ret
+
+    # --------------------------------------------------------------------
+    # replace x,y,z in Atoms with x,y,z values from snapshot ntime of dump object
+    # assumes id,x,y,z are defined in both data and dump files
+    # also replaces ix,iy,iz if they are defined
+
+    def newxyz(self, dm, ntime):
+        nsnap = dm.findtime(ntime)
+        print(&#34;&gt;&gt; newxyz for %d snaps&#34; % nsnap)
+
+        dm.sort(ntime)
+        x, y, z = dm.vecs(ntime, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;)
+
+        self.replace(&#34;Atoms&#34;, self.names[&#34;x&#34;] + 1, x)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;y&#34;] + 1, y)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;z&#34;] + 1, z)
+
+        if &#34;ix&#34; in dm.names and &#34;ix&#34; in self.names: #if dm.names.has_key(&#34;ix&#34;) and self.names.has_key(&#34;ix&#34;):
+            ix, iy, iz = dm.vecs(ntime, &#34;ix&#34;, &#34;iy&#34;, &#34;iz&#34;)
+            self.replace(&#34;Atoms&#34;, self.names[&#34;ix&#34;] + 1, ix)
+            self.replace(&#34;Atoms&#34;, self.names[&#34;iy&#34;] + 1, iy)
+            self.replace(&#34;Atoms&#34;, self.names[&#34;iz&#34;] + 1, iz)
+
+    # --------------------------------------------------------------------
+    # delete header value or section from data file
+
+    def delete(self, keyword):
+
+        if keyword in self.headers: # if self.headers.has_key(keyword):
+            del self.headers[keyword]
+        elif keyword in self.sections: # elif self.sections.has_key(keyword):
+            del self.sections[keyword]
+        else:
+            raise ValueError(&#34;keyword not found in data object&#34;)
+
+    # --------------------------------------------------------------------
+    # write out a LAMMPS data file
+
+    def write(self, file):
+        f = open(file, &#34;w&#34;)
+        print(self.title,file=f)
+        for keyword in hkeywords:
+            if keyword in self.headers: # self.headers.has_key(keyword):
+                if keyword == &#34;xlo xhi&#34; or keyword == &#34;ylo yhi&#34; or keyword == &#34;zlo zhi&#34;:
+                    pair = self.headers[keyword]
+                    print(pair[0], pair[1], keyword,file=f)
+                elif keyword == &#34;xy xz yz&#34;:
+                    triple = self.headers[keyword]
+                    print(triple[0], triple[1], triple[2], keyword,file=f)
+                else:
+                    print(self.headers[keyword], keyword,file=f)
+        for pair in skeywords:
+            keyword = pair[0]
+            if keyword in self.sections: #self.sections.has_key(keyword):
+                print(&#34;\n%s\n&#34; % keyword,file=f)
+                for line in self.sections[keyword]:
+                    print(line,file=f,end=&#34;&#34;)
+        f.close()
+
+    # --------------------------------------------------------------------
+    # iterator called from other tools
+
+    def iterator(self, flag):
+        if flag == 0:
+            return 0, 0, 1
+        return 0, 0, -1
+
+    # --------------------------------------------------------------------
+    # time query from other tools
+
+    def findtime(self, n):
+        if n == 0:
+            return 0
+        raise ValueError(&#34;no step %d exists&#34; % n)
+
+    # --------------------------------------------------------------------
+    # return list of atoms and bonds to viz for data object
+
+    def viz(self, isnap):
+        if isnap:
+            raise ValueError(&#34;cannot call data.viz() with isnap != 0&#34;)
+
+        id = self.names[&#34;id&#34;]
+        type = self.names[&#34;type&#34;]
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+
+        xlohi = self.headers[&#34;xlo xhi&#34;]
+        ylohi = self.headers[&#34;ylo yhi&#34;]
+        zlohi = self.headers[&#34;zlo zhi&#34;]
+        box = [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+
+        # create atom list needed by viz from id,type,x,y,z
+
+        atoms = []
+        atomlines = self.sections[&#34;Atoms&#34;]
+        for line in atomlines:
+            words = line.split()
+            atoms.append(
+                [
+                    int(words[id]),
+                    int(words[type]),
+                    float(words[x]),
+                    float(words[y]),
+                    float(words[z]),
+                ]
+            )
+
+        # create list of current bond coords from list of bonds
+        # assumes atoms are sorted so can lookup up the 2 atoms in each bond
+
+        bonds = []
+        if self.sections.has_key(&#34;Bonds&#34;):
+            bondlines = self.sections[&#34;Bonds&#34;]
+            for line in bondlines:
+                words = line.split()
+                bid, btype = int(words[0]), int(words[1])
+                atom1, atom2 = int(words[2]), int(words[3])
+                atom1words = atomlines[atom1 - 1].split()
+                atom2words = atomlines[atom2 - 1].split()
+                bonds.append(
+                    [
+                        bid,
+                        btype,
+                        float(atom1words[x]),
+                        float(atom1words[y]),
+                        float(atom1words[z]),
+                        float(atom2words[x]),
+                        float(atom2words[y]),
+                        float(atom2words[z]),
+                        float(atom1words[type]),
+                        float(atom2words[type]),
+                    ]
+                )
+
+        tris = []
+        lines = []
+        return 0, box, atoms, bonds, tris, lines
+
+    # --------------------------------------------------------------------
+    # return box size
+
+    def maxbox(self):
+        xlohi = self.headers[&#34;xlo xhi&#34;]
+        ylohi = self.headers[&#34;ylo yhi&#34;]
+        zlohi = self.headers[&#34;zlo zhi&#34;]
+        return [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+
+    # --------------------------------------------------------------------
+    # return number of atom types
+
+    def maxtype(self):
+        return self.headers[&#34;atom types&#34;]</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="raster.data.append"><code class="name flex">
+<span>def <span class="ident">append</span></span>(<span>self, name, vector, forceinteger=False, propertyname=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>append a new column: X.append("section",vectorofvalues,forceinteger=False,propertyname=None)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def append(self, name, vector, forceinteger = False, propertyname=None):
+    &#34;&#34;&#34; append a new column: X.append(&#34;section&#34;,vectorofvalues,forceinteger=False,propertyname=None) &#34;&#34;&#34;
+    if name not in self.sections:
+        self.sections[name] = []
+        print(&#39;Add section [%s] - file=&#34;%s&#34;&#39; % (name,self.title) )
+    lines = self.sections[name]
+    nlines = len(lines)
+    if not isinstance(vector,list) and not isinstance(vector,np.ndarray):
+        vector = [vector]
+    if propertyname != None:
+        print(&#39;\t&gt; Add &#34;%s&#34; (%d values) to [%s]&#39; % (propertyname,len(vector),name))
+    else:
+        print(&#39;\t&gt; Add %d values (no name) to [%s]&#39; % (len(vector),name))
+    newlines = []
+    if nlines == 0:           # empty atoms section, create first column
+        nlines = len(vector)  # new column length = input column length
+        for i in range(nlines):
+            if forceinteger:
+                line = str(int(vector[i]))
+            else:
+                line = str(vector[i])
+            newlines.append(line)
+    else:
+        if len(vector)==1: vector = vector * nlines
+        if len(vector) != nlines:
+            raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                             (len(vector),name,nlines))
+        for i in range(nlines):
+            line = lines[i]
+            words = line.split()
+            if forceinteger:
+                words.append(str(int(vector[i])))
+            else:
+                words.append(str(vector[i]))
+            newline = &#34; &#34;.join(words) + &#34;\n&#34;
+            newlines.append(newline)
+    self.sections[name] = newlines</code></pre>
+</details>
+</dd>
+<dt id="raster.data.delete"><code class="name flex">
+<span>def <span class="ident">delete</span></span>(<span>self, keyword)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete(self, keyword):
+
+    if keyword in self.headers: # if self.headers.has_key(keyword):
+        del self.headers[keyword]
+    elif keyword in self.sections: # elif self.sections.has_key(keyword):
+        del self.sections[keyword]
+    else:
+        raise ValueError(&#34;keyword not found in data object&#34;)</code></pre>
+</details>
+</dd>
+<dt id="raster.data.dispsection"><code class="name flex">
+<span>def <span class="ident">dispsection</span></span>(<span>self, name, flaghead=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>display section info: X.dispsection("sectionname")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dispsection(self, name,flaghead=True):
+    &#34;&#34;&#34; display section info: X.dispsection(&#34;sectionname&#34;) &#34;&#34;&#34;
+    lines = self.sections[name]
+    nlines = len(lines)
+    line = lines[0]
+    words = line.split()
+    ret = &#39;&#34;%s&#34;: %d x %d values&#39; % (name,nlines,len(words))
+
+    if flaghead: ret = &#34;LAMMPS data section &#34;+ret
+    return ret</code></pre>
+</details>
+</dd>
+<dt id="raster.data.findtime"><code class="name flex">
+<span>def <span class="ident">findtime</span></span>(<span>self, n)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def findtime(self, n):
+    if n == 0:
+        return 0
+    raise ValueError(&#34;no step %d exists&#34; % n)</code></pre>
+</details>
+</dd>
+<dt id="raster.data.get"><code class="name flex">
+<span>def <span class="ident">get</span></span>(<span>self, *list)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get(self, *list):
+    if len(list) == 1:
+        field = list[0]
+        array = []
+        lines = self.sections[field]
+        for line in lines:
+            words = line.split()
+            values = map(float, words)
+            array.append(values)
+        return array
+    elif len(list) == 2:
+        field = list[0]
+        n = list[1] - 1
+        vec = []
+        lines = self.sections[field]
+        for line in lines:
+            words = line.split()
+            vec.append(float(words[n]))
+        return vec
+    else:
+        raise ValueError(&#34;invalid arguments for data.get()&#34;)</code></pre>
+</details>
+</dd>
+<dt id="raster.data.iterator"><code class="name flex">
+<span>def <span class="ident">iterator</span></span>(<span>self, flag)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def iterator(self, flag):
+    if flag == 0:
+        return 0, 0, 1
+    return 0, 0, -1</code></pre>
+</details>
+</dd>
+<dt id="raster.data.map"><code class="name flex">
+<span>def <span class="ident">map</span></span>(<span>self, *pairs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def map(self, *pairs):
+    if len(pairs) % 2 != 0:
+        raise ValueError (&#34;data map() requires pairs of mappings&#34;)
+    for i in range(0, len(pairs), 2):
+        j = i + 1
+        self.names[pairs[j]] = pairs[i] - 1</code></pre>
+</details>
+</dd>
+<dt id="raster.data.maxbox"><code class="name flex">
+<span>def <span class="ident">maxbox</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def maxbox(self):
+    xlohi = self.headers[&#34;xlo xhi&#34;]
+    ylohi = self.headers[&#34;ylo yhi&#34;]
+    zlohi = self.headers[&#34;zlo zhi&#34;]
+    return [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]</code></pre>
+</details>
+</dd>
+<dt id="raster.data.maxtype"><code class="name flex">
+<span>def <span class="ident">maxtype</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def maxtype(self):
+    return self.headers[&#34;atom types&#34;]</code></pre>
+</details>
+</dd>
+<dt id="raster.data.newxyz"><code class="name flex">
+<span>def <span class="ident">newxyz</span></span>(<span>self, dm, ntime)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def newxyz(self, dm, ntime):
+    nsnap = dm.findtime(ntime)
+    print(&#34;&gt;&gt; newxyz for %d snaps&#34; % nsnap)
+
+    dm.sort(ntime)
+    x, y, z = dm.vecs(ntime, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;)
+
+    self.replace(&#34;Atoms&#34;, self.names[&#34;x&#34;] + 1, x)
+    self.replace(&#34;Atoms&#34;, self.names[&#34;y&#34;] + 1, y)
+    self.replace(&#34;Atoms&#34;, self.names[&#34;z&#34;] + 1, z)
+
+    if &#34;ix&#34; in dm.names and &#34;ix&#34; in self.names: #if dm.names.has_key(&#34;ix&#34;) and self.names.has_key(&#34;ix&#34;):
+        ix, iy, iz = dm.vecs(ntime, &#34;ix&#34;, &#34;iy&#34;, &#34;iz&#34;)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;ix&#34;] + 1, ix)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;iy&#34;] + 1, iy)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;iz&#34;] + 1, iz)</code></pre>
+</details>
+</dd>
+<dt id="raster.data.reorder"><code class="name flex">
+<span>def <span class="ident">reorder</span></span>(<span>self, name, *order)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>reorder columns: reorder("section",colidxfirst,colidxsecond,colidxthird,&hellip;)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reorder(self, name, *order):
+    &#34;&#34;&#34; reorder columns: reorder(&#34;section&#34;,colidxfirst,colidxsecond,colidxthird,...)  &#34;&#34;&#34;
+    if name not in self.sections:
+        raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+    n = len(order)
+    print(&#34;&gt;&gt; reorder for %d columns&#34; % n)
+    natoms = len(self.sections[name])
+    oldlines = self.sections[name]
+    newlines = natoms * [&#34;&#34;]
+    for index in order:
+        for i in range(len(newlines)):
+            words = oldlines[i].split()
+            newlines[i] += words[index - 1] + &#34; &#34;
+    for i in range(len(newlines)):
+        newlines[i] += &#34;\n&#34;
+    self.sections[name] = newlines</code></pre>
+</details>
+</dd>
+<dt id="raster.data.replace"><code class="name flex">
+<span>def <span class="ident">replace</span></span>(<span>self, name, icol, vector)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>replace column values: replace("section",columnindex,vectorofvalues) with columnindex=1..ncolumns</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def replace(self, name, icol, vector):
+    &#34;&#34;&#34; replace column values: replace(&#34;section&#34;,columnindex,vectorofvalues) with columnindex=1..ncolumns &#34;&#34;&#34;
+    lines = self.sections[name]
+    nlines = len(lines)
+    if name not in self.sections:
+        raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+    if not isinstance(vector,list): vector = [vector]
+    if len(vector)==1: vector = vector * nlines
+    if len(vector) != nlines:
+        raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                         (len(vector),name,nlines))
+    newlines = []
+    j = icol - 1
+    for i in range(nlines):
+        line = lines[i]
+        words = line.split()
+        words[j] = str(vector[i])
+        newline = &#34; &#34;.join(words) + &#34;\n&#34;
+        newlines.append(newline)
+    self.sections[name] = newlines</code></pre>
+</details>
+</dd>
+<dt id="raster.data.viz"><code class="name flex">
+<span>def <span class="ident">viz</span></span>(<span>self, isnap)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def viz(self, isnap):
+    if isnap:
+        raise ValueError(&#34;cannot call data.viz() with isnap != 0&#34;)
+
+    id = self.names[&#34;id&#34;]
+    type = self.names[&#34;type&#34;]
+    x = self.names[&#34;x&#34;]
+    y = self.names[&#34;y&#34;]
+    z = self.names[&#34;z&#34;]
+
+    xlohi = self.headers[&#34;xlo xhi&#34;]
+    ylohi = self.headers[&#34;ylo yhi&#34;]
+    zlohi = self.headers[&#34;zlo zhi&#34;]
+    box = [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+
+    # create atom list needed by viz from id,type,x,y,z
+
+    atoms = []
+    atomlines = self.sections[&#34;Atoms&#34;]
+    for line in atomlines:
+        words = line.split()
+        atoms.append(
+            [
+                int(words[id]),
+                int(words[type]),
+                float(words[x]),
+                float(words[y]),
+                float(words[z]),
+            ]
+        )
+
+    # create list of current bond coords from list of bonds
+    # assumes atoms are sorted so can lookup up the 2 atoms in each bond
+
+    bonds = []
+    if self.sections.has_key(&#34;Bonds&#34;):
+        bondlines = self.sections[&#34;Bonds&#34;]
+        for line in bondlines:
+            words = line.split()
+            bid, btype = int(words[0]), int(words[1])
+            atom1, atom2 = int(words[2]), int(words[3])
+            atom1words = atomlines[atom1 - 1].split()
+            atom2words = atomlines[atom2 - 1].split()
+            bonds.append(
+                [
+                    bid,
+                    btype,
+                    float(atom1words[x]),
+                    float(atom1words[y]),
+                    float(atom1words[z]),
+                    float(atom2words[x]),
+                    float(atom2words[y]),
+                    float(atom2words[z]),
+                    float(atom1words[type]),
+                    float(atom2words[type]),
+                ]
+            )
+
+    tris = []
+    lines = []
+    return 0, box, atoms, bonds, tris, lines</code></pre>
+</details>
+</dd>
+<dt id="raster.data.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, file)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write(self, file):
+    f = open(file, &#34;w&#34;)
+    print(self.title,file=f)
+    for keyword in hkeywords:
+        if keyword in self.headers: # self.headers.has_key(keyword):
+            if keyword == &#34;xlo xhi&#34; or keyword == &#34;ylo yhi&#34; or keyword == &#34;zlo zhi&#34;:
+                pair = self.headers[keyword]
+                print(pair[0], pair[1], keyword,file=f)
+            elif keyword == &#34;xy xz yz&#34;:
+                triple = self.headers[keyword]
+                print(triple[0], triple[1], triple[2], keyword,file=f)
+            else:
+                print(self.headers[keyword], keyword,file=f)
+    for pair in skeywords:
+        keyword = pair[0]
+        if keyword in self.sections: #self.sections.has_key(keyword):
+            print(&#34;\n%s\n&#34; % keyword,file=f)
+            for line in self.sections[keyword]:
+                print(line,file=f,end=&#34;&#34;)
+    f.close()</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="raster.emulsion"><code class="flex name class">
 <span>class <span class="ident">emulsion</span></span>
@@ -6356,6 +7217,1822 @@ def n(self):
 </dd>
 </dl>
 </dd>
+<dt id="raster.struct"><code class="flex name class">
+<span>class <span class="ident">struct</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><h1 id="class-struct">Class: <code><a title="raster.struct" href="#raster.struct">struct</a></code></h1>
+<p>A lightweight class that mimics Matlab-like structures, with additional features
+such as dynamic field creation, indexing, concatenation, and compatibility with
+evaluated parameters (<code>param</code>).</p>
+<hr>
+<h3 id="features">Features</h3>
+<ul>
+<li>Dynamic creation of fields.</li>
+<li>Indexing and iteration support for fields.</li>
+<li>Concatenation and subtraction of structures.</li>
+<li>Conversion to and from dictionaries.</li>
+<li>Compatible with <code>param</code> and <code>paramauto</code> for evaluation and dependency handling.</li>
+</ul>
+<hr>
+<h3 id="examples">Examples</h3>
+<h4 id="basic-usage">Basic Usage</h4>
+<pre><code class="language-python">s = struct(a=1, b=2, c='${a} + ${b} # evaluate me if you can')
+print(s.a)  # 1
+s.d = 11    # Append a new field
+delattr(s, 'd')  # Delete the field
+</code></pre>
+<h4 id="using-param-for-evaluation">Using <code>param</code> for Evaluation</h4>
+<pre><code class="language-python">p = param(a=1, b=2, c='${a} + ${b} # evaluate me if you can')
+p.eval()
+# Output:
+# --------
+#      a: 1
+#      b: 2
+#      c: ${a} + ${b} # evaluate me if you can (= 3)
+# --------
+</code></pre>
+<hr>
+<h3 id="concatenation-and-subtraction">Concatenation and Subtraction</h3>
+<p>Fields from the right-most structure overwrite existing values.</p>
+<pre><code class="language-python">a = struct(a=1, b=2)
+b = struct(c=3, d=&quot;d&quot;, e=&quot;e&quot;)
+c = a + b
+e = c - a
+</code></pre>
+<hr>
+<h3 id="practical-shorthands">Practical Shorthands</h3>
+<h4 id="constructing-a-structure-from-keys">Constructing a Structure from Keys</h4>
+<pre><code class="language-python">s = struct.fromkeys([&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;])
+# Output:
+# --------
+#      a: None
+#      b: None
+#      c: None
+#      d: None
+# --------
+</code></pre>
+<h4 id="building-a-structure-from-variables-in-a-string">Building a Structure from Variables in a String</h4>
+<pre><code class="language-python">s = struct.scan(&quot;${a} + ${b} * ${c} / ${d} --- ${ee}&quot;)
+s.a = 1
+s.b = &quot;test&quot;
+s.c = [1, &quot;a&quot;, 2]
+s.generator()
+# Output:
+# X = struct(
+#      a=1,
+#      b=&quot;test&quot;,
+#      c=[1, 'a', 2],
+#      d=None,
+#      ee=None
+# )
+</code></pre>
+<h4 id="indexing-and-iteration">Indexing and Iteration</h4>
+<p>Structures can be indexed or sliced like lists.</p>
+<pre><code class="language-python">c = a + b
+c[0]      # Access the first field
+c[-1]     # Access the last field
+c[:2]     # Slice the structure
+for field in c:
+    print(field)
+</code></pre>
+<hr>
+<h3 id="dynamic-dependency-management">Dynamic Dependency Management</h3>
+<p><code><a title="raster.struct" href="#raster.struct">struct</a></code> provides control over dependencies, sorting, and evaluation.</p>
+<pre><code class="language-python">s = struct(d=3, e=&quot;${c} + {d}&quot;, c='${a} + ${b}', a=1, b=2)
+s.sortdefinitions()
+# Output:
+# --------
+#      d: 3
+#      a: 1
+#      b: 2
+#      c: ${a} + ${b}
+#      e: ${c} + ${d}
+# --------
+</code></pre>
+<p>For dynamic evaluation, use <code>param</code>:</p>
+<pre><code class="language-python">p = param(sortdefinitions=True, d=3, e=&quot;${c} + ${d}&quot;, c='${a} + ${b}', a=1, b=2)
+# Output:
+# --------
+#      d: 3
+#      a: 1
+#      b: 2
+#      c: ${a} + ${b}  (= 3)
+#      e: ${c} + ${d}  (= 6)
+# --------
+</code></pre>
+<hr>
+<h3 id="overloaded-methods-and-operators">Overloaded Methods and Operators</h3>
+<h4 id="supported-operators">Supported Operators</h4>
+<ul>
+<li><code>+</code>: Concatenation of two structures (<code>__add__</code>).</li>
+<li><code>-</code>: Subtraction of fields (<code>__sub__</code>).</li>
+<li><code>len()</code>: Number of fields (<code>__len__</code>).</li>
+<li><code>in</code>: Check for field existence (<code>__contains__</code>).</li>
+</ul>
+<h4 id="method-overview">Method Overview</h4>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>check(default)</code></td>
+<td>Populate fields with defaults if missing.</td>
+</tr>
+<tr>
+<td><code>clear()</code></td>
+<td>Remove all fields.</td>
+</tr>
+<tr>
+<td><code>dict2struct(dico)</code></td>
+<td>Create a structure from a dictionary.</td>
+</tr>
+<tr>
+<td><code>disp()</code></td>
+<td>Display the structure.</td>
+</tr>
+<tr>
+<td><code>eval()</code></td>
+<td>Evaluate expressions within fields.</td>
+</tr>
+<tr>
+<td><code>fromkeys(keys)</code></td>
+<td>Create a structure from a list of keys.</td>
+</tr>
+<tr>
+<td><code>generator()</code></td>
+<td>Generate Python code representing the structure.</td>
+</tr>
+<tr>
+<td><code>items()</code></td>
+<td>Return key-value pairs.</td>
+</tr>
+<tr>
+<td><code>keys()</code></td>
+<td>Return all keys in the structure.</td>
+</tr>
+<tr>
+<td><code>read(file)</code></td>
+<td>Load structure fields from a file.</td>
+</tr>
+<tr>
+<td><code>scan(string)</code></td>
+<td>Extract variables from a string and populate fields.</td>
+</tr>
+<tr>
+<td><code>sortdefinitions()</code></td>
+<td>Sort fields to resolve dependencies.</td>
+</tr>
+<tr>
+<td><code>struct2dict()</code></td>
+<td>Convert the structure to a dictionary.</td>
+</tr>
+<tr>
+<td><code>values()</code></td>
+<td>Return all field values.</td>
+</tr>
+<tr>
+<td><code>write(file)</code></td>
+<td>Save the structure to a file.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="dynamic-properties">Dynamic Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>isempty</code></td>
+<td><code>True</code> if the structure is empty.</td>
+</tr>
+<tr>
+<td><code>isdefined</code></td>
+<td><code>True</code> if all fields are defined.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>constructor</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class struct():
+    &#34;&#34;&#34;
+    Class: `struct`
+    ================
+
+    A lightweight class that mimics Matlab-like structures, with additional features
+    such as dynamic field creation, indexing, concatenation, and compatibility with
+    evaluated parameters (`param`).
+
+    ---
+
+    ### Features
+    - Dynamic creation of fields.
+    - Indexing and iteration support for fields.
+    - Concatenation and subtraction of structures.
+    - Conversion to and from dictionaries.
+    - Compatible with `param` and `paramauto` for evaluation and dependency handling.
+
+    ---
+
+    ### Examples
+
+    #### Basic Usage
+    ```python
+    s = struct(a=1, b=2, c=&#39;${a} + ${b} # evaluate me if you can&#39;)
+    print(s.a)  # 1
+    s.d = 11    # Append a new field
+    delattr(s, &#39;d&#39;)  # Delete the field
+    ```
+
+    #### Using `param` for Evaluation
+    ```python
+    p = param(a=1, b=2, c=&#39;${a} + ${b} # evaluate me if you can&#39;)
+    p.eval()
+    # Output:
+    # --------
+    #      a: 1
+    #      b: 2
+    #      c: ${a} + ${b} # evaluate me if you can (= 3)
+    # --------
+    ```
+
+    ---
+
+    ### Concatenation and Subtraction
+    Fields from the right-most structure overwrite existing values.
+    ```python
+    a = struct(a=1, b=2)
+    b = struct(c=3, d=&#34;d&#34;, e=&#34;e&#34;)
+    c = a + b
+    e = c - a
+    ```
+
+    ---
+
+    ### Practical Shorthands
+
+    #### Constructing a Structure from Keys
+    ```python
+    s = struct.fromkeys([&#34;a&#34;, &#34;b&#34;, &#34;c&#34;, &#34;d&#34;])
+    # Output:
+    # --------
+    #      a: None
+    #      b: None
+    #      c: None
+    #      d: None
+    # --------
+    ```
+
+    #### Building a Structure from Variables in a String
+    ```python
+    s = struct.scan(&#34;${a} + ${b} * ${c} / ${d} --- ${ee}&#34;)
+    s.a = 1
+    s.b = &#34;test&#34;
+    s.c = [1, &#34;a&#34;, 2]
+    s.generator()
+    # Output:
+    # X = struct(
+    #      a=1,
+    #      b=&#34;test&#34;,
+    #      c=[1, &#39;a&#39;, 2],
+    #      d=None,
+    #      ee=None
+    # )
+    ```
+
+    #### Indexing and Iteration
+    Structures can be indexed or sliced like lists.
+    ```python
+    c = a + b
+    c[0]      # Access the first field
+    c[-1]     # Access the last field
+    c[:2]     # Slice the structure
+    for field in c:
+        print(field)
+    ```
+
+    ---
+
+    ### Dynamic Dependency Management
+    `struct` provides control over dependencies, sorting, and evaluation.
+
+    ```python
+    s = struct(d=3, e=&#34;${c} + {d}&#34;, c=&#39;${a} + ${b}&#39;, a=1, b=2)
+    s.sortdefinitions()
+    # Output:
+    # --------
+    #      d: 3
+    #      a: 1
+    #      b: 2
+    #      c: ${a} + ${b}
+    #      e: ${c} + ${d}
+    # --------
+    ```
+
+    For dynamic evaluation, use `param`:
+    ```python
+    p = param(sortdefinitions=True, d=3, e=&#34;${c} + ${d}&#34;, c=&#39;${a} + ${b}&#39;, a=1, b=2)
+    # Output:
+    # --------
+    #      d: 3
+    #      a: 1
+    #      b: 2
+    #      c: ${a} + ${b}  (= 3)
+    #      e: ${c} + ${d}  (= 6)
+    # --------
+    ```
+
+    ---
+
+    ### Overloaded Methods and Operators
+    #### Supported Operators
+    - `+`: Concatenation of two structures (`__add__`).
+    - `-`: Subtraction of fields (`__sub__`).
+    - `len()`: Number of fields (`__len__`).
+    - `in`: Check for field existence (`__contains__`).
+
+    #### Method Overview
+    | Method                | Description                                             |
+    |-----------------------|---------------------------------------------------------|
+    | `check(default)`      | Populate fields with defaults if missing.               |
+    | `clear()`             | Remove all fields.                                      |
+    | `dict2struct(dico)`   | Create a structure from a dictionary.                   |
+    | `disp()`              | Display the structure.                                  |
+    | `eval()`              | Evaluate expressions within fields.                     |
+    | `fromkeys(keys)`      | Create a structure from a list of keys.                 |
+    | `generator()`         | Generate Python code representing the structure.        |
+    | `items()`             | Return key-value pairs.                                 |
+    | `keys()`              | Return all keys in the structure.                       |
+    | `read(file)`          | Load structure fields from a file.                      |
+    | `scan(string)`        | Extract variables from a string and populate fields.    |
+    | `sortdefinitions()`   | Sort fields to resolve dependencies.                    |
+    | `struct2dict()`       | Convert the structure to a dictionary.                  |
+    | `values()`            | Return all field values.                                |
+    | `write(file)`         | Save the structure to a file.                           |
+
+    ---
+
+    ### Dynamic Properties
+    | Property    | Description                            |
+    |-------------|----------------------------------------|
+    | `isempty`   | `True` if the structure is empty.      |
+    | `isdefined` | `True` if all fields are defined.      |
+
+    ---
+    &#34;&#34;&#34;
+
+    # attributes to be overdefined
+    _type = &#34;struct&#34;        # object type
+    _fulltype = &#34;structure&#34; # full name
+    _ftype = &#34;field&#34;        # field name
+    _evalfeature = False    # true if eval() is available
+    _maxdisplay = 40        # maximum number of characters to display (should be even)
+    _propertyasattribute = False
+
+    # attributes for the iterator method
+    # Please keep it static, duplicate the object before changing _iter_
+    _iter_ = 0
+
+    # excluded attributes (keep the , in the Tupple if it is singleton)
+    _excludedattr = {&#39;_iter_&#39;,&#39;__class__&#39;,&#39;_protection&#39;,&#39;_evaluation&#39;,&#39;_returnerror&#39;} # used by keys() and len()
+
+
+    # Methods
+    def __init__(self,**kwargs):
+        &#34;&#34;&#34; constructor &#34;&#34;&#34;
+        # Optionally extend _excludedattr here
+        self._excludedattr = self._excludedattr | {&#39;_excludedattr&#39;, &#39;_type&#39;, &#39;_fulltype&#39;,&#39;_ftype&#39;} # addition 2024-10-11
+        self.set(**kwargs)
+
+    def zip(self):
+        &#34;&#34;&#34; zip keys and values &#34;&#34;&#34;
+        return zip(self.keys(),self.values())
+
+    @staticmethod
+    def dict2struct(dico,makeparam=False):
+        &#34;&#34;&#34; create a structure from a dictionary &#34;&#34;&#34;
+        if isinstance(dico,dict):
+            s = param() if makeparam else struct()
+            s.set(**dico)
+            return s
+        raise TypeError(&#34;the argument must be a dictionary&#34;)
+
+    def struct2dict(self):
+        &#34;&#34;&#34; create a dictionary from the current structure &#34;&#34;&#34;
+        return dict(self.zip())
+
+    def struct2param(self,protection=False,evaluation=True):
+        &#34;&#34;&#34; convert an object struct() to param() &#34;&#34;&#34;
+        p = param(**self.struct2dict())
+        for i in range(len(self)):
+            if isinstance(self[i],pstr): p[i] = pstr(p[i])
+        p._protection = protection
+        p._evaluation = evaluation
+        return p
+
+    def set(self,**kwargs):
+        &#34;&#34;&#34; initialization &#34;&#34;&#34;
+        self.__dict__.update(kwargs)
+
+    def setattr(self,key,value):
+        &#34;&#34;&#34; set field and value &#34;&#34;&#34;
+        if isinstance(value,list) and len(value)==0 and key in self:
+            delattr(self, key)
+        else:
+            self.__dict__[key] = value
+
+    def getattr(self,key):
+        &#34;&#34;&#34;Get attribute override to access both instance attributes and properties if allowed.&#34;&#34;&#34;
+        if key in self.__dict__:
+            return self.__dict__[key]
+        elif getattr(self, &#39;_propertyasattribute&#39;, False) and \
+             key not in self._excludedattr and \
+             key in self.__class__.__dict__ and isinstance(self.__class__.__dict__[key], property):
+            # If _propertyasattribute is True and it&#39;s a property, get its value
+            return self.__class__.__dict__[key].fget(self)
+        else:
+            raise AttributeError(f&#39;the {self._ftype} &#34;{key}&#34; does not exist&#39;)
+
+    def hasattr(self, key):
+        &#34;&#34;&#34;Return true if the field exists, considering properties as regular attributes if allowed.&#34;&#34;&#34;
+        return key in self.__dict__ or (
+            getattr(self, &#39;_propertyasattribute&#39;, False) and
+            key not in self._excludedattr and
+            key in self.__class__.__dict__ and isinstance(self.__class__.__dict__[key], property)
+        )
+
+    def __getstate__(self):
+        &#34;&#34;&#34; getstate for cooperative inheritance / duplication &#34;&#34;&#34;
+        return self.__dict__.copy()
+
+    def __setstate__(self,state):
+        &#34;&#34;&#34; setstate for cooperative inheritance / duplication &#34;&#34;&#34;
+        self.__dict__.update(state)
+
+    def __getattr__(self,key):
+        &#34;&#34;&#34; get attribute override &#34;&#34;&#34;
+        return pstr.eval(self.getattr(key))
+
+    def __setattr__(self,key,value):
+        &#34;&#34;&#34; set attribute override &#34;&#34;&#34;
+        self.setattr(key,value)
+
+    def __contains__(self,item):
+        &#34;&#34;&#34; in override &#34;&#34;&#34;
+        return self.hasattr(item)
+
+    def keys(self):
+        &#34;&#34;&#34; return the fields &#34;&#34;&#34;
+        # keys() is used by struct() and its iterator
+        return [key for key in self.__dict__.keys() if key not in self._excludedattr]
+
+    def keyssorted(self,reverse=True):
+        &#34;&#34;&#34; sort keys by length() &#34;&#34;&#34;
+        klist = self.keys()
+        l = [len(k) for k in klist]
+        return [k for _,k in sorted(zip(l,klist),reverse=reverse)]
+
+    def values(self):
+        &#34;&#34;&#34; return the values &#34;&#34;&#34;
+        # values() is used by struct() and its iterator
+        return [pstr.eval(value) for key,value in self.__dict__.items() if key not in self._excludedattr]
+
+    @staticmethod
+    def fromkeysvalues(keys,values,makeparam=False):
+        &#34;&#34;&#34; struct.keysvalues(keys,values) creates a structure from keys and values
+            use makeparam = True to create a param instead of struct
+        &#34;&#34;&#34;
+        if keys is None: raise AttributeError(&#34;the keys must not empty&#34;)
+        if not isinstance(keys,(list,tuple,np.ndarray,np.generic)): keys = [keys]
+        if not isinstance(values,(list,tuple,np.ndarray,np.generic)): values = [values]
+        nk,nv = len(keys), len(values)
+        s = param() if makeparam else struct()
+        if nk&gt;0 and nv&gt;0:
+            iv = 0
+            for ik in range(nk):
+                s.setattr(keys[ik], values[iv])
+                iv = min(nv-1,iv+1)
+            for ik in range(nk,nv):
+                s.setattr(f&#34;key{ik}&#34;, values[ik])
+        return s
+
+    def items(self):
+        &#34;&#34;&#34; return all elements as iterable key, value &#34;&#34;&#34;
+        return self.zip()
+
+    def __getitem__(self,idx):
+        &#34;&#34;&#34;
+            s[i] returns the ith element of the structure
+            s[:4] returns a structure with the four first fields
+            s[[1,3]] returns the second and fourth elements
+        &#34;&#34;&#34;
+        if isinstance(idx,int):
+            if idx&lt;len(self):
+                return self.getattr(self.keys()[idx])
+            raise IndexError(f&#34;the {self._ftype} index should be comprised between 0 and {len(self)-1}&#34;)
+        elif isinstance(idx,slice):
+            return struct.fromkeysvalues(self.keys()[idx], self.values()[idx])
+        elif isinstance(idx,(list,tuple)):
+            k,v= self.keys(), self.values()
+            nk = len(k)
+            s = param() if isinstance(self,param) else struct()
+            for i in idx:
+                if isinstance(i,int) and i&gt;=0 and i&lt;nk:
+                    s.setattr(k[i],v[i])
+                else:
+                    raise IndexError(&#34;idx must contains only integers ranged between 0 and %d&#34; % (nk-1))
+            return s
+        elif isinstance(idx,str):
+            return self.getattr(idx)
+        else:
+            raise TypeError(&#34;The index must be an integer or a slice and not a %s&#34; % type(idx).__name__)
+
+    def __setitem__(self,idx,value):
+        &#34;&#34;&#34; set the ith element of the structure  &#34;&#34;&#34;
+        if isinstance(idx,int):
+            if idx&lt;len(self):
+                self.setattr(self.keys()[idx], value)
+            else:
+                raise IndexError(f&#34;the {self._ftype} index should be comprised between 0 and {len(self)-1}&#34;)
+        elif isinstance(idx,slice):
+            k = self.keys()[idx]
+            if len(value)&lt;=1:
+                for i in range(len(k)): self.setattr(k[i], value)
+            elif len(k) == len(value):
+                for i in range(len(k)): self.setattr(k[i], value[i])
+            else:
+                raise IndexError(&#34;the number of values (%d) does not match the number of elements in the slive (%d)&#34; \
+                       % (len(value),len(idx)))
+        elif isinstance(idx,(list,tuple)):
+            if len(value)&lt;=1:
+                for i in range(len(idx)): self[idx[i]]=value
+            elif len(idx) == len(value):
+                for i in range(len(idx)): self[idx[i]]=value[i]
+            else:
+                raise IndexError(&#34;the number of values (%d) does not match the number of indices (%d)&#34; \
+                                 % (len(value),len(idx)))
+
+    def __len__(self):
+        &#34;&#34;&#34; return the number of fields &#34;&#34;&#34;
+        # len() is used by struct() and its iterator
+        return len(self.keys())
+
+    def __iter__(self):
+        &#34;&#34;&#34; struct iterator &#34;&#34;&#34;
+        # note that in the original object _iter_ is a static property not in dup
+        dup = duplicate(self)
+        dup._iter_ = 0
+        return dup
+
+    def __next__(self):
+        &#34;&#34;&#34; increment iterator &#34;&#34;&#34;
+        self._iter_ += 1
+        if self._iter_&lt;=len(self):
+            return self[self._iter_-1]
+        self._iter_ = 0
+        raise StopIteration(f&#34;Maximum {self._ftype} iteration reached {len(self)}&#34;)
+
+    def __add__(self,s,sortdefinitions=False,raiseerror=True, silentmode=True):
+        &#34;&#34;&#34; add a structure
+            set sortdefintions=True to sort definitions (to maintain executability)
+        &#34;&#34;&#34;
+        if not isinstance(s,struct):
+            raise TypeError(f&#34;the second operand must be {self._type}&#34;)
+        dup = duplicate(self)
+        dup.__dict__.update(s.__dict__)
+        if sortdefinitions: dup.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
+        return dup
+
+    def __iadd__(self,s,sortdefinitions=False,raiseerror=False, silentmode=True):
+        &#34;&#34;&#34; iadd a structure
+            set sortdefintions=True to sort definitions (to maintain executability)
+        &#34;&#34;&#34;
+        if not isinstance(s,struct):
+            raise TypeError(f&#34;the second operand must be {self._type}&#34;)
+        self.__dict__.update(s.__dict__)
+        if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
+        return self
+
+    def __sub__(self,s):
+        &#34;&#34;&#34; sub a structure &#34;&#34;&#34;
+        if not isinstance(s,struct):
+            raise TypeError(f&#34;the second operand must be {self._type}&#34;)
+        dup = duplicate(self)
+        listofkeys = dup.keys()
+        for k in s.keys():
+            if k in listofkeys:
+                delattr(dup,k)
+        return dup
+
+    def __isub__(self,s):
+        &#34;&#34;&#34; isub a structure &#34;&#34;&#34;
+        if not isinstance(s,struct):
+            raise TypeError(f&#34;the second operand must be {self._type}&#34;)
+        listofkeys = self.keys()
+        for k in s.keys():
+            if k in listofkeys:
+                delattr(self,k)
+        return self
+
+    def dispmax(self,content):
+        &#34;&#34;&#34; optimize display &#34;&#34;&#34;
+        strcontent = str(content)
+        if len(strcontent)&gt;self._maxdisplay:
+            nchar = round(self._maxdisplay/2)
+            return strcontent[:nchar]+&#34; [...] &#34;+strcontent[-nchar:]
+        else:
+            return content
+
+    def __repr__(self):
+        &#34;&#34;&#34; display method &#34;&#34;&#34;
+        if self.__dict__=={}:
+            print(f&#34;empty {self._fulltype} ({self._type} object) with no {self._type}s&#34;)
+            return f&#34;empty {self._fulltype}&#34;
+        else:
+            tmp = self.eval() if self._evalfeature else []
+            keylengths = [len(key) for key in self.__dict__]
+            width = max(10,max(keylengths)+2)
+            fmt = &#34;%%%ss:&#34; % width
+            fmteval = fmt[:-1]+&#34;=&#34;
+            fmtcls =  fmt[:-1]+&#34;:&#34;
+            line = ( fmt % (&#39;-&#39;*(width-2)) ) + ( &#39;-&#39;*(min(40,width*5)) )
+            print(line)
+            for key,value in self.__dict__.items():
+                if key not in self._excludedattr:
+                    if isinstance(value,(int,float,str,list,tuple,np.ndarray,np.generic)):
+                        if isinstance(value,pstr):
+                            print(fmt % key,&#39;p&#34;&#39;+self.dispmax(value)+&#39;&#34;&#39;)
+                        if isinstance(value,str) and value==&#34;&#34;:
+                            print(fmt % key,&#39;&#34;&#34;&#39;)
+                        else:
+                            print(fmt % key,self.dispmax(value))
+                    elif isinstance(value,struct):
+                        print(fmt % key,self.dispmax(value.__str__()))
+                    elif isinstance(value,type):
+                        print(fmt % key,self.dispmax(str(value)))
+                    else:
+                        print(fmt % key,type(value))
+                        print(fmtcls % &#34;&#34;,self.dispmax(str(value)))
+                    if self._evalfeature:
+                        if isinstance(self,paramauto):
+                            try:
+                                if isinstance(value,pstr):
+                                    print(fmteval % &#34;&#34;,&#39;p&#34;&#39;+self.dispmax(tmp.getattr(key))+&#39;&#34;&#39;)
+                                elif isinstance(value,str):
+                                    if value == &#34;&#34;:
+                                        print(fmteval % &#34;&#34;,self.dispmax(&#34;&lt;empty string&gt;&#34;))
+                                    else:
+                                        print(fmteval % &#34;&#34;,self.dispmax(tmp.getattr(key)))
+                            except Exception as err:
+                                print(fmteval % &#34;&#34;,err.message, err.args)
+                        else:
+                            if isinstance(value,pstr):
+                                print(fmteval % &#34;&#34;,&#39;p&#34;&#39;+self.dispmax(tmp.getattr(key))+&#39;&#34;&#39;)
+                            elif isinstance(value,str):
+                                if value == &#34;&#34;:
+                                    print(fmteval % &#34;&#34;,self.dispmax(&#34;&lt;empty string&gt;&#34;))
+                                else:
+                                    print(fmteval % &#34;&#34;,self.dispmax(tmp.getattr(key)))
+            print(line)
+            return f&#34;{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s&#34;
+
+    def disp(self):
+        &#34;&#34;&#34; display method &#34;&#34;&#34;
+        self.__repr__()
+
+    def __str__(self):
+        return f&#34;{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s&#34;
+
+    @property
+    def isempty(self):
+        &#34;&#34;&#34; isempty is set to True for an empty structure &#34;&#34;&#34;
+        return len(self)==0
+
+    def clear(self):
+        &#34;&#34;&#34; clear() delete all fields while preserving the original class &#34;&#34;&#34;
+        for k in self.keys(): delattr(self,k)
+
+    def format(self,s,escape=False,raiseerror=True):
+        &#34;&#34;&#34;
+            format a string with field (use {field} as placeholders)
+                s.replace(string), s.replace(string,escape=True)
+                where:
+                    s is a struct object
+                    string is a string with possibly ${variable1}
+                    escape is a flag to prevent ${} replaced by {}
+        &#34;&#34;&#34;
+        if raiseerror:
+            try:
+                if escape:
+                    return s.format(**self.__dict__)
+                else:
+                    return s.replace(&#34;${&#34;,&#34;{&#34;).format(**self.__dict__)
+            except KeyError as kerr:
+                s_ = s.replace(&#34;{&#34;,&#34;${&#34;)
+                print(f&#34;WARNING: the {self._ftype} {kerr} is undefined in &#39;{s_}&#39;&#34;)
+                return s_ # instead of s (we put back $) - OV 2023/01/27
+            except Exception as othererr:
+                s_ = s.replace(&#34;{&#34;,&#34;${&#34;)
+                raise RuntimeError from othererr
+        else:
+            if escape:
+                return s.format(**self.__dict__)
+            else:
+                return s.replace(&#34;${&#34;,&#34;{&#34;).format(**self.__dict__)
+
+    def fromkeys(self,keys):
+        &#34;&#34;&#34; returns a structure from keys &#34;&#34;&#34;
+        return self+struct(**dict.fromkeys(keys,None))
+
+    @staticmethod
+    def scan(s):
+        &#34;&#34;&#34; scan(string) scan a string for variables &#34;&#34;&#34;
+        if not isinstance(s,str): raise TypeError(&#34;scan() requires a string&#34;)
+        tmp = struct()
+        #return tmp.fromkeys(set(re.findall(r&#34;\$\{(.*?)\}&#34;,s)))
+        found = re.findall(r&#34;\$\{(.*?)\}&#34;,s);
+        uniq = []
+        for x in found:
+            if x not in uniq: uniq.append(x)
+        return tmp.fromkeys(uniq)
+
+    @staticmethod
+    def isstrexpression(s):
+        &#34;&#34;&#34; isstrexpression(string) returns true if s contains an expression  &#34;&#34;&#34;
+        if not isinstance(s,str): raise TypeError(&#34;s must a string&#34;)
+        return re.search(r&#34;\$\{.*?\}&#34;,s) is not None
+
+    @property
+    def isexpression(self):
+        &#34;&#34;&#34; same structure with True if it is an expression &#34;&#34;&#34;
+        s = param() if isinstance(self,param) else struct()
+        for k,v in self.items():
+            if isinstance(v,str):
+                s.setattr(k,struct.isstrexpression(v))
+            else:
+                s.setattr(k,False)
+        return s
+
+    @staticmethod
+    def isstrdefined(s,ref):
+        &#34;&#34;&#34; isstrdefined(string,ref) returns true if it is defined in ref  &#34;&#34;&#34;
+        if not isinstance(s,str): raise TypeError(&#34;s must a string&#34;)
+        if not isinstance(ref,struct): raise TypeError(&#34;ref must be a structure&#34;)
+        if struct.isstrexpression(s):
+            k = struct.scan(s).keys()
+            allfound,i,nk = True,0,len(k)
+            while (i&lt;nk) and allfound:
+                allfound = k[i] in ref
+                i += 1
+            return allfound
+        else:
+            return False
+
+
+    def isdefined(self,ref=None):
+        &#34;&#34;&#34; isdefined(ref) returns true if it is defined in ref &#34;&#34;&#34;
+        s = param() if isinstance(self,param) else struct()
+        k,v,isexpr = self.keys(), self.values(), self.isexpression.values()
+        nk = len(k)
+        if ref is None:
+            for i in range(nk):
+                if isexpr[i]:
+                    s.setattr(k[i],struct.isstrdefined(v[i],self[:i]))
+                else:
+                    s.setattr(k[i],True)
+        else:
+            if not isinstance(ref,struct): raise TypeError(&#34;ref must be a structure&#34;)
+            for i in range(nk):
+                if isexpr[i]:
+                    s.setattr(k[i],struct.isstrdefined(v[i],ref))
+                else:
+                    s.setattr(k[i],True)
+        return s
+
+    def sortdefinitions(self,raiseerror=True,silentmode=False):
+        &#34;&#34;&#34; sortdefintions sorts all definitions
+            so that they can be executed as param().
+            If any inconsistency is found, an error message is generated.
+
+            Flags = default values
+                raiseerror=True show erros of True
+                silentmode=False no warning if True
+        &#34;&#34;&#34;
+        find = lambda xlist: [i for i, x in enumerate(xlist) if x]
+        findnot = lambda xlist: [i for i, x in enumerate(xlist) if not x]
+        k,v,isexpr =  self.keys(), self.values(), self.isexpression.values()
+        istatic = findnot(isexpr)
+        idynamic = find(isexpr)
+        static = struct.fromkeysvalues(
+            [ k[i] for i in istatic ],
+            [ v[i] for i in istatic ],
+            makeparam = False)
+        dynamic = struct.fromkeysvalues(
+            [ k[i] for i in idynamic ],
+            [ v[i] for i in idynamic ],
+            makeparam=False)
+        current = static # make static the current structure
+        nmissing, anychange, errorfound = len(dynamic), False, False
+        while nmissing:
+            itst, found = 0, False
+            while itst&lt;nmissing and not found:
+                teststruct = current + dynamic[[itst]] # add the test field
+                found = all(list(teststruct.isdefined()))
+                ifound = itst
+                itst += 1
+            if found:
+                current = teststruct # we accept the new field
+                dynamic[ifound] = []
+                nmissing -= 1
+                anychange = True
+            else:
+                if raiseerror:
+                    raise KeyError(&#39;unable to interpret %d/%d expressions in &#34;%ss&#34;&#39; % \
+                                   (nmissing,len(self),self._ftype))
+                else:
+                    if (not errorfound) and (not silentmode):
+                        print(&#39;WARNING: unable to interpret %d/%d expressions in &#34;%ss&#34;&#39; % \
+                              (nmissing,len(self),self._ftype))
+                    current = teststruct # we accept the new field (even if it cannot be interpreted)
+                    dynamic[ifound] = []
+                    nmissing -= 1
+                    errorfound = True
+        if anychange:
+            self.clear() # reset all fields and assign them in the proper order
+            k,v = current.keys(), current.values()
+            for i in range(len(k)):
+                self.setattr(k[i],v[i])
+
+    def generator(self):
+        &#34;&#34;&#34; generate Python code of the equivalent structure &#34;&#34;&#34;
+        nk = len(self)
+        if nk==0:
+            print(&#34;X = struct()&#34;)
+        else:
+            ik = 0
+            fmt = &#34;%%%ss=&#34; % max(10,max([len(k) for k in self.keys()])+2)
+            print(&#34;\nX = struct(&#34;)
+            for k in self.keys():
+                ik += 1
+                end = &#34;,\n&#34; if ik&lt;nk else &#34;\n&#34;+(fmt[:-1] % &#34;)&#34;)+&#34;\n&#34;
+                v = getattr(self,k)
+                if isinstance(v,(int,float)) or v == None:
+                    print(fmt % k,v,end=end)
+                elif isinstance(v,str):
+                    print(fmt % k,f&#39;&#34;{v}&#34;&#39;,end=end)
+                elif isinstance(v,(list,tuple)):
+                    print(fmt % k,v,end=end)
+                else:
+                    print(fmt % k,&#34;/* unsupported type */&#34;,end=end)
+
+    # copy and deep copy methpds for the class
+    def __copy__(self):
+        &#34;&#34;&#34; copy method &#34;&#34;&#34;
+        cls = self.__class__
+        copie = cls.__new__(cls)
+        copie.__dict__.update(self.__dict__)
+        return copie
+
+    def __deepcopy__(self, memo):
+        &#34;&#34;&#34; deep copy method &#34;&#34;&#34;
+        cls = self.__class__
+        copie = cls.__new__(cls)
+        memo[id(self)] = copie
+        for k, v in self.__dict__.items():
+            setattr(copie, k, duplicatedeep(v, memo))
+        return copie
+
+
+    # write a file
+    def write(self, file, overwrite=True, mkdir=False):
+        &#34;&#34;&#34;
+            write the equivalent structure (not recursive for nested struct)
+                write(filename, overwrite=True, mkdir=False)
+
+            Parameters:
+            - file: The file path to write to.
+            - overwrite: Whether to overwrite the file if it exists (default: True).
+            - mkdir: Whether to create the directory if it doesn&#39;t exist (default: False).
+        &#34;&#34;&#34;
+        # Create a Path object for the file to handle cross-platform paths
+        file_path = Path(file).resolve()
+
+        # Check if the directory exists or if mkdir is set to True, create it
+        if mkdir:
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+        elif not file_path.parent.exists():
+            raise FileNotFoundError(f&#34;The directory {file_path.parent} does not exist.&#34;)
+        # If overwrite is False and the file already exists, raise an exception
+        if not overwrite and file_path.exists():
+            raise FileExistsError(f&#34;The file {file_path} already exists, and overwrite is set to False.&#34;)
+        # Open and write to the file using the resolved path
+        with file_path.open(mode=&#34;w&#34;, encoding=&#39;utf-8&#39;) as f:
+            print(f&#34;# {self._fulltype} with {len(self)} {self._ftype}s\n&#34;, file=f)
+            for k, v in self.items():
+                if v is None:
+                    print(k, &#34;=None&#34;, file=f, sep=&#34;&#34;)
+                elif isinstance(v, (int, float)):
+                    print(k, &#34;=&#34;, v, file=f, sep=&#34;&#34;)
+                elif isinstance(v, str):
+                    print(k, &#39;=&#34;&#39;, v, &#39;&#34;&#39;, file=f, sep=&#34;&#34;)
+                else:
+                    print(k, &#34;=&#34;, str(v), file=f, sep=&#34;&#34;)
+
+
+    # read a file
+    @staticmethod
+    def read(file):
+        &#34;&#34;&#34;
+            read the equivalent structure
+                read(filename)
+
+            Parameters:
+            - file: The file path to read from.
+        &#34;&#34;&#34;
+        # Create a Path object for the file to handle cross-platform paths
+        file_path = Path(file).resolve()
+        # Check if the parent directory exists, otherwise raise an error
+        if not file_path.parent.exists():
+            raise FileNotFoundError(f&#34;The directory {file_path.parent} does not exist.&#34;)
+        # If the file does not exist, raise an exception
+        if not file_path.exists():
+            raise FileNotFoundError(f&#34;The file {file_path} does not exist.&#34;)
+        # Open and read the file
+        with file_path.open(mode=&#34;r&#34;, encoding=&#34;utf-8&#34;) as f:
+            s = struct()  # Assuming struct is defined elsewhere
+            while True:
+                line = f.readline()
+                if not line:
+                    break
+                line = line.strip()
+                expr = line.split(sep=&#34;=&#34;)
+                if len(line) &gt; 0 and line[0] != &#34;#&#34; and len(expr) &gt; 0:
+                    lhs = expr[0]
+                    rhs = &#34;&#34;.join(expr[1:]).strip()
+                    if len(rhs) == 0 or rhs == &#34;None&#34;:
+                        v = None
+                    else:
+                        v = eval(rhs)
+                    s.setattr(lhs, v)
+        return s
+
+    # argcheck
+    def check(self,default):
+        &#34;&#34;&#34;
+        populate fields from a default structure
+            check(defaultstruct)
+            missing field, None and [] values are replaced by default ones
+
+            Note: a.check(b) is equivalent to b+a except for [] and None values
+        &#34;&#34;&#34;
+        if not isinstance(default,struct):
+            raise TypeError(&#34;the first argument must be a structure&#34;)
+        for f in default.keys():
+            ref = default.getattr(f)
+            if f not in self:
+                self.setattr(f, ref)
+            else:
+                current = self.getattr(f)
+                if ((current is None)  or (current==[])) and \
+                    ((ref is not None) and (ref!=[])):
+                        self.setattr(f, ref)
+
+
+    # update values based on key:value
+    def update(self, **kwargs):
+        &#34;&#34;&#34;
+        Update multiple fields at once, while protecting certain attributes.
+
+        Parameters:
+        -----------
+        **kwargs : dict
+            The fields to update and their new values.
+
+        Protected attributes defined in _excludedattr are not updated.
+
+        Usage:
+        ------
+        s.update(a=10, b=[1, 2, 3], new_field=&#34;new_value&#34;)
+        &#34;&#34;&#34;
+        protected_attributes = getattr(self, &#39;_excludedattr&#39;, ())
+
+        for key, value in kwargs.items():
+            if key in protected_attributes:
+                print(f&#34;Warning: Cannot update protected attribute &#39;{key}&#39;&#34;)
+            else:
+                self.setattr(key, value)
+
+
+    # override () for subindexing structure with key names
+    def __call__(self, *keys):
+        &#34;&#34;&#34;
+        Extract a sub-structure based on the specified keys,
+        keeping the same class type.
+
+        Parameters:
+        -----------
+        *keys : str
+            The keys for the fields to include in the sub-structure.
+
+        Returns:
+        --------
+        struct
+            A new instance of the same class as the original, containing
+            only the specified keys.
+
+        Usage:
+        ------
+        sub_struct = s(&#39;key1&#39;, &#39;key2&#39;, ...)
+        &#34;&#34;&#34;
+        # Create a new instance of the same class
+        sub_struct = self.__class__()
+
+        # Get the full type and field type for error messages
+        fulltype = getattr(self, &#39;_fulltype&#39;, &#39;structure&#39;)
+        ftype = getattr(self, &#39;_ftype&#39;, &#39;field&#39;)
+
+        # Add only the specified keys to the new sub-structure
+        for key in keys:
+            if key in self:
+                sub_struct.setattr(key, self.getattr(key))
+            else:
+                raise KeyError(f&#34;{fulltype} does not contain the {ftype} &#39;{key}&#39;.&#34;)
+
+        return sub_struct
+
+
+    def __delattr__(self, key):
+        &#34;&#34;&#34; Delete an instance attribute if it exists and is not a class or excluded attribute. &#34;&#34;&#34;
+        if key in self._excludedattr:
+            raise AttributeError(f&#34;Cannot delete excluded attribute &#39;{key}&#39;&#34;)
+        elif key in self.__class__.__dict__:  # Check if it&#39;s a class attribute
+            raise AttributeError(f&#34;Cannot delete class attribute &#39;{key}&#39;&#34;)
+        elif key in self.__dict__:  # Delete only if in instance&#39;s __dict__
+            del self.__dict__[key]
+        else:
+            raise AttributeError(f&#34;{self._type} has no attribute &#39;{key}&#39;&#34;)</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li>pizza.private.mstruct.param</li>
+<li>pizza.raster.collection</li>
+<li>pizza.region.regioncollection</li>
+<li>pizza.script.scriptobject</li>
+<li>pizza.script.scriptobjectgroup</li>
+<li><a title="raster.collection" href="#raster.collection">collection</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="raster.struct.dict2struct"><code class="name flex">
+<span>def <span class="ident">dict2struct</span></span>(<span>dico, makeparam=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>create a structure from a dictionary</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def dict2struct(dico,makeparam=False):
+    &#34;&#34;&#34; create a structure from a dictionary &#34;&#34;&#34;
+    if isinstance(dico,dict):
+        s = param() if makeparam else struct()
+        s.set(**dico)
+        return s
+    raise TypeError(&#34;the argument must be a dictionary&#34;)</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.fromkeysvalues"><code class="name flex">
+<span>def <span class="ident">fromkeysvalues</span></span>(<span>keys, values, makeparam=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>struct.keysvalues(keys,values) creates a structure from keys and values
+use makeparam = True to create a param instead of struct</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def fromkeysvalues(keys,values,makeparam=False):
+    &#34;&#34;&#34; struct.keysvalues(keys,values) creates a structure from keys and values
+        use makeparam = True to create a param instead of struct
+    &#34;&#34;&#34;
+    if keys is None: raise AttributeError(&#34;the keys must not empty&#34;)
+    if not isinstance(keys,(list,tuple,np.ndarray,np.generic)): keys = [keys]
+    if not isinstance(values,(list,tuple,np.ndarray,np.generic)): values = [values]
+    nk,nv = len(keys), len(values)
+    s = param() if makeparam else struct()
+    if nk&gt;0 and nv&gt;0:
+        iv = 0
+        for ik in range(nk):
+            s.setattr(keys[ik], values[iv])
+            iv = min(nv-1,iv+1)
+        for ik in range(nk,nv):
+            s.setattr(f&#34;key{ik}&#34;, values[ik])
+    return s</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.isstrdefined"><code class="name flex">
+<span>def <span class="ident">isstrdefined</span></span>(<span>s, ref)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>isstrdefined(string,ref) returns true if it is defined in ref</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def isstrdefined(s,ref):
+    &#34;&#34;&#34; isstrdefined(string,ref) returns true if it is defined in ref  &#34;&#34;&#34;
+    if not isinstance(s,str): raise TypeError(&#34;s must a string&#34;)
+    if not isinstance(ref,struct): raise TypeError(&#34;ref must be a structure&#34;)
+    if struct.isstrexpression(s):
+        k = struct.scan(s).keys()
+        allfound,i,nk = True,0,len(k)
+        while (i&lt;nk) and allfound:
+            allfound = k[i] in ref
+            i += 1
+        return allfound
+    else:
+        return False</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.isstrexpression"><code class="name flex">
+<span>def <span class="ident">isstrexpression</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>isstrexpression(string) returns true if s contains an expression</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def isstrexpression(s):
+    &#34;&#34;&#34; isstrexpression(string) returns true if s contains an expression  &#34;&#34;&#34;
+    if not isinstance(s,str): raise TypeError(&#34;s must a string&#34;)
+    return re.search(r&#34;\$\{.*?\}&#34;,s) is not None</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.read"><code class="name flex">
+<span>def <span class="ident">read</span></span>(<span>file)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>read the equivalent structure
+read(filename)</p>
+<p>Parameters:
+- file: The file path to read from.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def read(file):
+    &#34;&#34;&#34;
+        read the equivalent structure
+            read(filename)
+
+        Parameters:
+        - file: The file path to read from.
+    &#34;&#34;&#34;
+    # Create a Path object for the file to handle cross-platform paths
+    file_path = Path(file).resolve()
+    # Check if the parent directory exists, otherwise raise an error
+    if not file_path.parent.exists():
+        raise FileNotFoundError(f&#34;The directory {file_path.parent} does not exist.&#34;)
+    # If the file does not exist, raise an exception
+    if not file_path.exists():
+        raise FileNotFoundError(f&#34;The file {file_path} does not exist.&#34;)
+    # Open and read the file
+    with file_path.open(mode=&#34;r&#34;, encoding=&#34;utf-8&#34;) as f:
+        s = struct()  # Assuming struct is defined elsewhere
+        while True:
+            line = f.readline()
+            if not line:
+                break
+            line = line.strip()
+            expr = line.split(sep=&#34;=&#34;)
+            if len(line) &gt; 0 and line[0] != &#34;#&#34; and len(expr) &gt; 0:
+                lhs = expr[0]
+                rhs = &#34;&#34;.join(expr[1:]).strip()
+                if len(rhs) == 0 or rhs == &#34;None&#34;:
+                    v = None
+                else:
+                    v = eval(rhs)
+                s.setattr(lhs, v)
+    return s</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.scan"><code class="name flex">
+<span>def <span class="ident">scan</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>scan(string) scan a string for variables</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def scan(s):
+    &#34;&#34;&#34; scan(string) scan a string for variables &#34;&#34;&#34;
+    if not isinstance(s,str): raise TypeError(&#34;scan() requires a string&#34;)
+    tmp = struct()
+    #return tmp.fromkeys(set(re.findall(r&#34;\$\{(.*?)\}&#34;,s)))
+    found = re.findall(r&#34;\$\{(.*?)\}&#34;,s);
+    uniq = []
+    for x in found:
+        if x not in uniq: uniq.append(x)
+    return tmp.fromkeys(uniq)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="raster.struct.isempty"><code class="name">var <span class="ident">isempty</span></code></dt>
+<dd>
+<div class="desc"><p>isempty is set to True for an empty structure</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def isempty(self):
+    &#34;&#34;&#34; isempty is set to True for an empty structure &#34;&#34;&#34;
+    return len(self)==0</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.isexpression"><code class="name">var <span class="ident">isexpression</span></code></dt>
+<dd>
+<div class="desc"><p>same structure with True if it is an expression</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def isexpression(self):
+    &#34;&#34;&#34; same structure with True if it is an expression &#34;&#34;&#34;
+    s = param() if isinstance(self,param) else struct()
+    for k,v in self.items():
+        if isinstance(v,str):
+            s.setattr(k,struct.isstrexpression(v))
+        else:
+            s.setattr(k,False)
+    return s</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="raster.struct.check"><code class="name flex">
+<span>def <span class="ident">check</span></span>(<span>self, default)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>populate fields from a default structure
+check(defaultstruct)
+missing field, None and [] values are replaced by default ones</p>
+<pre><code>Note: a.check(b) is equivalent to b+a except for [] and None values
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check(self,default):
+    &#34;&#34;&#34;
+    populate fields from a default structure
+        check(defaultstruct)
+        missing field, None and [] values are replaced by default ones
+
+        Note: a.check(b) is equivalent to b+a except for [] and None values
+    &#34;&#34;&#34;
+    if not isinstance(default,struct):
+        raise TypeError(&#34;the first argument must be a structure&#34;)
+    for f in default.keys():
+        ref = default.getattr(f)
+        if f not in self:
+            self.setattr(f, ref)
+        else:
+            current = self.getattr(f)
+            if ((current is None)  or (current==[])) and \
+                ((ref is not None) and (ref!=[])):
+                    self.setattr(f, ref)</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.clear"><code class="name flex">
+<span>def <span class="ident">clear</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>clear() delete all fields while preserving the original class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear(self):
+    &#34;&#34;&#34; clear() delete all fields while preserving the original class &#34;&#34;&#34;
+    for k in self.keys(): delattr(self,k)</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.disp"><code class="name flex">
+<span>def <span class="ident">disp</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>display method</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def disp(self):
+    &#34;&#34;&#34; display method &#34;&#34;&#34;
+    self.__repr__()</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.dispmax"><code class="name flex">
+<span>def <span class="ident">dispmax</span></span>(<span>self, content)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>optimize display</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dispmax(self,content):
+    &#34;&#34;&#34; optimize display &#34;&#34;&#34;
+    strcontent = str(content)
+    if len(strcontent)&gt;self._maxdisplay:
+        nchar = round(self._maxdisplay/2)
+        return strcontent[:nchar]+&#34; [...] &#34;+strcontent[-nchar:]
+    else:
+        return content</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.format"><code class="name flex">
+<span>def <span class="ident">format</span></span>(<span>self, s, escape=False, raiseerror=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>format a string with field (use {field} as placeholders)
+s.replace(string), s.replace(string,escape=True)
+where:
+s is a struct object
+string is a string with possibly ${variable1}
+escape is a flag to prevent ${} replaced by {}</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def format(self,s,escape=False,raiseerror=True):
+    &#34;&#34;&#34;
+        format a string with field (use {field} as placeholders)
+            s.replace(string), s.replace(string,escape=True)
+            where:
+                s is a struct object
+                string is a string with possibly ${variable1}
+                escape is a flag to prevent ${} replaced by {}
+    &#34;&#34;&#34;
+    if raiseerror:
+        try:
+            if escape:
+                return s.format(**self.__dict__)
+            else:
+                return s.replace(&#34;${&#34;,&#34;{&#34;).format(**self.__dict__)
+        except KeyError as kerr:
+            s_ = s.replace(&#34;{&#34;,&#34;${&#34;)
+            print(f&#34;WARNING: the {self._ftype} {kerr} is undefined in &#39;{s_}&#39;&#34;)
+            return s_ # instead of s (we put back $) - OV 2023/01/27
+        except Exception as othererr:
+            s_ = s.replace(&#34;{&#34;,&#34;${&#34;)
+            raise RuntimeError from othererr
+    else:
+        if escape:
+            return s.format(**self.__dict__)
+        else:
+            return s.replace(&#34;${&#34;,&#34;{&#34;).format(**self.__dict__)</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.fromkeys"><code class="name flex">
+<span>def <span class="ident">fromkeys</span></span>(<span>self, keys)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>returns a structure from keys</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fromkeys(self,keys):
+    &#34;&#34;&#34; returns a structure from keys &#34;&#34;&#34;
+    return self+struct(**dict.fromkeys(keys,None))</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.generator"><code class="name flex">
+<span>def <span class="ident">generator</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>generate Python code of the equivalent structure</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generator(self):
+    &#34;&#34;&#34; generate Python code of the equivalent structure &#34;&#34;&#34;
+    nk = len(self)
+    if nk==0:
+        print(&#34;X = struct()&#34;)
+    else:
+        ik = 0
+        fmt = &#34;%%%ss=&#34; % max(10,max([len(k) for k in self.keys()])+2)
+        print(&#34;\nX = struct(&#34;)
+        for k in self.keys():
+            ik += 1
+            end = &#34;,\n&#34; if ik&lt;nk else &#34;\n&#34;+(fmt[:-1] % &#34;)&#34;)+&#34;\n&#34;
+            v = getattr(self,k)
+            if isinstance(v,(int,float)) or v == None:
+                print(fmt % k,v,end=end)
+            elif isinstance(v,str):
+                print(fmt % k,f&#39;&#34;{v}&#34;&#39;,end=end)
+            elif isinstance(v,(list,tuple)):
+                print(fmt % k,v,end=end)
+            else:
+                print(fmt % k,&#34;/* unsupported type */&#34;,end=end)</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.getattr"><code class="name flex">
+<span>def <span class="ident">getattr</span></span>(<span>self, key)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get attribute override to access both instance attributes and properties if allowed.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getattr(self,key):
+    &#34;&#34;&#34;Get attribute override to access both instance attributes and properties if allowed.&#34;&#34;&#34;
+    if key in self.__dict__:
+        return self.__dict__[key]
+    elif getattr(self, &#39;_propertyasattribute&#39;, False) and \
+         key not in self._excludedattr and \
+         key in self.__class__.__dict__ and isinstance(self.__class__.__dict__[key], property):
+        # If _propertyasattribute is True and it&#39;s a property, get its value
+        return self.__class__.__dict__[key].fget(self)
+    else:
+        raise AttributeError(f&#39;the {self._ftype} &#34;{key}&#34; does not exist&#39;)</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.hasattr"><code class="name flex">
+<span>def <span class="ident">hasattr</span></span>(<span>self, key)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return true if the field exists, considering properties as regular attributes if allowed.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hasattr(self, key):
+    &#34;&#34;&#34;Return true if the field exists, considering properties as regular attributes if allowed.&#34;&#34;&#34;
+    return key in self.__dict__ or (
+        getattr(self, &#39;_propertyasattribute&#39;, False) and
+        key not in self._excludedattr and
+        key in self.__class__.__dict__ and isinstance(self.__class__.__dict__[key], property)
+    )</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.isdefined"><code class="name flex">
+<span>def <span class="ident">isdefined</span></span>(<span>self, ref=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>isdefined(ref) returns true if it is defined in ref</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def isdefined(self,ref=None):
+    &#34;&#34;&#34; isdefined(ref) returns true if it is defined in ref &#34;&#34;&#34;
+    s = param() if isinstance(self,param) else struct()
+    k,v,isexpr = self.keys(), self.values(), self.isexpression.values()
+    nk = len(k)
+    if ref is None:
+        for i in range(nk):
+            if isexpr[i]:
+                s.setattr(k[i],struct.isstrdefined(v[i],self[:i]))
+            else:
+                s.setattr(k[i],True)
+    else:
+        if not isinstance(ref,struct): raise TypeError(&#34;ref must be a structure&#34;)
+        for i in range(nk):
+            if isexpr[i]:
+                s.setattr(k[i],struct.isstrdefined(v[i],ref))
+            else:
+                s.setattr(k[i],True)
+    return s</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.items"><code class="name flex">
+<span>def <span class="ident">items</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>return all elements as iterable key, value</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def items(self):
+    &#34;&#34;&#34; return all elements as iterable key, value &#34;&#34;&#34;
+    return self.zip()</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.keys"><code class="name flex">
+<span>def <span class="ident">keys</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>return the fields</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def keys(self):
+    &#34;&#34;&#34; return the fields &#34;&#34;&#34;
+    # keys() is used by struct() and its iterator
+    return [key for key in self.__dict__.keys() if key not in self._excludedattr]</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.keyssorted"><code class="name flex">
+<span>def <span class="ident">keyssorted</span></span>(<span>self, reverse=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>sort keys by length()</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def keyssorted(self,reverse=True):
+    &#34;&#34;&#34; sort keys by length() &#34;&#34;&#34;
+    klist = self.keys()
+    l = [len(k) for k in klist]
+    return [k for _,k in sorted(zip(l,klist),reverse=reverse)]</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.set"><code class="name flex">
+<span>def <span class="ident">set</span></span>(<span>self, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>initialization</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set(self,**kwargs):
+    &#34;&#34;&#34; initialization &#34;&#34;&#34;
+    self.__dict__.update(kwargs)</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.setattr"><code class="name flex">
+<span>def <span class="ident">setattr</span></span>(<span>self, key, value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>set field and value</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setattr(self,key,value):
+    &#34;&#34;&#34; set field and value &#34;&#34;&#34;
+    if isinstance(value,list) and len(value)==0 and key in self:
+        delattr(self, key)
+    else:
+        self.__dict__[key] = value</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.sortdefinitions"><code class="name flex">
+<span>def <span class="ident">sortdefinitions</span></span>(<span>self, raiseerror=True, silentmode=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>sortdefintions sorts all definitions
+so that they can be executed as param().
+If any inconsistency is found, an error message is generated.</p>
+<p>Flags = default values
+raiseerror=True show erros of True
+silentmode=False no warning if True</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sortdefinitions(self,raiseerror=True,silentmode=False):
+    &#34;&#34;&#34; sortdefintions sorts all definitions
+        so that they can be executed as param().
+        If any inconsistency is found, an error message is generated.
+
+        Flags = default values
+            raiseerror=True show erros of True
+            silentmode=False no warning if True
+    &#34;&#34;&#34;
+    find = lambda xlist: [i for i, x in enumerate(xlist) if x]
+    findnot = lambda xlist: [i for i, x in enumerate(xlist) if not x]
+    k,v,isexpr =  self.keys(), self.values(), self.isexpression.values()
+    istatic = findnot(isexpr)
+    idynamic = find(isexpr)
+    static = struct.fromkeysvalues(
+        [ k[i] for i in istatic ],
+        [ v[i] for i in istatic ],
+        makeparam = False)
+    dynamic = struct.fromkeysvalues(
+        [ k[i] for i in idynamic ],
+        [ v[i] for i in idynamic ],
+        makeparam=False)
+    current = static # make static the current structure
+    nmissing, anychange, errorfound = len(dynamic), False, False
+    while nmissing:
+        itst, found = 0, False
+        while itst&lt;nmissing and not found:
+            teststruct = current + dynamic[[itst]] # add the test field
+            found = all(list(teststruct.isdefined()))
+            ifound = itst
+            itst += 1
+        if found:
+            current = teststruct # we accept the new field
+            dynamic[ifound] = []
+            nmissing -= 1
+            anychange = True
+        else:
+            if raiseerror:
+                raise KeyError(&#39;unable to interpret %d/%d expressions in &#34;%ss&#34;&#39; % \
+                               (nmissing,len(self),self._ftype))
+            else:
+                if (not errorfound) and (not silentmode):
+                    print(&#39;WARNING: unable to interpret %d/%d expressions in &#34;%ss&#34;&#39; % \
+                          (nmissing,len(self),self._ftype))
+                current = teststruct # we accept the new field (even if it cannot be interpreted)
+                dynamic[ifound] = []
+                nmissing -= 1
+                errorfound = True
+    if anychange:
+        self.clear() # reset all fields and assign them in the proper order
+        k,v = current.keys(), current.values()
+        for i in range(len(k)):
+            self.setattr(k[i],v[i])</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.struct2dict"><code class="name flex">
+<span>def <span class="ident">struct2dict</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>create a dictionary from the current structure</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def struct2dict(self):
+    &#34;&#34;&#34; create a dictionary from the current structure &#34;&#34;&#34;
+    return dict(self.zip())</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.struct2param"><code class="name flex">
+<span>def <span class="ident">struct2param</span></span>(<span>self, protection=False, evaluation=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>convert an object struct() to param()</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def struct2param(self,protection=False,evaluation=True):
+    &#34;&#34;&#34; convert an object struct() to param() &#34;&#34;&#34;
+    p = param(**self.struct2dict())
+    for i in range(len(self)):
+        if isinstance(self[i],pstr): p[i] = pstr(p[i])
+    p._protection = protection
+    p._evaluation = evaluation
+    return p</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.update"><code class="name flex">
+<span>def <span class="ident">update</span></span>(<span>self, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Update multiple fields at once, while protecting certain attributes.</p>
+<h2 id="parameters">Parameters:</h2>
+<p>**kwargs : dict
+The fields to update and their new values.</p>
+<p>Protected attributes defined in _excludedattr are not updated.</p>
+<h2 id="usage">Usage:</h2>
+<p>s.update(a=10, b=[1, 2, 3], new_field="new_value")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update(self, **kwargs):
+    &#34;&#34;&#34;
+    Update multiple fields at once, while protecting certain attributes.
+
+    Parameters:
+    -----------
+    **kwargs : dict
+        The fields to update and their new values.
+
+    Protected attributes defined in _excludedattr are not updated.
+
+    Usage:
+    ------
+    s.update(a=10, b=[1, 2, 3], new_field=&#34;new_value&#34;)
+    &#34;&#34;&#34;
+    protected_attributes = getattr(self, &#39;_excludedattr&#39;, ())
+
+    for key, value in kwargs.items():
+        if key in protected_attributes:
+            print(f&#34;Warning: Cannot update protected attribute &#39;{key}&#39;&#34;)
+        else:
+            self.setattr(key, value)</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.values"><code class="name flex">
+<span>def <span class="ident">values</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>return the values</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def values(self):
+    &#34;&#34;&#34; return the values &#34;&#34;&#34;
+    # values() is used by struct() and its iterator
+    return [pstr.eval(value) for key,value in self.__dict__.items() if key not in self._excludedattr]</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, file, overwrite=True, mkdir=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>write the equivalent structure (not recursive for nested struct)
+write(filename, overwrite=True, mkdir=False)</p>
+<p>Parameters:
+- file: The file path to write to.
+- overwrite: Whether to overwrite the file if it exists (default: True).
+- mkdir: Whether to create the directory if it doesn't exist (default: False).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write(self, file, overwrite=True, mkdir=False):
+    &#34;&#34;&#34;
+        write the equivalent structure (not recursive for nested struct)
+            write(filename, overwrite=True, mkdir=False)
+
+        Parameters:
+        - file: The file path to write to.
+        - overwrite: Whether to overwrite the file if it exists (default: True).
+        - mkdir: Whether to create the directory if it doesn&#39;t exist (default: False).
+    &#34;&#34;&#34;
+    # Create a Path object for the file to handle cross-platform paths
+    file_path = Path(file).resolve()
+
+    # Check if the directory exists or if mkdir is set to True, create it
+    if mkdir:
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+    elif not file_path.parent.exists():
+        raise FileNotFoundError(f&#34;The directory {file_path.parent} does not exist.&#34;)
+    # If overwrite is False and the file already exists, raise an exception
+    if not overwrite and file_path.exists():
+        raise FileExistsError(f&#34;The file {file_path} already exists, and overwrite is set to False.&#34;)
+    # Open and write to the file using the resolved path
+    with file_path.open(mode=&#34;w&#34;, encoding=&#39;utf-8&#39;) as f:
+        print(f&#34;# {self._fulltype} with {len(self)} {self._ftype}s\n&#34;, file=f)
+        for k, v in self.items():
+            if v is None:
+                print(k, &#34;=None&#34;, file=f, sep=&#34;&#34;)
+            elif isinstance(v, (int, float)):
+                print(k, &#34;=&#34;, v, file=f, sep=&#34;&#34;)
+            elif isinstance(v, str):
+                print(k, &#39;=&#34;&#39;, v, &#39;&#34;&#39;, file=f, sep=&#34;&#34;)
+            else:
+                print(k, &#34;=&#34;, str(v), file=f, sep=&#34;&#34;)</code></pre>
+</details>
+</dd>
+<dt id="raster.struct.zip"><code class="name flex">
+<span>def <span class="ident">zip</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>zip keys and values</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def zip(self):
+    &#34;&#34;&#34; zip keys and values &#34;&#34;&#34;
+    return zip(self.keys(),self.values())</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 </dl>
 </section>
 </article>
@@ -6447,6 +9124,25 @@ def n(self):
 </ul>
 </li>
 <li>
+<h4><code><a title="raster.data" href="#raster.data">data</a></code></h4>
+<ul class="two-column">
+<li><code><a title="raster.data.append" href="#raster.data.append">append</a></code></li>
+<li><code><a title="raster.data.delete" href="#raster.data.delete">delete</a></code></li>
+<li><code><a title="raster.data.dispsection" href="#raster.data.dispsection">dispsection</a></code></li>
+<li><code><a title="raster.data.findtime" href="#raster.data.findtime">findtime</a></code></li>
+<li><code><a title="raster.data.get" href="#raster.data.get">get</a></code></li>
+<li><code><a title="raster.data.iterator" href="#raster.data.iterator">iterator</a></code></li>
+<li><code><a title="raster.data.map" href="#raster.data.map">map</a></code></li>
+<li><code><a title="raster.data.maxbox" href="#raster.data.maxbox">maxbox</a></code></li>
+<li><code><a title="raster.data.maxtype" href="#raster.data.maxtype">maxtype</a></code></li>
+<li><code><a title="raster.data.newxyz" href="#raster.data.newxyz">newxyz</a></code></li>
+<li><code><a title="raster.data.reorder" href="#raster.data.reorder">reorder</a></code></li>
+<li><code><a title="raster.data.replace" href="#raster.data.replace">replace</a></code></li>
+<li><code><a title="raster.data.viz" href="#raster.data.viz">viz</a></code></li>
+<li><code><a title="raster.data.write" href="#raster.data.write">write</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="raster.emulsion" href="#raster.emulsion">emulsion</a></code></h4>
 <ul class="two-column">
 <li><code><a title="raster.emulsion.accepted" href="#raster.emulsion.accepted">accepted</a></code></li>
@@ -6521,6 +9217,41 @@ def n(self):
 <ul class="">
 <li><code><a title="raster.scatter.n" href="#raster.scatter.n">n</a></code></li>
 <li><code><a title="raster.scatter.pairdist" href="#raster.scatter.pairdist">pairdist</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="raster.struct" href="#raster.struct">struct</a></code></h4>
+<ul class="two-column">
+<li><code><a title="raster.struct.check" href="#raster.struct.check">check</a></code></li>
+<li><code><a title="raster.struct.clear" href="#raster.struct.clear">clear</a></code></li>
+<li><code><a title="raster.struct.dict2struct" href="#raster.struct.dict2struct">dict2struct</a></code></li>
+<li><code><a title="raster.struct.disp" href="#raster.struct.disp">disp</a></code></li>
+<li><code><a title="raster.struct.dispmax" href="#raster.struct.dispmax">dispmax</a></code></li>
+<li><code><a title="raster.struct.format" href="#raster.struct.format">format</a></code></li>
+<li><code><a title="raster.struct.fromkeys" href="#raster.struct.fromkeys">fromkeys</a></code></li>
+<li><code><a title="raster.struct.fromkeysvalues" href="#raster.struct.fromkeysvalues">fromkeysvalues</a></code></li>
+<li><code><a title="raster.struct.generator" href="#raster.struct.generator">generator</a></code></li>
+<li><code><a title="raster.struct.getattr" href="#raster.struct.getattr">getattr</a></code></li>
+<li><code><a title="raster.struct.hasattr" href="#raster.struct.hasattr">hasattr</a></code></li>
+<li><code><a title="raster.struct.isdefined" href="#raster.struct.isdefined">isdefined</a></code></li>
+<li><code><a title="raster.struct.isempty" href="#raster.struct.isempty">isempty</a></code></li>
+<li><code><a title="raster.struct.isexpression" href="#raster.struct.isexpression">isexpression</a></code></li>
+<li><code><a title="raster.struct.isstrdefined" href="#raster.struct.isstrdefined">isstrdefined</a></code></li>
+<li><code><a title="raster.struct.isstrexpression" href="#raster.struct.isstrexpression">isstrexpression</a></code></li>
+<li><code><a title="raster.struct.items" href="#raster.struct.items">items</a></code></li>
+<li><code><a title="raster.struct.keys" href="#raster.struct.keys">keys</a></code></li>
+<li><code><a title="raster.struct.keyssorted" href="#raster.struct.keyssorted">keyssorted</a></code></li>
+<li><code><a title="raster.struct.read" href="#raster.struct.read">read</a></code></li>
+<li><code><a title="raster.struct.scan" href="#raster.struct.scan">scan</a></code></li>
+<li><code><a title="raster.struct.set" href="#raster.struct.set">set</a></code></li>
+<li><code><a title="raster.struct.setattr" href="#raster.struct.setattr">setattr</a></code></li>
+<li><code><a title="raster.struct.sortdefinitions" href="#raster.struct.sortdefinitions">sortdefinitions</a></code></li>
+<li><code><a title="raster.struct.struct2dict" href="#raster.struct.struct2dict">struct2dict</a></code></li>
+<li><code><a title="raster.struct.struct2param" href="#raster.struct.struct2param">struct2param</a></code></li>
+<li><code><a title="raster.struct.update" href="#raster.struct.update">update</a></code></li>
+<li><code><a title="raster.struct.values" href="#raster.struct.values">values</a></code></li>
+<li><code><a title="raster.struct.write" href="#raster.struct.write">write</a></code></li>
+<li><code><a title="raster.struct.zip" href="#raster.struct.zip">zip</a></code></li>
 </ul>
 </li>
 </ul>

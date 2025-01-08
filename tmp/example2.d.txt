@@ -1,0 +1,238 @@
+# DSCRIPT SAVE FILE
+
+
+# ╔═════════════════════════════════════════════════════════════════════════════════════╗
+# ║  PIZZA.DSCRIPT FILE v1.0 | License: GPLv3 | Email: olivier.vitrac@agroparistech.fr  ║
+# ║═════════════════════════════════════════════════════════════════════════════════════║
+# ║                                    Name: oxILMxLP                                   ║
+# ║                 Path: /home/olivi/han/dev/Pizza3/tmp/example2.d.txt                 ║
+# ║═════════════════════════════════════════════════════════════════════════════════════║
+# ║            Generated on: olivi@LX-Olivier2023:/home/olivi/han/dev/Pizza3            ║
+# ║                       Wednesday, January 08, 2025 at 09:28:39                       ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════╝
+
+
+
+# GLOBAL PARAMETERS (8 parameters)
+{
+    SECTIONS = ['DYNAMIC'],
+    section = 0,
+    position = 0,
+    role = 'dscript instance',
+    description = 'dynamic script',
+    userid = 'script:LammpsHeaderBox:headerinit...script:LammpsFooterPreview:footerpreview',
+    version = 1.0,
+    verbose = False
+}
+
+
+# GLOBAL DEFINITIONS (number of definitions=5)
+mass = 1.0
+n_upper = ${n_upper}
+n_middle = ${n_middle}
+n_lower = ${n_lower}
+n_all = ${n_all}
+
+
+# TEMPLATES (number of items=17)
+
+# LOCAL DEFINITIONS for key '0'
+name = $SimulationBox
+dimension = 3
+units = $si
+boundary = ['f', 'f', 'f']
+atom_style = $smd
+atom_modify = ['map', 'array']
+comm_modify = ['vel', 'yes']
+neigh_modify = ['every', 10, 'delay', 0, 'check', 'yes']
+newton = $off
+boxid = $box
+
+0: [
+    % --------------[ Initialization for <${name}:${boxid}>   ]--------------
+    # set a parameter to None or "" to remove the definition
+    dimension    ${dimension}
+    units        ${units}
+    boundary     ${boundary}
+    atom_style   ${atom_style}
+    atom_modify  ${atom_modify}
+    comm_modify  ${comm_modify}
+    neigh_modify ${neigh_modify}
+    newton       ${newton}
+    # ------------------------------------------
+ ]
+
+# LOCAL DEFINITIONS for key '1'
+lattice_style = $sc
+lattice_scale = 0.001
+lattice_spacing = [0.001, 0.001, 0.001]
+
+1: [
+    % --------------[ Lattice for <${name}:${boxid}>, style=${lattice_style}, scale=${lattice_scale} ]--------------
+    lattice ${lattice_style} ${lattice_scale} spacing ${lattice_spacing}
+    # ------------------------------------------
+ ]
+
+# LOCAL DEFINITIONS for key '2'
+boxunits_arg = $units box
+xmin = -0.04
+xmax = 0.04
+ymin = -0.04
+ymax = 0.04
+zmin = -0.03
+zmax = 0.03
+nbeads = 3
+
+2: [
+    % --------------[ Box for <${name}:${boxid}> incl. ${nbeads} bead types ]--------------
+    region ${boxid} block ${xmin} ${xmax} ${ymin} ${ymax} ${zmin} ${zmax} ${boxunits_arg}
+    create_box	${nbeads} ${boxid}
+    # ------------------------------------------
+ ]
+
+# LOCAL DEFINITIONS for key '3'
+style = $cylinder
+ID = $LowerCylinder
+
+3: % variables to be used for ${ID} ${style}
+
+# LOCAL DEFINITIONS for key '4'
+ID = $CentralCylinder
+4: % variables to be used for ${ID} ${style}
+
+# LOCAL DEFINITIONS for key '5'
+ID = $UpperCylinder
+5: % variables to be used for ${ID} ${style}
+
+# LOCAL DEFINITIONS for key '6'
+ID = $LowerCylinder
+args = ['z', 0, 0, 0.03, -0.03, -0.01]
+side = ""
+move = ""
+units = $ units box
+rotate = ""
+open = ""
+
+6: [
+    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+ ]
+
+# LOCAL DEFINITIONS for key '7'
+ID = $CentralCylinder
+args = ['z', 0, 0, 0.03, -0.01, 0.01]
+
+7: [
+    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+ ]
+
+# LOCAL DEFINITIONS for key '8'
+ID = $UpperCylinder
+args = ['z', 0, 0, 0.03, 0.01, 0.03]
+
+8: [
+    % Create region ${ID} ${style} args ...  (URL: https://docs.lammps.org/region.html)
+    # keywords: side, units, move, rotate, open
+    # values: in|out, lattice|box, v_x v_y v_z, v_theta Px Py Pz Rx Ry Rz, integer
+    region ${ID} ${style} ${args} ${side}${units}${move}${rotate}${open}
+ ]
+
+# LOCAL DEFINITIONS for key '9'
+ID = $LowerCylinder
+beadtype = 1
+
+9: [
+    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}
+ ]
+
+# LOCAL DEFINITIONS for key '10'
+ID = $CentralCylinder
+beadtype = 2
+
+10: [
+    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}
+ ]
+
+# LOCAL DEFINITIONS for key '11'
+ID = $UpperCylinder
+beadtype = 3
+
+11: [
+    % Create atoms of type ${beadtype} for ${ID} ${style} (https://docs.lammps.org/create_atoms.html)
+    create_atoms ${beadtype} region ${ID}
+ ]
+
+12: [
+    # --------------[ TEMPLATE "1+2+3" ]--------------
+    group lower type 1
+    group middle type 2
+    group upper type 3
+    group all union lower middle upper
+    group external subtract all middle
+    # --------------------------------------------
+    # ---> Total items: 5 - Ignored item: 0
+ ]
+
+13: [
+    mass 1 2.0
+    mass 2 ${mass}
+    mass 3 ${mass}
+ ]
+
+14: [
+    variable n_all equal "count(all)"
+    variable n_lower equal "count(lower)"
+    variable n_middle equal "count(middle)"
+    variable n_upper equal "count(upper)"
+ ]
+
+15: [
+    print "Number of atoms in all: ${n_all}"
+    print "Number of atoms in lower: ${n_lower}"
+    print "Number of atoms in middle: ${n_middle}"
+    print "Number of atoms in upper: ${n_upper}"
+ ]
+
+# LOCAL DEFINITIONS for key '16'
+previewfilename = $dump.initial.region_SimulationBox
+
+16: [
+    % --------------[ Preview for <${name}:${boxid}> incl. ${nbeads} bead types ]--------------
+    % Output the initial geometry to a dump file "${previewfilename}" for visualization
+    dump initial_dump all custom 1 ${previewfilename} id type x y z
+    run 0
+    # ------------------------------------------
+ ]
+
+# ATTRIBUTES (number of items with explicit attributes=17)
+0:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+1:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+2:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+3:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+4:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+5:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+6:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+7:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+8:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+9:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+10:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+11:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+12:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+13:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+14:{facultative=False, eval=False, readonly=False, condition=None, condeval=False, detectvar=True}
+15:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+16:{facultative=False, eval=True, readonly=False, condition=None, condeval=False, detectvar=True}
+
+
+# +---------------------------------------------+
+# |         DSCRIPT SAVE FILE generator         |
+# |  Non-empty lines           193              |
+# |  Execution time (seconds)  0.0004           |
+# +---------------------------------------------+

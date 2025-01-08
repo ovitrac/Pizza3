@@ -1,0 +1,67 @@
+# ╔═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║                                                                                                                                                                                                                             PIZZA.SCRIPT FILE v1.0 | License: GPLv3 | Email: olivier.vitrac@agroparistech.fr                                                                                                                                                                                                                            ║
+# ║═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════║
+# ║  <script:pipescript:script:example2bis.d:0:script:example2.d_slice_None_-1:0:script:LammpsHeaderBox:headerinit...script:LammpsFooterPreview:footerpreview...script:example2.d_slice_-1_None:16:script:LammpsHeaderBox:headerinit...script:LammpsFooterPreview:footerpreview->script:example2bis.d:17:script:example2.d_slice_None_-1:0:script:LammpsHeaderBox:headerinit...script:LammpsFooterPreview:footerpreview...script:example2.d_slice_-1_None:16:script:LammpsHeaderBox:headerinit...script:LammpsFooterPreview:footerpreview>  ║
+# ║                                                                                                                                                                                                                                            Initialized with 34 definitions | Verbosity: None                                                                                                                                                                                                                                            ║
+# ║                                                                                                                                                                                                                                                 Persistent file: "True" | Folder: "/tmp"                                                                                                                                                                                                                                                ║
+# ║═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════║
+# ║                                                                                                                                                                                                                                      Generated on: olivi@LX-Olivier2023:/home/olivi/han/dev/Pizza3                                                                                                                                                                                                                                      ║
+# ║                                                                                                                                                                                                                                                 Wednesday, January 08, 2025 at 09:41:30                                                                                                                                                                                                                                                 ║
+# ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+ 
+
+dimension    3
+units        si
+boundary     f f f
+atom_style   smd
+atom_modify  map array
+comm_modify  vel yes
+neigh_modify every 10 delay 0 check yes
+newton       off
+lattice sc 0.001 spacing 0.001 0.001 0.001
+region box block -0.04 0.04 -0.04 0.04 -0.03 0.03 units box
+create_box	3 box
+region LowerCylinder cylinder z 0 0 0.03 -0.03 -0.01 units box
+region CentralCylinder cylinder z 0 0 0.03 -0.01 0.01 units box
+region UpperCylinder cylinder z 0 0 0.03 0.01 0.03 units box
+create_atoms 1 region LowerCylinder
+create_atoms 2 region CentralCylinder
+create_atoms 3 region UpperCylinder
+group lower type 1
+group middle type 2
+group upper type 3
+group all union lower middle upper
+group external subtract all middle
+mass 1 2.0
+mass 2 1.0
+mass 3 1.0
+variable n_all equal "count(all)"
+variable n_lower equal "count(lower)"
+variable n_middle equal "count(middle)"
+variable n_upper equal "count(upper)"
+print "Number of atoms in all: ${n_all}"
+print "Number of atoms in lower: ${n_lower}"
+print "Number of atoms in middle: ${n_middle}"
+print "Number of atoms in upper: ${n_upper}"
+group 	 lowerAtoms 	type 	 1
+group 	 centralAtoms 	type 	 2
+group 	 upperAtoms 	type 	 3
+pair_style      hybrid/overlay smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION &
+smd/tlsph smd/hertz 1.5
+pair_coeff      1 1 smd/tlsph *COMMON 1050 10500000.0 0.3 1.0 0.0 10.0 1.0 &
+*STRENGTH_LINEAR_PLASTIC 1050000.0 0 &
+*EOS_LINEAR &
+*END
+pair_coeff      2 2 smd/tlsph *COMMON 1000 2500000.0 0.3 1.0 0.0 10.0 1.0 &
+*STRENGTH_LINEAR_PLASTIC 250000.0 0 &
+*EOS_LINEAR &
+*END
+pair_coeff      3 3 smd/tlsph *COMMON 1300 65000000.0 0.1 1.0 0.0 10.0 1.0 &
+*STRENGTH_LINEAR_PLASTIC 6500000.0 0 &
+*EOS_LINEAR &
+*END
+pair_coeff      1 2 smd/hertz 262500.0
+pair_coeff      1 3 smd/hertz 262500.0
+pair_coeff      2 3 smd/hertz 250000.0
+dump initial_dump all custom 1 dump.initial.region_SimulationBox id type x y z
+run 0

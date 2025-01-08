@@ -11,7 +11,7 @@
 # Configuration Section
 # -----------------------------------
 
-VERSION="0.99min"
+VERSION="1.00min"
 MANIFEST_FILE="$(realpath ../Pizza3.mini.manifest)"
 RELEASE_FOLDER="$(realpath ../release)"
 OUTPUT_FILE="Pizza3_v${VERSION}.zip"
