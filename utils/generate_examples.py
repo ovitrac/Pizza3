@@ -113,6 +113,22 @@ def ensure_run_from_utils():
         print("Error: This script must be run from the Pizza3/utils/ directory.", file=sys.stderr)
         sys.exit(1)
 
+def get_version():
+    """Extract the version number of Pizza3 from version_file."""
+    mainfolder = os.path.realpath(os.path.join(".."))
+    version_file = os.path.join(mainfolder, "utils", "VERSION.txt")
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f"Error: {version_file} not found. Please create a file with content: version=\"XX.YY.ZZ\"\n")
+        sys.exit(1)
+    with open(version_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r'^version\s*=\s*"(.*?)"$', line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f"Error: No valid version string found in {version_file}. Ensure it contains: version=\"XX.YY.ZZ\"\n")
+    sys.exit(1)
+
 def read_module_list():
     """Reads module paths from STDIN, one per line."""
     modules = [line.strip() for line in sys.stdin if line.strip()]
@@ -325,7 +341,7 @@ def generate_full_html(nav_html, content_html, base_css, pygments_css, generatio
 </header>
 <div id='content'>
 <div id='nav'>
-<p><strong>Version:</strong> Pizza3 v.1.00</p>
+<p><strong>Version:</strong> Pizza3 v.{get_version()}</p>
 <p><strong>Maintained by:</strong> INRAE\\olivier.vitrac@agroparistech.fr</p>
 <hr>
 {nav_html}

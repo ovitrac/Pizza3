@@ -1,12 +1,70 @@
 #!/bin/bash
+:<<'END_DOC'
+Script Name: refresh_alldocs.sh
+Purpose: Refresh the entire documentation for the Pizza3 project, including updating setup configuration, archiving
+          previous documentation, and regenerating all associated documentation files.
+Description:
+This script ensures the setup configuration and documentation for the Pizza3 project are refreshed. It performs the
+following steps in order:
 
-# *********************************************************
-# Script: refresh_alldocs.sh
-# Purpose: Refresh the entire documentation of Pizza3.
-# Author: INRAE\Olivier Vitrac
-# Email: olivier.vitrac@agroparistech.fr
-# Last Revised: 2024-12-20
-# *********************************************************
+1. **Environment Check**:
+   - Verifies if a Conda environment is active. 
+   - Provides a warning if no environment is active, with an option for the user to proceed without one.
+
+2. **Working Directory Validation**:
+   - Ensures the script is executed from the `utils` directory of the project.
+
+3. **Archive Existing Documentation**:
+   - Archives the `html` directory, if it exists, into the `history` directory.
+   - The archive is named with the format: `username@hostname_YYYY-MM-DD_HH-MM.zip`.
+
+4. **Remove Existing Documentation**:
+   - Deletes the `html` directory to allow for regeneration of the documentation.
+
+5. **Run Documentation Generation Scripts**:
+   - Executes the following scripts in the specified order:
+     1. **`generate_setup.py`** (Python): Updates the setup configuration, including version information, used in the documentation.
+     2. **`generate_matlab_docs.py`** (Python): Generates MATLAB-related documentation.
+     3. **`generate_post_docs.py`** (Python): Generates POST-related documentation.
+     4. **`generate_diagrams.sh`** (Bash): Creates project diagrams.
+     5. **`pdocme.sh`** (Bash): Generates Python API documentation.
+     6. **`convert_py_to_html.py`** (Python): Converts Python scripts to HTML.
+
+6. **Open Generated Documentation**:
+   - Opens relevant HTML files for review, including:
+     - MATLAB documentation (`index_matlab.html`).
+     - POST documentation (`index_post.html`).
+     - Main documentation (`index.html`).
+
+7. **Completion**:
+   - Displays a final success message summarizing the actions performed and the location of archived documentation.
+
+Dependencies:
+- The following scripts must exist and be executable in the `utils` directory:
+  - `generate_setup.py` (Python)
+  - `generate_matlab_docs.py` (Python)
+  - `generate_post_docs.py` (Python)
+  - `generate_diagrams.sh` (Bash)
+  - `pdocme.sh` (Bash)
+  - `convert_py_to_html.py` (Python)
+- The script assumes `zip` and `xdg-open` commands are available on the system.
+
+Exclusions:
+- The script does not attempt to regenerate excluded documentation components not listed above.
+- Skips archiving if the `html` directory does not exist.
+
+Usage:
+Run the script from the `utils` directory of the Pizza3 project:
+```bash
+cd /path/to/Pizza3/utils
+./refresh_alldocs.sh
+
+Contact:
+    Author: INRAE\Olivier Vitrac
+    Email: olivier.vitrac@agroparistech.fr
+
+Last Revised: 2025-01-09
+END_DOC
 
 # Exit immediately if a command exits with a non-zero status
 set -e
@@ -27,6 +85,50 @@ check_script() {
         exit 1
     fi
 }
+
+# Function: Check if a Conda environment is active
+check_conda_env() {
+    # Check if the CONDA_DEFAULT_ENV variable is set (indicates an active Conda environment)
+    if [[ -z "$CONDA_DEFAULT_ENV" ]]; then
+        echo "────────────────────────────────────────────────────────────────────"
+        echo "⚠️  Warning: No Conda environment is currently activated."
+        echo "It is highly recommended to run this script within a Conda environment"
+        echo "to ensure the proper dependencies are available and compatible."
+        echo "────────────────────────────────────────────────────────────────────"
+        read -p "❓ Do you want to proceed without a Conda environment? (yes/no) [no]: " user_input
+        
+        # Default to "no" if input is empty
+        user_input=${user_input:-no}
+
+        if [[ "$user_input" != "yes" ]]; then
+            echo "────────────────────────────────────────────────────────────────────"
+            echo "❌ Exiting: No Conda environment is active. Activate an environment"
+            echo "before rerunning this script to ensure a smooth execution."
+            echo "────────────────────────────────────────────────────────────────────"
+            return 1
+        else
+            echo "────────────────────────────────────────────────────────────────────"
+            echo "⚠️  Proceeding without a Conda environment. Be cautious of potential"
+            echo "dependency issues or conflicts."
+            echo "────────────────────────────────────────────────────────────────────"
+        fi
+    else
+        echo "────────────────────────────────────────────────────────────────────"
+        echo "✅ Conda environment detected: '$CONDA_DEFAULT_ENV'."
+        echo "────────────────────────────────────────────────────────────────────"
+    fi
+    return 0
+}
+
+# Step 0: Ensure a Conda environment is active before running the script
+# It is not mandatory, but running the script outside of Conda might cause issues
+# with dependencies, especially with older Python versions.
+if check_conda_env; then
+    echo "✨ Environment check passed. Proceeding with the full script execution..."
+else
+    echo "❌ Environment check failed. Script execution halted." >&2
+    exit 1
+fi
 
 # Step 1: Ensure the script is run from the 'utils' directory
 current_dir=$(basename "$PWD")
@@ -85,12 +187,18 @@ else
 fi
 
 # Check if the required scripts exist and are executable
+check_script "./generate_setup.py"
 check_script "./generate_matlab_docs.py"
 check_script "./generate_post_docs.py"
 check_script "./generate_diagrams.sh"
+check_script "./convert_py_to_html.py"
 check_script "./pdocme.sh"
 
 # Run the documentation generation scripts with status messages
+echo "Launch 'generate_setup.py'to update the version (repored also in documentatation)..."
+./generate_matlab_docs.py
+echo "Completed 'generate_setup.py'."
+
 echo "Running 'generate_matlab_docs.py'..."
 ./generate_matlab_docs.py
 echo "Completed 'generate_matlab_docs.py'."

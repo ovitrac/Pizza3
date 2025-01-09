@@ -7,11 +7,38 @@
 # Maintained by INRAE\olivier.vitrac@agroparistech.fr
 # Revision history: 2024-12-11
 
+
+# -----------------------------------
+#         INITIALIZATION
+# -----------------------------------
+
+# Ensure the script is run from the correct directory (Pizza3/utils/)
+if [[ ! -f "pdocme.sh" ]]; then
+    echo "Error: This script must be run from the Pizza3/utils/ directory."
+    exit 1
+fi
+
+# Identify mainfolder dynamically
+mainfolder="$(realpath ../)"
+
+# Read __version__ from VERSION.txt
+version_file="$mainfolder/utils/VERSION.txt"
+if [[ ! -f "$version_file" ]]; then
+  echo "Error: $version_file not found. Please create a file with content: version=\"XX.YY.ZZ\"" >&2
+  exit 1
+fi
+__version__=$(grep -m 1 '^version=' "$version_file" | sed -E 's/version\s*=\s*"([^"]+)"/\1/')
+if [[ -z "$__version__" ]]; then
+  echo "Error: No valid version string found in $version_file. Ensure it contains: version=\"XX.YY.ZZ\"" >&2
+  exit 1
+fi
+echo "Pizza3 Version: $__version__"
+
 # -----------------------------------
 # Configuration Section
 # -----------------------------------
 
-VERSION="1.00"
+VERSION="${__version__}"
 MANIFEST_FILE="$(realpath ../Pizza3.simple.manifest)"
 RELEASE_FOLDER="$(realpath ../release)"
 OUTPUT_FILE="Pizza3_v${VERSION}.zip"
@@ -22,20 +49,11 @@ RELEASE_NAME="Pizza3_v${VERSION}"
 # Validation Checks
 # -----------------------------------
 
-# Ensure the script is run from the correct directory (Pizza3/utils/)
-if [[ ! -f "pdocme.sh" ]]; then
-    echo "Error: This script must be run from the Pizza3/utils/ directory."
-    exit 1
-fi
-
 # Verify that the manifest file exists
 if [[ ! -f "$MANIFEST_FILE" ]]; then
     echo "Error: Manifest file '$MANIFEST_FILE' not found."
     exit 1
 fi
-
-# Identify mainfolder dynamically
-mainfolder="$(realpath ../)"
 
 # Create the release folder if it doesn't exist
 mkdir -p "$RELEASE_FOLDER"

@@ -47,7 +47,7 @@ python3 generate_post_docs.py
 ---------
 INRAE\Olivier Vitrac  
 Email: olivier.vitrac@agroparistech.fr  
-Last Revised: 2024-12-21
+Last Revised: 2025-01-09
 
 """
 
@@ -59,9 +59,13 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import zipfile
 import sys
+import re
+
+# Root folder and version file
+MAINFOLDER = Path("../").resolve()
+version_file = os.path.join(MAINFOLDER, "utils", "VERSION.txt")
 
 # Configuration
-MAINFOLDER = Path("../").resolve()
 SOURCE_DIR = MAINFOLDER / "post" / "html"
 DEST_DIR = MAINFOLDER / "html" / "post"
 HISTORY_DIR = MAINFOLDER / "history"
@@ -271,6 +275,20 @@ tr:nth-child(odd) {
 }
 """
 
+def get_version():
+    """Extract the version number of Pizza3 from version_file."""
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f"Error: {version_file} not found. Please create a file with content: version=\"XX.YY.ZZ\"\n")
+        sys.exit(1)
+    with open(version_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r'^version\s*=\s*"(.*?)"$', line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f"Error: No valid version string found in {version_file}. Ensure it contains: version=\"XX.YY.ZZ\"\n")
+    sys.exit(1)
+
 def print_header(title):
     """Prints a formatted header for better readability in the terminal."""
     print("\n" + "="*60)
@@ -451,10 +469,10 @@ def generate_documentation(manifest):
         main_content += example_html
 
     # Define the introductory text with a link to ../index_matlab.html
-    introductory_text = """
+    introductory_text = f"""
     <h1>Pizza3 POST Documentation Index</h1>
     <p>Select a POST example from the left panel to view its documentation. You can have access to the <a href="../index_matlab.html">POST tools documentation here</a>.</p>
-    <p><strong>Version:</strong> Pizza3 v.1.00</p>
+    <p><strong>Version:</strong> Pizza3 v.{get_version()}</p>
     <p><strong>Maintained by:</strong> INRAE\\olivier.vitrac@agroparistech.fr</p>
     """
 

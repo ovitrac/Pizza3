@@ -2,7 +2,7 @@
 
 # Backup Script for Pizza3 Project
 # INRAE\Olivier Vitrac - olivier.vitrac@agroparistech.fr
-# Revision: 2024-12-26
+# Revision: 2024-01-09
 
 # ----------------------------------------------------------------------
 # Script Overview:
@@ -77,13 +77,31 @@ usage() {
     exit 1
 }
 
-# Function to check if Pandoc is installed
+# Function to check if Pandoc is installed and version is 3.x or later
 check_pandoc_installed() {
+    # Check if pandoc command exists
     if ! command -v pandoc >/dev/null 2>&1; then
         echo "Error: Pandoc is not installed. Please install Pandoc to generate HTML reports."
         echo "Visit https://pandoc.org/installing.html for installation instructions."
         return 1
     fi
+    # Check pandoc version
+    local pandoc_version
+    pandoc_version=$(pandoc --version 2>/dev/null | head -n 1 | awk '{print $2}')
+    if [[ -z "$pandoc_version" ]]; then
+        echo "Error: Unable to determine Pandoc version. Ensure Pandoc is correctly installed."
+        return 1
+    fi
+    # Parse the major version
+    local major_version
+    major_version=$(echo "$pandoc_version" | cut -d. -f1)
+    # Check if the major version is 3 or later
+    if [[ "$major_version" -lt 3 ]]; then
+        echo "Error: Pandoc version is $pandoc_version (earlier than 3.x). Please upgrade to Pandoc 3.x or later."
+        echo "Visit https://pandoc.org/installing.html for upgrade instructions."
+        return 1
+    fi
+    echo "Pandoc is installed and version is $pandoc_version (3.x or later)."
     return 0
 }
 

@@ -7,7 +7,7 @@ pdocme.sh - Automated Documentation Generation Script for Pizza3
 Author:       Olivier Vitrac
 Maintainer:   INRAE\olivier.vitrac@agroparistech.fr
 Version:      1.00
-Last Updated: 2024-12-26
+Last Updated: 2024-01-09
 License:      MIT License
 
 ==========================================================================
@@ -39,6 +39,9 @@ FEATURES
 - **Notification Banner:** Adds a customizable notification banner at the top 
   of the documentation site with a functional close button.
 
+- **Class Diagrams:** Generates flowcharts for all classes in `pizza/` folder
+  with pan and zoom functionalities.
+
 USAGE
 -----
 1. **Navigate to the Script Directory:**
@@ -52,6 +55,9 @@ USAGE
    ```bash
    rm -rf ../html/
    ```
+   The documentation is generated in `Pizza3/html`. Once validated, it needs to
+   be copied to docs (manually). Note that the folder `html/` is not part of the
+   standard distribution or release of Pizza3.
 
 3. **Execute the Script:**
    Run the script to generate the documentation.
@@ -66,12 +72,14 @@ SCRIPT STRUCTURE
    - Exits with an error message if not run from `Pizza3/utils/`.
 
 2. **Configuration Variables:**
-   - `mainfolder`: Absolute path to the main Pizza3 project directory.
+   - `mainfolder`: Absolute path to the main Pizza3 project directory (e.g.. ~/han/dev/Pizza3/).
    - `output_dir`: Destination directory for the generated HTML documentation.
    - `PYTHON_VERSION`: Python version used in `PYTHONPATH`.
    - `PIZZA3_VERSION`: Version identifier for the Pizza3 project.
    - `CONTACT`: Maintainer contact information.
    - Temporary file variables for processing.
+
+   Since version 1.0, version number is read from the file $mainfolder/utils/VERSION.txt
 
 3. **Environment Setup:**
    - Creates the output directory if it doesn't exist.
@@ -111,6 +119,7 @@ SCRIPT STRUCTURE
 DEPENDENCIES
 ------------
 - **pdoc:** Python documentation generator. Ensure it's installed and accessible in the system PATH.
+  PDOC version 3.x or later is recommended even if it works with versions 2.x.
   ```bash
   pip install pdoc
   ```
@@ -149,9 +158,9 @@ REVISION HISTORY
 EXAMPLE DIRECTORY STRUCTURE
 ---------------------------
 ```
-mainfolder/
-├── Pizza3_dir/
-│   ├── pizza/
+dev/
+├── Pizza3_dir/  <--- $mainfolder (it can be any name: Pizza3, python_opensource...)
+│   ├── pizza/   <--- core library
 │   │   ├── __init__.py
 │   │   ├── raster.py
 │   │   ├── private/
@@ -161,12 +170,13 @@ mainfolder/
 │   │   │       └── Image.py
 │   ├── examples/
 │   └── scripts/
+│   └── utils/  <--- from where all utilities are launched (mandatory)
 ```
 
 EXIT CODES
 ----------
 - **0:** Successful execution.
-- **1:** Error due to incorrect execution directory.
+- **1:** Error due to incorrect execution directory, missing version file.
 
 CONTACT
 -------
@@ -185,12 +195,26 @@ if [[ ! -f "pdocme.sh" ]]; then
     exit 1
 fi
 
+# Pizza3 root folder ($mainfolder replace Pizza3)
 mainfolder="$(realpath ../)"
+
+# Read __version__ from VERSION.txt
+version_file="$mainfolder/utils/VERSION.txt"
+if [[ ! -f "$version_file" ]]; then
+  echo "Error: $version_file not found. Please create a file with content: version=\"XX.YY.ZZ\"" >&2
+  exit 1
+fi
+__version__=$(grep -m 1 '^version=' "$version_file" | sed -E 's/version\s*=\s*"([^"]+)"/\1/')
+if [[ -z "$__version__" ]]; then
+  echo "Error: No valid version string found in $version_file. Ensure it contains: version=\"XX.YY.ZZ\"" >&2
+  exit 1
+fi
+echo "Pizza3 Version: $__version__"
 
 # Configuration
 output_dir="$mainfolder/html"
 PYTHON_VERSION="3.10"
-PIZZA3_VERSION="Pizza3 v.1.00"
+PIZZA3_VERSION="Pizza3 v.$__version__"
 CONTACT="INRAE\\olivier.vitrac@agroparistech.fr"
 tmp_file="tmp.pdocme.txt"
 nav_file="folders.nav"
@@ -251,10 +275,9 @@ echo "Running find command to list Python files..."
 eval "$find_cmd" > "$tmp_file"
 echo "File list saved to $tmp_file"
 
-# Rename existing HTML files to *.html~
-#!/bin/bash
 
 # List of HTML files to protect from renaming
+# add files (needed to keep generated files at previous steps)
 protected_htmlfiles=(
     "class_examples.html"
     "index_matlab.html"
@@ -854,5 +877,36 @@ EOF
 # Cleanup temporary files
 rm "$tmp_file" "$nav_file" "$processed_markdown"
 
-echo "Documentation generation completed. Output in $output_dir"
-echo "Index created at $index_file"
+# Check if the file exists
+if [[ -f "$index_file" ]]; then
+
+  echo "Documentation generation completed. Output in $output_dir"
+  echo "Main index created at $index_file"
+
+  # File size in bytes
+  file_size=$(stat -c%s "$index_file")
+
+  # Number of lines
+  line_count=$(wc -l < "$index_file")
+
+  # Human-readable disk usage
+  disk_usage=$(du -h "$index_file" | cut -f1)
+
+  # Word count
+  word_count=$(wc -w < "$index_file")
+
+  # Display the statistics
+  echo "File statistics for $index_file:"
+  echo "  Size: $file_size bytes"
+  echo "  Lines: $line_count"
+  echo "  Disk Usage: $disk_usage"
+  echo "  Words: $word_count"
+
+  # Additional performance indicators if needed
+  char_count=$(wc -m < "$index_file")
+  echo "  Characters: $char_count"
+else
+  # Print error message and exit with status 1
+  echo "Error: $index_file (main index) does not exist, Documentation generation fails."
+  exit 1
+fi

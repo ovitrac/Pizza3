@@ -67,10 +67,10 @@ Notes:
 Author:
     - **INRAE\Olivier Vitrac**
     - **Email:** olivier.vitrac@agroparistech.fr
-    - **Last Revised:** 2024-12-21
+    - **Last Revised:** 2025-01-09
 
 Version:
-    Pizza3 v.0.99
+    Pizza3 v.1.00
 
 """
 
@@ -85,11 +85,27 @@ if not os.path.isfile("pdocme.sh"):
     print("Error: This script must be run from the Pizza3/utils/ directory.")
     sys.exit(1)
 
-# Configuration
+# Root folder and version file
 mainfolder = os.path.realpath(os.path.join(".."))
+version_file = os.path.join(mainfolder, "utils", "VERSION.txt")
+def get_version():
+    """Extract the version number of Pizza3 from version_file."""
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f"Error: {version_file} not found. Please create a file with content: version=\"XX.YY.ZZ\"\n")
+        sys.exit(1)
+    with open(version_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r'^version\s*=\s*"(.*?)"$', line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f"Error: No valid version string found in {version_file}. Ensure it contains: version=\"XX.YY.ZZ\"\n")
+    sys.exit(1)
+
+# Configuration
 output_dir = os.path.join(mainfolder, "html")
 output_file = "index_matlab.html"
-PIZZA3_VERSION = "Pizza3 v.1.00"
+PIZZA3_VERSION = f"Pizza3 v.{get_version()}"
 CONTACT = "INRAE\\olivier.vitrac@agroparistech.fr"
 
 # CSS Style with toggle button integration and dynamic sidebar collapse

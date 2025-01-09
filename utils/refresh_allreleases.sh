@@ -1,13 +1,63 @@
 #!/bin/bash
+:<<'END_DOC'
+Script Name: refresh_allreleases.sh
+Purpose: Refresh all releases of the Pizza3 project by archiving previous releases and generating
+new full and minimalist releases for GitHub.
 
-# *********************************************************
-# Script: refresh_allreleases.sh
-# Purpose: Refresh all releases of Pizza3 by archiving old releases
-#          and generating new full and minimalist releases.
-# Author: INRAE\Olivier Vitrac
-# Email: olivier.vitrac@agroparistech.fr
-# Last Revised: 2024-12-20
-# *********************************************************
+Description:
+This script automates the process of managing Pizza3 releases by performing the following steps:
+1. **Execution Directory Validation**:
+   - Ensures the script is executed from the `utils` directory.
+2. **Archiving Old Releases**:
+   - Moves existing release zip files from the `release` directory to the `release/history` directory.
+   - Appends a timestamp (`YYYY-MM-DD_HH-MM`) to the filename for version control.
+3. **Generating New Releases**:
+   - Executes scripts to generate both full and minimalist releases:
+       - Full release: Includes all features and files.
+       - Minimalist release: Lightweight version with essential files.
+4. **Displaying Release Summary**:
+   - Summarizes the newly generated release zip files and their sizes.
+   - Lists all archived releases.
+
+Dependencies:
+- **Required Scripts**:
+  - `generate_simple_manifest.py` (Python): Generates the manifest for the full release.
+  - `generate_release.sh` (Bash): Creates the full release zip file.
+  - `generate_mini_manifest.py` (Python): Generates the manifest for the minimalist release.
+  - `generate_mini_release.sh` (Bash): Creates the minimalist release zip file.
+- **Commands**:
+  - `find`, `du`, `mv`, `bash`, `python3`.
+
+Execution Order:
+1. `generate_simple_manifest.py` (Python)
+2. `generate_release.sh` (Bash)
+3. `generate_mini_manifest.py` (Python)
+4. `generate_mini_release.sh` (Bash)
+
+Exclusions:
+- The script skips subdirectories when looking for zip files in the `release` directory.
+- Does not generate additional release types beyond full and minimalist.
+
+Output:
+- **Archived Releases**:
+  - Old releases are moved to `release/history` with a timestamp appended to their filenames.
+- **New Releases**:
+  - Full and minimalist releases are saved in the `release` directory.
+  - The script displays a summary of all new and archived release files, including their sizes.
+
+Usage:
+- Ensure the script is run from the `utils` directory:
+  ```bash
+  cd /path/to/Pizza3/utils
+  ./refresh_allreleases.sh
+
+
+Contact:
+    Author: INRAE\Olivier Vitrac
+    Email: olivier.vitrac@agroparistech.fr
+
+Last Revised: 2025-01-09
+END_DOC
 
 # Exit immediately if a command exits with a non-zero status
 set -e

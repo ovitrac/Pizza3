@@ -39,12 +39,13 @@ Update dependencies to needs and future evolutions:
 Author:
     INRAE\\Olivier Vitrac
     Email: olivier.vitrac@agroparistech.fr
-    Last Revised: 2024-12-12
+    Last Revised: 2025-01-09
 
     """
 
 import os
 import sys
+import re
 from pathlib import Path
 
 def is_utils_directory(current_path):
@@ -52,6 +53,22 @@ def is_utils_directory(current_path):
     Verify that the script is run from the 'utils/' directory.
     """
     return current_path.name == 'utils'
+
+def get_version(parent_dir):
+    """Extract the version number of Pizza3 from version_file."""
+    mainfolder = Path(parent_dir).resolve()             # Resolve the main folder based on the provided current path
+    version_file = mainfolder / "utils" / "VERSION.txt" # Construct the path to VERSION.txt
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f"Error: {version_file} not found. Please create a file with content: version=\"XX.YY.ZZ\"\n")
+        sys.exit(1)
+    with open(version_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r'^version\s*=\s*"(.*?)"$', line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f"Error: No valid version string found in {version_file}. Ensure it contains: version=\"XX.YY.ZZ\"\n")
+    sys.exit(1)
 
 def check_project_structure(parent_dir):
     """
@@ -94,7 +111,7 @@ def generate_setup_py(parent_dir, output_file, dependencies):
 
 setup(
     name="Pizza3",
-    version="1.00.01",
+    version="{get_version(parent_dir)}",
     description="A LAMMPS toolkit",
     author="Olivier Vitrac",
     author_email="olivier.vitrac@agroparistech.fr",
