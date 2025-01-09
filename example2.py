@@ -301,7 +301,7 @@ This example is a **comprehensive guide** to using Pizza3 for managing LAMMPS si
 Created on Tue Nov 26, 2024
 Author: olivi
 
-last revision: 2024-12-04
+last revision: 2024-01-07
 """
 
 # Dependencies
@@ -392,10 +392,13 @@ S = Rheaders | R | G | Mscript | Ncontrol | Rpreview
 scriptfile = S.write("tmp/example2.txt", verbosity=1, overwrite=True)
 print(f"The LAMMPS script is available here:\n{scriptfile}")
 
-# %% Generate DSCRIPT Code
+# %% Generate DSCRIPT Code and Variable Report
 
 # Convert the LAMMPS script to a DSCRIPT for dynamic reuse
 D = S.dscript(verbose=True)
+# check variable definitions in an HTML report
+D.print_var_info(output_file="tmp/example2.d.var.html",overwrite=True)
+# save this Python code in DSCRIPT format
 dscriptfile = D.save("tmp/example2.d.txt", overwrite=True)
 print(f"The DSCRIPT is available here:\n{dscriptfile}")
 

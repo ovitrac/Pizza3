@@ -78,7 +78,7 @@ dependencies = [
 <h2 id="author">Author</h2>
 <p>INRAE\Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Last Revised: 2024-12-12</p>
+Last Revised: 2025-01-09</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -124,12 +124,13 @@ Update dependencies to needs and future evolutions:
 Author:
     INRAE\\Olivier Vitrac
     Email: olivier.vitrac@agroparistech.fr
-    Last Revised: 2024-12-12
+    Last Revised: 2025-01-09
 
     &#34;&#34;&#34;
 
 import os
 import sys
+import re
 from pathlib import Path
 
 def is_utils_directory(current_path):
@@ -137,6 +138,22 @@ def is_utils_directory(current_path):
     Verify that the script is run from the &#39;utils/&#39; directory.
     &#34;&#34;&#34;
     return current_path.name == &#39;utils&#39;
+
+def get_version(parent_dir):
+    &#34;&#34;&#34;Extract the version number of Pizza3 from version_file.&#34;&#34;&#34;
+    mainfolder = Path(parent_dir).resolve()             # Resolve the main folder based on the provided current path
+    version_file = mainfolder / &#34;utils&#34; / &#34;VERSION.txt&#34; # Construct the path to VERSION.txt
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f&#34;Error: {version_file} not found. Please create a file with content: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+        sys.exit(1)
+    with open(version_file, &#34;r&#34;) as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r&#39;^version\s*=\s*&#34;(.*?)&#34;$&#39;, line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f&#34;Error: No valid version string found in {version_file}. Ensure it contains: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+    sys.exit(1)
 
 def check_project_structure(parent_dir):
     &#34;&#34;&#34;
@@ -179,7 +196,7 @@ def generate_setup_py(parent_dir, output_file, dependencies):
 
 setup(
     name=&#34;Pizza3&#34;,
-    version=&#34;1.00.01&#34;,
+    version=&#34;{get_version(parent_dir)}&#34;,
     description=&#34;A LAMMPS toolkit&#34;,
     author=&#34;Olivier Vitrac&#34;,
     author_email=&#34;olivier.vitrac@agroparistech.fr&#34;,
@@ -301,7 +318,7 @@ Modify the expected_files list based on your project's actual structure.</p></di
 
 setup(
     name=&#34;Pizza3&#34;,
-    version=&#34;1.00.01&#34;,
+    version=&#34;{get_version(parent_dir)}&#34;,
     description=&#34;A LAMMPS toolkit&#34;,
     author=&#34;Olivier Vitrac&#34;,
     author_email=&#34;olivier.vitrac@agroparistech.fr&#34;,
@@ -328,6 +345,32 @@ setup(
     except Exception as e:
         print(f&#34;An error occurred while writing &#39;{output_file}&#39;: {e}&#34;)
         sys.exit(1)</code></pre>
+</details>
+</dd>
+<dt id="generate_setup.get_version"><code class="name flex">
+<span>def <span class="ident">get_version</span></span>(<span>parent_dir)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract the version number of Pizza3 from version_file.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_version(parent_dir):
+    &#34;&#34;&#34;Extract the version number of Pizza3 from version_file.&#34;&#34;&#34;
+    mainfolder = Path(parent_dir).resolve()             # Resolve the main folder based on the provided current path
+    version_file = mainfolder / &#34;utils&#34; / &#34;VERSION.txt&#34; # Construct the path to VERSION.txt
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f&#34;Error: {version_file} not found. Please create a file with content: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+        sys.exit(1)
+    with open(version_file, &#34;r&#34;) as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r&#39;^version\s*=\s*&#34;(.*?)&#34;$&#39;, line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f&#34;Error: No valid version string found in {version_file}. Ensure it contains: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+    sys.exit(1)</code></pre>
 </details>
 </dd>
 <dt id="generate_setup.is_utils_directory"><code class="name flex">
@@ -429,6 +472,7 @@ setup(
 <ul class="">
 <li><code><a title="generate_setup.check_project_structure" href="#generate_setup.check_project_structure">check_project_structure</a></code></li>
 <li><code><a title="generate_setup.generate_setup_py" href="#generate_setup.generate_setup_py">generate_setup_py</a></code></li>
+<li><code><a title="generate_setup.get_version" href="#generate_setup.get_version">get_version</a></code></li>
 <li><code><a title="generate_setup.is_utils_directory" href="#generate_setup.is_utils_directory">is_utils_directory</a></code></li>
 <li><code><a title="generate_setup.main" href="#generate_setup.main">main</a></code></li>
 <li><code><a title="generate_setup.prompt_overwrite" href="#generate_setup.prompt_overwrite">prompt_overwrite</a></code></li>

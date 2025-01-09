@@ -90,10 +90,10 @@ browsing experience.</li>
 <ul>
 <li><strong>INRAE\Olivier Vitrac</strong></li>
 <li><strong>Email:</strong> olivier.vitrac@agroparistech.fr</li>
-<li><strong>Last Revised:</strong> 2024-12-21</li>
+<li><strong>Last Revised:</strong> 2025-01-09</li>
 </ul>
 <h2 id="version">Version</h2>
-<p>Pizza3 v.0.99</p>
+<p>Pizza3 v.1.00</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -167,10 +167,10 @@ Notes:
 Author:
     - **INRAE\Olivier Vitrac**
     - **Email:** olivier.vitrac@agroparistech.fr
-    - **Last Revised:** 2024-12-21
+    - **Last Revised:** 2025-01-09
 
 Version:
-    Pizza3 v.0.99
+    Pizza3 v.1.00
 
 &#34;&#34;&#34;
 
@@ -185,11 +185,27 @@ if not os.path.isfile(&#34;pdocme.sh&#34;):
     print(&#34;Error: This script must be run from the Pizza3/utils/ directory.&#34;)
     sys.exit(1)
 
-# Configuration
+# Root folder and version file
 mainfolder = os.path.realpath(os.path.join(&#34;..&#34;))
+version_file = os.path.join(mainfolder, &#34;utils&#34;, &#34;VERSION.txt&#34;)
+def get_version():
+    &#34;&#34;&#34;Extract the version number of Pizza3 from version_file.&#34;&#34;&#34;
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f&#34;Error: {version_file} not found. Please create a file with content: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+        sys.exit(1)
+    with open(version_file, &#34;r&#34;) as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r&#39;^version\s*=\s*&#34;(.*?)&#34;$&#39;, line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f&#34;Error: No valid version string found in {version_file}. Ensure it contains: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+    sys.exit(1)
+
+# Configuration
 output_dir = os.path.join(mainfolder, &#34;html&#34;)
 output_file = &#34;index_matlab.html&#34;
-PIZZA3_VERSION = &#34;Pizza3 v.1.00&#34;
+PIZZA3_VERSION = f&#34;Pizza3 v.{get_version()}&#34;
 CONTACT = &#34;INRAE\\olivier.vitrac@agroparistech.fr&#34;
 
 # CSS Style with toggle button integration and dynamic sidebar collapse
@@ -985,6 +1001,30 @@ Enhancements:
     return function_name, html_content</code></pre>
 </details>
 </dd>
+<dt id="generate_matlab_docs.get_version"><code class="name flex">
+<span>def <span class="ident">get_version</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract the version number of Pizza3 from version_file.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_version():
+    &#34;&#34;&#34;Extract the version number of Pizza3 from version_file.&#34;&#34;&#34;
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f&#34;Error: {version_file} not found. Please create a file with content: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+        sys.exit(1)
+    with open(version_file, &#34;r&#34;) as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r&#39;^version\s*=\s*&#34;(.*?)&#34;$&#39;, line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f&#34;Error: No valid version string found in {version_file}. Ensure it contains: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+    sys.exit(1)</code></pre>
+</details>
+</dd>
 <dt id="generate_matlab_docs.is_excluded"><code class="name flex">
 <span>def <span class="ident">is_excluded</span></span>(<span>path)</span>
 </code></dt>
@@ -1020,6 +1060,7 @@ Enhancements:
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="generate_matlab_docs.extract_matlab_doc" href="#generate_matlab_docs.extract_matlab_doc">extract_matlab_doc</a></code></li>
+<li><code><a title="generate_matlab_docs.get_version" href="#generate_matlab_docs.get_version">get_version</a></code></li>
 <li><code><a title="generate_matlab_docs.is_excluded" href="#generate_matlab_docs.is_excluded">is_excluded</a></code></li>
 </ul>
 </li>

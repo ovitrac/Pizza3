@@ -80,7 +80,7 @@
 <h2 id="author"><strong>Author:</strong></h2>
 <p>INRAE\Olivier Vitrac<br>
 Email: olivier.vitrac@agroparistech.fr<br>
-Last Revised: 2024-12-21</p>
+Last Revised: 2025-01-09</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -134,7 +134,7 @@ python3 generate_post_docs.py
 ---------
 INRAE\Olivier Vitrac  
 Email: olivier.vitrac@agroparistech.fr  
-Last Revised: 2024-12-21
+Last Revised: 2025-01-09
 
 &#34;&#34;&#34;
 
@@ -146,9 +146,13 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import zipfile
 import sys
+import re
+
+# Root folder and version file
+MAINFOLDER = Path(&#34;../&#34;).resolve()
+version_file = os.path.join(MAINFOLDER, &#34;utils&#34;, &#34;VERSION.txt&#34;)
 
 # Configuration
-MAINFOLDER = Path(&#34;../&#34;).resolve()
 SOURCE_DIR = MAINFOLDER / &#34;post&#34; / &#34;html&#34;
 DEST_DIR = MAINFOLDER / &#34;html&#34; / &#34;post&#34;
 HISTORY_DIR = MAINFOLDER / &#34;history&#34;
@@ -358,6 +362,20 @@ tr:nth-child(odd) {
 }
 &#34;&#34;&#34;
 
+def get_version():
+    &#34;&#34;&#34;Extract the version number of Pizza3 from version_file.&#34;&#34;&#34;
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f&#34;Error: {version_file} not found. Please create a file with content: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+        sys.exit(1)
+    with open(version_file, &#34;r&#34;) as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r&#39;^version\s*=\s*&#34;(.*?)&#34;$&#39;, line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f&#34;Error: No valid version string found in {version_file}. Ensure it contains: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+    sys.exit(1)
+
 def print_header(title):
     &#34;&#34;&#34;Prints a formatted header for better readability in the terminal.&#34;&#34;&#34;
     print(&#34;\n&#34; + &#34;=&#34;*60)
@@ -538,10 +556,10 @@ def generate_documentation(manifest):
         main_content += example_html
 
     # Define the introductory text with a link to ../index_matlab.html
-    introductory_text = &#34;&#34;&#34;
+    introductory_text = f&#34;&#34;&#34;
     &lt;h1&gt;Pizza3 POST Documentation Index&lt;/h1&gt;
     &lt;p&gt;Select a POST example from the left panel to view its documentation. You can have access to the &lt;a href=&#34;../index_matlab.html&#34;&gt;POST tools documentation here&lt;/a&gt;.&lt;/p&gt;
-    &lt;p&gt;&lt;strong&gt;Version:&lt;/strong&gt; Pizza3 v.1.00&lt;/p&gt;
+    &lt;p&gt;&lt;strong&gt;Version:&lt;/strong&gt; Pizza3 v.{get_version()}&lt;/p&gt;
     &lt;p&gt;&lt;strong&gt;Maintained by:&lt;/strong&gt; INRAE\\olivier.vitrac@agroparistech.fr&lt;/p&gt;
     &#34;&#34;&#34;
 
@@ -890,10 +908,10 @@ Incorporates the provided CSS and includes introductory text and contact details
         main_content += example_html
 
     # Define the introductory text with a link to ../index_matlab.html
-    introductory_text = &#34;&#34;&#34;
+    introductory_text = f&#34;&#34;&#34;
     &lt;h1&gt;Pizza3 POST Documentation Index&lt;/h1&gt;
     &lt;p&gt;Select a POST example from the left panel to view its documentation. You can have access to the &lt;a href=&#34;../index_matlab.html&#34;&gt;POST tools documentation here&lt;/a&gt;.&lt;/p&gt;
-    &lt;p&gt;&lt;strong&gt;Version:&lt;/strong&gt; Pizza3 v.1.00&lt;/p&gt;
+    &lt;p&gt;&lt;strong&gt;Version:&lt;/strong&gt; Pizza3 v.{get_version()}&lt;/p&gt;
     &lt;p&gt;&lt;strong&gt;Maintained by:&lt;/strong&gt; INRAE\\olivier.vitrac@agroparistech.fr&lt;/p&gt;
     &#34;&#34;&#34;
 
@@ -1002,6 +1020,30 @@ Incorporates the provided CSS and includes introductory text and contact details
     print(f&#34;POST Documentation HTML page created at &#39;{doc_path}&#39;.&#34;)</code></pre>
 </details>
 </dd>
+<dt id="generate_post_docs.get_version"><code class="name flex">
+<span>def <span class="ident">get_version</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract the version number of Pizza3 from version_file.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_version():
+    &#34;&#34;&#34;Extract the version number of Pizza3 from version_file.&#34;&#34;&#34;
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f&#34;Error: {version_file} not found. Please create a file with content: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+        sys.exit(1)
+    with open(version_file, &#34;r&#34;) as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r&#39;^version\s*=\s*&#34;(.*?)&#34;$&#39;, line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f&#34;Error: No valid version string found in {version_file}. Ensure it contains: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+    sys.exit(1)</code></pre>
+</details>
+</dd>
 <dt id="generate_post_docs.main"><code class="name flex">
 <span>def <span class="ident">main</span></span>(<span>)</span>
 </code></dt>
@@ -1094,6 +1136,7 @@ Incorporates the provided CSS and includes introductory text and contact details
 <li><code><a title="generate_post_docs.copy_and_rename_files" href="#generate_post_docs.copy_and_rename_files">copy_and_rename_files</a></code></li>
 <li><code><a title="generate_post_docs.extract_synopsis" href="#generate_post_docs.extract_synopsis">extract_synopsis</a></code></li>
 <li><code><a title="generate_post_docs.generate_documentation" href="#generate_post_docs.generate_documentation">generate_documentation</a></code></li>
+<li><code><a title="generate_post_docs.get_version" href="#generate_post_docs.get_version">get_version</a></code></li>
 <li><code><a title="generate_post_docs.main" href="#generate_post_docs.main">main</a></code></li>
 <li><code><a title="generate_post_docs.print_header" href="#generate_post_docs.print_header">print_header</a></code></li>
 <li><code><a title="generate_post_docs.verify_execution_directory" href="#generate_post_docs.verify_execution_directory">verify_execution_directory</a></code></li>

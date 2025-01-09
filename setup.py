@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="Pizza3",
-    version="0.99.99",
+    version="1.00",
     description="A LAMMPS toolkit",
     author="Olivier Vitrac",
     author_email="olivier.vitrac@agroparistech.fr",

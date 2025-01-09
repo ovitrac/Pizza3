@@ -213,6 +213,22 @@ def ensure_run_from_utils():
         print(&#34;Error: This script must be run from the Pizza3/utils/ directory.&#34;, file=sys.stderr)
         sys.exit(1)
 
+def get_version():
+    &#34;&#34;&#34;Extract the version number of Pizza3 from version_file.&#34;&#34;&#34;
+    mainfolder = os.path.realpath(os.path.join(&#34;..&#34;))
+    version_file = os.path.join(mainfolder, &#34;utils&#34;, &#34;VERSION.txt&#34;)
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f&#34;Error: {version_file} not found. Please create a file with content: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+        sys.exit(1)
+    with open(version_file, &#34;r&#34;) as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r&#39;^version\s*=\s*&#34;(.*?)&#34;$&#39;, line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f&#34;Error: No valid version string found in {version_file}. Ensure it contains: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+    sys.exit(1)
+
 def read_module_list():
     &#34;&#34;&#34;Reads module paths from STDIN, one per line.&#34;&#34;&#34;
     modules = [line.strip() for line in sys.stdin if line.strip()]
@@ -425,7 +441,7 @@ def generate_full_html(nav_html, content_html, base_css, pygments_css, generatio
 &lt;/header&gt;
 &lt;div id=&#39;content&#39;&gt;
 &lt;div id=&#39;nav&#39;&gt;
-&lt;p&gt;&lt;strong&gt;Version:&lt;/strong&gt; Pizza3 v.1.00&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Version:&lt;/strong&gt; Pizza3 v.{get_version()}&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Maintained by:&lt;/strong&gt; INRAE\\olivier.vitrac@agroparistech.fr&lt;/p&gt;
 &lt;hr&gt;
 {nav_html}
@@ -1054,7 +1070,7 @@ Returns a list of tuples: (description, code)</p></div>
 &lt;/header&gt;
 &lt;div id=&#39;content&#39;&gt;
 &lt;div id=&#39;nav&#39;&gt;
-&lt;p&gt;&lt;strong&gt;Version:&lt;/strong&gt; Pizza3 v.1.00&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Version:&lt;/strong&gt; Pizza3 v.{get_version()}&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Maintained by:&lt;/strong&gt; INRAE\\olivier.vitrac@agroparistech.fr&lt;/p&gt;
 &lt;hr&gt;
 {nav_html}
@@ -1215,6 +1231,32 @@ toggleButton.addEventListener(&#39;click&#39;, () =&gt; {{
 &lt;p&gt;Generated on: {generation_datetime}&lt;/p&gt;
 &#34;&#34;&#34;
     return f&#39;&lt;div id=&#34;welcome&#34; class=&#34;module-content&#34; style=&#34;display:block;&#34;&gt;\n{welcome_text}\n&lt;/div&gt;\n&#39;</code></pre>
+</details>
+</dd>
+<dt id="generate_examples.get_version"><code class="name flex">
+<span>def <span class="ident">get_version</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract the version number of Pizza3 from version_file.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_version():
+    &#34;&#34;&#34;Extract the version number of Pizza3 from version_file.&#34;&#34;&#34;
+    mainfolder = os.path.realpath(os.path.join(&#34;..&#34;))
+    version_file = os.path.join(mainfolder, &#34;utils&#34;, &#34;VERSION.txt&#34;)
+    if not os.path.isfile(version_file):
+        sys.stderr.write(f&#34;Error: {version_file} not found. Please create a file with content: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+        sys.exit(1)
+    with open(version_file, &#34;r&#34;) as f:
+        for line in f:
+            line = line.strip()
+            match = re.match(r&#39;^version\s*=\s*&#34;(.*?)&#34;$&#39;, line)
+            if match:
+                return match.group(1)
+    sys.stderr.write(f&#34;Error: No valid version string found in {version_file}. Ensure it contains: version=\&#34;XX.YY.ZZ\&#34;\n&#34;)
+    sys.exit(1)</code></pre>
 </details>
 </dd>
 <dt id="generate_examples.main"><code class="name flex">
@@ -1652,6 +1694,7 @@ Returns a nested dictionary representing the folder structure.</p></div>
 <li><code><a title="generate_examples.generate_full_html" href="#generate_examples.generate_full_html">generate_full_html</a></code></li>
 <li><code><a title="generate_examples.generate_nav_html" href="#generate_examples.generate_nav_html">generate_nav_html</a></code></li>
 <li><code><a title="generate_examples.generate_welcome_html" href="#generate_examples.generate_welcome_html">generate_welcome_html</a></code></li>
+<li><code><a title="generate_examples.get_version" href="#generate_examples.get_version">get_version</a></code></li>
 <li><code><a title="generate_examples.main" href="#generate_examples.main">main</a></code></li>
 <li><code><a title="generate_examples.organize_modules" href="#generate_examples.organize_modules">organize_modules</a></code></li>
 <li><code><a title="generate_examples.read_module_list" href="#generate_examples.read_module_list">read_module_list</a></code></li>
