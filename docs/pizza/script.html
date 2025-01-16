@@ -294,7 +294,7 @@ import matplotlib.pyplot as plt
 from pizza.private.mstruct import param,struct
 from pizza.forcefield import *
 
-__all__ = [&#39;CallableScript&#39;, &#39;VariableOccurrences&#39;, &#39;boundarysection&#39;, &#39;discretizationsection&#39;, &#39;dumpsection&#39;, &#39;forcefield&#39;, &#39;frame_header&#39;, &#39;geometrysection&#39;, &#39;get_metadata&#39;, &#39;get_tmp_location&#39;, &#39;globalsection&#39;, &#39;initializesection&#39;, &#39;integrationsection&#39;, &#39;interactionsection&#39;, &#39;is_scalar&#39;, &#39;make_hashable&#39;, &#39;none&#39;, &#39;param&#39;, &#39;parameterforcefield&#39;, &#39;picker&#39;, &#39;pipescript&#39;, &#39;remove_comments&#39;, &#39;rigidwall&#39;, &#39;runsection&#39;, &#39;saltTLSPH&#39;, &#39;script&#39;, &#39;scriptdata&#39;, &#39;scriptobject&#39;, &#39;scriptobjectgroup&#39;, &#39;smd&#39;, &#39;solidfood&#39;, &#39;span&#39;, &#39;statussection&#39;, &#39;struct&#39;, &#39;tlsph&#39;, &#39;ulsph&#39;, &#39;water&#39;]
+__all__ = [&#39;CallableScript&#39;, &#39;VariableOccurrences&#39;, &#39;boundarysection&#39;, &#39;discretizationsection&#39;, &#39;dumpsection&#39;, &#39;forcefield&#39;, &#39;frame_header&#39;, &#39;geometrysection&#39;, &#39;get_metadata&#39;, &#39;get_tmp_location&#39;, &#39;globalsection&#39;, &#39;initializesection&#39;, &#39;integrationsection&#39;, &#39;interactionsection&#39;, &#39;is_scalar&#39;, &#39;make_hashable&#39;, &#39;none&#39;, &#39;param&#39;, &#39;paramauto&#39;, &#39;parameterforcefield&#39;, &#39;picker&#39;, &#39;pipescript&#39;, &#39;remove_comments&#39;, &#39;rigidwall&#39;, &#39;runsection&#39;, &#39;saltTLSPH&#39;, &#39;script&#39;, &#39;scriptdata&#39;, &#39;scriptobject&#39;, &#39;scriptobjectgroup&#39;, &#39;smd&#39;, &#39;solidfood&#39;, &#39;span&#39;, &#39;statussection&#39;, &#39;struct&#39;, &#39;tlsph&#39;, &#39;ulsph&#39;, &#39;water&#39;]
 
 
 
@@ -8255,8 +8255,8 @@ p.disp()
 <hr>
 <h3 id="notes">Notes</h3>
 <ul>
-<li>The <code>paramauto</code> class simplifies handling of partial definitions and inherits from <code><a title="script.param" href="#script.param">param</a></code>.</li>
-<li>Use <code>paramauto</code> when definitions need to be stacked irrespective of execution order.</li>
+<li>The <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code> class simplifies handling of partial definitions and inherits from <code><a title="script.param" href="#script.param">param</a></code>.</li>
+<li>Use <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code> when definitions need to be stacked irrespective of execution order.</li>
 </ul>
 <p>constructor</p></div>
 <details class="source">
@@ -8929,6 +8929,447 @@ tostruct(protection=False)</p></div>
 </details>
 </dd>
 </dl>
+</dd>
+<dt id="script.paramauto"><code class="flex name class">
+<span>class <span class="ident">paramauto</span></span>
+<span>(</span><span>sortdefinitions=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><h1 id="class-paramauto">Class: <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code></h1>
+<p>A subclass of <code><a title="script.param" href="#script.param">param</a></code> with enhanced handling for automatic sorting and evaluation
+of definitions. The <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code> class ensures that all fields are sorted to resolve
+dependencies, allowing seamless stacking of partially defined objects.</p>
+<hr>
+<h3 id="features">Features</h3>
+<ul>
+<li>Inherits all functionalities of <code><a title="script.param" href="#script.param">param</a></code>.</li>
+<li>Automatically sorts definitions for dependency resolution.</li>
+<li>Simplifies handling of partial definitions in dynamic structures.</li>
+<li>Supports safe concatenation of definitions.</li>
+</ul>
+<hr>
+<h3 id="examples">Examples</h3>
+<h4 id="automatic-dependency-sorting">Automatic Dependency Sorting</h4>
+<p>Definitions are automatically sorted to resolve dependencies:</p>
+<pre><code class="language-python">p = paramauto(a=1, b=&quot;${a}+1&quot;, c=&quot;${a}+${b}&quot;)
+p.disp()
+# Output:
+# --------
+#      a: 1
+#      b: ${a} + 1 (= 2)
+#      c: ${a} + ${b} (= 3)
+# --------
+</code></pre>
+<h4 id="handling-missing-definitions">Handling Missing Definitions</h4>
+<p>Unresolved dependencies raise warnings but do not block execution:</p>
+<pre><code class="language-python">p = paramauto(a=1, b=&quot;${a}+1&quot;, c=&quot;${a}+${d}&quot;)
+p.disp()
+# Output:
+# --------
+#      a: 1
+#      b: ${a} + 1 (= 2)
+#      c: ${a} + ${d} (= &lt; undef definition &quot;${d}&quot; &gt;)
+# --------
+</code></pre>
+<hr>
+<h3 id="concatenation-and-inheritance">Concatenation and Inheritance</h3>
+<p>Concatenating <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code> objects resolves definitions:</p>
+<pre><code class="language-python">p1 = paramauto(a=1, b=&quot;${a}+2&quot;)
+p2 = paramauto(c=&quot;${b}*3&quot;)
+p3 = p1 + p2
+p3.disp()
+# Output:
+# --------
+#      a: 1
+#      b: ${a} + 2 (= 3)
+#      c: ${b} * 3 (= 9)
+# --------
+</code></pre>
+<hr>
+<h3 id="utility-methods">Utility Methods</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sortdefinitions()</code></td>
+<td>Automatically sorts fields to resolve dependencies.</td>
+</tr>
+<tr>
+<td><code>eval()</code></td>
+<td>Evaluate all fields, resolving dependencies.</td>
+</tr>
+<tr>
+<td><code>disp()</code></td>
+<td>Display all fields with their resolved values.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="overloaded-operators">Overloaded Operators</h3>
+<h4 id="supported-operators">Supported Operators</h4>
+<ul>
+<li><code>+</code>: Concatenates two <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code> objects, resolving dependencies.</li>
+<li><code>+=</code>: Updates the current object with another, resolving dependencies.</li>
+<li><code>len()</code>: Number of fields.</li>
+<li><code>in</code>: Check for field existence.</li>
+</ul>
+<hr>
+<h3 id="advanced-usage">Advanced Usage</h3>
+<h4 id="partial-definitions">Partial Definitions</h4>
+<p>The <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code> class simplifies handling of partially defined fields:</p>
+<pre><code class="language-python">p = paramauto(a=&quot;${d}&quot;, b=&quot;${a}+1&quot;)
+p.disp()
+# Warning: Unable to resolve dependencies.
+# --------
+#      a: ${d} (= &lt; undef definition &quot;${d}&quot; &gt;)
+#      b: ${a} + 1 (= &lt; undef definition &quot;${d}&quot; &gt;)
+# --------
+
+p.d = 10
+p.disp()
+# Dependencies are resolved:
+# --------
+#      d: 10
+#      a: ${d} (= 10)
+#      b: ${a} + 1 (= 11)
+# --------
+</code></pre>
+<hr>
+<h3 id="notes">Notes</h3>
+<ul>
+<li>The <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code> class is computationally more intensive than <code><a title="script.param" href="#script.param">param</a></code> due to automatic sorting.</li>
+<li>It is ideal for managing dynamic systems with complex interdependencies.</li>
+</ul>
+<h3 id="examples_1">Examples</h3>
+<pre><code>            p = paramauto()
+            p.b = "${aa}"
+            p.disp()
+        yields
+            WARNING: unable to interpret 1/1 expressions in "definitions"
+              -----------:----------------------------------------
+                        b: ${aa}
+                         = &lt; undef definition "${aa}" &gt;
+              -----------:----------------------------------------
+              p.aa = 2
+              p.disp()
+        yields
+            -----------:----------------------------------------
+                     aa: 2
+                      b: ${aa}
+                       = 2
+            -----------:----------------------------------------
+            q = paramauto(c="${aa}+${b}")+p
+            q.disp()
+        yields
+            -----------:----------------------------------------
+                     aa: 2
+                      b: ${aa}
+                       = 2
+                      c: ${aa}+${b}
+                       = 4
+            -----------:----------------------------------------
+            q.aa = 30
+            q.disp()
+        yields
+            -----------:----------------------------------------
+                     aa: 30
+                      b: ${aa}
+                       = 30
+                      c: ${aa}+${b}
+                       = 60
+            -----------:----------------------------------------
+            q.aa = "${d}"
+            q.disp()
+        yields multiple errors (recursion)
+        WARNING: unable to interpret 3/3 expressions in "definitions"
+          -----------:----------------------------------------
+                   aa: ${d}
+                     = &lt; undef definition "${d}" &gt;
+                    b: ${aa}
+                     = Eval Error &lt; invalid [...] (&lt;string&gt;, line 1) &gt;
+                    c: ${aa}+${b}
+                     = Eval Error &lt; invalid [...] (&lt;string&gt;, line 1) &gt;
+          -----------:----------------------------------------
+            q.d = 100
+            q.disp()
+        yields
+          -----------:----------------------------------------
+                    d: 100
+                   aa: ${d}
+                     = 100
+                    b: ${aa}
+                     = 100
+                    c: ${aa}+${b}
+                     = 200
+          -----------:----------------------------------------
+
+
+    Example:
+
+        p = paramauto(b="${a}+1",c="${a}+${d}",a=1)
+        p.disp()
+    generates:
+        WARNING: unable to interpret 1/3 expressions in "definitions"
+          -----------:----------------------------------------
+                    a: 1
+                    b: ${a}+1
+                     = 2
+                    c: ${a}+${d}
+                     = &lt; undef definition "${d}" &gt;
+          -----------:----------------------------------------
+    setting p.d
+        p.d = 2
+        p.disp()
+    produces
+          -----------:----------------------------------------
+                    a: 1
+                    d: 2
+                    b: ${a}+1
+                     = 2
+                    c: ${a}+${d}
+                     = 3
+          -----------:----------------------------------------
+</code></pre>
+<p>constructor</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class paramauto(param):
+    &#34;&#34;&#34;
+    Class: `paramauto`
+    ==================
+
+    A subclass of `param` with enhanced handling for automatic sorting and evaluation
+    of definitions. The `paramauto` class ensures that all fields are sorted to resolve
+    dependencies, allowing seamless stacking of partially defined objects.
+
+    ---
+
+    ### Features
+    - Inherits all functionalities of `param`.
+    - Automatically sorts definitions for dependency resolution.
+    - Simplifies handling of partial definitions in dynamic structures.
+    - Supports safe concatenation of definitions.
+
+    ---
+
+    ### Examples
+
+    #### Automatic Dependency Sorting
+    Definitions are automatically sorted to resolve dependencies:
+    ```python
+    p = paramauto(a=1, b=&#34;${a}+1&#34;, c=&#34;${a}+${b}&#34;)
+    p.disp()
+    # Output:
+    # --------
+    #      a: 1
+    #      b: ${a} + 1 (= 2)
+    #      c: ${a} + ${b} (= 3)
+    # --------
+    ```
+
+    #### Handling Missing Definitions
+    Unresolved dependencies raise warnings but do not block execution:
+    ```python
+    p = paramauto(a=1, b=&#34;${a}+1&#34;, c=&#34;${a}+${d}&#34;)
+    p.disp()
+    # Output:
+    # --------
+    #      a: 1
+    #      b: ${a} + 1 (= 2)
+    #      c: ${a} + ${d} (= &lt; undef definition &#34;${d}&#34; &gt;)
+    # --------
+    ```
+
+    ---
+
+    ### Concatenation and Inheritance
+    Concatenating `paramauto` objects resolves definitions:
+    ```python
+    p1 = paramauto(a=1, b=&#34;${a}+2&#34;)
+    p2 = paramauto(c=&#34;${b}*3&#34;)
+    p3 = p1 + p2
+    p3.disp()
+    # Output:
+    # --------
+    #      a: 1
+    #      b: ${a} + 2 (= 3)
+    #      c: ${b} * 3 (= 9)
+    # --------
+    ```
+
+    ---
+
+    ### Utility Methods
+
+    | Method                | Description                                            |
+    |-----------------------|--------------------------------------------------------|
+    | `sortdefinitions()`   | Automatically sorts fields to resolve dependencies.    |
+    | `eval()`              | Evaluate all fields, resolving dependencies.           |
+    | `disp()`              | Display all fields with their resolved values.         |
+
+    ---
+
+    ### Overloaded Operators
+
+    #### Supported Operators
+    - `+`: Concatenates two `paramauto` objects, resolving dependencies.
+    - `+=`: Updates the current object with another, resolving dependencies.
+    - `len()`: Number of fields.
+    - `in`: Check for field existence.
+
+    ---
+
+    ### Advanced Usage
+
+    #### Partial Definitions
+    The `paramauto` class simplifies handling of partially defined fields:
+    ```python
+    p = paramauto(a=&#34;${d}&#34;, b=&#34;${a}+1&#34;)
+    p.disp()
+    # Warning: Unable to resolve dependencies.
+    # --------
+    #      a: ${d} (= &lt; undef definition &#34;${d}&#34; &gt;)
+    #      b: ${a} + 1 (= &lt; undef definition &#34;${d}&#34; &gt;)
+    # --------
+
+    p.d = 10
+    p.disp()
+    # Dependencies are resolved:
+    # --------
+    #      d: 10
+    #      a: ${d} (= 10)
+    #      b: ${a} + 1 (= 11)
+    # --------
+    ```
+
+    ---
+
+    ### Notes
+    - The `paramauto` class is computationally more intensive than `param` due to automatic sorting.
+    - It is ideal for managing dynamic systems with complex interdependencies.
+
+    ### Examples
+                    p = paramauto()
+                    p.b = &#34;${aa}&#34;
+                    p.disp()
+                yields
+                    WARNING: unable to interpret 1/1 expressions in &#34;definitions&#34;
+                      -----------:----------------------------------------
+                                b: ${aa}
+                                 = &lt; undef definition &#34;${aa}&#34; &gt;
+                      -----------:----------------------------------------
+                      p.aa = 2
+                      p.disp()
+                yields
+                    -----------:----------------------------------------
+                             aa: 2
+                              b: ${aa}
+                               = 2
+                    -----------:----------------------------------------
+                    q = paramauto(c=&#34;${aa}+${b}&#34;)+p
+                    q.disp()
+                yields
+                    -----------:----------------------------------------
+                             aa: 2
+                              b: ${aa}
+                               = 2
+                              c: ${aa}+${b}
+                               = 4
+                    -----------:----------------------------------------
+                    q.aa = 30
+                    q.disp()
+                yields
+                    -----------:----------------------------------------
+                             aa: 30
+                              b: ${aa}
+                               = 30
+                              c: ${aa}+${b}
+                               = 60
+                    -----------:----------------------------------------
+                    q.aa = &#34;${d}&#34;
+                    q.disp()
+                yields multiple errors (recursion)
+                WARNING: unable to interpret 3/3 expressions in &#34;definitions&#34;
+                  -----------:----------------------------------------
+                           aa: ${d}
+                             = &lt; undef definition &#34;${d}&#34; &gt;
+                            b: ${aa}
+                             = Eval Error &lt; invalid [...] (&lt;string&gt;, line 1) &gt;
+                            c: ${aa}+${b}
+                             = Eval Error &lt; invalid [...] (&lt;string&gt;, line 1) &gt;
+                  -----------:----------------------------------------
+                    q.d = 100
+                    q.disp()
+                yields
+                  -----------:----------------------------------------
+                            d: 100
+                           aa: ${d}
+                             = 100
+                            b: ${aa}
+                             = 100
+                            c: ${aa}+${b}
+                             = 200
+                  -----------:----------------------------------------
+
+
+            Example:
+
+                p = paramauto(b=&#34;${a}+1&#34;,c=&#34;${a}+${d}&#34;,a=1)
+                p.disp()
+            generates:
+                WARNING: unable to interpret 1/3 expressions in &#34;definitions&#34;
+                  -----------:----------------------------------------
+                            a: 1
+                            b: ${a}+1
+                             = 2
+                            c: ${a}+${d}
+                             = &lt; undef definition &#34;${d}&#34; &gt;
+                  -----------:----------------------------------------
+            setting p.d
+                p.d = 2
+                p.disp()
+            produces
+                  -----------:----------------------------------------
+                            a: 1
+                            d: 2
+                            b: ${a}+1
+                             = 2
+                            c: ${a}+${d}
+                             = 3
+                  -----------:----------------------------------------
+
+    &#34;&#34;&#34;
+
+    def __add__(self,p):
+        return super(param,self).__add__(p,sortdefinitions=True,raiseerror=False)
+
+    def __iadd__(self,p):
+        return super(param,self).__iadd__(p,sortdefinitions=True,raiseerror=False)
+
+    def __repr__(self):
+        self.sortdefinitions(raiseerror=False)
+        #super(param,self).__repr__()
+        super().__repr__()
+        return str(self)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pizza.private.mstruct.param</li>
+<li>pizza.private.mstruct.struct</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li>pizza.dscript.lambdaScriptdata</li>
+<li>pizza.forcefield.parameterforcefield</li>
+<li>pizza.region.regiondata</li>
+</ul>
 </dd>
 <dt id="script.parameterforcefield"><code class="flex name class">
 <span>class <span class="ident">parameterforcefield</span></span>
@@ -15487,7 +15928,7 @@ evaluated parameters (<code><a title="script.param" href="#script.param">param</
 <li>Indexing and iteration support for fields.</li>
 <li>Concatenation and subtraction of structures.</li>
 <li>Conversion to and from dictionaries.</li>
-<li>Compatible with <code><a title="script.param" href="#script.param">param</a></code> and <code>paramauto</code> for evaluation and dependency handling.</li>
+<li>Compatible with <code><a title="script.param" href="#script.param">param</a></code> and <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code> for evaluation and dependency handling.</li>
 </ul>
 <hr>
 <h3 id="examples">Examples</h3>
@@ -17662,6 +18103,9 @@ water(beadtype=index, userid="myfluid")</p></div>
 <li><code><a title="script.param.tostatic" href="#script.param.tostatic">tostatic</a></code></li>
 <li><code><a title="script.param.tostruct" href="#script.param.tostruct">tostruct</a></code></li>
 </ul>
+</li>
+<li>
+<h4><code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code></h4>
 </li>
 <li>
 <h4><code><a title="script.parameterforcefield" href="#script.parameterforcefield">parameterforcefield</a></code></h4>

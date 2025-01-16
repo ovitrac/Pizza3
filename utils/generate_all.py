@@ -9,6 +9,7 @@ Generates backup files with __all__ definitions in utils/__all__/ for review.
 # Maintained by INRAE\\olivier.vitrac@agroparistech.fr
 # Revision history: 2024-12-08
 # 2025-01-07 fix extract_symbols by adding package_root
+# 2025-01-17 add pizza.converted modules
 
 import os
 import inspect
@@ -141,7 +142,7 @@ if __name__ == "__main__":
     sys.path.insert(0, pizza_base_path)  # Add pizza directory as package root
 
     # Packages to process
-    packages = ["pizza", "pizza.private"]
+    packages = ["pizza", "pizza.private", "pizza.converted"]
 
     # Generate __all__ for each package
     for package in packages:

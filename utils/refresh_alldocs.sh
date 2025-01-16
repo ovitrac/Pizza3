@@ -63,7 +63,7 @@ Contact:
     Author: INRAE\Olivier Vitrac
     Email: olivier.vitrac@agroparistech.fr
 
-Last Revised: 2025-01-09
+Last Revised: 2025-01-17
 END_DOC
 
 # Exit immediately if a command exits with a non-zero status
@@ -188,6 +188,7 @@ fi
 
 # Check if the required scripts exist and are executable
 check_script "./generate_setup.py"
+check_script "./generate_all.py"
 check_script "./generate_matlab_docs.py"
 check_script "./generate_post_docs.py"
 check_script "./generate_diagrams.sh"
@@ -198,6 +199,10 @@ check_script "./pdocme.sh"
 echo "Launch 'generate_setup.py'to update the version (repored also in documentatation)..."
 ./generate_matlab_docs.py
 echo "Completed 'generate_setup.py'."
+
+echo "Launch 'generate_all.py'to refresh all variables __all__..."
+./generate_all.py
+echo "Completed 'generate_all.py'."
 
 echo "Running 'generate_matlab_docs.py'..."
 ./generate_matlab_docs.py

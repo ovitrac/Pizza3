@@ -1,6 +1,6 @@
 # Pizza Modules Documentation
 
-Generated on: **2025-01-09 16:44:08**
+Generated on: **2025-01-16 11:26:22**
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
 
@@ -234,6 +234,281 @@ ulsph --> water
 |-------|---------|---------------------------|---------|-------------|
 | (module-level) | `check_PIL` |  | 14 |  |
 
+## Module `pizza.converted.bdump3`
+
+### Class Inheritance Diagram
+```mermaid
+graph TD;
+Snap
+bdump
+object --> Snap
+object --> bdump
+```
+
+**[Class Examples for `pizza/converted/bdump3.py` (1)](class_examples.html#pizza_converted_bdump3)**
+
+### Methods Table
+
+| Class | Method | Docstring First Paragraph | # Lines | __version__ |
+|-------|---------|---------------------------|---------|-------------|
+| `Snap` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 4 |  |
+| `bdump` | `__init__` | Initialize the bdump object. | 32 |  |
+| `bdump` | `cull` | Remove duplicate snapshots based on time stamps. | 11 |  |
+| `bdump` | `map` | Assign names to atom columns. | 13 |  |
+| `bdump` | `next` | Read the next snapshot in incremental mode. | 49 |  |
+| `bdump` | `read_all` | Read all snapshots from the list of dump files. | 36 |  |
+| `bdump` | `read_snapshot` | Read a single snapshot from the file. | 49 |  |
+| `bdump` | `time` | Get a list of all snapshot time stamps. | 8 |  |
+| `bdump` | `viz` | Return bond information for visualization. | 53 |  |
+
+## Module `pizza.converted.cdata3`
+
+### Class Inheritance Diagram
+```mermaid
+graph TD;
+Box
+Capped
+Cylinder
+Group
+Line
+Random
+Shell
+Sphere
+Surface
+Union
+cdata
+Sphere --> Shell
+object --> Box
+object --> Capped
+object --> Cylinder
+object --> Group
+object --> Line
+object --> Random
+object --> Sphere
+object --> Surface
+object --> Union
+object --> cdata
+```
+
+**Class Examples:** Not available.
+
+### Methods Table
+
+| Class | Method | Docstring First Paragraph | # Lines | __version__ |
+|-------|---------|---------------------------|---------|-------------|
+| (module-level) | `box_triangulate` | Triangulate a unit box from (0,0,0) to (1,1,1) with spacings q1, q2, q3. Return a list of vertices and triangles. Triangles are oriented outward. | 39 |  |
+| (module-level) | `connect` | Create connections between triangles in a triangulated surface. Each triangle has 3 vertices. Return a list of connections for each tri. | 42 |  |
+| (module-level) | `cross` | Compute the cross product of vectors a and b (each 3D). | 9 |  |
+| (module-level) | `normal` | Compute the normal vector for a triangle with vertices x, y, z. Each vertex is a 3D coordinate [x, y, z]. | 10 |  |
+| (module-level) | `normalize` | Normalize vector a in-place to unit length. | 9 |  |
+| (module-level) | `vertex` | Add a vertex to the vertices list if not already present. Return the index of the vertex in the vertices list. | 12 |  |
+| `Box` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 13 |  |
+| `Box` | `area` |  | 15 |  |
+| `Box` | `bbox` |  | 2 |  |
+| `Box` | `command` |  | 2 |  |
+| `Box` | `inside` |  | 5 |  |
+| `Box` | `loc2d` | Return a random point on the surface, ignoring partial sums for now. This is a simplified approach. Adjust to handle 'area' fraction properly. | 15 |  |
+| `Box` | `triangulate` |  | 16 |  |
+| `Capped` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 14 |  |
+| `Capped` | `area` | Surface area of a capped cylinder = cylinder area + 2 * hemisphere discs. Approximate if needed. Or store partial sums if you want area-based loc2d. | 11 |  |
+| `Capped` | `bbox` |  | 10 |  |
+| `Capped` | `command` |  | 3 |  |
+| `Capped` | `inside` |  | 24 |  |
+| `Capped` | `loc2d` | Return a random location on the capped cylinder surface. | 6 |  |
+| `Capped` | `triangulate` |  | 43 |  |
+| `Cylinder` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 14 |  |
+| `Cylinder` | `area` | Cylinder area = 2 * (circle area) + side area = 2 * (πr²) + (2πr * length) But we store partial sums if needed. | 11 |  |
+| `Cylinder` | `bbox` |  | 11 |  |
+| `Cylinder` | `command` |  | 3 |  |
+| `Cylinder` | `inside` |  | 19 |  |
+| `Cylinder` | `loc2d` |  | 3 |  |
+| `Cylinder` | `triangulate` |  | 25 |  |
+| `Group` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 11 |  |
+| `Group` | `bbox` | Return bounding box of all particles in this group. | 10 |  |
+| `Group` | `center` | Set center of the group explicitly or to the midpoint of bounding box. | 13 |  |
+| `Line` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 6 |  |
+| `Line` | `addline` | Add a single line segment (x1, y1, z1, x2, y2, z2). | 6 |  |
+| `Line` | `bbox` | Return bounding box around all line segments. | 10 |  |
+| `Random` | `__call__` | Call self as a function. | 6 |  |
+| `Random` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 |  |
+| `Shell` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 5 |  |
+| `Shell` | `area` |  | 2 |  |
+| `Shell` | `bbox` |  | 3 |  |
+| `Shell` | `command` |  | 2 |  |
+| `Shell` | `inside` |  | 8 |  |
+| `Shell` | `loc2d` | Return a random location on the sphere surface. | 16 |  |
+| `Shell` | `triangulate` |  | 21 |  |
+| `Sphere` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 12 |  |
+| `Sphere` | `area` |  | 2 |  |
+| `Sphere` | `bbox` |  | 3 |  |
+| `Sphere` | `command` |  | 2 |  |
+| `Sphere` | `inside` |  | 7 |  |
+| `Sphere` | `loc2d` | Return a random location on the sphere surface. | 16 |  |
+| `Sphere` | `triangulate` |  | 21 |  |
+| `Surface` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 15 |  |
+| `Surface` | `area` | Return total surface area of this surface. By default, sum the area of each triangle. | 19 |  |
+| `Surface` | `bbox` | Return bounding box of all vertices in this surface. | 10 |  |
+| `Surface` | `center` | Set center of the surface explicitly or to the midpoint of bounding box. | 13 |  |
+| `Surface` | `inside` | Check if point (x, y, z) is inside this closed surface. By default, return False (0). Implement if needed. | 7 |  |
+| `Surface` | `inside_prep` | Prepare binning if you want to accelerate inside() checks. Depending on usage, implement as needed. | 6 |  |
+| `Surface` | `loc2d` | Return a random point on the surface, given a pre-chosen 'area' fraction. By default, pick from triangles in ascending area order. Must implement your own partial sums if you want a strict area-based sampling. | 25 |  |
+| `Union` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 11 |  |
+| `Union` | `area` |  | 6 |  |
+| `Union` | `bbox` |  | 13 |  |
+| `Union` | `inside` |  | 6 |  |
+| `Union` | `loc2d` | Return a random location on the union surface, if needed. This would require partial sums across each child's area. For brevity, pick first child. | 9 |  |
+| `cdata` | `__init__` | Initialize the cdata object. | 14 |  |
+| `cdata` | `append` | Append selected objects to an existing ChemCell data file. | 19 |  |
+| `cdata` | `bbox` | Compute the bounding box that encloses all selected objects. | 21 |  |
+| `cdata` | `bins` | Set binning parameters for a surface. | 14 |  |
+| `cdata` | `box` | Create a box region. | 17 |  |
+| `cdata` | `cap` | Create a capped-cylinder region. | 17 |  |
+| `cdata` | `center` | Set the center point of an object. | 12 |  |
+| `cdata` | `copy` | Create a deep copy of an object with a new identifier. | 17 |  |
+| `cdata` | `cyl` | Create a cylinder region. | 17 |  |
+| `cdata` | `delete` | Delete objects from the cdata. | 17 |  |
+| `cdata` | `filewrite` | Write objects to an already opened data file. | 32 |  |
+| `cdata` | `findtime` | Find the index of a given timestep. | 16 |  |
+| `cdata` | `iterator` | Iterator method compatible with equivalent dump calls. | 13 |  |
+| `cdata` | `join` | Join multiple objects of the same style into a new object. | 75 |  |
+| `cdata` | `lbox` | Create a line object with 12 lines representing a box. | 32 |  |
+| `cdata` | `line` | Create a line object with a single line. | 20 |  |
+| `cdata` | `maxbox` | Return the bounding box that encloses all selected objects. | 8 |  |
+| `cdata` | `part` | Create a group with N particles inside a specified object and optionally outside another. | 55 |  |
+| `cdata` | `part2d` | Create a group with N 2D particles on a specified surface. | 34 |  |
+| `cdata` | `partarray` | Create a 3D grid of particles. | 33 |  |
+| `cdata` | `partring` | Create a ring of N particles. | 45 |  |
+| `cdata` | `partsurf` | Change the surface assignment for a 2D group of particles. | 14 |  |
+| `cdata` | `project` | Project particles in group ID to the surface of object ID2. | 94 |  |
+| `cdata` | `q` | Set quality factors for a region's triangulation routine. | 13 |  |
+| `cdata` | `random` | Pick a random point on the surface of the specified object. | 18 |  |
+| `cdata` | `read` | Read ChemCell data files and populate objects. | 150 |  |
+| `cdata` | `rename` | Rename an object. | 16 |  |
+| `cdata` | `rotate` | Rotate an object so that its current axes align with new ones. | 64 |  |
+| `cdata` | `scale` | Scale an object by specified factors along each axis. | 21 |  |
+| `cdata` | `seed` | Set the random number generator seed. | 8 |  |
+| `cdata` | `select` | Select one or more objects. | 14 |  |
+| `cdata` | `shell` | Create a shell region. | 17 |  |
+| `cdata` | `sphere` | Create a sphere region. | 17 |  |
+| `cdata` | `surf` | Create a triangulated surface from a region object. | 26 |  |
+| `cdata` | `surfselect` | Create a triangulated surface by selecting triangles based on a test string. | 60 |  |
+| `cdata` | `surftri` | Create a triangulated surface from a list of triangle indices in another surface. | 41 |  |
+| `cdata` | `trans` | Translate an object by a displacement. | 26 |  |
+| `cdata` | `union` | Create a union object from a list of other objects. | 16 |  |
+| `cdata` | `unselect` | Unselect one or more objects. | 14 |  |
+| `cdata` | `viz` | Return list of atoms, bonds, tris, and lines for visualization. | 69 |  |
+| `cdata` | `write` | Write selected objects to a ChemCell data file. | 19 |  |
+
+## Module `pizza.converted.ldump3`
+
+### Class Inheritance Diagram
+```mermaid
+graph TD;
+Snap
+ldump
+object --> Snap
+object --> ldump
+```
+
+**[Class Examples for `pizza/converted/ldump3.py` (1)](class_examples.html#pizza_converted_ldump3)**
+
+### Methods Table
+
+| Class | Method | Docstring First Paragraph | # Lines | __version__ |
+|-------|---------|---------------------------|---------|-------------|
+| `Snap` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 5 |  |
+| `ldump` | `__init__` | Initialize the ldump object. | 32 |  |
+| `ldump` | `cull` | Remove duplicate snapshots based on time stamps. | 11 |  |
+| `ldump` | `findtime` | Find the index of a given timestep. | 17 |  |
+| `ldump` | `map` | Assign names to atom columns. | 13 |  |
+| `ldump` | `next` | Read the next snapshot in incremental mode. | 49 |  |
+| `ldump` | `owrap` | Wrap line end points associated with atoms through periodic boundaries. | 51 |  |
+| `ldump` | `read_all` | Read all snapshots from the list of dump files. | 36 |  |
+| `ldump` | `read_snapshot` | Read a single snapshot from the file. | 67 |  |
+| `ldump` | `time` | Get a list of all snapshot time stamps. | 8 |  |
+| `ldump` | `viz` | Return line segment information for visualization. | 63 |  |
+
+## Module `pizza.converted.mdump3`
+
+### Class Inheritance Diagram
+```mermaid
+graph TD;
+Snap
+eselect
+mdump
+tselect
+object --> Snap
+object --> eselect
+object --> mdump
+object --> tselect
+```
+
+**[Class Examples for `pizza/converted/mdump3.py` (1)](class_examples.html#pizza_converted_mdump3)**
+
+### Methods Table
+
+| Class | Method | Docstring First Paragraph | # Lines | __version__ |
+|-------|---------|---------------------------|---------|-------------|
+| (module-level) | `normal` | Compute the normal vector for a triangle defined by vertices x, y, z. | 25 |  |
+| `Snap` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 14 |  |
+| `eselect` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 |  |
+| `eselect` | `all` | Select all elements in all steps or in one specified step. | 29 |  |
+| `eselect` | `test` | Select elements based on a Python Boolean expression. | 66 |  |
+| `mdump` | `__init__` | Initialize the mdump object. | 36 |  |
+| `mdump` | `compare_time` | Comparator for sorting snapshots by time. | 17 |  |
+| `mdump` | `cull` | Remove duplicate snapshots based on time stamps and merge their data. | 33 |  |
+| `mdump` | `delete` | Delete non-selected snapshots. | 16 |  |
+| `mdump` | `iterator` | Iterator method compatible with equivalent dump calls. | 22 |  |
+| `mdump` | `map` | Assign names to element value columns. | 14 |  |
+| `mdump` | `mviz` | Return mesh visualization information for a snapshot, including nodes and elements. | 47 |  |
+| `mdump` | `next` | Read the next snapshot in incremental mode. | 54 |  |
+| `mdump` | `owrap` | Wrap line end points associated with atoms through periodic boundaries. | 52 |  |
+| `mdump` | `read_all` | Read all snapshots from the list of dump files. | 70 |  |
+| `mdump` | `read_snapshot` | Read a single snapshot from the file. | 94 |  |
+| `mdump` | `reference` | Ensure every snapshot has node and element connectivity information by referencing previous snapshots. | 30 |  |
+| `mdump` | `sort` | Sort snapshots by ID in all selected timesteps or one specified timestep. | 27 |  |
+| `mdump` | `sort_one` | Sort elements in a single snapshot by ID column. | 14 |  |
+| `mdump` | `time` | Get a list of all selected snapshot time stamps. | 8 |  |
+| `mdump` | `vecs` | Extract vector(s) of values for selected elements at a specific timestep. | 41 |  |
+| `mdump` | `viz` | Return mesh visualization information for a snapshot. | 159 |  |
+| `tselect` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 |  |
+| `tselect` | `all` | Select all timesteps. | 10 |  |
+| `tselect` | `none` | Deselect all timesteps. | 9 |  |
+| `tselect` | `one` | Select only timestep N. | 18 |  |
+| `tselect` | `skip` | Select every Mth step. | 20 |  |
+| `tselect` | `test` | Select timesteps based on a Python Boolean expression. | 30 |  |
+
+## Module `pizza.converted.tdump3`
+
+### Class Inheritance Diagram
+```mermaid
+graph TD;
+Snap
+tdump
+object --> Snap
+object --> tdump
+```
+
+**[Class Examples for `pizza/converted/tdump3.py` (1)](class_examples.html#pizza_converted_tdump3)**
+
+### Methods Table
+
+| Class | Method | Docstring First Paragraph | # Lines | __version__ |
+|-------|---------|---------------------------|---------|-------------|
+| (module-level) | `normal` | Compute the normal vector for a triangle defined by vertices x, y, z. | 25 |  |
+| `Snap` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 5 |  |
+| `tdump` | `__init__` | Initialize the tdump object. | 32 |  |
+| `tdump` | `compare_time` | Comparator for sorting snapshots by time. | 17 |  |
+| `tdump` | `cull` | Remove duplicate snapshots based on time stamps. | 10 |  |
+| `tdump` | `findtime` | Find the index of a given timestep. | 17 |  |
+| `tdump` | `map` | Assign names to atom columns. | 14 |  |
+| `tdump` | `next` | Read the next snapshot in incremental mode. | 49 |  |
+| `tdump` | `owrap` | Wrap triangle corner points associated with atoms through periodic boundaries. | 60 |  |
+| `tdump` | `read_all` | Read all snapshots from the list of dump files. | 36 |  |
+| `tdump` | `read_snapshot` | Read a single snapshot from the file. | 67 |  |
+| `tdump` | `time` | Get a list of all snapshot time stamps. | 8 |  |
+| `tdump` | `viz` | Return triangle information for visualization. | 68 |  |
+
 ## Module `pizza.data3`
 
 ### Class Inheritance Diagram
@@ -245,28 +520,64 @@ object --> data
 object --> dump
 ```
 
-**[Class Examples for `pizza/data3.py` (1)](class_examples.html#pizza_data3)**
+**[Class Examples for `pizza/data3.py` (2)](class_examples.html#pizza_data3)**
 
 ### Methods Table
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| `data` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 138 | 0.99991 |
-| `data` | `__repr__` | Return repr(self). | 26 | 0.99991 |
-| `data` | `append` | append a new column: X.append("section",vectorofvalues,forceinteger=False,propertyname=None) | 37 | 0.99991 |
-| `data` | `delete` |  | 8 | 0.99991 |
-| `data` | `dispsection` | display section info: X.dispsection("sectionname") | 10 | 0.99991 |
-| `data` | `findtime` |  | 4 | 0.99991 |
-| `data` | `get` |  | 21 | 0.99991 |
-| `data` | `iterator` |  | 4 | 0.99991 |
-| `data` | `map` |  | 6 | 0.99991 |
-| `data` | `maxbox` |  | 5 | 0.99991 |
-| `data` | `maxtype` |  | 2 | 0.99991 |
-| `data` | `newxyz` |  | 16 | 0.99991 |
-| `data` | `reorder` | reorder columns: reorder("section",colidxfirst,colidxsecond,colidxthird,...) | 16 | 0.99991 |
-| `data` | `replace` | replace column values: replace("section",columnindex,vectorofvalues) with columnindex=1..ncolumns | 20 | 0.99991 |
-| `data` | `viz` |  | 61 | 0.99991 |
-| `data` | `write` |  | 20 | 0.99991 |
+| `data` | `__init__` | Initialize a data object. | 33 | 1.0 |
+| `data` | `__repr__` | Return a string representation of the data object. | 32 | 1.0 |
+| `data` | `_init_from_dump` | Initialize the data object from a dump object. | 68 | 1.0 |
+| `data` | `_init_from_file` | Initialize the data object from a LAMMPS data file. | 84 | 1.0 |
+| `data` | `append` | Append a new column to a named section. | 52 | 1.0 |
+| `data` | `delete` | Delete a header value or section from the data object. | 18 | 1.0 |
+| `data` | `dispsection` | Display information about a section. | 22 | 1.0 |
+| `data` | `findtime` | Find the index of a given timestep. | 16 | 1.0 |
+| `data` | `get` | Extract information from data file fields. | 38 | 1.0 |
+| `data` | `iterator` | Iterator method compatible with other tools. | 13 | 1.0 |
+| `data` | `map` | Assign names to atom columns. | 18 | 1.0 |
+| `data` | `maxbox` | Return the box dimensions. | 13 | 1.0 |
+| `data` | `maxtype` | Return the number of atom types. | 10 | 1.0 |
+| `data` | `newxyz` | Replace x, y, z coordinates in the Atoms section with those from a dump object. | 28 | 1.0 |
+| `data` | `reorder` | Reorder columns in a data file section. | 30 | 1.0 |
+| `data` | `replace` | Replace a column in a named section with a vector of values. | 37 | 1.0 |
+| `data` | `viz` | Return visualization data for a specified snapshot. | 75 | 1.0 |
+| `data` | `write` | Write the data object to a LAMMPS data file. | 37 | 1.0 |
+
+## Module `pizza.data3_legacy`
+
+### Class Inheritance Diagram
+```mermaid
+graph TD;
+data
+dump
+object --> data
+object --> dump
+```
+
+**[Class Examples for `pizza/data3_legacy.py` (1)](class_examples.html#pizza_data3_legacy)**
+
+### Methods Table
+
+| Class | Method | Docstring First Paragraph | # Lines | __version__ |
+|-------|---------|---------------------------|---------|-------------|
+| `data` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 138 | 1.0 |
+| `data` | `__repr__` | Return repr(self). | 26 | 1.0 |
+| `data` | `append` | append a new column: X.append("section",vectorofvalues,forceinteger=False,propertyname=None) | 37 | 1.0 |
+| `data` | `delete` |  | 8 | 1.0 |
+| `data` | `dispsection` | display section info: X.dispsection("sectionname") | 10 | 1.0 |
+| `data` | `findtime` |  | 4 | 1.0 |
+| `data` | `get` |  | 21 | 1.0 |
+| `data` | `iterator` |  | 4 | 1.0 |
+| `data` | `map` |  | 6 | 1.0 |
+| `data` | `maxbox` |  | 5 | 1.0 |
+| `data` | `maxtype` |  | 2 | 1.0 |
+| `data` | `newxyz` |  | 16 | 1.0 |
+| `data` | `reorder` | reorder columns: reorder("section",colidxfirst,colidxsecond,colidxthird,...) | 16 | 1.0 |
+| `data` | `replace` | replace column values: replace("section",columnindex,vectorofvalues) with columnindex=1..ncolumns | 20 | 1.0 |
+| `data` | `viz` |  | 61 | 1.0 |
+| `data` | `write` |  | 20 | 1.0 |
 
 ## Module `pizza.dforcefield`
 
@@ -466,78 +777,147 @@ object --> dump
 object --> tselect
 ```
 
-**[Class Examples for `pizza/dump3.py` (1)](class_examples.html#pizza_dump3)**
+**[Class Examples for `pizza/dump3.py` (2)](class_examples.html#pizza_dump3)**
 
 ### Methods Table
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| `Frame` | `__eq__` | Return self==value. | 2 | 0.99991 |
-| `Frame` | `__ge__` | Return self>=value. | 2 | 0.99991 |
-| `Frame` | `__gt__` | Return self>value. | 2 | 0.99991 |
-| `Frame` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 0.99991 |
-| `Frame` | `__le__` | Return self<=value. | 2 | 0.99991 |
-| `Frame` | `__lt__` | Return self<value. | 2 | 0.99991 |
-| `Frame` | `__ne__` | Return self!=value. | 2 | 0.99991 |
-| `Frame` | `__repr__` | Return repr(self). | 6 | 0.99991 |
-| `Snap` | `__eq__` | Return self==value. | 2 | 0.99991 |
-| `Snap` | `__ge__` | Return self>=value. | 2 | 0.99991 |
-| `Snap` | `__gt__` | Return self>value. | 2 | 0.99991 |
-| `Snap` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 0.99991 |
-| `Snap` | `__le__` | Return self<=value. | 2 | 0.99991 |
-| `Snap` | `__lt__` | Return self<value. | 2 | 0.99991 |
-| `Snap` | `__ne__` | Return self!=value. | 2 | 0.99991 |
-| `Snap` | `__repr__` | Return repr(self). | 3 | 0.99991 |
-| `aselect` | `__init__` | private constructor (not to be used directly) | 3 | 0.99991 |
-| `aselect` | `all` | select all atoms: aselect.all() aselect.all(timestep) | 20 | 0.99991 |
-| `aselect` | `test` | " aselect.test(stringexpression [,timestep]) example: aselect.test("$y>0.4e-3 and $y<0.6e-3") | 71 | 0.99991 |
-| `dump` | `__add__` | merge dump objects of the same kind/type | 8 | 0.99991 |
-| `dump` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 31 | 0.99991 |
-| `dump` | `__repr__` | Return repr(self). | 12 | 0.99991 |
-| `dump` | `atom` |  | 29 | 0.99991 |
-| `dump` | `clone` |  | 16 | 0.99991 |
-| `dump` | `compare_atom` |  | 7 | 0.99991 |
-| `dump` | `compare_time` |  | 7 | 0.99991 |
-| `dump` | `cull` |  | 7 | 0.99991 |
-| `dump` | `delete` |  | 11 | 0.99991 |
-| `dump` | `extra` |  | 61 | 0.99991 |
-| `dump` | `findtime` |  | 5 | 0.99991 |
-| `dump` | `frame` | simplified class to access properties of a snapshot (INRAE\Olivier Vitrac) | 22 | 0.99991 |
-| `dump` | `iterator` |  | 9 | 0.99991 |
-| `dump` | `kind` | guessed kind of dump file based on column names (possibility to supply a personnalized list) (INRAE\Olivier Vitrac) | 31 | 0.99991 |
-| `dump` | `map` |  | 6 | 0.99991 |
-| `dump` | `maxbox` |  | 19 | 0.99991 |
-| `dump` | `maxtype` |  | 13 | 0.99991 |
-| `dump` | `minmax` |  | 16 | 0.99991 |
-| `dump` | `names2str` |  | 13 | 0.99991 |
-| `dump` | `newcolumn` |  | 12 | 0.99991 |
-| `dump` | `next` |  | 40 | 0.99991 |
-| `dump` | `owrap` |  | 30 | 0.99991 |
-| `dump` | `read_all` |  | 53 | 0.99991 |
-| `dump` | `read_snapshot` | low-level method to read a snapshot from a file identifier | 123 | 0.99991 |
-| `dump` | `realtime` | time as simulated: realtime() | 10 | 0.99991 |
-| `dump` | `scale` |  | 14 | 0.99991 |
-| `dump` | `scale_one` |  | 49 | 0.99991 |
-| `dump` | `scatter` |  | 42 | 0.99991 |
-| `dump` | `set` |  | 22 | 0.99991 |
-| `dump` | `setv` |  | 17 | 0.99991 |
-| `dump` | `sort` |  | 17 | 0.99991 |
-| `dump` | `sort_one` |  | 6 | 0.99991 |
-| `dump` | `spread` |  | 24 | 0.99991 |
-| `dump` | `time` | timestep as stored: time() | 10 | 0.99991 |
-| `dump` | `unscale` |  | 14 | 0.99991 |
-| `dump` | `unscale_one` |  | 39 | 0.99991 |
-| `dump` | `unwrap` |  | 18 | 0.99991 |
-| `dump` | `vecs` | vecs(timeste,columname1,columname2,...) Examples: tab = vecs(timestep,"id","x","y") tab = vecs(timestep,["id","x","y"],"z") X.vecs(X.time()[50],"vx","vy") | 35 | 0.99991 |
-| `dump` | `viz` |  | 94 | 0.99991 |
-| `dump` | `wrap` |  | 18 | 0.99991 |
-| `dump` | `write` |  | 55 | 0.99991 |
-| `tselect` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 0.99991 |
-| `tselect` | `all` |  | 7 | 0.99991 |
-| `tselect` | `none` |  | 6 | 0.99991 |
-| `tselect` | `one` |  | 9 | 0.99991 |
-| `tselect` | `skip` |  | 14 | 0.99991 |
-| `tselect` | `test` |  | 19 | 0.99991 |
+| `Frame` | `__eq__` | Return self==value. | 2 | 1.0 |
+| `Frame` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 4 | 1.0 |
+| `Frame` | `__lt__` | Return self<value. | 2 | 1.0 |
+| `Frame` | `__repr__` | Return repr(self). | 3 | 1.0 |
+| `Snap` | `__eq__` | Return self==value. | 2 | 1.0 |
+| `Snap` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 9 | 1.0 |
+| `Snap` | `__lt__` | Return self<value. | 2 | 1.0 |
+| `Snap` | `__repr__` | Return repr(self). | 2 | 1.0 |
+| `aselect` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 1.0 |
+| `aselect` | `all` | Select all atoms in all timesteps or a specific timestep. | 24 | 1.0 |
+| `aselect` | `test` | Select atoms based on a boolean expression. | 55 | 1.0 |
+| `dump` | `__add__` | Merge two dump objects of the same type. | 14 | 1.0 |
+| `dump` | `__init__` | Initialize a dump object. | 38 | 1.0 |
+| `dump` | `__repr__` | Return a string representation of the dump object. | 18 | 1.0 |
+| `dump` | `assign_column_names` | Assign column names based on the ATOMS section header. | 21 | 1.0 |
+| `dump` | `atom` | Extract values for a specific atom ID across all selected snapshots. | 39 | 1.0 |
+| `dump` | `clone` | Clone the value from a specific timestep's column to all selected snapshots for atoms with the same ID. | 31 | 1.0 |
+| `dump` | `cull` | Remove duplicate snapshots based on timestep. | 14 | 1.0 |
+| `dump` | `extra` | Extract bonds, tris, or lines from another object. | 52 | 1.0 |
+| `dump` | `findtime` | Find the index of a given timestep. | 17 | 1.0 |
+| `dump` | `iterator` | Iterator method to loop over selected snapshots. | 23 | 1.0 |
+| `dump` | `kind` | Guess the kind of dump file based on column names. | 26 | 1.0 |
+| `dump` | `maxbox` | Return the maximum box dimensions across all selected snapshots. | 21 | 1.0 |
+| `dump` | `maxtype` | Return the maximum atom type across all selected snapshots and atoms. | 23 | 1.0 |
+| `dump` | `minmax` | Find the minimum and maximum values for a specified column across all selected snapshots and atoms. | 32 | 1.0 |
+| `dump` | `names2str` | Convert column names to a sorted string based on their indices. | 11 | 1.0 |
+| `dump` | `newcolumn` | Add a new column to every snapshot and initialize it to zero. | 18 | 1.0 |
+| `dump` | `read_all` | Read all snapshots from each file in the file list. | 55 | 1.0 |
+| `dump` | `read_snapshot` | Read a single snapshot from a file. | 61 | 1.0 |
+| `dump` | `realtime` | Return a list of selected snapshot real-time values. | 10 | 1.0 |
+| `dump` | `scatter` | Write each selected snapshot to a separate dump file with timestep suffix. | 30 | 1.0 |
+| `dump` | `set` | Set a column value using an equation for all selected snapshots and atoms. | 39 | 1.0 |
+| `dump` | `setv` | Set a column value using a vector of values for all selected snapshots and atoms. | 24 | 1.0 |
+| `dump` | `sort` | Sort atoms or snapshots. | 31 | 1.0 |
+| `dump` | `spread` | Spread values from an old column into a new column as integers from 1 to n based on their relative positions. | 30 | 1.0 |
+| `dump` | `time` | Return a list of selected snapshot timesteps. | 10 | 1.0 |
+| `dump` | `vecs` | Extract values for selected atoms at a specific timestep. | 36 | 1.0 |
+| `dump` | `viz` | Return visualization data for a specified snapshot. | 85 | 1.0 |
+| `dump` | `write` | Write the dump object to a LAMMPS dump file. | 33 | 1.0 |
+| `tselect` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 1.0 |
+| `tselect` | `all` | Select all timesteps. | 9 | 1.0 |
+| `tselect` | `none` | Deselect all timesteps. | 8 | 1.0 |
+| `tselect` | `one` | Select only a specific timestep. | 18 | 1.0 |
+| `tselect` | `skip` | Select every Mth timestep. | 20 | 1.0 |
+| `tselect` | `test` | Select timesteps based on a boolean expression. | 23 | 1.0 |
+
+## Module `pizza.dump3_legacy`
+
+### Class Inheritance Diagram
+```mermaid
+graph TD;
+Frame
+Snap
+aselect
+dump
+tselect
+object --> Frame
+object --> Snap
+object --> aselect
+object --> dump
+object --> tselect
+```
+
+**[Class Examples for `pizza/dump3_legacy.py` (1)](class_examples.html#pizza_dump3_legacy)**
+
+### Methods Table
+
+| Class | Method | Docstring First Paragraph | # Lines | __version__ |
+|-------|---------|---------------------------|---------|-------------|
+| `Frame` | `__eq__` | Return self==value. | 2 | 1.0 |
+| `Frame` | `__ge__` | Return self>=value. | 2 | 1.0 |
+| `Frame` | `__gt__` | Return self>value. | 2 | 1.0 |
+| `Frame` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 1.0 |
+| `Frame` | `__le__` | Return self<=value. | 2 | 1.0 |
+| `Frame` | `__lt__` | Return self<value. | 2 | 1.0 |
+| `Frame` | `__ne__` | Return self!=value. | 2 | 1.0 |
+| `Frame` | `__repr__` | Return repr(self). | 6 | 1.0 |
+| `Snap` | `__eq__` | Return self==value. | 2 | 1.0 |
+| `Snap` | `__ge__` | Return self>=value. | 2 | 1.0 |
+| `Snap` | `__gt__` | Return self>value. | 2 | 1.0 |
+| `Snap` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 1.0 |
+| `Snap` | `__le__` | Return self<=value. | 2 | 1.0 |
+| `Snap` | `__lt__` | Return self<value. | 2 | 1.0 |
+| `Snap` | `__ne__` | Return self!=value. | 2 | 1.0 |
+| `Snap` | `__repr__` | Return repr(self). | 3 | 1.0 |
+| `aselect` | `__init__` | private constructor (not to be used directly) | 3 | 1.0 |
+| `aselect` | `all` | select all atoms: aselect.all() aselect.all(timestep) | 20 | 1.0 |
+| `aselect` | `test` | " aselect.test(stringexpression [,timestep]) example: aselect.test("$y>0.4e-3 and $y<0.6e-3") | 71 | 1.0 |
+| `dump` | `__add__` | merge dump objects of the same kind/type | 8 | 1.0 |
+| `dump` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 31 | 1.0 |
+| `dump` | `__repr__` | Return repr(self). | 12 | 1.0 |
+| `dump` | `atom` |  | 29 | 1.0 |
+| `dump` | `clone` |  | 16 | 1.0 |
+| `dump` | `compare_atom` |  | 7 | 1.0 |
+| `dump` | `compare_time` |  | 7 | 1.0 |
+| `dump` | `cull` |  | 7 | 1.0 |
+| `dump` | `delete` |  | 11 | 1.0 |
+| `dump` | `extra` |  | 61 | 1.0 |
+| `dump` | `findtime` |  | 5 | 1.0 |
+| `dump` | `frame` | simplified class to access properties of a snapshot (INRAE\Olivier Vitrac) | 22 | 1.0 |
+| `dump` | `iterator` |  | 9 | 1.0 |
+| `dump` | `kind` | guessed kind of dump file based on column names (possibility to supply a personnalized list) (INRAE\Olivier Vitrac) | 31 | 1.0 |
+| `dump` | `map` |  | 6 | 1.0 |
+| `dump` | `maxbox` |  | 19 | 1.0 |
+| `dump` | `maxtype` |  | 13 | 1.0 |
+| `dump` | `minmax` |  | 16 | 1.0 |
+| `dump` | `names2str` |  | 13 | 1.0 |
+| `dump` | `newcolumn` |  | 12 | 1.0 |
+| `dump` | `next` |  | 40 | 1.0 |
+| `dump` | `owrap` |  | 30 | 1.0 |
+| `dump` | `read_all` |  | 53 | 1.0 |
+| `dump` | `read_snapshot` | low-level method to read a snapshot from a file identifier | 123 | 1.0 |
+| `dump` | `realtime` | time as simulated: realtime() | 10 | 1.0 |
+| `dump` | `scale` |  | 14 | 1.0 |
+| `dump` | `scale_one` |  | 49 | 1.0 |
+| `dump` | `scatter` |  | 42 | 1.0 |
+| `dump` | `set` |  | 22 | 1.0 |
+| `dump` | `setv` |  | 17 | 1.0 |
+| `dump` | `sort` |  | 17 | 1.0 |
+| `dump` | `sort_one` |  | 6 | 1.0 |
+| `dump` | `spread` |  | 24 | 1.0 |
+| `dump` | `time` | timestep as stored: time() | 10 | 1.0 |
+| `dump` | `unscale` |  | 14 | 1.0 |
+| `dump` | `unscale_one` |  | 39 | 1.0 |
+| `dump` | `unwrap` |  | 18 | 1.0 |
+| `dump` | `vecs` | vecs(timeste,columname1,columname2,...) Examples: tab = vecs(timestep,"id","x","y") tab = vecs(timestep,["id","x","y"],"z") X.vecs(X.time()[50],"vx","vy") | 35 | 1.0 |
+| `dump` | `viz` |  | 94 | 1.0 |
+| `dump` | `wrap` |  | 18 | 1.0 |
+| `dump` | `write` |  | 55 | 1.0 |
+| `tselect` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 1.0 |
+| `tselect` | `all` |  | 7 | 1.0 |
+| `tselect` | `none` |  | 6 | 1.0 |
+| `tselect` | `one` |  | 9 | 1.0 |
+| `tselect` | `skip` |  | 14 | 1.0 |
+| `tselect` | `test` |  | 19 | 1.0 |
 
 ## Module `pizza.forcefield`
 

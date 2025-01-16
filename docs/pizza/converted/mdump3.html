@@ -1,0 +1,3732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>mdump3 API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>mdump3</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+
+__all__ = [&#39;Snap&#39;, &#39;eselect&#39;, &#39;mdump&#39;, &#39;normal&#39;, &#39;tselect&#39;]
+# mdump3.py
+
+&#34;&#34;&#34;
+mdump3.py
+
+Module converted from Python 2.x to Python 3.x.
+
+mdump tool
+
+Read, write, and manipulate mesh dump files for visualization purposes.
+
+## Usage
+
+    m = mdump(&#34;mesh.one&#34;)                          # Read one or more mesh dump files
+    m = mdump(&#34;mesh.1 mesh.2.gz&#34;)                  # Can handle gzipped files
+    m = mdump(&#34;mesh.*&#34;)                             # Wildcard expands to multiple files
+    m = mdump(&#34;mesh.*&#34;, 0)                          # Two arguments: store filenames but don&#39;t read
+
+    time = m.next()                                 # Read next snapshot from dump files
+
+    m.map(2, &#34;temperature&#34;)                         # Assign names to element value columns
+
+    m.tselect.all()                                 # Select all timesteps
+    m.tselect.one(N)                                # Select only timestep N
+    m.tselect.none()                                # Deselect all timesteps
+    m.tselect.skip(M)                               # Select every Mth step
+    m.tselect.test(&#34;$t &gt;= 100 and $t &lt; 10000&#34;)      # Select matching timesteps
+    m.delete()                                      # Delete non-selected timesteps
+
+    m.eselect.all()                                 # Select all elements in all steps
+    m.eselect.all(N)                                # Select all elements in one step
+    m.eselect.test(&#34;$id &gt; 100 and $type == 2&#34;)      # Select matching elements in all steps
+    m.eselect.test(&#34;$id &gt; 100 and $type == 2&#34;, N)  # Select matching elements in one step
+
+    t = m.time()                                     # Return vector of selected timestep values
+    fx, fy, ... = m.vecs(1000, &#34;fx&#34;, &#34;fy&#34;, ...)     # Return vector(s) for timestep N
+
+    index, time, flag = m.iterator(0/1)             # Loop over mesh dump snapshots
+    time, box, atoms, bonds, tris, lines = m.viz(index)  # Return list of viz objects
+    nodes, elements, nvalues, evalues = m.mviz(index)    # Return list of mesh viz objects
+    m.etype = &#34;color&#34;                               # Set column returned as &#34;type&#34; by viz
+
+    m.owrap(...)                                    # Wrap lines to the same image as their atoms
+
+      - `owrap()` is called by dump tool&#39;s `owrap()`
+      - Useful for wrapping all molecule&#39;s atoms/lines the same so they are contiguous
+
+## Notes
+
+- Incomplete and duplicate snapshots are deleted.
+- No column name assignment or unscaling is performed unless explicitly mapped.
+- `viz()` and `mviz()` are tailored for visualization tools that require mesh and element information.
+- `owrap()` ensures periodic boundary conditions are maintained for line segments.
+
+## History
+
+- 11/06, Steve Plimpton (SNL): original version
+- 12/09, David Hart (SNL): allow use of NumPy or Numeric
+- 2025-01-17, INRAE\Olivier Vitrac conversion 
+
+## Dependencies
+
+- Python 3.x
+- `numpy` library (fallback to `Numeric` if `numpy` is not available)
+&#34;&#34;&#34;
+
+# History
+#   11/06, Steve Plimpton (SNL): original version
+#   12/09, David Hart (SNL): allow use of NumPy or Numeric
+# 2025-01-17, first conversion in connection with the update of pizza.dump3
+
+# Imports and external programs
+
+import sys
+import glob
+import re
+from os import popen
+from math import sqrt
+from copy import deepcopy
+import numpy as np
+
+# Define external dependency directly
+PIZZA_GUNZIP = &#34;gunzip&#34;
+
+# --------------------------------------------------------------------
+# Helper Classes and Functions
+
+class Snap:
+    &#34;&#34;&#34;
+    Represents a single snapshot from a mesh dump file.
+    
+    Attributes:
+        time (int): Time stamp of the snapshot.
+        tselect (int): 0 or 1 indicating if this snapshot is selected.
+        nselect (int): Number of selected elements in this snapshot.
+        nflag (int): 0 or 1 indicating if this snapshot has nodal coordinates.
+        eflag (int): 0 or 1-4 indicating the type of elements (tri, tet, square, cube).
+        nvalueflag (int): 0 or 1 indicating if this snapshot has nodal values.
+        evalueflag (int): 0 or 1 indicating if this snapshot has element values.
+        xlo, xhi, ylo, yhi, zlo, zhi (float): Box bounds.
+        nodes (numpy.ndarray): Array of node data.
+        elements (numpy.ndarray): Array of element data.
+        nvalues (numpy.ndarray): Array of node values.
+        evalues (numpy.ndarray): Array of element values.
+        eselect (numpy.ndarray): Array indicating selected elements.
+    &#34;&#34;&#34;
+    def __init__(self):
+        self.time = 0
+        self.tselect = 0
+        self.nselect = 0
+        self.nflag = 0
+        self.eflag = 0
+        self.nvalueflag = 0
+        self.evalueflag = 0
+        self.xlo = self.xhi = self.ylo = self.yhi = self.zlo = self.zhi = 0.0
+        self.nodes = None
+        self.elements = None
+        self.nvalues = None
+        self.evalues = None
+        self.eselect = None
+
+# --------------------------------------------------------------------
+# Function to compute the normal vector for a triangle with 3 vertices
+
+def normal(x, y, z):
+    &#34;&#34;&#34;
+    Compute the normal vector for a triangle defined by vertices x, y, z.
+    
+    Parameters:
+        x, y, z (list or tuple): Coordinates of the three vertices.
+    
+    Returns:
+        list: Normal vector [nx, ny, nz].
+    &#34;&#34;&#34;
+    v1 = [y[0] - x[0], y[1] - x[1], y[2] - x[2]]
+    v2 = [z[0] - y[0], z[1] - y[1], z[2] - y[2]]
+    
+    n = [
+        v1[1]*v2[2] - v1[2]*v2[1],
+        v1[2]*v2[0] - v1[0]*v2[2],
+        v1[0]*v2[1] - v1[1]*v2[0]
+    ]
+    
+    length = sqrt(n[0]**2 + n[1]**2 + n[2]**2)
+    if length == 0:
+        return [0.0, 0.0, 0.0]
+    n = [component / length for component in n]
+    
+    return n
+
+# --------------------------------------------------------------------
+# Time selection class
+
+class tselect:
+    &#34;&#34;&#34;
+    Time selection class for selecting timesteps in mdump.
+    &#34;&#34;&#34;
+    
+    def __init__(self, data):
+        self.data = data
+    
+    # --------------------------------------------------------------------
+    
+    def all(self):
+        &#34;&#34;&#34;
+        Select all timesteps.
+        &#34;&#34;&#34;
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 1
+        data.nselect = len(data.snaps)
+        data.eselect.all()
+        print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+    
+    # --------------------------------------------------------------------
+    
+    def one(self, n):
+        &#34;&#34;&#34;
+        Select only timestep N.
+        
+        Parameters:
+            n (int): Timestep to select.
+        &#34;&#34;&#34;
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 0
+        try:
+            i = data.findtime(n)
+            data.snaps[i].tselect = 1
+            data.nselect = 1
+            data.eselect.all()
+            print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+        except Exception as e:
+            print(e)
+    
+    # --------------------------------------------------------------------
+    
+    def none(self):
+        &#34;&#34;&#34;
+        Deselect all timesteps.
+        &#34;&#34;&#34;
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 0
+        data.nselect = 0
+        print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+    
+    # --------------------------------------------------------------------
+    
+    def skip(self, M):
+        &#34;&#34;&#34;
+        Select every Mth step.
+        
+        Parameters:
+            M (int): Interval for selecting timesteps.
+        &#34;&#34;&#34;
+        data = self.data
+        count = M - 1
+        for snap in data.snaps:
+            if not snap.tselect:
+                continue
+            count += 1
+            if count == M:
+                count = 0
+                continue
+            snap.tselect = 0
+            data.nselect -= 1
+        data.eselect.all()
+        print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+    
+    # --------------------------------------------------------------------
+    
+    def test(self, teststr):
+        &#34;&#34;&#34;
+        Select timesteps based on a Python Boolean expression.
+        
+        Parameters:
+            teststr (str): Boolean expression using $t for timestep value.
+                           Example: &#34;$t &gt;= 100 and $t &lt; 10000&#34;
+        &#34;&#34;&#34;
+        data = self.data
+        snaps = data.snaps
+        # Replace $t with snaps[i].time and compile the command
+        teststr_replaced = teststr.replace(&#34;$t&#34;, &#34;snap.time&#34;)
+        cmd = f&#34;flag = {teststr_replaced}&#34;
+        try:
+            ccmd = compile(cmd, &#39;&#39;, &#39;single&#39;)
+        except Exception as e:
+            print(f&#34;Error compiling test string: {e}&#34;)
+            return
+        for snap in snaps:
+            if not snap.tselect:
+                continue
+            try:
+                exec(ccmd, {&#34;snap&#34;: snap})
+                if not flag:
+                    snap.tselect = 0
+                    data.nselect -= 1
+            except Exception as e:
+                print(f&#34;Error executing test string on timestep {snap.time}: {e}&#34;)
+        data.eselect.all()
+        print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+
+# --------------------------------------------------------------------
+# Element selection class
+
+class eselect:
+    &#34;&#34;&#34;
+    Element selection class for selecting elements within timesteps in mdump.
+    &#34;&#34;&#34;
+    
+    def __init__(self, data):
+        self.data = data
+    
+    # --------------------------------------------------------------------
+    
+    def all(self, *args):
+        &#34;&#34;&#34;
+        Select all elements in all steps or in one specified step.
+        
+        Parameters:
+            *args: If provided, selects all elements in the specified timestep.
+                   Example: all(N) selects all elements in timestep N.
+        &#34;&#34;&#34;
+        data = self.data
+        if len(args) == 0:
+            # Select all elements in all selected timesteps
+            for snap in data.snaps:
+                if not snap.tselect:
+                    continue
+                if snap.eflag:
+                    snap.eselect[:] = 1
+                    snap.nselect = snap.nelements
+        else:
+            # Select all elements in one specified timestep
+            try:
+                n = args[0]
+                i = data.findtime(n)
+                snap = data.snaps[i]
+                if snap.eflag:
+                    snap.eselect[:] = 1
+                    snap.nselect = snap.nelements
+            except Exception as e:
+                print(e)
+        print(f&#34;Elements selected. Total selected elements: {data.eselect.count_selected()}&#34;)
+    
+    # --------------------------------------------------------------------
+    
+    def test(self, teststr, *args):
+        &#34;&#34;&#34;
+        Select elements based on a Python Boolean expression.
+        
+        Parameters:
+            teststr (str): Boolean expression using $ for element attributes.
+                           Example: &#34;$id &gt; 100 and $type == 2&#34;
+            *args: If provided, applies the test to elements in the specified timestep.
+        &#34;&#34;&#34;
+        data = self.data
+        snaps = data.snaps
+        # Replace $var with snap.elements[i][var_index]
+        pattern = r&#34;\$\w+&#34;
+        matches = re.findall(pattern, teststr)
+        for match in matches:
+            name = match[1:]
+            if name not in data.names:
+                print(f&#34;Unknown column name: {name}&#34;)
+                return
+            column = data.names[name]
+            teststr = teststr.replace(match, f&#34;snap.elements[i][{column}]&#34;)
+        cmd = f&#34;flag = {teststr}&#34;
+        try:
+            ccmd = compile(cmd, &#39;&#39;, &#39;single&#39;)
+        except Exception as e:
+            print(f&#34;Error compiling test string: {e}&#34;)
+            return
+        
+        if len(args) == 0:
+            # Apply test to all selected timesteps
+            for snap in snaps:
+                if not snap.tselect:
+                    continue
+                for i in range(snap.nelements):
+                    if not snap.eselect[i]:
+                        continue
+                    try:
+                        exec(ccmd, {&#34;snap&#34;: snap, &#34;i&#34;: i})
+                        if not flag:
+                            snap.eselect[i] = 0
+                            snap.nselect -= 1
+                    except Exception as e:
+                        print(f&#34;Error executing test string on element {i} in timestep {snap.time}: {e}&#34;)
+            print(f&#34;Elements selected. Total selected elements: {data.eselect.count_selected()}&#34;)
+        else:
+            # Apply test to a specific timestep
+            try:
+                n = args[0]
+                i = data.findtime(n)
+                snap = snaps[i]
+                if not snap.tselect:
+                    print(f&#34;Timestep {n} is not selected.&#34;)
+                    return
+                for j in range(snap.nelements):
+                    if not snap.eselect[j]:
+                        continue
+                    try:
+                        exec(ccmd, {&#34;snap&#34;: snap, &#34;i&#34;: j})
+                        if not flag:
+                            snap.eselect[j] = 0
+                            snap.nselect -= 1
+                    except Exception as e:
+                        print(f&#34;Error executing test string on element {j} in timestep {snap.time}: {e}&#34;)
+                print(f&#34;Elements selected. Total selected elements in timestep {n}: {snap.nselect}&#34;)
+            except Exception as e:
+                print(e)
+
+# --------------------------------------------------------------------
+# ldump Class Definition
+
+class mdump:
+    &#34;&#34;&#34;
+    mdump class for reading, writing, and manipulating mesh dump files.
+    &#34;&#34;&#34;
+    
+    # --------------------------------------------------------------------
+    
+    def __init__(self, *args):
+        &#34;&#34;&#34;
+        Initialize the mdump object.
+        
+        Parameters:
+            *args: Variable length argument list.
+                   - If one argument, it&#39;s the list of files to read.
+                   - If two arguments, the second argument indicates incremental reading.
+        &#34;&#34;&#34;
+        self.snaps = []
+        self.nsnaps = 0
+        self.nselect = 0
+        self.names = {}
+        self.tselect = tselect(self)
+        self.eselect = eselect(self)
+        self.etype = &#34;&#34;
+        
+        # flist = list of all dump file names
+        if len(args) == 0:
+            raise Exception(&#34;No dump files specified for mdump.&#34;)
+        
+        words = args[0].split()
+        self.flist = []
+        for word in words:
+            self.flist += glob.glob(word)
+        
+        if len(self.flist) == 0 and len(args) == 1:
+            raise Exception(&#34;No dump file specified.&#34;)
+        
+        if len(args) == 1:
+            self.increment = 0
+            self.read_all()
+        else:
+            self.increment = 1
+            self.nextfile = 0
+            self.eof = 0
+    
+    # --------------------------------------------------------------------
+    
+    def read_all(self):
+        &#34;&#34;&#34;
+        Read all snapshots from the list of dump files.
+        &#34;&#34;&#34;
+        for file in self.flist:
+            # Test for gzipped file
+            if file.endswith(&#34;.gz&#34;):
+                try:
+                    f = popen(f&#34;{PIZZA_GUNZIP} -c {file}&#34;, &#39;r&#39;)
+                except Exception as e:
+                    print(f&#34;Error opening gzipped file {file}: {e}&#34;)
+                    continue
+            else:
+                try:
+                    f = open(file, &#39;r&#39;)
+                except Exception as e:
+                    print(f&#34;Error opening file {file}: {e}&#34;)
+                    continue
+    
+            # Read all snapshots in the current file
+            while True:
+                snap = self.read_snapshot(f)
+                if not snap:
+                    break
+                self.snaps.append(snap)
+                print(snap.time, end=&#39; &#39;)
+                sys.stdout.flush()
+    
+            f.close()
+        print()
+    
+        # Sort entries by timestep and remove duplicates
+        self.snaps.sort(key=lambda x: x.time)
+        self.cull()
+    
+        # Sort all node, element, nvalue, evalue arrays by ID
+        for snap in self.snaps:
+            if snap.nflag and snap.nodes is not None:
+                array = snap.nodes
+                ids = array[:, 0]
+                ordering = np.argsort(ids)
+                for i in range(array.shape[1]):
+                    array[:, i] = np.take(array[:, i], ordering)
+            if snap.eflag and snap.elements is not None:
+                array = snap.elements
+                ids = array[:, 0]
+                ordering = np.argsort(ids)
+                for i in range(array.shape[1]):
+                    array[:, i] = np.take(array[:, i], ordering)
+            if snap.nvalueflag and snap.nvalues is not None:
+                array = snap.nvalues
+                ids = array[:, 0]
+                ordering = np.argsort(ids)
+                for i in range(array.shape[1]):
+                    array[:, i] = np.take(array[:, i], ordering)
+            if snap.evalueflag and snap.evalues is not None:
+                array = snap.evalues
+                ids = array[:, 0]
+                ordering = np.argsort(ids)
+                for i in range(array.shape[1]):
+                    array[:, i] = np.take(array[:, i], ordering)
+    
+        # Reference definitions of nodes and elements in previous timesteps
+        self.reference()
+        
+        self.nsnaps = len(self.snaps)
+        print(f&#34;read {self.nsnaps} snapshots&#34;)
+    
+        # Select all timesteps and elements
+        self.tselect.all()
+    
+    # --------------------------------------------------------------------
+    # Read the next snapshot from the list of files (incremental reading)
+    
+    def next(self):
+        &#34;&#34;&#34;
+        Read the next snapshot in incremental mode.
+        
+        Returns:
+            int: Time stamp of the snapshot read, or -1 if no snapshots left.
+        &#34;&#34;&#34;
+        if not self.increment:
+            raise Exception(&#34;Cannot read incrementally with current mdump configuration.&#34;)
+    
+        # Read next snapshot in current file using eof as pointer
+        while self.nextfile &lt; len(self.flist):
+            file = self.flist[self.nextfile]
+            # Open the current file
+            if file.endswith(&#34;.gz&#34;):
+                try:
+                    f = popen(f&#34;{PIZZA_GUNZIP} -c {file}&#34;, &#39;r&#39;)
+                except Exception as e:
+                    print(f&#34;Error opening gzipped file {file}: {e}&#34;)
+                    self.nextfile += 1
+                    continue
+            else:
+                try:
+                    f = open(file, &#39;r&#39;)
+                except Exception as e:
+                    print(f&#34;Error opening file {file}: {e}&#34;)
+                    self.nextfile += 1
+                    continue
+    
+            # Seek to the last read position
+            f.seek(self.eof)
+            snap = self.read_snapshot(f)
+            if not snap:
+                # End of file reached
+                f.close()
+                self.nextfile += 1
+                self.eof = 0
+                continue
+            self.eof = f.tell()
+            f.close()
+                
+            # Check for duplicate time stamp
+            if any(existing_snap.time == snap.time for existing_snap in self.snaps):
+                continue  # Skip duplicate
+            self.snaps.append(snap)
+            snap.tselect = 1
+            snap.nselect = snap.nelements
+            if snap.eflag:
+                snap.eselect = np.ones(snap.nelements, dtype=int)
+            self.nsnaps += 1
+            self.nselect += 1
+            return snap.time
+    
+        return -1  # No snapshots left
+    
+    # --------------------------------------------------------------------
+    # Read a single snapshot from a file
+    
+    def read_snapshot(self, f):
+        &#34;&#34;&#34;
+        Read a single snapshot from the file.
+        
+        Parameters:
+            f (file object): Opened file object to read from.
+        
+        Returns:
+            Snap: Snapshot object, or None if failed.
+        &#34;&#34;&#34;
+        try:
+            snap = Snap()
+            # Read and discard the first line (usually a comment or header)
+            item = f.readline()
+            if not item:
+                return None
+            # Read time stamp
+            line = f.readline()
+            if not line:
+                return None
+            snap.time = int(line.strip())
+            # Read snapshot type
+            line = f.readline()
+            if not line:
+                return None
+            if &#34;NUMBER OF NODES&#34; in line:
+                snap.nflag = 1
+            elif &#34;NUMBER OF TRIANGLES&#34; in line:
+                snap.eflag = 1
+            elif &#34;NUMBER OF TETS&#34; in line:
+                snap.eflag = 2
+            elif &#34;NUMBER OF SQUARES&#34; in line:
+                snap.eflag = 3
+            elif &#34;NUMBER OF CUBES&#34; in line:
+                snap.eflag = 4
+            elif &#34;NUMBER OF NODE VALUES&#34; in line:
+                snap.nvalueflag = 1
+            elif &#34;NUMBER OF ELEMENT VALUES&#34; in line:
+                snap.evalueflag = 1
+            else:
+                raise Exception(&#34;Unrecognized snapshot type in dump file.&#34;)
+            # Read number of nodes/elements/values
+            line = f.readline()
+            if not line:
+                return None
+            n = int(line.strip())
+    
+            if snap.eflag:
+                snap.eselect = np.zeros(n, dtype=int)
+    
+            if snap.nflag:
+                # Read box bounds
+                f.readline()  # Read past header
+                words = f.readline().split()
+                snap.xlo, snap.xhi = float(words[0]), float(words[1])
+                words = f.readline().split()
+                snap.ylo, snap.yhi = float(words[0]), float(words[1])
+                words = f.readline().split()
+                snap.zlo, snap.zhi = float(words[0]), float(words[1])
+                
+            f.readline()  # Read past another header
+    
+            if n:
+                # Read node/element/value data
+                words = f.readline().split()
+                ncol = len(words)
+                data = []
+                data.append([float(value) for value in words])
+                for _ in range(1, n):
+                    words = f.readline().split()
+                    if not words:
+                        break
+                    data.append([float(value) for value in words])
+                values = np.array(data, dtype=float)
+            else:
+                values = None
+    
+            if snap.nflag:
+                snap.nodes = values
+                snap.nnodes = n
+            elif snap.eflag:
+                snap.elements = values
+                snap.nelements = n
+                snap.eselect = np.zeros(n, dtype=int)  # Initialize element selection
+            elif snap.nvalueflag:
+                snap.nvalues = values
+                snap.nnvalues = n
+            elif snap.evalueflag:
+                snap.evalues = values
+                snap.nevalues = n
+            return snap
+        except Exception as e:
+            print(f&#34;Error reading snapshot: {e}&#34;)
+            return None
+    
+    # --------------------------------------------------------------------
+    # Map atom column names
+    
+    def map(self, *pairs):
+        &#34;&#34;&#34;
+        Assign names to element value columns.
+        
+        Parameters:
+            *pairs: Pairs of (column_number, &#34;column_name&#34;)
+                   Example: map(2, &#34;temperature&#34;)
+        &#34;&#34;&#34;
+        if len(pairs) % 2 != 0:
+            raise Exception(&#34;mdump map() requires pairs of mappings.&#34;)
+        for i in range(0, len(pairs), 2):
+            col_num = pairs[i]
+            col_name = pairs[i + 1]
+            self.names[col_name] = col_num - 1  # Zero-based indexing
+    
+    # --------------------------------------------------------------------
+    # Delete unselected snapshots
+    
+    def delete(self):
+        &#34;&#34;&#34;
+        Delete non-selected snapshots.
+        &#34;&#34;&#34;
+        ndel = 0
+        selected_snaps = []
+        for snap in self.snaps:
+            if snap.tselect:
+                selected_snaps.append(snap)
+            else:
+                ndel += 1
+        self.snaps = selected_snaps
+        self.nsnaps = len(self.snaps)
+        self.nselect = sum(snap.tselect for snap in self.snaps)
+        print(f&#34;{ndel} snapshots deleted&#34;)
+        print(f&#34;{self.nsnaps} snapshots remaining&#34;)
+    
+    # --------------------------------------------------------------------
+    # Sort snapshots by time stamp
+    
+    def sort(self, *args):
+        &#34;&#34;&#34;
+        Sort snapshots by ID in all selected timesteps or one specified timestep.
+        
+        Parameters:
+            *args: If provided, sorts elements in the specified timestep.
+        &#34;&#34;&#34;
+        if len(args) == 0:
+            print(&#34;Sorting selected snapshots ...&#34;)
+            if &#34;id&#34; not in self.names:
+                print(&#34;Column &#39;id&#39; not mapped. Use m.map() to assign column names.&#34;)
+                return
+            id_col = self.names[&#34;id&#34;]
+            for snap in self.snaps:
+                if snap.tselect:
+                    self.sort_one(snap, id_col)
+        else:
+            try:
+                n = args[0]
+                i = self.findtime(n)
+                if &#34;id&#34; not in self.names:
+                    print(&#34;Column &#39;id&#39; not mapped. Use m.map() to assign column names.&#34;)
+                    return
+                id_col = self.names[&#34;id&#34;]
+                self.sort_one(self.snaps[i], id_col)
+            except Exception as e:
+                print(e)
+    
+    # --------------------------------------------------------------------
+    # Sort a single snapshot by ID column
+    
+    def sort_one(self, snap, id_col):
+        &#34;&#34;&#34;
+        Sort elements in a single snapshot by ID column.
+        
+        Parameters:
+            snap (Snap): The snapshot to sort.
+            id_col (int): The column index for &#39;id&#39;.
+        &#34;&#34;&#34;
+        if snap.elements is not None:
+            array = snap.elements
+            ids = array[:, id_col]
+            ordering = np.argsort(ids)
+            for i in range(array.shape[1]):
+                array[:, i] = np.take(array[:, i], ordering)
+    
+    # --------------------------------------------------------------------
+    # Return list of selected snapshot time stamps
+    
+    def time(self):
+        &#34;&#34;&#34;
+        Get a list of all selected snapshot time stamps.
+        
+        Returns:
+            list: List of time stamps.
+        &#34;&#34;&#34;
+        return [snap.time for snap in self.snaps if snap.tselect]
+    
+    # --------------------------------------------------------------------
+    # Extract vector(s) of values for selected elements at chosen timestep
+    
+    def vecs(self, n, *columns):
+        &#34;&#34;&#34;
+        Extract vector(s) of values for selected elements at a specific timestep.
+        
+        Parameters:
+            n (int): Timestep to extract vectors from.
+            *columns (str): Column names to extract.
+        
+        Returns:
+            list: List of vectors corresponding to the specified columns.
+        &#34;&#34;&#34;
+        try:
+            snap = self.snaps[self.findtime(n)]
+        except Exception as e:
+            print(e)
+            return []
+        if not snap.evalueflag:
+            raise Exception(&#34;Snapshot has no element values.&#34;)
+        
+        if len(columns) == 0:
+            raise Exception(&#34;No columns specified.&#34;)
+        
+        column_indices = []
+        for name in columns:
+            if name not in self.names:
+                print(f&#34;Unknown column name: {name}&#34;)
+                return []
+            column_indices.append(self.names[name])
+        
+        values = []
+        for col in column_indices:
+            vec = []
+            for i in range(snap.nelements):
+                if snap.eselect[i]:
+                    vec.append(snap.evalues[i][col])
+            values.append(vec)
+        
+        if len(values) == 1:
+            return values[0]
+        else:
+            return values
+    
+    # --------------------------------------------------------------------
+    # Sort snapshots on time stamp
+    # (Replaced by sort method using key=lambda x: x.time)
+    
+    def compare_time(self, a, b):
+        &#34;&#34;&#34;
+        Comparator for sorting snapshots by time.
+        
+        Parameters:
+            a (Snap): First snapshot.
+            b (Snap): Second snapshot.
+        
+        Returns:
+            int: -1 if a &lt; b, 1 if a &gt; b, 0 if equal.
+        &#34;&#34;&#34;
+        if a.time &lt; b.time:
+            return -1
+        elif a.time &gt; b.time:
+            return 1
+        else:
+            return 0
+    
+    # --------------------------------------------------------------------
+    # Delete successive snapshots with duplicate time stamp
+    # If have same timestamp, combine them if internal flags are different
+    
+    def cull(self):
+        &#34;&#34;&#34;
+        Remove duplicate snapshots based on time stamps and merge their data.
+        &#34;&#34;&#34;
+        i = 1
+        while i &lt; len(self.snaps):
+            if self.snaps[i].time == self.snaps[i-1].time:
+                if self.snaps[i].nflag and not self.snaps[i-1].nflag:
+                    self.snaps[i-1].nflag = 1
+                    self.snaps[i-1].nnodes = self.snaps[i].nnodes
+                    self.snaps[i-1].nodes = self.snaps[i].nodes
+                    self.snaps[i-1].xlo = self.snaps[i].xlo
+                    self.snaps[i-1].xhi = self.snaps[i].xhi
+                    self.snaps[i-1].ylo = self.snaps[i].ylo
+                    self.snaps[i-1].yhi = self.snaps[i].yhi
+                    self.snaps[i-1].zlo = self.snaps[i].zlo
+                    self.snaps[i-1].zhi = self.snaps[i].zhi
+                elif self.snaps[i].eflag and not self.snaps[i-1].eflag:
+                    self.snaps[i-1].eflag = self.snaps[i].eflag
+                    self.snaps[i-1].nelements = self.snaps[i].nelements
+                    self.snaps[i-1].elements = self.snaps[i].elements
+                    self.snaps[i-1].eselect = self.snaps[i].eselect
+                elif self.snaps[i].nvalueflag and not self.snaps[i-1].nvalueflag:
+                    self.snaps[i-1].nvalueflag = 1
+                    self.snaps[i-1].nnvalues = self.snaps[i].nnvalues
+                    self.snaps[i-1].nvalues = self.snaps[i].nvalues
+                elif self.snaps[i].evalueflag and not self.snaps[i-1].evalueflag:
+                    self.snaps[i-1].evalueflag = 1
+                    self.snaps[i-1].nevalues = self.snaps[i].nevalues
+                    self.snaps[i-1].evalues = self.snaps[i].evalues
+                del self.snaps[i]
+            else:
+                i += 1
+    
+    # --------------------------------------------------------------------
+    # Ensure every snapshot has node and element connectivity info
+    # If not, point it at the most recent snapshot that does
+    
+    def reference(self):
+        &#34;&#34;&#34;
+        Ensure every snapshot has node and element connectivity information by referencing previous snapshots.
+        &#34;&#34;&#34;
+        for i in range(len(self.snaps)):
+            if not self.snaps[i].nflag:
+                for j in range(i, -1, -1):
+                    if self.snaps[j].nflag:
+                        self.snaps[i].nflag = self.snaps[j].nflag
+                        self.snaps[i].nnodes = self.snaps[j].nnodes
+                        self.snaps[i].nodes = self.snaps[j].nodes
+                        self.snaps[i].xlo = self.snaps[j].xlo
+                        self.snaps[i].xhi = self.snaps[j].xhi
+                        self.snaps[i].ylo = self.snaps[j].ylo
+                        self.snaps[i].yhi = self.snaps[j].yhi
+                        self.snaps[i].zlo = self.snaps[j].zlo
+                        self.snaps[i].zhi = self.snaps[j].zhi
+                        break
+            if not self.snaps[i].nflag:
+                raise Exception(&#34;No nodal coordinates found in previous snapshots.&#34;)
+            if not self.snaps[i].eflag:
+                for j in range(i, -1, -1):
+                    if self.snaps[j].eflag:
+                        self.snaps[i].eflag = self.snaps[j].eflag
+                        self.snaps[i].nelements = self.snaps[j].nelements
+                        self.snaps[i].elements = self.snaps[j].elements
+                        self.snaps[i].eselect = self.snaps[j].eselect
+                        break
+            if not self.snaps[i].eflag:
+                raise Exception(&#34;No element connections found in previous snapshots.&#34;)
+    
+    # --------------------------------------------------------------------
+    # Iterate over selected snapshots
+    
+    def iterator(self, flag):
+        &#34;&#34;&#34;
+        Iterator method compatible with equivalent dump calls.
+        
+        Parameters:
+            flag (int): 0 for first call, 1 for subsequent calls.
+        
+        Returns:
+            tuple: (index, time, flag)
+                   index (int): Index within dump object (0 to # of snapshots)
+                   time (int): Timestep value
+                   flag (int): -1 when iteration is done, 1 otherwise
+        &#34;&#34;&#34;
+        if flag == 0:
+            self.iterate = -1  # Initialize iteration
+        self.iterate += 1
+        if self.iterate &gt;= self.nsnaps:
+            return (0, 0, -1)
+        snap = self.snaps[self.iterate]
+        if not snap.tselect:
+            return self.iterator(1)
+        return (self.iterate, snap.time, 1)
+    
+    # --------------------------------------------------------------------
+    # Return list of viz objects for a snapshot
+    
+    def viz(self, index, flag=0):
+        &#34;&#34;&#34;
+        Return mesh visualization information for a snapshot.
+        
+        Parameters:
+            index (int): Snapshot index or time stamp.
+            flag (int): If 1, interpret index as time stamp.
+        
+        Returns:
+            tuple: (time, box, atoms, bonds, tris, lines)
+                   atoms, bonds, lines are None.
+                   tris contain [id, type, x1, y1, z1, x2, y2, z2, x3, y3, z3, nx, ny, nz] for each triangle.
+        &#34;&#34;&#34;
+        if not flag:
+            isnap = index
+        else:
+            times = self.time()
+            n = len(times)
+            i = 0
+            while i &lt; n:
+                if times[i] &gt; index:
+                    break
+                i += 1
+            isnap = i - 1
+        if isnap &lt; 0 or isnap &gt;= self.nsnaps:
+            return (-1, None, None, None, None, None)
+        snap = self.snaps[isnap]
+        
+        time = snap.time
+        box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+        if self.etype == &#34;&#34;:
+            type_col = -1
+        else:
+            if self.etype not in self.names:
+                print(f&#34;Unknown etype column: {self.etype}&#34;)
+                type_col = -1
+            else:
+                type_col = self.names[self.etype]
+    
+        atoms = None
+        bonds = None
+    
+        tris = []
+        nodes = snap.nodes
+        for i in range(snap.nelements):
+            if not snap.eselect[i]:
+                continue
+            element = snap.elements[i]
+            if snap.evalueflag:
+                evalue = snap.evalues[i]
+            else:
+                evalue = None
+    
+            # Process based on element type
+            if snap.eflag == 1:
+                # Triangle
+                try:
+                    v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                    v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                    v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                except IndexError:
+                    print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                    continue
+                list_vertices = v1 + v2 + v3
+                n = normal(list_vertices[0:3], list_vertices[3:6], list_vertices[6:9])
+                if type_col == -1:
+                    tris.append([int(element[0]), int(element[1])] + list_vertices + n)
+                else:
+                    tris.append([int(element[0]), int(evalue[type_col])] + list_vertices + n)
+    
+            elif snap.eflag == 2:
+                # Tetrahedron - convert to 4 triangles
+                try:
+                    v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                    v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                    v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                    v4 = nodes[int(element[5]) - 1][2:5].tolist()
+                except IndexError:
+                    print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                    continue
+                tris_data = [
+                    v1 + v2 + v4,
+                    v2 + v3 + v4,
+                    v1 + v4 + v3,
+                    v1 + v3 + v2
+                ]
+                for tri_vertices in tris_data:
+                    n = normal(tri_vertices[0:3], tri_vertices[3:6], tri_vertices[6:9])
+                    if type_col == -1:
+                        tris.append([int(element[0]), int(element[1])] + tri_vertices + n)
+                    else:
+                        tris.append([int(element[0]), int(evalue[type_col])] + tri_vertices + n)
+    
+            elif snap.eflag == 3:
+                # Square - convert to 2 triangles
+                try:
+                    v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                    v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                    v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                    v4 = nodes[int(element[5]) - 1][2:5].tolist()
+                except IndexError:
+                    print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                    continue
+                tris_data = [
+                    v1 + v2 + v3,
+                    v1 + v3 + v4
+                ]
+                for tri_vertices in tris_data:
+                    n = normal(tri_vertices[0:3], tri_vertices[3:6], tri_vertices[6:9])
+                    if type_col == -1:
+                        tris.append([int(element[0]), int(element[1])] + tri_vertices + n)
+                    else:
+                        tris.append([int(element[0]), int(evalue[type_col])] + tri_vertices + n)
+    
+            elif snap.eflag == 4:
+                # Cube - convert to 12 triangles
+                try:
+                    v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                    v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                    v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                    v4 = nodes[int(element[5]) - 1][2:5].tolist()
+                    v5 = nodes[int(element[6]) - 1][2:5].tolist()
+                    v6 = nodes[int(element[7]) - 1][2:5].tolist()
+                    v7 = nodes[int(element[8]) - 1][2:5].tolist()
+                    v8 = nodes[int(element[9]) - 1][2:5].tolist()
+                except IndexError:
+                    print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                    continue
+                tris_data = [
+                    # Lower z face
+                    v1 + v3 + v2,
+                    v1 + v4 + v3,
+                    # Upper z face
+                    v5 + v6 + v7,
+                    v5 + v7 + v8,
+                    # Lower y face
+                    v1 + v2 + v6,
+                    v1 + v6 + v5,
+                    # Upper y face
+                    v4 + v7 + v3,
+                    v4 + v8 + v7,
+                    # Lower x face
+                    v1 + v8 + v4,
+                    v1 + v5 + v8,
+                    # Upper x face
+                    v2 + v3 + v7,
+                    v2 + v7 + v6
+                ]
+                for tri_vertices in tris_data:
+                    n = normal(tri_vertices[0:3], tri_vertices[3:6], tri_vertices[6:9])
+                    if type_col == -1:
+                        tris.append([int(element[0]), int(element[1])] + tri_vertices + n)
+                    else:
+                        tris.append([int(element[0]), int(evalue[type_col])] + tri_vertices + n)
+        
+        # Lines are not used in viz for mesh dumps
+        lines = []
+    
+        return (time, box, atoms, bonds, tris, lines)
+    
+    # --------------------------------------------------------------------
+    # Return lists of node/element info for snapshot isnap
+    # If called with flag, then index is timestep, so convert to snapshot index
+    
+    def mviz(self, index, flag=0):
+        &#34;&#34;&#34;
+        Return mesh visualization information for a snapshot, including nodes and elements.
+        
+        Parameters:
+            index (int): Snapshot index or time stamp.
+            flag (int): If 1, interpret index as time stamp.
+        
+        Returns:
+            tuple: (time, box, nodes, elements, nvalues, evalues)
+        &#34;&#34;&#34;
+        if not flag:
+            isnap = index
+        else:
+            times = self.time()
+            n = len(times)
+            i = 0
+            while i &lt; n:
+                if times[i] &gt; index:
+                    break
+                i += 1
+            isnap = i - 1
+        if isnap &lt; 0 or isnap &gt;= self.nsnaps:
+            return (-1, None, None, None, None, None)
+        snap = self.snaps[isnap]
+        
+        time = snap.time
+        box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+        nodes = []
+        elements = []
+        nvalues = []
+        evalues = []
+        
+        if snap.nflag and snap.nodes is not None:
+            for node in snap.nodes:
+                nodes.append([int(node[0]), int(node[1]), node[2], node[3], node[4]])
+        if snap.eflag and snap.elements is not None:
+            for elem in snap.elements:
+                elements.append([int(elem[0]), int(elem[1])] + elem[2:].tolist())
+        if snap.nvalueflag and snap.nvalues is not None:
+            for nval in snap.nvalues:
+                nvalues.append([int(nval[0]), int(nval[1])] + nval[2:].tolist())
+        if snap.evalueflag and snap.evalues is not None:
+            for eval in snap.evalues:
+                evalues.append([int(eval[0]), int(eval[1])] + eval[2:].tolist())
+        
+        return (time, box, nodes, elements, nvalues, evalues)
+    
+    # --------------------------------------------------------------------
+    # Wrap line end points associated with atoms through periodic boundaries
+    # Invoked by dump() when it does an owrap() on its atoms
+    
+    def owrap(self, time, xprd, yprd, zprd, idsdump, atomsdump, iother, ix, iy, iz):
+        &#34;&#34;&#34;
+        Wrap line end points associated with atoms through periodic boundaries.
+        
+        Parameters:
+            time (int): Time stamp of the snapshot.
+            xprd, yprd, zprd (float): Periodicity in x, y, z directions.
+            idsdump (dict): Dictionary mapping atom IDs to dump indices.
+            atomsdump (list): List of atoms from the dump.
+            iother (int): Other index for wrapping.
+            ix, iy, iz (int): Column indices for x, y, z coordinates.
+        &#34;&#34;&#34;
+        try:
+            id_col = self.names[&#34;id&#34;]
+            end1x_col = self.names[&#34;end1x&#34;]
+            end1y_col = self.names[&#34;end1y&#34;]
+            end2x_col = self.names[&#34;end2x&#34;]
+            end2y_col = self.names[&#34;end2y&#34;]
+        except KeyError as e:
+            print(f&#34;Column name {e} not mapped. Use m.map() to assign column names.&#34;)
+            return
+    
+        try:
+            isnap = self.findtime(time)
+        except Exception as e:
+            print(e)
+            return
+        snap = self.snaps[isnap]
+        atoms = snap.atoms
+    
+        # idump = index of my line I in dump&#39;s atoms
+        # jdump = atom J in dump&#39;s atoms that atom I was owrapped on
+        # delx, dely = offset applied to atom I and thus to line I
+    
+        for i in range(snap.nelements):
+            try:
+                tag = int(atoms[i][id_col])
+                idump = idsdump[tag]
+                jdump = idsdump[int(atomsdump[idump][iother])]
+                delx = (atomsdump[idump][ix] - atomsdump[jdump][ix]) * xprd
+                dely = (atomsdump[idump][iy] - atomsdump[jdump][iy]) * yprd
+                delz = (atomsdump[idump][iz] - atomsdump[jdump][iz]) * zprd
+                # Assuming z-coordinates need to be handled if present
+                # If not, the z-component remains unchanged
+                # Here, only x and y are being wrapped
+                atoms[i][end1x_col] += delx
+                atoms[i][end1y_col] += dely
+                atoms[i][end2x_col] += delx
+                atoms[i][end2y_col] += dely
+            except (KeyError, IndexError, ValueError) as e:
+                print(f&#34;Error in owrap: {e}&#34;)
+                continue
+
+# --------------------------------------------------------------------
+# Example Usage (for testing purposes)
+# Uncomment the following lines to test the mdump3.py module
+
+if __name__ == &#34;__main__&#34;:
+    m = mdump(&#34;mesh.one&#34;)
+    m.map(2, &#34;temperature&#34;)
+    m.tselect.all()
+    while True:
+        time = m.next()
+        if time == -1:
+            break
+        print(f&#34;Snapshot Time: {time}&#34;)
+        _, box, nodes, elements, nvalues, evalues = m.viz(time, 1)
+        print(f&#34;Nodes: {nodes}&#34;)
+        print(f&#34;Elements: {elements}&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="mdump3.normal"><code class="name flex">
+<span>def <span class="ident">normal</span></span>(<span>x, y, z)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Compute the normal vector for a triangle defined by vertices x, y, z.</p>
+<h2 id="parameters">Parameters</h2>
+<p>x, y, z (list or tuple): Coordinates of the three vertices.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>Normal vector [nx, ny, nz].</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normal(x, y, z):
+    &#34;&#34;&#34;
+    Compute the normal vector for a triangle defined by vertices x, y, z.
+    
+    Parameters:
+        x, y, z (list or tuple): Coordinates of the three vertices.
+    
+    Returns:
+        list: Normal vector [nx, ny, nz].
+    &#34;&#34;&#34;
+    v1 = [y[0] - x[0], y[1] - x[1], y[2] - x[2]]
+    v2 = [z[0] - y[0], z[1] - y[1], z[2] - y[2]]
+    
+    n = [
+        v1[1]*v2[2] - v1[2]*v2[1],
+        v1[2]*v2[0] - v1[0]*v2[2],
+        v1[0]*v2[1] - v1[1]*v2[0]
+    ]
+    
+    length = sqrt(n[0]**2 + n[1]**2 + n[2]**2)
+    if length == 0:
+        return [0.0, 0.0, 0.0]
+    n = [component / length for component in n]
+    
+    return n</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="mdump3.Snap"><code class="flex name class">
+<span>class <span class="ident">Snap</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Represents a single snapshot from a mesh dump file.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>int</code></dt>
+<dd>Time stamp of the snapshot.</dd>
+<dt><strong><code>tselect</code></strong> :&ensp;<code>int</code></dt>
+<dd>0 or 1 indicating if this snapshot is selected.</dd>
+<dt><strong><code>nselect</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of selected elements in this snapshot.</dd>
+<dt><strong><code>nflag</code></strong> :&ensp;<code>int</code></dt>
+<dd>0 or 1 indicating if this snapshot has nodal coordinates.</dd>
+<dt><strong><code>eflag</code></strong> :&ensp;<code>int</code></dt>
+<dd>0 or 1-4 indicating the type of elements (tri, tet, square, cube).</dd>
+<dt><strong><code>nvalueflag</code></strong> :&ensp;<code>int</code></dt>
+<dd>0 or 1 indicating if this snapshot has nodal values.</dd>
+<dt><strong><code>evalueflag</code></strong> :&ensp;<code>int</code></dt>
+<dd>0 or 1 indicating if this snapshot has element values.</dd>
+<dt>xlo, xhi, ylo, yhi, zlo, zhi (float): Box bounds.</dt>
+<dt><strong><code>nodes</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Array of node data.</dd>
+<dt><strong><code>elements</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Array of element data.</dd>
+<dt><strong><code>nvalues</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Array of node values.</dd>
+<dt><strong><code>evalues</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Array of element values.</dd>
+<dt><strong><code>eselect</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Array indicating selected elements.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Snap:
+    &#34;&#34;&#34;
+    Represents a single snapshot from a mesh dump file.
+    
+    Attributes:
+        time (int): Time stamp of the snapshot.
+        tselect (int): 0 or 1 indicating if this snapshot is selected.
+        nselect (int): Number of selected elements in this snapshot.
+        nflag (int): 0 or 1 indicating if this snapshot has nodal coordinates.
+        eflag (int): 0 or 1-4 indicating the type of elements (tri, tet, square, cube).
+        nvalueflag (int): 0 or 1 indicating if this snapshot has nodal values.
+        evalueflag (int): 0 or 1 indicating if this snapshot has element values.
+        xlo, xhi, ylo, yhi, zlo, zhi (float): Box bounds.
+        nodes (numpy.ndarray): Array of node data.
+        elements (numpy.ndarray): Array of element data.
+        nvalues (numpy.ndarray): Array of node values.
+        evalues (numpy.ndarray): Array of element values.
+        eselect (numpy.ndarray): Array indicating selected elements.
+    &#34;&#34;&#34;
+    def __init__(self):
+        self.time = 0
+        self.tselect = 0
+        self.nselect = 0
+        self.nflag = 0
+        self.eflag = 0
+        self.nvalueflag = 0
+        self.evalueflag = 0
+        self.xlo = self.xhi = self.ylo = self.yhi = self.zlo = self.zhi = 0.0
+        self.nodes = None
+        self.elements = None
+        self.nvalues = None
+        self.evalues = None
+        self.eselect = None</code></pre>
+</details>
+</dd>
+<dt id="mdump3.eselect"><code class="flex name class">
+<span>class <span class="ident">eselect</span></span>
+<span>(</span><span>data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Element selection class for selecting elements within timesteps in mdump.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class eselect:
+    &#34;&#34;&#34;
+    Element selection class for selecting elements within timesteps in mdump.
+    &#34;&#34;&#34;
+    
+    def __init__(self, data):
+        self.data = data
+    
+    # --------------------------------------------------------------------
+    
+    def all(self, *args):
+        &#34;&#34;&#34;
+        Select all elements in all steps or in one specified step.
+        
+        Parameters:
+            *args: If provided, selects all elements in the specified timestep.
+                   Example: all(N) selects all elements in timestep N.
+        &#34;&#34;&#34;
+        data = self.data
+        if len(args) == 0:
+            # Select all elements in all selected timesteps
+            for snap in data.snaps:
+                if not snap.tselect:
+                    continue
+                if snap.eflag:
+                    snap.eselect[:] = 1
+                    snap.nselect = snap.nelements
+        else:
+            # Select all elements in one specified timestep
+            try:
+                n = args[0]
+                i = data.findtime(n)
+                snap = data.snaps[i]
+                if snap.eflag:
+                    snap.eselect[:] = 1
+                    snap.nselect = snap.nelements
+            except Exception as e:
+                print(e)
+        print(f&#34;Elements selected. Total selected elements: {data.eselect.count_selected()}&#34;)
+    
+    # --------------------------------------------------------------------
+    
+    def test(self, teststr, *args):
+        &#34;&#34;&#34;
+        Select elements based on a Python Boolean expression.
+        
+        Parameters:
+            teststr (str): Boolean expression using $ for element attributes.
+                           Example: &#34;$id &gt; 100 and $type == 2&#34;
+            *args: If provided, applies the test to elements in the specified timestep.
+        &#34;&#34;&#34;
+        data = self.data
+        snaps = data.snaps
+        # Replace $var with snap.elements[i][var_index]
+        pattern = r&#34;\$\w+&#34;
+        matches = re.findall(pattern, teststr)
+        for match in matches:
+            name = match[1:]
+            if name not in data.names:
+                print(f&#34;Unknown column name: {name}&#34;)
+                return
+            column = data.names[name]
+            teststr = teststr.replace(match, f&#34;snap.elements[i][{column}]&#34;)
+        cmd = f&#34;flag = {teststr}&#34;
+        try:
+            ccmd = compile(cmd, &#39;&#39;, &#39;single&#39;)
+        except Exception as e:
+            print(f&#34;Error compiling test string: {e}&#34;)
+            return
+        
+        if len(args) == 0:
+            # Apply test to all selected timesteps
+            for snap in snaps:
+                if not snap.tselect:
+                    continue
+                for i in range(snap.nelements):
+                    if not snap.eselect[i]:
+                        continue
+                    try:
+                        exec(ccmd, {&#34;snap&#34;: snap, &#34;i&#34;: i})
+                        if not flag:
+                            snap.eselect[i] = 0
+                            snap.nselect -= 1
+                    except Exception as e:
+                        print(f&#34;Error executing test string on element {i} in timestep {snap.time}: {e}&#34;)
+            print(f&#34;Elements selected. Total selected elements: {data.eselect.count_selected()}&#34;)
+        else:
+            # Apply test to a specific timestep
+            try:
+                n = args[0]
+                i = data.findtime(n)
+                snap = snaps[i]
+                if not snap.tselect:
+                    print(f&#34;Timestep {n} is not selected.&#34;)
+                    return
+                for j in range(snap.nelements):
+                    if not snap.eselect[j]:
+                        continue
+                    try:
+                        exec(ccmd, {&#34;snap&#34;: snap, &#34;i&#34;: j})
+                        if not flag:
+                            snap.eselect[j] = 0
+                            snap.nselect -= 1
+                    except Exception as e:
+                        print(f&#34;Error executing test string on element {j} in timestep {snap.time}: {e}&#34;)
+                print(f&#34;Elements selected. Total selected elements in timestep {n}: {snap.nselect}&#34;)
+            except Exception as e:
+                print(e)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="mdump3.eselect.all"><code class="name flex">
+<span>def <span class="ident">all</span></span>(<span>self, *args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Select all elements in all steps or in one specified step.</p>
+<h2 id="parameters">Parameters</h2>
+<p>*args: If provided, selects all elements in the specified timestep.
+Example: all(N) selects all elements in timestep N.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def all(self, *args):
+    &#34;&#34;&#34;
+    Select all elements in all steps or in one specified step.
+    
+    Parameters:
+        *args: If provided, selects all elements in the specified timestep.
+               Example: all(N) selects all elements in timestep N.
+    &#34;&#34;&#34;
+    data = self.data
+    if len(args) == 0:
+        # Select all elements in all selected timesteps
+        for snap in data.snaps:
+            if not snap.tselect:
+                continue
+            if snap.eflag:
+                snap.eselect[:] = 1
+                snap.nselect = snap.nelements
+    else:
+        # Select all elements in one specified timestep
+        try:
+            n = args[0]
+            i = data.findtime(n)
+            snap = data.snaps[i]
+            if snap.eflag:
+                snap.eselect[:] = 1
+                snap.nselect = snap.nelements
+        except Exception as e:
+            print(e)
+    print(f&#34;Elements selected. Total selected elements: {data.eselect.count_selected()}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.eselect.test"><code class="name flex">
+<span>def <span class="ident">test</span></span>(<span>self, teststr, *args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Select elements based on a Python Boolean expression.</p>
+<h2 id="parameters">Parameters</h2>
+<p>teststr (str): Boolean expression using $ for element attributes.
+Example: "$id &gt; 100 and $type == 2"
+*args: If provided, applies the test to elements in the specified timestep.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test(self, teststr, *args):
+    &#34;&#34;&#34;
+    Select elements based on a Python Boolean expression.
+    
+    Parameters:
+        teststr (str): Boolean expression using $ for element attributes.
+                       Example: &#34;$id &gt; 100 and $type == 2&#34;
+        *args: If provided, applies the test to elements in the specified timestep.
+    &#34;&#34;&#34;
+    data = self.data
+    snaps = data.snaps
+    # Replace $var with snap.elements[i][var_index]
+    pattern = r&#34;\$\w+&#34;
+    matches = re.findall(pattern, teststr)
+    for match in matches:
+        name = match[1:]
+        if name not in data.names:
+            print(f&#34;Unknown column name: {name}&#34;)
+            return
+        column = data.names[name]
+        teststr = teststr.replace(match, f&#34;snap.elements[i][{column}]&#34;)
+    cmd = f&#34;flag = {teststr}&#34;
+    try:
+        ccmd = compile(cmd, &#39;&#39;, &#39;single&#39;)
+    except Exception as e:
+        print(f&#34;Error compiling test string: {e}&#34;)
+        return
+    
+    if len(args) == 0:
+        # Apply test to all selected timesteps
+        for snap in snaps:
+            if not snap.tselect:
+                continue
+            for i in range(snap.nelements):
+                if not snap.eselect[i]:
+                    continue
+                try:
+                    exec(ccmd, {&#34;snap&#34;: snap, &#34;i&#34;: i})
+                    if not flag:
+                        snap.eselect[i] = 0
+                        snap.nselect -= 1
+                except Exception as e:
+                    print(f&#34;Error executing test string on element {i} in timestep {snap.time}: {e}&#34;)
+        print(f&#34;Elements selected. Total selected elements: {data.eselect.count_selected()}&#34;)
+    else:
+        # Apply test to a specific timestep
+        try:
+            n = args[0]
+            i = data.findtime(n)
+            snap = snaps[i]
+            if not snap.tselect:
+                print(f&#34;Timestep {n} is not selected.&#34;)
+                return
+            for j in range(snap.nelements):
+                if not snap.eselect[j]:
+                    continue
+                try:
+                    exec(ccmd, {&#34;snap&#34;: snap, &#34;i&#34;: j})
+                    if not flag:
+                        snap.eselect[j] = 0
+                        snap.nselect -= 1
+                except Exception as e:
+                    print(f&#34;Error executing test string on element {j} in timestep {snap.time}: {e}&#34;)
+            print(f&#34;Elements selected. Total selected elements in timestep {n}: {snap.nselect}&#34;)
+        except Exception as e:
+            print(e)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="mdump3.mdump"><code class="flex name class">
+<span>class <span class="ident">mdump</span></span>
+<span>(</span><span>*args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>mdump class for reading, writing, and manipulating mesh dump files.</p>
+<p>Initialize the mdump object.</p>
+<h2 id="parameters">Parameters</h2>
+<p>*args: Variable length argument list.
+- If one argument, it's the list of files to read.
+- If two arguments, the second argument indicates incremental reading.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class mdump:
+    &#34;&#34;&#34;
+    mdump class for reading, writing, and manipulating mesh dump files.
+    &#34;&#34;&#34;
+    
+    # --------------------------------------------------------------------
+    
+    def __init__(self, *args):
+        &#34;&#34;&#34;
+        Initialize the mdump object.
+        
+        Parameters:
+            *args: Variable length argument list.
+                   - If one argument, it&#39;s the list of files to read.
+                   - If two arguments, the second argument indicates incremental reading.
+        &#34;&#34;&#34;
+        self.snaps = []
+        self.nsnaps = 0
+        self.nselect = 0
+        self.names = {}
+        self.tselect = tselect(self)
+        self.eselect = eselect(self)
+        self.etype = &#34;&#34;
+        
+        # flist = list of all dump file names
+        if len(args) == 0:
+            raise Exception(&#34;No dump files specified for mdump.&#34;)
+        
+        words = args[0].split()
+        self.flist = []
+        for word in words:
+            self.flist += glob.glob(word)
+        
+        if len(self.flist) == 0 and len(args) == 1:
+            raise Exception(&#34;No dump file specified.&#34;)
+        
+        if len(args) == 1:
+            self.increment = 0
+            self.read_all()
+        else:
+            self.increment = 1
+            self.nextfile = 0
+            self.eof = 0
+    
+    # --------------------------------------------------------------------
+    
+    def read_all(self):
+        &#34;&#34;&#34;
+        Read all snapshots from the list of dump files.
+        &#34;&#34;&#34;
+        for file in self.flist:
+            # Test for gzipped file
+            if file.endswith(&#34;.gz&#34;):
+                try:
+                    f = popen(f&#34;{PIZZA_GUNZIP} -c {file}&#34;, &#39;r&#39;)
+                except Exception as e:
+                    print(f&#34;Error opening gzipped file {file}: {e}&#34;)
+                    continue
+            else:
+                try:
+                    f = open(file, &#39;r&#39;)
+                except Exception as e:
+                    print(f&#34;Error opening file {file}: {e}&#34;)
+                    continue
+    
+            # Read all snapshots in the current file
+            while True:
+                snap = self.read_snapshot(f)
+                if not snap:
+                    break
+                self.snaps.append(snap)
+                print(snap.time, end=&#39; &#39;)
+                sys.stdout.flush()
+    
+            f.close()
+        print()
+    
+        # Sort entries by timestep and remove duplicates
+        self.snaps.sort(key=lambda x: x.time)
+        self.cull()
+    
+        # Sort all node, element, nvalue, evalue arrays by ID
+        for snap in self.snaps:
+            if snap.nflag and snap.nodes is not None:
+                array = snap.nodes
+                ids = array[:, 0]
+                ordering = np.argsort(ids)
+                for i in range(array.shape[1]):
+                    array[:, i] = np.take(array[:, i], ordering)
+            if snap.eflag and snap.elements is not None:
+                array = snap.elements
+                ids = array[:, 0]
+                ordering = np.argsort(ids)
+                for i in range(array.shape[1]):
+                    array[:, i] = np.take(array[:, i], ordering)
+            if snap.nvalueflag and snap.nvalues is not None:
+                array = snap.nvalues
+                ids = array[:, 0]
+                ordering = np.argsort(ids)
+                for i in range(array.shape[1]):
+                    array[:, i] = np.take(array[:, i], ordering)
+            if snap.evalueflag and snap.evalues is not None:
+                array = snap.evalues
+                ids = array[:, 0]
+                ordering = np.argsort(ids)
+                for i in range(array.shape[1]):
+                    array[:, i] = np.take(array[:, i], ordering)
+    
+        # Reference definitions of nodes and elements in previous timesteps
+        self.reference()
+        
+        self.nsnaps = len(self.snaps)
+        print(f&#34;read {self.nsnaps} snapshots&#34;)
+    
+        # Select all timesteps and elements
+        self.tselect.all()
+    
+    # --------------------------------------------------------------------
+    # Read the next snapshot from the list of files (incremental reading)
+    
+    def next(self):
+        &#34;&#34;&#34;
+        Read the next snapshot in incremental mode.
+        
+        Returns:
+            int: Time stamp of the snapshot read, or -1 if no snapshots left.
+        &#34;&#34;&#34;
+        if not self.increment:
+            raise Exception(&#34;Cannot read incrementally with current mdump configuration.&#34;)
+    
+        # Read next snapshot in current file using eof as pointer
+        while self.nextfile &lt; len(self.flist):
+            file = self.flist[self.nextfile]
+            # Open the current file
+            if file.endswith(&#34;.gz&#34;):
+                try:
+                    f = popen(f&#34;{PIZZA_GUNZIP} -c {file}&#34;, &#39;r&#39;)
+                except Exception as e:
+                    print(f&#34;Error opening gzipped file {file}: {e}&#34;)
+                    self.nextfile += 1
+                    continue
+            else:
+                try:
+                    f = open(file, &#39;r&#39;)
+                except Exception as e:
+                    print(f&#34;Error opening file {file}: {e}&#34;)
+                    self.nextfile += 1
+                    continue
+    
+            # Seek to the last read position
+            f.seek(self.eof)
+            snap = self.read_snapshot(f)
+            if not snap:
+                # End of file reached
+                f.close()
+                self.nextfile += 1
+                self.eof = 0
+                continue
+            self.eof = f.tell()
+            f.close()
+                
+            # Check for duplicate time stamp
+            if any(existing_snap.time == snap.time for existing_snap in self.snaps):
+                continue  # Skip duplicate
+            self.snaps.append(snap)
+            snap.tselect = 1
+            snap.nselect = snap.nelements
+            if snap.eflag:
+                snap.eselect = np.ones(snap.nelements, dtype=int)
+            self.nsnaps += 1
+            self.nselect += 1
+            return snap.time
+    
+        return -1  # No snapshots left
+    
+    # --------------------------------------------------------------------
+    # Read a single snapshot from a file
+    
+    def read_snapshot(self, f):
+        &#34;&#34;&#34;
+        Read a single snapshot from the file.
+        
+        Parameters:
+            f (file object): Opened file object to read from.
+        
+        Returns:
+            Snap: Snapshot object, or None if failed.
+        &#34;&#34;&#34;
+        try:
+            snap = Snap()
+            # Read and discard the first line (usually a comment or header)
+            item = f.readline()
+            if not item:
+                return None
+            # Read time stamp
+            line = f.readline()
+            if not line:
+                return None
+            snap.time = int(line.strip())
+            # Read snapshot type
+            line = f.readline()
+            if not line:
+                return None
+            if &#34;NUMBER OF NODES&#34; in line:
+                snap.nflag = 1
+            elif &#34;NUMBER OF TRIANGLES&#34; in line:
+                snap.eflag = 1
+            elif &#34;NUMBER OF TETS&#34; in line:
+                snap.eflag = 2
+            elif &#34;NUMBER OF SQUARES&#34; in line:
+                snap.eflag = 3
+            elif &#34;NUMBER OF CUBES&#34; in line:
+                snap.eflag = 4
+            elif &#34;NUMBER OF NODE VALUES&#34; in line:
+                snap.nvalueflag = 1
+            elif &#34;NUMBER OF ELEMENT VALUES&#34; in line:
+                snap.evalueflag = 1
+            else:
+                raise Exception(&#34;Unrecognized snapshot type in dump file.&#34;)
+            # Read number of nodes/elements/values
+            line = f.readline()
+            if not line:
+                return None
+            n = int(line.strip())
+    
+            if snap.eflag:
+                snap.eselect = np.zeros(n, dtype=int)
+    
+            if snap.nflag:
+                # Read box bounds
+                f.readline()  # Read past header
+                words = f.readline().split()
+                snap.xlo, snap.xhi = float(words[0]), float(words[1])
+                words = f.readline().split()
+                snap.ylo, snap.yhi = float(words[0]), float(words[1])
+                words = f.readline().split()
+                snap.zlo, snap.zhi = float(words[0]), float(words[1])
+                
+            f.readline()  # Read past another header
+    
+            if n:
+                # Read node/element/value data
+                words = f.readline().split()
+                ncol = len(words)
+                data = []
+                data.append([float(value) for value in words])
+                for _ in range(1, n):
+                    words = f.readline().split()
+                    if not words:
+                        break
+                    data.append([float(value) for value in words])
+                values = np.array(data, dtype=float)
+            else:
+                values = None
+    
+            if snap.nflag:
+                snap.nodes = values
+                snap.nnodes = n
+            elif snap.eflag:
+                snap.elements = values
+                snap.nelements = n
+                snap.eselect = np.zeros(n, dtype=int)  # Initialize element selection
+            elif snap.nvalueflag:
+                snap.nvalues = values
+                snap.nnvalues = n
+            elif snap.evalueflag:
+                snap.evalues = values
+                snap.nevalues = n
+            return snap
+        except Exception as e:
+            print(f&#34;Error reading snapshot: {e}&#34;)
+            return None
+    
+    # --------------------------------------------------------------------
+    # Map atom column names
+    
+    def map(self, *pairs):
+        &#34;&#34;&#34;
+        Assign names to element value columns.
+        
+        Parameters:
+            *pairs: Pairs of (column_number, &#34;column_name&#34;)
+                   Example: map(2, &#34;temperature&#34;)
+        &#34;&#34;&#34;
+        if len(pairs) % 2 != 0:
+            raise Exception(&#34;mdump map() requires pairs of mappings.&#34;)
+        for i in range(0, len(pairs), 2):
+            col_num = pairs[i]
+            col_name = pairs[i + 1]
+            self.names[col_name] = col_num - 1  # Zero-based indexing
+    
+    # --------------------------------------------------------------------
+    # Delete unselected snapshots
+    
+    def delete(self):
+        &#34;&#34;&#34;
+        Delete non-selected snapshots.
+        &#34;&#34;&#34;
+        ndel = 0
+        selected_snaps = []
+        for snap in self.snaps:
+            if snap.tselect:
+                selected_snaps.append(snap)
+            else:
+                ndel += 1
+        self.snaps = selected_snaps
+        self.nsnaps = len(self.snaps)
+        self.nselect = sum(snap.tselect for snap in self.snaps)
+        print(f&#34;{ndel} snapshots deleted&#34;)
+        print(f&#34;{self.nsnaps} snapshots remaining&#34;)
+    
+    # --------------------------------------------------------------------
+    # Sort snapshots by time stamp
+    
+    def sort(self, *args):
+        &#34;&#34;&#34;
+        Sort snapshots by ID in all selected timesteps or one specified timestep.
+        
+        Parameters:
+            *args: If provided, sorts elements in the specified timestep.
+        &#34;&#34;&#34;
+        if len(args) == 0:
+            print(&#34;Sorting selected snapshots ...&#34;)
+            if &#34;id&#34; not in self.names:
+                print(&#34;Column &#39;id&#39; not mapped. Use m.map() to assign column names.&#34;)
+                return
+            id_col = self.names[&#34;id&#34;]
+            for snap in self.snaps:
+                if snap.tselect:
+                    self.sort_one(snap, id_col)
+        else:
+            try:
+                n = args[0]
+                i = self.findtime(n)
+                if &#34;id&#34; not in self.names:
+                    print(&#34;Column &#39;id&#39; not mapped. Use m.map() to assign column names.&#34;)
+                    return
+                id_col = self.names[&#34;id&#34;]
+                self.sort_one(self.snaps[i], id_col)
+            except Exception as e:
+                print(e)
+    
+    # --------------------------------------------------------------------
+    # Sort a single snapshot by ID column
+    
+    def sort_one(self, snap, id_col):
+        &#34;&#34;&#34;
+        Sort elements in a single snapshot by ID column.
+        
+        Parameters:
+            snap (Snap): The snapshot to sort.
+            id_col (int): The column index for &#39;id&#39;.
+        &#34;&#34;&#34;
+        if snap.elements is not None:
+            array = snap.elements
+            ids = array[:, id_col]
+            ordering = np.argsort(ids)
+            for i in range(array.shape[1]):
+                array[:, i] = np.take(array[:, i], ordering)
+    
+    # --------------------------------------------------------------------
+    # Return list of selected snapshot time stamps
+    
+    def time(self):
+        &#34;&#34;&#34;
+        Get a list of all selected snapshot time stamps.
+        
+        Returns:
+            list: List of time stamps.
+        &#34;&#34;&#34;
+        return [snap.time for snap in self.snaps if snap.tselect]
+    
+    # --------------------------------------------------------------------
+    # Extract vector(s) of values for selected elements at chosen timestep
+    
+    def vecs(self, n, *columns):
+        &#34;&#34;&#34;
+        Extract vector(s) of values for selected elements at a specific timestep.
+        
+        Parameters:
+            n (int): Timestep to extract vectors from.
+            *columns (str): Column names to extract.
+        
+        Returns:
+            list: List of vectors corresponding to the specified columns.
+        &#34;&#34;&#34;
+        try:
+            snap = self.snaps[self.findtime(n)]
+        except Exception as e:
+            print(e)
+            return []
+        if not snap.evalueflag:
+            raise Exception(&#34;Snapshot has no element values.&#34;)
+        
+        if len(columns) == 0:
+            raise Exception(&#34;No columns specified.&#34;)
+        
+        column_indices = []
+        for name in columns:
+            if name not in self.names:
+                print(f&#34;Unknown column name: {name}&#34;)
+                return []
+            column_indices.append(self.names[name])
+        
+        values = []
+        for col in column_indices:
+            vec = []
+            for i in range(snap.nelements):
+                if snap.eselect[i]:
+                    vec.append(snap.evalues[i][col])
+            values.append(vec)
+        
+        if len(values) == 1:
+            return values[0]
+        else:
+            return values
+    
+    # --------------------------------------------------------------------
+    # Sort snapshots on time stamp
+    # (Replaced by sort method using key=lambda x: x.time)
+    
+    def compare_time(self, a, b):
+        &#34;&#34;&#34;
+        Comparator for sorting snapshots by time.
+        
+        Parameters:
+            a (Snap): First snapshot.
+            b (Snap): Second snapshot.
+        
+        Returns:
+            int: -1 if a &lt; b, 1 if a &gt; b, 0 if equal.
+        &#34;&#34;&#34;
+        if a.time &lt; b.time:
+            return -1
+        elif a.time &gt; b.time:
+            return 1
+        else:
+            return 0
+    
+    # --------------------------------------------------------------------
+    # Delete successive snapshots with duplicate time stamp
+    # If have same timestamp, combine them if internal flags are different
+    
+    def cull(self):
+        &#34;&#34;&#34;
+        Remove duplicate snapshots based on time stamps and merge their data.
+        &#34;&#34;&#34;
+        i = 1
+        while i &lt; len(self.snaps):
+            if self.snaps[i].time == self.snaps[i-1].time:
+                if self.snaps[i].nflag and not self.snaps[i-1].nflag:
+                    self.snaps[i-1].nflag = 1
+                    self.snaps[i-1].nnodes = self.snaps[i].nnodes
+                    self.snaps[i-1].nodes = self.snaps[i].nodes
+                    self.snaps[i-1].xlo = self.snaps[i].xlo
+                    self.snaps[i-1].xhi = self.snaps[i].xhi
+                    self.snaps[i-1].ylo = self.snaps[i].ylo
+                    self.snaps[i-1].yhi = self.snaps[i].yhi
+                    self.snaps[i-1].zlo = self.snaps[i].zlo
+                    self.snaps[i-1].zhi = self.snaps[i].zhi
+                elif self.snaps[i].eflag and not self.snaps[i-1].eflag:
+                    self.snaps[i-1].eflag = self.snaps[i].eflag
+                    self.snaps[i-1].nelements = self.snaps[i].nelements
+                    self.snaps[i-1].elements = self.snaps[i].elements
+                    self.snaps[i-1].eselect = self.snaps[i].eselect
+                elif self.snaps[i].nvalueflag and not self.snaps[i-1].nvalueflag:
+                    self.snaps[i-1].nvalueflag = 1
+                    self.snaps[i-1].nnvalues = self.snaps[i].nnvalues
+                    self.snaps[i-1].nvalues = self.snaps[i].nvalues
+                elif self.snaps[i].evalueflag and not self.snaps[i-1].evalueflag:
+                    self.snaps[i-1].evalueflag = 1
+                    self.snaps[i-1].nevalues = self.snaps[i].nevalues
+                    self.snaps[i-1].evalues = self.snaps[i].evalues
+                del self.snaps[i]
+            else:
+                i += 1
+    
+    # --------------------------------------------------------------------
+    # Ensure every snapshot has node and element connectivity info
+    # If not, point it at the most recent snapshot that does
+    
+    def reference(self):
+        &#34;&#34;&#34;
+        Ensure every snapshot has node and element connectivity information by referencing previous snapshots.
+        &#34;&#34;&#34;
+        for i in range(len(self.snaps)):
+            if not self.snaps[i].nflag:
+                for j in range(i, -1, -1):
+                    if self.snaps[j].nflag:
+                        self.snaps[i].nflag = self.snaps[j].nflag
+                        self.snaps[i].nnodes = self.snaps[j].nnodes
+                        self.snaps[i].nodes = self.snaps[j].nodes
+                        self.snaps[i].xlo = self.snaps[j].xlo
+                        self.snaps[i].xhi = self.snaps[j].xhi
+                        self.snaps[i].ylo = self.snaps[j].ylo
+                        self.snaps[i].yhi = self.snaps[j].yhi
+                        self.snaps[i].zlo = self.snaps[j].zlo
+                        self.snaps[i].zhi = self.snaps[j].zhi
+                        break
+            if not self.snaps[i].nflag:
+                raise Exception(&#34;No nodal coordinates found in previous snapshots.&#34;)
+            if not self.snaps[i].eflag:
+                for j in range(i, -1, -1):
+                    if self.snaps[j].eflag:
+                        self.snaps[i].eflag = self.snaps[j].eflag
+                        self.snaps[i].nelements = self.snaps[j].nelements
+                        self.snaps[i].elements = self.snaps[j].elements
+                        self.snaps[i].eselect = self.snaps[j].eselect
+                        break
+            if not self.snaps[i].eflag:
+                raise Exception(&#34;No element connections found in previous snapshots.&#34;)
+    
+    # --------------------------------------------------------------------
+    # Iterate over selected snapshots
+    
+    def iterator(self, flag):
+        &#34;&#34;&#34;
+        Iterator method compatible with equivalent dump calls.
+        
+        Parameters:
+            flag (int): 0 for first call, 1 for subsequent calls.
+        
+        Returns:
+            tuple: (index, time, flag)
+                   index (int): Index within dump object (0 to # of snapshots)
+                   time (int): Timestep value
+                   flag (int): -1 when iteration is done, 1 otherwise
+        &#34;&#34;&#34;
+        if flag == 0:
+            self.iterate = -1  # Initialize iteration
+        self.iterate += 1
+        if self.iterate &gt;= self.nsnaps:
+            return (0, 0, -1)
+        snap = self.snaps[self.iterate]
+        if not snap.tselect:
+            return self.iterator(1)
+        return (self.iterate, snap.time, 1)
+    
+    # --------------------------------------------------------------------
+    # Return list of viz objects for a snapshot
+    
+    def viz(self, index, flag=0):
+        &#34;&#34;&#34;
+        Return mesh visualization information for a snapshot.
+        
+        Parameters:
+            index (int): Snapshot index or time stamp.
+            flag (int): If 1, interpret index as time stamp.
+        
+        Returns:
+            tuple: (time, box, atoms, bonds, tris, lines)
+                   atoms, bonds, lines are None.
+                   tris contain [id, type, x1, y1, z1, x2, y2, z2, x3, y3, z3, nx, ny, nz] for each triangle.
+        &#34;&#34;&#34;
+        if not flag:
+            isnap = index
+        else:
+            times = self.time()
+            n = len(times)
+            i = 0
+            while i &lt; n:
+                if times[i] &gt; index:
+                    break
+                i += 1
+            isnap = i - 1
+        if isnap &lt; 0 or isnap &gt;= self.nsnaps:
+            return (-1, None, None, None, None, None)
+        snap = self.snaps[isnap]
+        
+        time = snap.time
+        box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+        if self.etype == &#34;&#34;:
+            type_col = -1
+        else:
+            if self.etype not in self.names:
+                print(f&#34;Unknown etype column: {self.etype}&#34;)
+                type_col = -1
+            else:
+                type_col = self.names[self.etype]
+    
+        atoms = None
+        bonds = None
+    
+        tris = []
+        nodes = snap.nodes
+        for i in range(snap.nelements):
+            if not snap.eselect[i]:
+                continue
+            element = snap.elements[i]
+            if snap.evalueflag:
+                evalue = snap.evalues[i]
+            else:
+                evalue = None
+    
+            # Process based on element type
+            if snap.eflag == 1:
+                # Triangle
+                try:
+                    v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                    v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                    v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                except IndexError:
+                    print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                    continue
+                list_vertices = v1 + v2 + v3
+                n = normal(list_vertices[0:3], list_vertices[3:6], list_vertices[6:9])
+                if type_col == -1:
+                    tris.append([int(element[0]), int(element[1])] + list_vertices + n)
+                else:
+                    tris.append([int(element[0]), int(evalue[type_col])] + list_vertices + n)
+    
+            elif snap.eflag == 2:
+                # Tetrahedron - convert to 4 triangles
+                try:
+                    v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                    v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                    v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                    v4 = nodes[int(element[5]) - 1][2:5].tolist()
+                except IndexError:
+                    print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                    continue
+                tris_data = [
+                    v1 + v2 + v4,
+                    v2 + v3 + v4,
+                    v1 + v4 + v3,
+                    v1 + v3 + v2
+                ]
+                for tri_vertices in tris_data:
+                    n = normal(tri_vertices[0:3], tri_vertices[3:6], tri_vertices[6:9])
+                    if type_col == -1:
+                        tris.append([int(element[0]), int(element[1])] + tri_vertices + n)
+                    else:
+                        tris.append([int(element[0]), int(evalue[type_col])] + tri_vertices + n)
+    
+            elif snap.eflag == 3:
+                # Square - convert to 2 triangles
+                try:
+                    v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                    v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                    v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                    v4 = nodes[int(element[5]) - 1][2:5].tolist()
+                except IndexError:
+                    print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                    continue
+                tris_data = [
+                    v1 + v2 + v3,
+                    v1 + v3 + v4
+                ]
+                for tri_vertices in tris_data:
+                    n = normal(tri_vertices[0:3], tri_vertices[3:6], tri_vertices[6:9])
+                    if type_col == -1:
+                        tris.append([int(element[0]), int(element[1])] + tri_vertices + n)
+                    else:
+                        tris.append([int(element[0]), int(evalue[type_col])] + tri_vertices + n)
+    
+            elif snap.eflag == 4:
+                # Cube - convert to 12 triangles
+                try:
+                    v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                    v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                    v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                    v4 = nodes[int(element[5]) - 1][2:5].tolist()
+                    v5 = nodes[int(element[6]) - 1][2:5].tolist()
+                    v6 = nodes[int(element[7]) - 1][2:5].tolist()
+                    v7 = nodes[int(element[8]) - 1][2:5].tolist()
+                    v8 = nodes[int(element[9]) - 1][2:5].tolist()
+                except IndexError:
+                    print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                    continue
+                tris_data = [
+                    # Lower z face
+                    v1 + v3 + v2,
+                    v1 + v4 + v3,
+                    # Upper z face
+                    v5 + v6 + v7,
+                    v5 + v7 + v8,
+                    # Lower y face
+                    v1 + v2 + v6,
+                    v1 + v6 + v5,
+                    # Upper y face
+                    v4 + v7 + v3,
+                    v4 + v8 + v7,
+                    # Lower x face
+                    v1 + v8 + v4,
+                    v1 + v5 + v8,
+                    # Upper x face
+                    v2 + v3 + v7,
+                    v2 + v7 + v6
+                ]
+                for tri_vertices in tris_data:
+                    n = normal(tri_vertices[0:3], tri_vertices[3:6], tri_vertices[6:9])
+                    if type_col == -1:
+                        tris.append([int(element[0]), int(element[1])] + tri_vertices + n)
+                    else:
+                        tris.append([int(element[0]), int(evalue[type_col])] + tri_vertices + n)
+        
+        # Lines are not used in viz for mesh dumps
+        lines = []
+    
+        return (time, box, atoms, bonds, tris, lines)
+    
+    # --------------------------------------------------------------------
+    # Return lists of node/element info for snapshot isnap
+    # If called with flag, then index is timestep, so convert to snapshot index
+    
+    def mviz(self, index, flag=0):
+        &#34;&#34;&#34;
+        Return mesh visualization information for a snapshot, including nodes and elements.
+        
+        Parameters:
+            index (int): Snapshot index or time stamp.
+            flag (int): If 1, interpret index as time stamp.
+        
+        Returns:
+            tuple: (time, box, nodes, elements, nvalues, evalues)
+        &#34;&#34;&#34;
+        if not flag:
+            isnap = index
+        else:
+            times = self.time()
+            n = len(times)
+            i = 0
+            while i &lt; n:
+                if times[i] &gt; index:
+                    break
+                i += 1
+            isnap = i - 1
+        if isnap &lt; 0 or isnap &gt;= self.nsnaps:
+            return (-1, None, None, None, None, None)
+        snap = self.snaps[isnap]
+        
+        time = snap.time
+        box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+        nodes = []
+        elements = []
+        nvalues = []
+        evalues = []
+        
+        if snap.nflag and snap.nodes is not None:
+            for node in snap.nodes:
+                nodes.append([int(node[0]), int(node[1]), node[2], node[3], node[4]])
+        if snap.eflag and snap.elements is not None:
+            for elem in snap.elements:
+                elements.append([int(elem[0]), int(elem[1])] + elem[2:].tolist())
+        if snap.nvalueflag and snap.nvalues is not None:
+            for nval in snap.nvalues:
+                nvalues.append([int(nval[0]), int(nval[1])] + nval[2:].tolist())
+        if snap.evalueflag and snap.evalues is not None:
+            for eval in snap.evalues:
+                evalues.append([int(eval[0]), int(eval[1])] + eval[2:].tolist())
+        
+        return (time, box, nodes, elements, nvalues, evalues)
+    
+    # --------------------------------------------------------------------
+    # Wrap line end points associated with atoms through periodic boundaries
+    # Invoked by dump() when it does an owrap() on its atoms
+    
+    def owrap(self, time, xprd, yprd, zprd, idsdump, atomsdump, iother, ix, iy, iz):
+        &#34;&#34;&#34;
+        Wrap line end points associated with atoms through periodic boundaries.
+        
+        Parameters:
+            time (int): Time stamp of the snapshot.
+            xprd, yprd, zprd (float): Periodicity in x, y, z directions.
+            idsdump (dict): Dictionary mapping atom IDs to dump indices.
+            atomsdump (list): List of atoms from the dump.
+            iother (int): Other index for wrapping.
+            ix, iy, iz (int): Column indices for x, y, z coordinates.
+        &#34;&#34;&#34;
+        try:
+            id_col = self.names[&#34;id&#34;]
+            end1x_col = self.names[&#34;end1x&#34;]
+            end1y_col = self.names[&#34;end1y&#34;]
+            end2x_col = self.names[&#34;end2x&#34;]
+            end2y_col = self.names[&#34;end2y&#34;]
+        except KeyError as e:
+            print(f&#34;Column name {e} not mapped. Use m.map() to assign column names.&#34;)
+            return
+    
+        try:
+            isnap = self.findtime(time)
+        except Exception as e:
+            print(e)
+            return
+        snap = self.snaps[isnap]
+        atoms = snap.atoms
+    
+        # idump = index of my line I in dump&#39;s atoms
+        # jdump = atom J in dump&#39;s atoms that atom I was owrapped on
+        # delx, dely = offset applied to atom I and thus to line I
+    
+        for i in range(snap.nelements):
+            try:
+                tag = int(atoms[i][id_col])
+                idump = idsdump[tag]
+                jdump = idsdump[int(atomsdump[idump][iother])]
+                delx = (atomsdump[idump][ix] - atomsdump[jdump][ix]) * xprd
+                dely = (atomsdump[idump][iy] - atomsdump[jdump][iy]) * yprd
+                delz = (atomsdump[idump][iz] - atomsdump[jdump][iz]) * zprd
+                # Assuming z-coordinates need to be handled if present
+                # If not, the z-component remains unchanged
+                # Here, only x and y are being wrapped
+                atoms[i][end1x_col] += delx
+                atoms[i][end1y_col] += dely
+                atoms[i][end2x_col] += delx
+                atoms[i][end2y_col] += dely
+            except (KeyError, IndexError, ValueError) as e:
+                print(f&#34;Error in owrap: {e}&#34;)
+                continue</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="mdump3.mdump.compare_time"><code class="name flex">
+<span>def <span class="ident">compare_time</span></span>(<span>self, a, b)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Comparator for sorting snapshots by time.</p>
+<h2 id="parameters">Parameters</h2>
+<p>a (Snap): First snapshot.
+b (Snap): Second snapshot.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>-1 if a &lt; b, 1 if a &gt; b, 0 if equal.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compare_time(self, a, b):
+    &#34;&#34;&#34;
+    Comparator for sorting snapshots by time.
+    
+    Parameters:
+        a (Snap): First snapshot.
+        b (Snap): Second snapshot.
+    
+    Returns:
+        int: -1 if a &lt; b, 1 if a &gt; b, 0 if equal.
+    &#34;&#34;&#34;
+    if a.time &lt; b.time:
+        return -1
+    elif a.time &gt; b.time:
+        return 1
+    else:
+        return 0</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.cull"><code class="name flex">
+<span>def <span class="ident">cull</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Remove duplicate snapshots based on time stamps and merge their data.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cull(self):
+    &#34;&#34;&#34;
+    Remove duplicate snapshots based on time stamps and merge their data.
+    &#34;&#34;&#34;
+    i = 1
+    while i &lt; len(self.snaps):
+        if self.snaps[i].time == self.snaps[i-1].time:
+            if self.snaps[i].nflag and not self.snaps[i-1].nflag:
+                self.snaps[i-1].nflag = 1
+                self.snaps[i-1].nnodes = self.snaps[i].nnodes
+                self.snaps[i-1].nodes = self.snaps[i].nodes
+                self.snaps[i-1].xlo = self.snaps[i].xlo
+                self.snaps[i-1].xhi = self.snaps[i].xhi
+                self.snaps[i-1].ylo = self.snaps[i].ylo
+                self.snaps[i-1].yhi = self.snaps[i].yhi
+                self.snaps[i-1].zlo = self.snaps[i].zlo
+                self.snaps[i-1].zhi = self.snaps[i].zhi
+            elif self.snaps[i].eflag and not self.snaps[i-1].eflag:
+                self.snaps[i-1].eflag = self.snaps[i].eflag
+                self.snaps[i-1].nelements = self.snaps[i].nelements
+                self.snaps[i-1].elements = self.snaps[i].elements
+                self.snaps[i-1].eselect = self.snaps[i].eselect
+            elif self.snaps[i].nvalueflag and not self.snaps[i-1].nvalueflag:
+                self.snaps[i-1].nvalueflag = 1
+                self.snaps[i-1].nnvalues = self.snaps[i].nnvalues
+                self.snaps[i-1].nvalues = self.snaps[i].nvalues
+            elif self.snaps[i].evalueflag and not self.snaps[i-1].evalueflag:
+                self.snaps[i-1].evalueflag = 1
+                self.snaps[i-1].nevalues = self.snaps[i].nevalues
+                self.snaps[i-1].evalues = self.snaps[i].evalues
+            del self.snaps[i]
+        else:
+            i += 1</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.delete"><code class="name flex">
+<span>def <span class="ident">delete</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Delete non-selected snapshots.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete(self):
+    &#34;&#34;&#34;
+    Delete non-selected snapshots.
+    &#34;&#34;&#34;
+    ndel = 0
+    selected_snaps = []
+    for snap in self.snaps:
+        if snap.tselect:
+            selected_snaps.append(snap)
+        else:
+            ndel += 1
+    self.snaps = selected_snaps
+    self.nsnaps = len(self.snaps)
+    self.nselect = sum(snap.tselect for snap in self.snaps)
+    print(f&#34;{ndel} snapshots deleted&#34;)
+    print(f&#34;{self.nsnaps} snapshots remaining&#34;)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.iterator"><code class="name flex">
+<span>def <span class="ident">iterator</span></span>(<span>self, flag)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Iterator method compatible with equivalent dump calls.</p>
+<h2 id="parameters">Parameters</h2>
+<p>flag (int): 0 for first call, 1 for subsequent calls.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple</code></dt>
+<dd>(index, time, flag)
+index (int): Index within dump object (0 to # of snapshots)
+time (int): Timestep value
+flag (int): -1 when iteration is done, 1 otherwise</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def iterator(self, flag):
+    &#34;&#34;&#34;
+    Iterator method compatible with equivalent dump calls.
+    
+    Parameters:
+        flag (int): 0 for first call, 1 for subsequent calls.
+    
+    Returns:
+        tuple: (index, time, flag)
+               index (int): Index within dump object (0 to # of snapshots)
+               time (int): Timestep value
+               flag (int): -1 when iteration is done, 1 otherwise
+    &#34;&#34;&#34;
+    if flag == 0:
+        self.iterate = -1  # Initialize iteration
+    self.iterate += 1
+    if self.iterate &gt;= self.nsnaps:
+        return (0, 0, -1)
+    snap = self.snaps[self.iterate]
+    if not snap.tselect:
+        return self.iterator(1)
+    return (self.iterate, snap.time, 1)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.map"><code class="name flex">
+<span>def <span class="ident">map</span></span>(<span>self, *pairs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Assign names to element value columns.</p>
+<h2 id="parameters">Parameters</h2>
+<p>*pairs: Pairs of (column_number, "column_name")
+Example: map(2, "temperature")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def map(self, *pairs):
+    &#34;&#34;&#34;
+    Assign names to element value columns.
+    
+    Parameters:
+        *pairs: Pairs of (column_number, &#34;column_name&#34;)
+               Example: map(2, &#34;temperature&#34;)
+    &#34;&#34;&#34;
+    if len(pairs) % 2 != 0:
+        raise Exception(&#34;mdump map() requires pairs of mappings.&#34;)
+    for i in range(0, len(pairs), 2):
+        col_num = pairs[i]
+        col_name = pairs[i + 1]
+        self.names[col_name] = col_num - 1  # Zero-based indexing</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.mviz"><code class="name flex">
+<span>def <span class="ident">mviz</span></span>(<span>self, index, flag=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return mesh visualization information for a snapshot, including nodes and elements.</p>
+<h2 id="parameters">Parameters</h2>
+<p>index (int): Snapshot index or time stamp.
+flag (int): If 1, interpret index as time stamp.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple</code></dt>
+<dd>(time, box, nodes, elements, nvalues, evalues)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mviz(self, index, flag=0):
+    &#34;&#34;&#34;
+    Return mesh visualization information for a snapshot, including nodes and elements.
+    
+    Parameters:
+        index (int): Snapshot index or time stamp.
+        flag (int): If 1, interpret index as time stamp.
+    
+    Returns:
+        tuple: (time, box, nodes, elements, nvalues, evalues)
+    &#34;&#34;&#34;
+    if not flag:
+        isnap = index
+    else:
+        times = self.time()
+        n = len(times)
+        i = 0
+        while i &lt; n:
+            if times[i] &gt; index:
+                break
+            i += 1
+        isnap = i - 1
+    if isnap &lt; 0 or isnap &gt;= self.nsnaps:
+        return (-1, None, None, None, None, None)
+    snap = self.snaps[isnap]
+    
+    time = snap.time
+    box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+    nodes = []
+    elements = []
+    nvalues = []
+    evalues = []
+    
+    if snap.nflag and snap.nodes is not None:
+        for node in snap.nodes:
+            nodes.append([int(node[0]), int(node[1]), node[2], node[3], node[4]])
+    if snap.eflag and snap.elements is not None:
+        for elem in snap.elements:
+            elements.append([int(elem[0]), int(elem[1])] + elem[2:].tolist())
+    if snap.nvalueflag and snap.nvalues is not None:
+        for nval in snap.nvalues:
+            nvalues.append([int(nval[0]), int(nval[1])] + nval[2:].tolist())
+    if snap.evalueflag and snap.evalues is not None:
+        for eval in snap.evalues:
+            evalues.append([int(eval[0]), int(eval[1])] + eval[2:].tolist())
+    
+    return (time, box, nodes, elements, nvalues, evalues)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.next"><code class="name flex">
+<span>def <span class="ident">next</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read the next snapshot in incremental mode.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>Time stamp of the snapshot read, or -1 if no snapshots left.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def next(self):
+    &#34;&#34;&#34;
+    Read the next snapshot in incremental mode.
+    
+    Returns:
+        int: Time stamp of the snapshot read, or -1 if no snapshots left.
+    &#34;&#34;&#34;
+    if not self.increment:
+        raise Exception(&#34;Cannot read incrementally with current mdump configuration.&#34;)
+
+    # Read next snapshot in current file using eof as pointer
+    while self.nextfile &lt; len(self.flist):
+        file = self.flist[self.nextfile]
+        # Open the current file
+        if file.endswith(&#34;.gz&#34;):
+            try:
+                f = popen(f&#34;{PIZZA_GUNZIP} -c {file}&#34;, &#39;r&#39;)
+            except Exception as e:
+                print(f&#34;Error opening gzipped file {file}: {e}&#34;)
+                self.nextfile += 1
+                continue
+        else:
+            try:
+                f = open(file, &#39;r&#39;)
+            except Exception as e:
+                print(f&#34;Error opening file {file}: {e}&#34;)
+                self.nextfile += 1
+                continue
+
+        # Seek to the last read position
+        f.seek(self.eof)
+        snap = self.read_snapshot(f)
+        if not snap:
+            # End of file reached
+            f.close()
+            self.nextfile += 1
+            self.eof = 0
+            continue
+        self.eof = f.tell()
+        f.close()
+            
+        # Check for duplicate time stamp
+        if any(existing_snap.time == snap.time for existing_snap in self.snaps):
+            continue  # Skip duplicate
+        self.snaps.append(snap)
+        snap.tselect = 1
+        snap.nselect = snap.nelements
+        if snap.eflag:
+            snap.eselect = np.ones(snap.nelements, dtype=int)
+        self.nsnaps += 1
+        self.nselect += 1
+        return snap.time
+
+    return -1  # No snapshots left</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.owrap"><code class="name flex">
+<span>def <span class="ident">owrap</span></span>(<span>self, time, xprd, yprd, zprd, idsdump, atomsdump, iother, ix, iy, iz)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Wrap line end points associated with atoms through periodic boundaries.</p>
+<h2 id="parameters">Parameters</h2>
+<p>time (int): Time stamp of the snapshot.
+xprd, yprd, zprd (float): Periodicity in x, y, z directions.
+idsdump (dict): Dictionary mapping atom IDs to dump indices.
+atomsdump (list): List of atoms from the dump.
+iother (int): Other index for wrapping.
+ix, iy, iz (int): Column indices for x, y, z coordinates.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def owrap(self, time, xprd, yprd, zprd, idsdump, atomsdump, iother, ix, iy, iz):
+    &#34;&#34;&#34;
+    Wrap line end points associated with atoms through periodic boundaries.
+    
+    Parameters:
+        time (int): Time stamp of the snapshot.
+        xprd, yprd, zprd (float): Periodicity in x, y, z directions.
+        idsdump (dict): Dictionary mapping atom IDs to dump indices.
+        atomsdump (list): List of atoms from the dump.
+        iother (int): Other index for wrapping.
+        ix, iy, iz (int): Column indices for x, y, z coordinates.
+    &#34;&#34;&#34;
+    try:
+        id_col = self.names[&#34;id&#34;]
+        end1x_col = self.names[&#34;end1x&#34;]
+        end1y_col = self.names[&#34;end1y&#34;]
+        end2x_col = self.names[&#34;end2x&#34;]
+        end2y_col = self.names[&#34;end2y&#34;]
+    except KeyError as e:
+        print(f&#34;Column name {e} not mapped. Use m.map() to assign column names.&#34;)
+        return
+
+    try:
+        isnap = self.findtime(time)
+    except Exception as e:
+        print(e)
+        return
+    snap = self.snaps[isnap]
+    atoms = snap.atoms
+
+    # idump = index of my line I in dump&#39;s atoms
+    # jdump = atom J in dump&#39;s atoms that atom I was owrapped on
+    # delx, dely = offset applied to atom I and thus to line I
+
+    for i in range(snap.nelements):
+        try:
+            tag = int(atoms[i][id_col])
+            idump = idsdump[tag]
+            jdump = idsdump[int(atomsdump[idump][iother])]
+            delx = (atomsdump[idump][ix] - atomsdump[jdump][ix]) * xprd
+            dely = (atomsdump[idump][iy] - atomsdump[jdump][iy]) * yprd
+            delz = (atomsdump[idump][iz] - atomsdump[jdump][iz]) * zprd
+            # Assuming z-coordinates need to be handled if present
+            # If not, the z-component remains unchanged
+            # Here, only x and y are being wrapped
+            atoms[i][end1x_col] += delx
+            atoms[i][end1y_col] += dely
+            atoms[i][end2x_col] += delx
+            atoms[i][end2y_col] += dely
+        except (KeyError, IndexError, ValueError) as e:
+            print(f&#34;Error in owrap: {e}&#34;)
+            continue</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.read_all"><code class="name flex">
+<span>def <span class="ident">read_all</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read all snapshots from the list of dump files.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_all(self):
+    &#34;&#34;&#34;
+    Read all snapshots from the list of dump files.
+    &#34;&#34;&#34;
+    for file in self.flist:
+        # Test for gzipped file
+        if file.endswith(&#34;.gz&#34;):
+            try:
+                f = popen(f&#34;{PIZZA_GUNZIP} -c {file}&#34;, &#39;r&#39;)
+            except Exception as e:
+                print(f&#34;Error opening gzipped file {file}: {e}&#34;)
+                continue
+        else:
+            try:
+                f = open(file, &#39;r&#39;)
+            except Exception as e:
+                print(f&#34;Error opening file {file}: {e}&#34;)
+                continue
+
+        # Read all snapshots in the current file
+        while True:
+            snap = self.read_snapshot(f)
+            if not snap:
+                break
+            self.snaps.append(snap)
+            print(snap.time, end=&#39; &#39;)
+            sys.stdout.flush()
+
+        f.close()
+    print()
+
+    # Sort entries by timestep and remove duplicates
+    self.snaps.sort(key=lambda x: x.time)
+    self.cull()
+
+    # Sort all node, element, nvalue, evalue arrays by ID
+    for snap in self.snaps:
+        if snap.nflag and snap.nodes is not None:
+            array = snap.nodes
+            ids = array[:, 0]
+            ordering = np.argsort(ids)
+            for i in range(array.shape[1]):
+                array[:, i] = np.take(array[:, i], ordering)
+        if snap.eflag and snap.elements is not None:
+            array = snap.elements
+            ids = array[:, 0]
+            ordering = np.argsort(ids)
+            for i in range(array.shape[1]):
+                array[:, i] = np.take(array[:, i], ordering)
+        if snap.nvalueflag and snap.nvalues is not None:
+            array = snap.nvalues
+            ids = array[:, 0]
+            ordering = np.argsort(ids)
+            for i in range(array.shape[1]):
+                array[:, i] = np.take(array[:, i], ordering)
+        if snap.evalueflag and snap.evalues is not None:
+            array = snap.evalues
+            ids = array[:, 0]
+            ordering = np.argsort(ids)
+            for i in range(array.shape[1]):
+                array[:, i] = np.take(array[:, i], ordering)
+
+    # Reference definitions of nodes and elements in previous timesteps
+    self.reference()
+    
+    self.nsnaps = len(self.snaps)
+    print(f&#34;read {self.nsnaps} snapshots&#34;)
+
+    # Select all timesteps and elements
+    self.tselect.all()</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.read_snapshot"><code class="name flex">
+<span>def <span class="ident">read_snapshot</span></span>(<span>self, f)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read a single snapshot from the file.</p>
+<h2 id="parameters">Parameters</h2>
+<p>f (file object): Opened file object to read from.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="mdump3.Snap" href="#mdump3.Snap">Snap</a></code></dt>
+<dd>Snapshot object, or None if failed.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_snapshot(self, f):
+    &#34;&#34;&#34;
+    Read a single snapshot from the file.
+    
+    Parameters:
+        f (file object): Opened file object to read from.
+    
+    Returns:
+        Snap: Snapshot object, or None if failed.
+    &#34;&#34;&#34;
+    try:
+        snap = Snap()
+        # Read and discard the first line (usually a comment or header)
+        item = f.readline()
+        if not item:
+            return None
+        # Read time stamp
+        line = f.readline()
+        if not line:
+            return None
+        snap.time = int(line.strip())
+        # Read snapshot type
+        line = f.readline()
+        if not line:
+            return None
+        if &#34;NUMBER OF NODES&#34; in line:
+            snap.nflag = 1
+        elif &#34;NUMBER OF TRIANGLES&#34; in line:
+            snap.eflag = 1
+        elif &#34;NUMBER OF TETS&#34; in line:
+            snap.eflag = 2
+        elif &#34;NUMBER OF SQUARES&#34; in line:
+            snap.eflag = 3
+        elif &#34;NUMBER OF CUBES&#34; in line:
+            snap.eflag = 4
+        elif &#34;NUMBER OF NODE VALUES&#34; in line:
+            snap.nvalueflag = 1
+        elif &#34;NUMBER OF ELEMENT VALUES&#34; in line:
+            snap.evalueflag = 1
+        else:
+            raise Exception(&#34;Unrecognized snapshot type in dump file.&#34;)
+        # Read number of nodes/elements/values
+        line = f.readline()
+        if not line:
+            return None
+        n = int(line.strip())
+
+        if snap.eflag:
+            snap.eselect = np.zeros(n, dtype=int)
+
+        if snap.nflag:
+            # Read box bounds
+            f.readline()  # Read past header
+            words = f.readline().split()
+            snap.xlo, snap.xhi = float(words[0]), float(words[1])
+            words = f.readline().split()
+            snap.ylo, snap.yhi = float(words[0]), float(words[1])
+            words = f.readline().split()
+            snap.zlo, snap.zhi = float(words[0]), float(words[1])
+            
+        f.readline()  # Read past another header
+
+        if n:
+            # Read node/element/value data
+            words = f.readline().split()
+            ncol = len(words)
+            data = []
+            data.append([float(value) for value in words])
+            for _ in range(1, n):
+                words = f.readline().split()
+                if not words:
+                    break
+                data.append([float(value) for value in words])
+            values = np.array(data, dtype=float)
+        else:
+            values = None
+
+        if snap.nflag:
+            snap.nodes = values
+            snap.nnodes = n
+        elif snap.eflag:
+            snap.elements = values
+            snap.nelements = n
+            snap.eselect = np.zeros(n, dtype=int)  # Initialize element selection
+        elif snap.nvalueflag:
+            snap.nvalues = values
+            snap.nnvalues = n
+        elif snap.evalueflag:
+            snap.evalues = values
+            snap.nevalues = n
+        return snap
+    except Exception as e:
+        print(f&#34;Error reading snapshot: {e}&#34;)
+        return None</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.reference"><code class="name flex">
+<span>def <span class="ident">reference</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Ensure every snapshot has node and element connectivity information by referencing previous snapshots.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reference(self):
+    &#34;&#34;&#34;
+    Ensure every snapshot has node and element connectivity information by referencing previous snapshots.
+    &#34;&#34;&#34;
+    for i in range(len(self.snaps)):
+        if not self.snaps[i].nflag:
+            for j in range(i, -1, -1):
+                if self.snaps[j].nflag:
+                    self.snaps[i].nflag = self.snaps[j].nflag
+                    self.snaps[i].nnodes = self.snaps[j].nnodes
+                    self.snaps[i].nodes = self.snaps[j].nodes
+                    self.snaps[i].xlo = self.snaps[j].xlo
+                    self.snaps[i].xhi = self.snaps[j].xhi
+                    self.snaps[i].ylo = self.snaps[j].ylo
+                    self.snaps[i].yhi = self.snaps[j].yhi
+                    self.snaps[i].zlo = self.snaps[j].zlo
+                    self.snaps[i].zhi = self.snaps[j].zhi
+                    break
+        if not self.snaps[i].nflag:
+            raise Exception(&#34;No nodal coordinates found in previous snapshots.&#34;)
+        if not self.snaps[i].eflag:
+            for j in range(i, -1, -1):
+                if self.snaps[j].eflag:
+                    self.snaps[i].eflag = self.snaps[j].eflag
+                    self.snaps[i].nelements = self.snaps[j].nelements
+                    self.snaps[i].elements = self.snaps[j].elements
+                    self.snaps[i].eselect = self.snaps[j].eselect
+                    break
+        if not self.snaps[i].eflag:
+            raise Exception(&#34;No element connections found in previous snapshots.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.sort"><code class="name flex">
+<span>def <span class="ident">sort</span></span>(<span>self, *args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sort snapshots by ID in all selected timesteps or one specified timestep.</p>
+<h2 id="parameters">Parameters</h2>
+<p>*args: If provided, sorts elements in the specified timestep.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sort(self, *args):
+    &#34;&#34;&#34;
+    Sort snapshots by ID in all selected timesteps or one specified timestep.
+    
+    Parameters:
+        *args: If provided, sorts elements in the specified timestep.
+    &#34;&#34;&#34;
+    if len(args) == 0:
+        print(&#34;Sorting selected snapshots ...&#34;)
+        if &#34;id&#34; not in self.names:
+            print(&#34;Column &#39;id&#39; not mapped. Use m.map() to assign column names.&#34;)
+            return
+        id_col = self.names[&#34;id&#34;]
+        for snap in self.snaps:
+            if snap.tselect:
+                self.sort_one(snap, id_col)
+    else:
+        try:
+            n = args[0]
+            i = self.findtime(n)
+            if &#34;id&#34; not in self.names:
+                print(&#34;Column &#39;id&#39; not mapped. Use m.map() to assign column names.&#34;)
+                return
+            id_col = self.names[&#34;id&#34;]
+            self.sort_one(self.snaps[i], id_col)
+        except Exception as e:
+            print(e)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.sort_one"><code class="name flex">
+<span>def <span class="ident">sort_one</span></span>(<span>self, snap, id_col)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sort elements in a single snapshot by ID column.</p>
+<h2 id="parameters">Parameters</h2>
+<p>snap (Snap): The snapshot to sort.
+id_col (int): The column index for 'id'.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sort_one(self, snap, id_col):
+    &#34;&#34;&#34;
+    Sort elements in a single snapshot by ID column.
+    
+    Parameters:
+        snap (Snap): The snapshot to sort.
+        id_col (int): The column index for &#39;id&#39;.
+    &#34;&#34;&#34;
+    if snap.elements is not None:
+        array = snap.elements
+        ids = array[:, id_col]
+        ordering = np.argsort(ids)
+        for i in range(array.shape[1]):
+            array[:, i] = np.take(array[:, i], ordering)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.time"><code class="name flex">
+<span>def <span class="ident">time</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get a list of all selected snapshot time stamps.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>List of time stamps.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def time(self):
+    &#34;&#34;&#34;
+    Get a list of all selected snapshot time stamps.
+    
+    Returns:
+        list: List of time stamps.
+    &#34;&#34;&#34;
+    return [snap.time for snap in self.snaps if snap.tselect]</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.vecs"><code class="name flex">
+<span>def <span class="ident">vecs</span></span>(<span>self, n, *columns)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract vector(s) of values for selected elements at a specific timestep.</p>
+<h2 id="parameters">Parameters</h2>
+<p>n (int): Timestep to extract vectors from.
+*columns (str): Column names to extract.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>List of vectors corresponding to the specified columns.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def vecs(self, n, *columns):
+    &#34;&#34;&#34;
+    Extract vector(s) of values for selected elements at a specific timestep.
+    
+    Parameters:
+        n (int): Timestep to extract vectors from.
+        *columns (str): Column names to extract.
+    
+    Returns:
+        list: List of vectors corresponding to the specified columns.
+    &#34;&#34;&#34;
+    try:
+        snap = self.snaps[self.findtime(n)]
+    except Exception as e:
+        print(e)
+        return []
+    if not snap.evalueflag:
+        raise Exception(&#34;Snapshot has no element values.&#34;)
+    
+    if len(columns) == 0:
+        raise Exception(&#34;No columns specified.&#34;)
+    
+    column_indices = []
+    for name in columns:
+        if name not in self.names:
+            print(f&#34;Unknown column name: {name}&#34;)
+            return []
+        column_indices.append(self.names[name])
+    
+    values = []
+    for col in column_indices:
+        vec = []
+        for i in range(snap.nelements):
+            if snap.eselect[i]:
+                vec.append(snap.evalues[i][col])
+        values.append(vec)
+    
+    if len(values) == 1:
+        return values[0]
+    else:
+        return values</code></pre>
+</details>
+</dd>
+<dt id="mdump3.mdump.viz"><code class="name flex">
+<span>def <span class="ident">viz</span></span>(<span>self, index, flag=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return mesh visualization information for a snapshot.</p>
+<h2 id="parameters">Parameters</h2>
+<p>index (int): Snapshot index or time stamp.
+flag (int): If 1, interpret index as time stamp.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple</code></dt>
+<dd>(time, box, atoms, bonds, tris, lines)
+atoms, bonds, lines are None.
+tris contain [id, type, x1, y1, z1, x2, y2, z2, x3, y3, z3, nx, ny, nz] for each triangle.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def viz(self, index, flag=0):
+    &#34;&#34;&#34;
+    Return mesh visualization information for a snapshot.
+    
+    Parameters:
+        index (int): Snapshot index or time stamp.
+        flag (int): If 1, interpret index as time stamp.
+    
+    Returns:
+        tuple: (time, box, atoms, bonds, tris, lines)
+               atoms, bonds, lines are None.
+               tris contain [id, type, x1, y1, z1, x2, y2, z2, x3, y3, z3, nx, ny, nz] for each triangle.
+    &#34;&#34;&#34;
+    if not flag:
+        isnap = index
+    else:
+        times = self.time()
+        n = len(times)
+        i = 0
+        while i &lt; n:
+            if times[i] &gt; index:
+                break
+            i += 1
+        isnap = i - 1
+    if isnap &lt; 0 or isnap &gt;= self.nsnaps:
+        return (-1, None, None, None, None, None)
+    snap = self.snaps[isnap]
+    
+    time = snap.time
+    box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+    if self.etype == &#34;&#34;:
+        type_col = -1
+    else:
+        if self.etype not in self.names:
+            print(f&#34;Unknown etype column: {self.etype}&#34;)
+            type_col = -1
+        else:
+            type_col = self.names[self.etype]
+
+    atoms = None
+    bonds = None
+
+    tris = []
+    nodes = snap.nodes
+    for i in range(snap.nelements):
+        if not snap.eselect[i]:
+            continue
+        element = snap.elements[i]
+        if snap.evalueflag:
+            evalue = snap.evalues[i]
+        else:
+            evalue = None
+
+        # Process based on element type
+        if snap.eflag == 1:
+            # Triangle
+            try:
+                v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                v3 = nodes[int(element[4]) - 1][2:5].tolist()
+            except IndexError:
+                print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                continue
+            list_vertices = v1 + v2 + v3
+            n = normal(list_vertices[0:3], list_vertices[3:6], list_vertices[6:9])
+            if type_col == -1:
+                tris.append([int(element[0]), int(element[1])] + list_vertices + n)
+            else:
+                tris.append([int(element[0]), int(evalue[type_col])] + list_vertices + n)
+
+        elif snap.eflag == 2:
+            # Tetrahedron - convert to 4 triangles
+            try:
+                v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                v4 = nodes[int(element[5]) - 1][2:5].tolist()
+            except IndexError:
+                print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                continue
+            tris_data = [
+                v1 + v2 + v4,
+                v2 + v3 + v4,
+                v1 + v4 + v3,
+                v1 + v3 + v2
+            ]
+            for tri_vertices in tris_data:
+                n = normal(tri_vertices[0:3], tri_vertices[3:6], tri_vertices[6:9])
+                if type_col == -1:
+                    tris.append([int(element[0]), int(element[1])] + tri_vertices + n)
+                else:
+                    tris.append([int(element[0]), int(evalue[type_col])] + tri_vertices + n)
+
+        elif snap.eflag == 3:
+            # Square - convert to 2 triangles
+            try:
+                v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                v4 = nodes[int(element[5]) - 1][2:5].tolist()
+            except IndexError:
+                print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                continue
+            tris_data = [
+                v1 + v2 + v3,
+                v1 + v3 + v4
+            ]
+            for tri_vertices in tris_data:
+                n = normal(tri_vertices[0:3], tri_vertices[3:6], tri_vertices[6:9])
+                if type_col == -1:
+                    tris.append([int(element[0]), int(element[1])] + tri_vertices + n)
+                else:
+                    tris.append([int(element[0]), int(evalue[type_col])] + tri_vertices + n)
+
+        elif snap.eflag == 4:
+            # Cube - convert to 12 triangles
+            try:
+                v1 = nodes[int(element[2]) - 1][2:5].tolist()
+                v2 = nodes[int(element[3]) - 1][2:5].tolist()
+                v3 = nodes[int(element[4]) - 1][2:5].tolist()
+                v4 = nodes[int(element[5]) - 1][2:5].tolist()
+                v5 = nodes[int(element[6]) - 1][2:5].tolist()
+                v6 = nodes[int(element[7]) - 1][2:5].tolist()
+                v7 = nodes[int(element[8]) - 1][2:5].tolist()
+                v8 = nodes[int(element[9]) - 1][2:5].tolist()
+            except IndexError:
+                print(f&#34;Error accessing nodes for element {i} in timestep {time}.&#34;)
+                continue
+            tris_data = [
+                # Lower z face
+                v1 + v3 + v2,
+                v1 + v4 + v3,
+                # Upper z face
+                v5 + v6 + v7,
+                v5 + v7 + v8,
+                # Lower y face
+                v1 + v2 + v6,
+                v1 + v6 + v5,
+                # Upper y face
+                v4 + v7 + v3,
+                v4 + v8 + v7,
+                # Lower x face
+                v1 + v8 + v4,
+                v1 + v5 + v8,
+                # Upper x face
+                v2 + v3 + v7,
+                v2 + v7 + v6
+            ]
+            for tri_vertices in tris_data:
+                n = normal(tri_vertices[0:3], tri_vertices[3:6], tri_vertices[6:9])
+                if type_col == -1:
+                    tris.append([int(element[0]), int(element[1])] + tri_vertices + n)
+                else:
+                    tris.append([int(element[0]), int(evalue[type_col])] + tri_vertices + n)
+    
+    # Lines are not used in viz for mesh dumps
+    lines = []
+
+    return (time, box, atoms, bonds, tris, lines)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="mdump3.tselect"><code class="flex name class">
+<span>class <span class="ident">tselect</span></span>
+<span>(</span><span>data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Time selection class for selecting timesteps in mdump.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class tselect:
+    &#34;&#34;&#34;
+    Time selection class for selecting timesteps in mdump.
+    &#34;&#34;&#34;
+    
+    def __init__(self, data):
+        self.data = data
+    
+    # --------------------------------------------------------------------
+    
+    def all(self):
+        &#34;&#34;&#34;
+        Select all timesteps.
+        &#34;&#34;&#34;
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 1
+        data.nselect = len(data.snaps)
+        data.eselect.all()
+        print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+    
+    # --------------------------------------------------------------------
+    
+    def one(self, n):
+        &#34;&#34;&#34;
+        Select only timestep N.
+        
+        Parameters:
+            n (int): Timestep to select.
+        &#34;&#34;&#34;
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 0
+        try:
+            i = data.findtime(n)
+            data.snaps[i].tselect = 1
+            data.nselect = 1
+            data.eselect.all()
+            print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+        except Exception as e:
+            print(e)
+    
+    # --------------------------------------------------------------------
+    
+    def none(self):
+        &#34;&#34;&#34;
+        Deselect all timesteps.
+        &#34;&#34;&#34;
+        data = self.data
+        for snap in data.snaps:
+            snap.tselect = 0
+        data.nselect = 0
+        print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+    
+    # --------------------------------------------------------------------
+    
+    def skip(self, M):
+        &#34;&#34;&#34;
+        Select every Mth step.
+        
+        Parameters:
+            M (int): Interval for selecting timesteps.
+        &#34;&#34;&#34;
+        data = self.data
+        count = M - 1
+        for snap in data.snaps:
+            if not snap.tselect:
+                continue
+            count += 1
+            if count == M:
+                count = 0
+                continue
+            snap.tselect = 0
+            data.nselect -= 1
+        data.eselect.all()
+        print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+    
+    # --------------------------------------------------------------------
+    
+    def test(self, teststr):
+        &#34;&#34;&#34;
+        Select timesteps based on a Python Boolean expression.
+        
+        Parameters:
+            teststr (str): Boolean expression using $t for timestep value.
+                           Example: &#34;$t &gt;= 100 and $t &lt; 10000&#34;
+        &#34;&#34;&#34;
+        data = self.data
+        snaps = data.snaps
+        # Replace $t with snaps[i].time and compile the command
+        teststr_replaced = teststr.replace(&#34;$t&#34;, &#34;snap.time&#34;)
+        cmd = f&#34;flag = {teststr_replaced}&#34;
+        try:
+            ccmd = compile(cmd, &#39;&#39;, &#39;single&#39;)
+        except Exception as e:
+            print(f&#34;Error compiling test string: {e}&#34;)
+            return
+        for snap in snaps:
+            if not snap.tselect:
+                continue
+            try:
+                exec(ccmd, {&#34;snap&#34;: snap})
+                if not flag:
+                    snap.tselect = 0
+                    data.nselect -= 1
+            except Exception as e:
+                print(f&#34;Error executing test string on timestep {snap.time}: {e}&#34;)
+        data.eselect.all()
+        print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="mdump3.tselect.all"><code class="name flex">
+<span>def <span class="ident">all</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Select all timesteps.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def all(self):
+    &#34;&#34;&#34;
+    Select all timesteps.
+    &#34;&#34;&#34;
+    data = self.data
+    for snap in data.snaps:
+        snap.tselect = 1
+    data.nselect = len(data.snaps)
+    data.eselect.all()
+    print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.tselect.none"><code class="name flex">
+<span>def <span class="ident">none</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deselect all timesteps.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def none(self):
+    &#34;&#34;&#34;
+    Deselect all timesteps.
+    &#34;&#34;&#34;
+    data = self.data
+    for snap in data.snaps:
+        snap.tselect = 0
+    data.nselect = 0
+    print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.tselect.one"><code class="name flex">
+<span>def <span class="ident">one</span></span>(<span>self, n)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Select only timestep N.</p>
+<h2 id="parameters">Parameters</h2>
+<p>n (int): Timestep to select.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def one(self, n):
+    &#34;&#34;&#34;
+    Select only timestep N.
+    
+    Parameters:
+        n (int): Timestep to select.
+    &#34;&#34;&#34;
+    data = self.data
+    for snap in data.snaps:
+        snap.tselect = 0
+    try:
+        i = data.findtime(n)
+        data.snaps[i].tselect = 1
+        data.nselect = 1
+        data.eselect.all()
+        print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)
+    except Exception as e:
+        print(e)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.tselect.skip"><code class="name flex">
+<span>def <span class="ident">skip</span></span>(<span>self, M)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Select every Mth step.</p>
+<h2 id="parameters">Parameters</h2>
+<p>M (int): Interval for selecting timesteps.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def skip(self, M):
+    &#34;&#34;&#34;
+    Select every Mth step.
+    
+    Parameters:
+        M (int): Interval for selecting timesteps.
+    &#34;&#34;&#34;
+    data = self.data
+    count = M - 1
+    for snap in data.snaps:
+        if not snap.tselect:
+            continue
+        count += 1
+        if count == M:
+            count = 0
+            continue
+        snap.tselect = 0
+        data.nselect -= 1
+    data.eselect.all()
+    print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="mdump3.tselect.test"><code class="name flex">
+<span>def <span class="ident">test</span></span>(<span>self, teststr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Select timesteps based on a Python Boolean expression.</p>
+<h2 id="parameters">Parameters</h2>
+<p>teststr (str): Boolean expression using $t for timestep value.
+Example: "$t &gt;= 100 and $t &lt; 10000"</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test(self, teststr):
+    &#34;&#34;&#34;
+    Select timesteps based on a Python Boolean expression.
+    
+    Parameters:
+        teststr (str): Boolean expression using $t for timestep value.
+                       Example: &#34;$t &gt;= 100 and $t &lt; 10000&#34;
+    &#34;&#34;&#34;
+    data = self.data
+    snaps = data.snaps
+    # Replace $t with snaps[i].time and compile the command
+    teststr_replaced = teststr.replace(&#34;$t&#34;, &#34;snap.time&#34;)
+    cmd = f&#34;flag = {teststr_replaced}&#34;
+    try:
+        ccmd = compile(cmd, &#39;&#39;, &#39;single&#39;)
+    except Exception as e:
+        print(f&#34;Error compiling test string: {e}&#34;)
+        return
+    for snap in snaps:
+        if not snap.tselect:
+            continue
+        try:
+            exec(ccmd, {&#34;snap&#34;: snap})
+            if not flag:
+                snap.tselect = 0
+                data.nselect -= 1
+        except Exception as e:
+            print(f&#34;Error executing test string on timestep {snap.time}: {e}&#34;)
+    data.eselect.all()
+    print(f&#34;{data.nselect} snapshots selected out of {data.nsnaps}&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="mdump3.normal" href="#mdump3.normal">normal</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="mdump3.Snap" href="#mdump3.Snap">Snap</a></code></h4>
+</li>
+<li>
+<h4><code><a title="mdump3.eselect" href="#mdump3.eselect">eselect</a></code></h4>
+<ul class="">
+<li><code><a title="mdump3.eselect.all" href="#mdump3.eselect.all">all</a></code></li>
+<li><code><a title="mdump3.eselect.test" href="#mdump3.eselect.test">test</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="mdump3.mdump" href="#mdump3.mdump">mdump</a></code></h4>
+<ul class="two-column">
+<li><code><a title="mdump3.mdump.compare_time" href="#mdump3.mdump.compare_time">compare_time</a></code></li>
+<li><code><a title="mdump3.mdump.cull" href="#mdump3.mdump.cull">cull</a></code></li>
+<li><code><a title="mdump3.mdump.delete" href="#mdump3.mdump.delete">delete</a></code></li>
+<li><code><a title="mdump3.mdump.iterator" href="#mdump3.mdump.iterator">iterator</a></code></li>
+<li><code><a title="mdump3.mdump.map" href="#mdump3.mdump.map">map</a></code></li>
+<li><code><a title="mdump3.mdump.mviz" href="#mdump3.mdump.mviz">mviz</a></code></li>
+<li><code><a title="mdump3.mdump.next" href="#mdump3.mdump.next">next</a></code></li>
+<li><code><a title="mdump3.mdump.owrap" href="#mdump3.mdump.owrap">owrap</a></code></li>
+<li><code><a title="mdump3.mdump.read_all" href="#mdump3.mdump.read_all">read_all</a></code></li>
+<li><code><a title="mdump3.mdump.read_snapshot" href="#mdump3.mdump.read_snapshot">read_snapshot</a></code></li>
+<li><code><a title="mdump3.mdump.reference" href="#mdump3.mdump.reference">reference</a></code></li>
+<li><code><a title="mdump3.mdump.sort" href="#mdump3.mdump.sort">sort</a></code></li>
+<li><code><a title="mdump3.mdump.sort_one" href="#mdump3.mdump.sort_one">sort_one</a></code></li>
+<li><code><a title="mdump3.mdump.time" href="#mdump3.mdump.time">time</a></code></li>
+<li><code><a title="mdump3.mdump.vecs" href="#mdump3.mdump.vecs">vecs</a></code></li>
+<li><code><a title="mdump3.mdump.viz" href="#mdump3.mdump.viz">viz</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="mdump3.tselect" href="#mdump3.tselect">tselect</a></code></h4>
+<ul class="">
+<li><code><a title="mdump3.tselect.all" href="#mdump3.tselect.all">all</a></code></li>
+<li><code><a title="mdump3.tselect.none" href="#mdump3.tselect.none">none</a></code></li>
+<li><code><a title="mdump3.tselect.one" href="#mdump3.tselect.one">one</a></code></li>
+<li><code><a title="mdump3.tselect.skip" href="#mdump3.tselect.skip">skip</a></code></li>
+<li><code><a title="mdump3.tselect.test" href="#mdump3.tselect.test">test</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

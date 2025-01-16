@@ -1,9 +1,39 @@
 {
+    "pizza.converted.bdump3": {
+        "full_path": "/home/olivi/han/dev/Pizza3/pizza/converted/bdump3.py",
+        "local_path": "pizza/converted/bdump3.py",
+        "url_anchor": "#pizza_converted_bdump3",
+        "number_of_examples": 1
+    },
+    "pizza.converted.ldump3": {
+        "full_path": "/home/olivi/han/dev/Pizza3/pizza/converted/ldump3.py",
+        "local_path": "pizza/converted/ldump3.py",
+        "url_anchor": "#pizza_converted_ldump3",
+        "number_of_examples": 1
+    },
+    "pizza.converted.mdump3": {
+        "full_path": "/home/olivi/han/dev/Pizza3/pizza/converted/mdump3.py",
+        "local_path": "pizza/converted/mdump3.py",
+        "url_anchor": "#pizza_converted_mdump3",
+        "number_of_examples": 1
+    },
+    "pizza.converted.tdump3": {
+        "full_path": "/home/olivi/han/dev/Pizza3/pizza/converted/tdump3.py",
+        "local_path": "pizza/converted/tdump3.py",
+        "url_anchor": "#pizza_converted_tdump3",
+        "number_of_examples": 1
+    },
+    "pizza.data3_legacy": {
+        "full_path": "/home/olivi/han/dev/Pizza3/pizza/data3_legacy.py",
+        "local_path": "pizza/data3_legacy.py",
+        "url_anchor": "#pizza_data3_legacy",
+        "number_of_examples": 1
+    },
     "pizza.data3": {
         "full_path": "/home/olivi/han/dev/Pizza3/pizza/data3.py",
         "local_path": "pizza/data3.py",
         "url_anchor": "#pizza_data3",
-        "number_of_examples": 1
+        "number_of_examples": 2
     },
     "pizza.dforcefield": {
         "full_path": "/home/olivi/han/dev/Pizza3/pizza/dforcefield.py",
@@ -17,11 +47,17 @@
         "url_anchor": "#pizza_dscript",
         "number_of_examples": 46
     },
+    "pizza.dump3_legacy": {
+        "full_path": "/home/olivi/han/dev/Pizza3/pizza/dump3_legacy.py",
+        "local_path": "pizza/dump3_legacy.py",
+        "url_anchor": "#pizza_dump3_legacy",
+        "number_of_examples": 1
+    },
     "pizza.dump3": {
         "full_path": "/home/olivi/han/dev/Pizza3/pizza/dump3.py",
         "local_path": "pizza/dump3.py",
         "url_anchor": "#pizza_dump3",
-        "number_of_examples": 1
+        "number_of_examples": 2
     },
     "pizza.forcefield": {
         "full_path": "/home/olivi/han/dev/Pizza3/pizza/forcefield.py",

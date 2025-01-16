@@ -1,6 +1,13 @@
+pizza/converted/bdump3.py
+pizza/converted/cdata3.py
+pizza/converted/ldump3.py
+pizza/converted/mdump3.py
+pizza/converted/tdump3.py
+pizza/data3_legacy.py
 pizza/data3.py
 pizza/dforcefield.py
 pizza/dscript.py
+pizza/dump3_legacy.py
 pizza/dump3.py
 pizza/forcefield.py
 pizza/generic.py

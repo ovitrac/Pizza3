@@ -256,7 +256,7 @@ __version__ = "0.99995"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2025-01-01 (community)
+# INRAE\Olivier Vitrac - rev. 2025-01-15 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -268,6 +268,7 @@ __version__ = "0.99995"
 # 2024-12-30 rename parse as generator, parsesyntax and authentificaiton (consistent with dscript)
 # 2024-12-31 add base_class_name
 # 2025-01-01 update the copy method to pass updated parameters
+# 2025-01-15 fix error message if the base_name is not recognized
 
 
 # Dependencies
@@ -1986,7 +1987,8 @@ class dforcefield:
 
         #♠ Dynamically set the base class based on the string value (e.g., "tlsph")
         resolved_base_class  = cls._load_base_class(base_class_name)
-        if resolved_base_class  is None or not issubclass(resolved_base_class, forcefield):
+        if resolved_base_class is None or not issubclass(resolved_base_class, forcefield):
+            value = str(resolved_base_class)
             raise ValueError(f"Invalid base_class: '{value}' must be a subclass of forcefield.")
 
         # Step 6: Create and return the new dforcefield instance

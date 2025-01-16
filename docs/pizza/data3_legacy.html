@@ -1,0 +1,4108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>data3_legacy API documentation</title>
+<meta name="description" content="`data` Class (legacy code) …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>data3_legacy</code></h1>
+</header>
+<section id="section-intro">
+<h1 id="data-class-legacy-code"><code><a title="data3_legacy.data" href="#data3_legacy.data">data</a></code> Class (legacy code)</h1>
+<p>The <code><a title="data3_legacy.data" href="#data3_legacy.data">data</a></code> class provides tools to read, write, and manipulate LAMMPS data files, enabling seamless integration with the <code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code> class for restart generation and simulation data management.</p>
+<p>This is the legacy module, use pizza.data3 instead.</p>
+<hr>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Input Handling</strong>:</li>
+<li>Supports single or multiple data files, including gzipped files.</li>
+<li>
+<p>Create empty data objects or initialize from an existing <code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code> object.</p>
+</li>
+<li>
+<p><strong>Headers and Sections</strong>:</p>
+</li>
+<li>Access and modify headers, including atom counts and box dimensions.</li>
+<li>
+<p>Define, reorder, append, and replace columns in data file sections.</p>
+</li>
+<li>
+<p><strong>Integration with <code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code></strong>:</p>
+</li>
+<li>Generate restart files from <code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code> snapshots.</li>
+<li>
+<p>Replace atomic positions and velocities in <code>Atoms</code> and <code>Velocities</code> sections.</p>
+</li>
+<li>
+<p><strong>Visualization</strong>:</p>
+</li>
+<li>Extract atoms and bonds for visualization tools.</li>
+<li>Iterate over single data file snapshots (compatible with <code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code>).</li>
+</ul>
+<hr>
+<h2 id="usage">Usage</h2>
+<h3 id="initialization">Initialization</h3>
+<ul>
+<li>
+<p><strong>From a File</strong>:
+<code>python
+d = data("data.poly")
+# Read a LAMMPS data file</code></p>
+</li>
+<li>
+<p><strong>Create an Empty Object</strong>:
+<code>python
+d = data()
+# Create an empty data object</code></p>
+</li>
+<li>
+<p><strong>From a <code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code> Object</strong>:
+<code>python
+d = data(dump_obj, timestep)
+# Generate data object from dump snapshot</code></p>
+</li>
+</ul>
+<h3 id="accessing-data">Accessing Data</h3>
+<ul>
+<li>
+<p><strong>Headers</strong>:
+<code>python
+d.headers["atoms"] = 1500
+# Set atom count in header</code></p>
+</li>
+<li>
+<p><strong>Sections</strong>:
+<code>python
+d.sections["Atoms"] = lines
+# Define the &lt;code&gt;Atoms&lt;/code&gt; section</code></p>
+</li>
+</ul>
+<h3 id="manipulation">Manipulation</h3>
+<ul>
+<li>
+<p><strong>Column Mapping</strong>:
+<code>python
+d.map(1, "id", 3, "x")
+# Assign names to columns</code></p>
+</li>
+<li>
+<p><strong>Reorder Columns</strong>:
+<code>python
+d.reorder("Atoms", 1, 3, 2, 4)
+# Reorder columns in a section</code></p>
+</li>
+<li>
+<p><strong>Replace or Append Data</strong>:
+<code>python
+d.replace("Atoms", 5, vec)
+# Replace a column in &lt;code&gt;Atoms&lt;/code&gt;
+d.append("Atoms", vec)
+# Append a new column to &lt;code&gt;Atoms&lt;/code&gt;</code></p>
+</li>
+<li>
+<p><strong>Delete Headers or Sections</strong>:
+<code>python
+d.delete("Bonds")
+# Remove the &lt;code&gt;Bonds&lt;/code&gt; section</code></p>
+</li>
+</ul>
+<h3 id="output">Output</h3>
+<ul>
+<li><strong>Write to a File</strong>:
+<code>python
+d.write("data.new")
+# Write the data object to a file</code></li>
+</ul>
+<h3 id="visualization">Visualization</h3>
+<ul>
+<li><strong>Extract Data for Visualization</strong>:
+<code>python
+time, box, atoms, bonds, tris, lines = d.viz(0)</code></li>
+</ul>
+<h3 id="integration-with-dump">Integration with <code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code></h3>
+<ul>
+<li><strong>Replace Atomic Positions</strong>:
+<code>python
+d.newxyz(dump_obj, timestep)
+# Replace atomic positions with &lt;code&gt;&lt;a title="data3_legacy.dump" href="#data3_legacy.dump"&gt;dump&lt;/a&gt;&lt;/code&gt; data</code></li>
+</ul>
+<hr>
+<h2 id="examples">Examples</h2>
+<h3 id="basic-usage">Basic Usage</h3>
+<pre><code class="language-python">d = data(&quot;data.poly&quot;)             # Load a LAMMPS data file
+d.headers[&quot;atoms&quot;] = 2000         # Update atom count
+d.reorder(&quot;Atoms&quot;, 1, 3, 2, 4)    # Reorder columns in `Atoms`
+d.write(&quot;data.new&quot;)               # Save to a new file
+</code></pre>
+<h3 id="restart-generation">Restart Generation</h3>
+<pre><code class="language-python">dump_obj = dump(&quot;dump.poly&quot;)
+d = data(dump_obj, 1000)          # Create data object from dump
+d.write(&quot;data.restart&quot;)           # Write restart file
+</code></pre>
+<h3 id="visualization_1">Visualization</h3>
+<pre><code class="language-python">time, box, atoms, bonds, tris, lines = d.viz(0)
+</code></pre>
+<hr>
+<h2 id="properties">Properties</h2>
+<ul>
+<li><strong>Headers</strong>:</li>
+<li><code>atoms</code>: Number of atoms in the data file.</li>
+<li><code>atom types</code>: Number of atom types.</li>
+<li>
+<p><code>xlo xhi</code>, <code>ylo yhi</code>, <code>zlo zhi</code>: Box dimensions.</p>
+</li>
+<li>
+<p><strong>Sections</strong>:</p>
+</li>
+<li><code>Atoms</code>: Atomic data (e.g., ID, type, coordinates).</li>
+<li><code>Velocities</code>: Atomic velocities (optional).</li>
+<li>Additional sections for bonds, angles, etc.</li>
+</ul>
+<hr>
+<h2 id="notes">Notes</h2>
+<ul>
+<li><strong>Compatibility</strong>: Fully compatible with <code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code> for restart and visualization tasks.</li>
+<li><strong>Error Handling</strong>: Automatically validates headers and sections for consistency.</li>
+<li><strong>Extensibility</strong>: Easily add or modify headers, sections, and attributes.</li>
+</ul>
+<hr>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+&#34;&#34;&#34;
+# `data` Class (legacy code)
+
+The `data` class provides tools to read, write, and manipulate LAMMPS data files, enabling seamless integration with the `dump` class for restart generation and simulation data management.
+
+This is the legacy module, use pizza.data3 instead.
+
+---
+
+## Features
+
+- **Input Handling**:
+  - Supports single or multiple data files, including gzipped files.
+  - Create empty data objects or initialize from an existing `dump` object.
+
+- **Headers and Sections**:
+  - Access and modify headers, including atom counts and box dimensions.
+  - Define, reorder, append, and replace columns in data file sections.
+
+- **Integration with `dump`**:
+  - Generate restart files from `dump` snapshots.
+  - Replace atomic positions and velocities in `Atoms` and `Velocities` sections.
+
+- **Visualization**:
+  - Extract atoms and bonds for visualization tools.
+  - Iterate over single data file snapshots (compatible with `dump`).
+
+---
+
+## Usage
+
+### Initialization
+- **From a File**:
+  ```python
+  d = data(&#34;data.poly&#34;)          # Read a LAMMPS data file
+  ```
+
+- **Create an Empty Object**:
+  ```python
+  d = data()                     # Create an empty data object
+  ```
+
+- **From a `dump` Object**:
+  ```python
+  d = data(dump_obj, timestep)   # Generate data object from dump snapshot
+  ```
+
+### Accessing Data
+- **Headers**:
+  ```python
+  d.headers[&#34;atoms&#34;] = 1500       # Set atom count in header
+  ```
+
+- **Sections**:
+  ```python
+  d.sections[&#34;Atoms&#34;] = lines     # Define the `Atoms` section
+  ```
+
+### Manipulation
+- **Column Mapping**:
+  ```python
+  d.map(1, &#34;id&#34;, 3, &#34;x&#34;)          # Assign names to columns
+  ```
+
+- **Reorder Columns**:
+  ```python
+  d.reorder(&#34;Atoms&#34;, 1, 3, 2, 4)  # Reorder columns in a section
+  ```
+
+- **Replace or Append Data**:
+  ```python
+  d.replace(&#34;Atoms&#34;, 5, vec)      # Replace a column in `Atoms`
+  d.append(&#34;Atoms&#34;, vec)          # Append a new column to `Atoms`
+  ```
+
+- **Delete Headers or Sections**:
+  ```python
+  d.delete(&#34;Bonds&#34;)               # Remove the `Bonds` section
+  ```
+
+### Output
+- **Write to a File**:
+  ```python
+  d.write(&#34;data.new&#34;)             # Write the data object to a file
+  ```
+
+### Visualization
+- **Extract Data for Visualization**:
+  ```python
+  time, box, atoms, bonds, tris, lines = d.viz(0)
+  ```
+
+### Integration with `dump`
+- **Replace Atomic Positions**:
+  ```python
+  d.newxyz(dump_obj, timestep)    # Replace atomic positions with `dump` data
+  ```
+
+---
+
+## Examples
+
+### Basic Usage
+```python
+d = data(&#34;data.poly&#34;)             # Load a LAMMPS data file
+d.headers[&#34;atoms&#34;] = 2000         # Update atom count
+d.reorder(&#34;Atoms&#34;, 1, 3, 2, 4)    # Reorder columns in `Atoms`
+d.write(&#34;data.new&#34;)               # Save to a new file
+```
+
+### Restart Generation
+```python
+dump_obj = dump(&#34;dump.poly&#34;)
+d = data(dump_obj, 1000)          # Create data object from dump
+d.write(&#34;data.restart&#34;)           # Write restart file
+```
+
+### Visualization
+```python
+time, box, atoms, bonds, tris, lines = d.viz(0)
+```
+
+---
+
+## Properties
+- **Headers**:
+  - `atoms`: Number of atoms in the data file.
+  - `atom types`: Number of atom types.
+  - `xlo xhi`, `ylo yhi`, `zlo zhi`: Box dimensions.
+
+- **Sections**:
+  - `Atoms`: Atomic data (e.g., ID, type, coordinates).
+  - `Velocities`: Atomic velocities (optional).
+  - Additional sections for bonds, angles, etc.
+
+---
+
+## Notes
+- **Compatibility**: Fully compatible with `dump` for restart and visualization tasks.
+- **Error Handling**: Automatically validates headers and sections for consistency.
+- **Extensibility**: Easily add or modify headers, sections, and attributes.
+
+---
+&#34;&#34;&#34;
+
+
+__project__ = &#34;Pizza3&#34;
+__author__ = &#34;Olivier Vitrac&#34;
+__copyright__ = &#34;Copyright 2022&#34;
+__credits__ = [&#34;Steve Plimpton&#34;, &#34;Olivier Vitrac&#34;]
+__license__ = &#34;GPLv3&#34;
+__maintainer__ = &#34;Olivier Vitrac&#34;
+__email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
+__version__ = &#34;1.0&#34;
+
+
+# Pizza.py toolkit, www.cs.sandia.gov/~sjplimp/pizza.html
+# Steve Plimpton, sjplimp@sandia.gov, Sandia National Laboratories
+#
+# Copyright (2005) Sandia Corporation.  Under the terms of Contract
+# DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+# certain rights in this software.  This software is distributed under
+# the GNU General Public License.
+
+# data tool
+
+# Code converted to pyton 3.x
+# INRAE\olivier.vitrac@agroparistech.fr
+#
+# last release
+# 2022-02-03 - add flist, __repr__
+# 2022-02-04 - add append and start to add comments
+# 2022-02-10 - first implementation of a full restart object from a dump object
+# 2022-02-12 - revised append method, more robust, more verbose
+# 2024-12-08 - updated help
+# 2025-01-15 - module renamed pizza.data3_legacy
+
+oneline = &#34;Read, write, manipulate LAMMPS data files&#34;
+
+docstr = &#34;&#34;&#34;
+d = data(&#34;data.poly&#34;)            read a LAMMPS data file, can be gzipped
+d = data()                       create an empty data file
+
+d.map(1,&#34;id&#34;,3,&#34;x&#34;)              assign names to atom columns (1-N)
+
+coeffs = d.get(&#34;Pair Coeffs&#34;)    extract info from data file section
+q = d.get(&#34;Atoms&#34;,4)
+
+  1 arg = all columns returned as 2d array of floats
+  2 args = Nth column returned as vector of floats
+
+d.reorder(&#34;Atoms&#34;,1,3,2,4,5)     reorder columns (1-N) in a data file section
+
+  1,3,2,4,5 = new order of previous columns, can delete columns this way
+
+d.title = &#34;My LAMMPS data file&#34;  set title of the data file
+d.headers[&#34;atoms&#34;] = 1500        set a header value
+d.sections[&#34;Bonds&#34;] = lines      set a section to list of lines (with newlines)
+d.delete(&#34;bonds&#34;)                delete a keyword or section of data file
+d.delete(&#34;Bonds&#34;)
+d.replace(&#34;Atoms&#34;,5,vec)         replace Nth column of section with vector
+d.newxyz(dmp,1000)               replace xyz in Atoms with xyz of snapshot N
+
+  newxyz assumes id,x,y,z are defined in both data and dump files
+    also replaces ix,iy,iz if they are defined
+
+index,time,flag = d.iterator(0/1)          loop over single data file snapshot
+time,box,atoms,bonds,tris,lines = d.viz(index)   return list of viz objects
+
+  iterator() and viz() are compatible with equivalent dump calls
+  iterator() called with arg = 0 first time, with arg = 1 on subsequent calls
+    index = timestep index within dump object (only 0 for data file)
+    time = timestep value (only 0 for data file)
+    flag = -1 when iteration is done, 1 otherwise
+  viz() returns info for specified timestep index (must be 0)
+    time = 0
+    box = [xlo,ylo,zlo,xhi,yhi,zhi]
+    atoms = id,type,x,y,z for each atom as 2d array
+    bonds = id,type,x1,y1,z1,x2,y2,z2,t1,t2 for each bond as 2d array
+      NULL if bonds do not exist
+    tris = NULL
+    lines = NULL
+
+d.write(&#34;data.new&#34;)             write a LAMMPS data file
+&#34;&#34;&#34;
+
+# History
+#   8/05, Steve Plimpton (SNL): original version
+#   11/07, added triclinic box support
+
+# ToDo list
+
+# Variables
+#   title = 1st line of data file
+#   names = dictionary with atom attributes as keys, col #s as values
+#   headers = dictionary with header name as key, value or tuple as values
+#   sections = dictionary with section name as key, array of lines as values
+#   nselect = 1 = # of snapshots
+
+# Imports and external programs
+
+# External dependency
+from os import popen
+import numpy as np
+
+# Dependecy for the creation of DATA restart object from a DUMP object
+from pizza.dump3 import dump
+
+__all__ = [&#39;data&#39;, &#39;dump&#39;]
+
+#try:
+#    tmp = PIZZA_GUNZIP
+#except:
+PIZZA_GUNZIP = &#34;gunzip&#34;
+
+# Class definition
+
+
+class data:
+
+    # --------------------------------------------------------------------
+
+    def __init__(self, *list):
+        self.nselect = 1
+
+        if len(list) == 0:
+
+        # ========================================
+        # Default Constructor (empty object)
+        # ========================================
+
+            self.title = &#34;LAMMPS data file&#34;
+            self.names = {}
+            self.headers = {}
+            self.sections = {}
+            self.flist = []
+            self.restart = False
+            return
+
+        elif isinstance(list[0],dump):
+
+        # ========================================
+        # Constructor from an existing DUMP object
+        # ========================================
+
+            X = list[0]     # supplied dump object
+            t = X.time()
+            nt = len(t)
+            if len(list)&gt;1:
+                tselect = list[1]
+                if tselect not in t:
+                    raise ValueError(&#34;the input time is not available in the dump object&#34;)
+            else:
+                tselect = t[-1]
+            itselect = next(i for i in range(nt) if t[i]==tselect)
+            # set object title
+            self.title = &#39;LAMMPS data file (restart from &#34;%s&#34; t = %0.5g (frame %d of %d))&#39; %  \
+                (X.flist[0],tselect,itselect,nt)
+            # set default names                       ------------- HEADERS SECTION -------------
+            self.names = {}
+            X.tselect.one(tselect)
+            snap = X.snaps[itselect]
+            # set headers
+            self.headers = {    &#39;atoms&#39;: snap.natoms,
+                                &#39;atom types&#39;: X.minmax(&#34;type&#34;)[1],
+                                &#39;xlo xhi&#39;: (snap.xlo, snap.xhi),
+                                &#39;ylo yhi&#39;: (snap.ylo, snap.yhi),
+                                &#39;zlo zhi&#39;: (snap.zlo, snap.zhi)}
+            # Default sections
+            self.sections = {}
+            # set atoms (specific to your style/kind) ------------- ATOMS SUBSECTION -------------
+            template_atoms = {&#34;smd&#34;: [&#34;id&#34;,&#34;type&#34;,&#34;mol&#34;,&#34;c_vol&#34;, &#34;mass&#34;, &#34;radius&#34;,
+                                      &#34;c_contact_radius&#34;, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;, &#34;f_1[1]&#34;, &#34;f_1[2]&#34;, &#34;f_1[3]&#34;] }
+            if X.kind(template_atoms[&#34;smd&#34;]):
+                for col in template_atoms[&#34;smd&#34;]:
+                    self.append(&#34;Atoms&#34;, X.vecs(tselect, col), col in [&#34;id&#34;,&#34;type&#34;,&#34;mol&#34;],col)
+            else:
+                raise ValueError(&#34;Please add your ATOMS section in the constructor&#34;)
+            # set velocities (if required)           ------------- VELOCITIES SUBSECTION -------------
+            template_velocities = {&#34;smd&#34;: [&#34;id&#34;,&#34;vx&#34;,&#34;vy&#34;,&#34;vz&#34;]}
+            if X.kind(template_atoms[&#34;smd&#34;]):
+                if X.kind(template_velocities[&#34;smd&#34;]):
+                    for col in template_velocities[&#34;smd&#34;]:
+                        self.append(&#34;Velocities&#34;, X.vecs(tselect, col), col == &#34;id&#34;,col)
+                else:
+                    raise ValueError(&#34;the velocities are missing for the style SMD&#34;)
+            # store filename
+            self.flist = list[0].flist
+            self.restart = True
+            return
+
+        # ===========================================================
+        # Regular constructor from DATA file (supplied as filename)
+        # ===========================================================
+
+        flist = list
+        file = list[0]
+        if file[-3:] == &#34;.gz&#34;:
+            f = popen(&#34;%s -c %s&#34; % (PIZZA_GUNZIP, file), &#34;r&#34;)
+        else:
+            f = open(file)
+
+        self.title = f.readline()
+        self.names = {}
+
+        headers = {}
+        while 1:
+            line = f.readline()
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            found = 0
+            for keyword in hkeywords:
+                if line.find(keyword) &gt;= 0:
+                    found = 1
+                    words = line.split()
+                    if (
+                        keyword == &#34;xlo xhi&#34;
+                        or keyword == &#34;ylo yhi&#34;
+                        or keyword == &#34;zlo zhi&#34;
+                    ):
+                        headers[keyword] = (float(words[0]), float(words[1]))
+                    elif keyword == &#34;xy xz yz&#34;:
+                        headers[keyword] = (
+                            float(words[0]),
+                            float(words[1]),
+                            float(words[2]),
+                        )
+                    else:
+                        headers[keyword] = int(words[0])
+            if not found:
+                break
+
+        sections = {}
+        while 1:
+            found = 0
+            for pair in skeywords:
+                keyword, length = pair[0], pair[1]
+                if keyword == line:
+                    found = 1
+                    if length not in headers: #if not headers.has_key(length):
+                        raise ValueError(&#34;data section %s has no matching header value&#34; % line)
+                    f.readline()
+                    list = []
+                    for i in range(headers[length]):
+                        list.append(f.readline())
+                    sections[keyword] = list
+            if not found:
+                raise ValueError(&#34;invalid section %s in data file&#34; % line)
+            f.readline()
+            line = f.readline()
+            if not line:
+                break
+            line = line.strip()
+
+        f.close()
+        self.headers = headers
+        self.sections = sections
+        self.flist = flist
+        self.restart = False
+
+    # --------------------------------------------------------------------
+    # Display method (added OV - 2022-02-03)
+    def __repr__(self):
+        if self.sections == {} or self.headers == {}:
+            ret = &#34;empty %s&#34; % self.title
+            print(ret)
+            return ret
+        if self.restart:
+            kind = &#34;restart&#34;
+        else:
+            kind = &#34;source&#34;
+        print(&#34;Data file: %s\n\tcontains %d atoms from %d atom types\n\twith box = [%0.4g %0.4g %0.4g %0.4g %0.4g %0.4g]&#34;
+              % (self.flist[0],
+                 self.headers[&#39;atoms&#39;],
+                 self.headers[&#39;atom types&#39;],
+                 self.headers[&#39;xlo xhi&#39;][0],
+                 self.headers[&#39;xlo xhi&#39;][1],
+                 self.headers[&#39;ylo yhi&#39;][0],
+                 self.headers[&#39;ylo yhi&#39;][1],
+                 self.headers[&#39;zlo zhi&#39;][0],
+                 self.headers[&#39;zlo zhi&#39;][1],
+                 ) )
+        print(&#34;\twith the following sections:&#34;)
+        for sectionname in self.sections.keys():
+            print(&#34;\t\t&#34; +self.dispsection(sectionname,False))
+        ret = &#39;LAMMPS data object including %d atoms (%d types, %s=&#34;%s&#34;)&#39; \
+            % (self.headers[&#39;atoms&#39;],self.maxtype(),kind,self.flist[0])
+        return ret
+
+
+    # --------------------------------------------------------------------
+    # assign names to atom columns
+
+    def map(self, *pairs):
+        if len(pairs) % 2 != 0:
+            raise ValueError (&#34;data map() requires pairs of mappings&#34;)
+        for i in range(0, len(pairs), 2):
+            j = i + 1
+            self.names[pairs[j]] = pairs[i] - 1
+
+    # --------------------------------------------------------------------
+    # extract info from data file fields
+
+    def get(self, *list):
+        if len(list) == 1:
+            field = list[0]
+            array = []
+            lines = self.sections[field]
+            for line in lines:
+                words = line.split()
+                values = map(float, words)
+                array.append(values)
+            return array
+        elif len(list) == 2:
+            field = list[0]
+            n = list[1] - 1
+            vec = []
+            lines = self.sections[field]
+            for line in lines:
+                words = line.split()
+                vec.append(float(words[n]))
+            return vec
+        else:
+            raise ValueError(&#34;invalid arguments for data.get()&#34;)
+
+    # --------------------------------------------------------------------
+    # reorder columns in a data file field
+
+    def reorder(self, name, *order):
+        &#34;&#34;&#34; reorder columns: reorder(&#34;section&#34;,colidxfirst,colidxsecond,colidxthird,...)  &#34;&#34;&#34;
+        if name not in self.sections:
+            raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+        n = len(order)
+        print(&#34;&gt;&gt; reorder for %d columns&#34; % n)
+        natoms = len(self.sections[name])
+        oldlines = self.sections[name]
+        newlines = natoms * [&#34;&#34;]
+        for index in order:
+            for i in range(len(newlines)):
+                words = oldlines[i].split()
+                newlines[i] += words[index - 1] + &#34; &#34;
+        for i in range(len(newlines)):
+            newlines[i] += &#34;\n&#34;
+        self.sections[name] = newlines
+
+    # --------------------------------------------------------------------
+    # replace a column of named section with vector of values
+    # the number of data is checked and repeated for scalars (added 2022-02-04)
+
+    def replace(self, name, icol, vector):
+        &#34;&#34;&#34; replace column values: replace(&#34;section&#34;,columnindex,vectorofvalues) with columnindex=1..ncolumns &#34;&#34;&#34;
+        lines = self.sections[name]
+        nlines = len(lines)
+        if name not in self.sections:
+            raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+        if not isinstance(vector,list): vector = [vector]
+        if len(vector)==1: vector = vector * nlines
+        if len(vector) != nlines:
+            raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                             (len(vector),name,nlines))
+        newlines = []
+        j = icol - 1
+        for i in range(nlines):
+            line = lines[i]
+            words = line.split()
+            words[j] = str(vector[i])
+            newline = &#34; &#34;.join(words) + &#34;\n&#34;
+            newlines.append(newline)
+        self.sections[name] = newlines
+
+    # --------------------------------------------------------------------
+    # append a column of named section with vector of values (added 2022-02-04)
+
+    def append(self, name, vector, forceinteger = False, propertyname=None):
+        &#34;&#34;&#34; append a new column: X.append(&#34;section&#34;,vectorofvalues,forceinteger=False,propertyname=None) &#34;&#34;&#34;
+        if name not in self.sections:
+            self.sections[name] = []
+            print(&#39;Add section [%s] - file=&#34;%s&#34;&#39; % (name,self.title) )
+        lines = self.sections[name]
+        nlines = len(lines)
+        if not isinstance(vector,list) and not isinstance(vector,np.ndarray):
+            vector = [vector]
+        if propertyname != None:
+            print(&#39;\t&gt; Add &#34;%s&#34; (%d values) to [%s]&#39; % (propertyname,len(vector),name))
+        else:
+            print(&#39;\t&gt; Add %d values (no name) to [%s]&#39; % (len(vector),name))
+        newlines = []
+        if nlines == 0:           # empty atoms section, create first column
+            nlines = len(vector)  # new column length = input column length
+            for i in range(nlines):
+                if forceinteger:
+                    line = str(int(vector[i]))
+                else:
+                    line = str(vector[i])
+                newlines.append(line)
+        else:
+            if len(vector)==1: vector = vector * nlines
+            if len(vector) != nlines:
+                raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                                 (len(vector),name,nlines))
+            for i in range(nlines):
+                line = lines[i]
+                words = line.split()
+                if forceinteger:
+                    words.append(str(int(vector[i])))
+                else:
+                    words.append(str(vector[i]))
+                newline = &#34; &#34;.join(words) + &#34;\n&#34;
+                newlines.append(newline)
+        self.sections[name] = newlines
+
+
+    # --------------------------------------------------------------------
+    # disp section info (added 2022-02-04)
+
+    def dispsection(self, name,flaghead=True):
+        &#34;&#34;&#34; display section info: X.dispsection(&#34;sectionname&#34;) &#34;&#34;&#34;
+        lines = self.sections[name]
+        nlines = len(lines)
+        line = lines[0]
+        words = line.split()
+        ret = &#39;&#34;%s&#34;: %d x %d values&#39; % (name,nlines,len(words))
+
+        if flaghead: ret = &#34;LAMMPS data section &#34;+ret
+        return ret
+
+    # --------------------------------------------------------------------
+    # replace x,y,z in Atoms with x,y,z values from snapshot ntime of dump object
+    # assumes id,x,y,z are defined in both data and dump files
+    # also replaces ix,iy,iz if they are defined
+
+    def newxyz(self, dm, ntime):
+        nsnap = dm.findtime(ntime)
+        print(&#34;&gt;&gt; newxyz for %d snaps&#34; % nsnap)
+
+        dm.sort(ntime)
+        x, y, z = dm.vecs(ntime, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;)
+
+        self.replace(&#34;Atoms&#34;, self.names[&#34;x&#34;] + 1, x)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;y&#34;] + 1, y)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;z&#34;] + 1, z)
+
+        if &#34;ix&#34; in dm.names and &#34;ix&#34; in self.names: #if dm.names.has_key(&#34;ix&#34;) and self.names.has_key(&#34;ix&#34;):
+            ix, iy, iz = dm.vecs(ntime, &#34;ix&#34;, &#34;iy&#34;, &#34;iz&#34;)
+            self.replace(&#34;Atoms&#34;, self.names[&#34;ix&#34;] + 1, ix)
+            self.replace(&#34;Atoms&#34;, self.names[&#34;iy&#34;] + 1, iy)
+            self.replace(&#34;Atoms&#34;, self.names[&#34;iz&#34;] + 1, iz)
+
+    # --------------------------------------------------------------------
+    # delete header value or section from data file
+
+    def delete(self, keyword):
+
+        if keyword in self.headers: # if self.headers.has_key(keyword):
+            del self.headers[keyword]
+        elif keyword in self.sections: # elif self.sections.has_key(keyword):
+            del self.sections[keyword]
+        else:
+            raise ValueError(&#34;keyword not found in data object&#34;)
+
+    # --------------------------------------------------------------------
+    # write out a LAMMPS data file
+
+    def write(self, file):
+        f = open(file, &#34;w&#34;)
+        print(self.title,file=f)
+        for keyword in hkeywords:
+            if keyword in self.headers: # self.headers.has_key(keyword):
+                if keyword == &#34;xlo xhi&#34; or keyword == &#34;ylo yhi&#34; or keyword == &#34;zlo zhi&#34;:
+                    pair = self.headers[keyword]
+                    print(pair[0], pair[1], keyword,file=f)
+                elif keyword == &#34;xy xz yz&#34;:
+                    triple = self.headers[keyword]
+                    print(triple[0], triple[1], triple[2], keyword,file=f)
+                else:
+                    print(self.headers[keyword], keyword,file=f)
+        for pair in skeywords:
+            keyword = pair[0]
+            if keyword in self.sections: #self.sections.has_key(keyword):
+                print(&#34;\n%s\n&#34; % keyword,file=f)
+                for line in self.sections[keyword]:
+                    print(line,file=f,end=&#34;&#34;)
+        f.close()
+
+    # --------------------------------------------------------------------
+    # iterator called from other tools
+
+    def iterator(self, flag):
+        if flag == 0:
+            return 0, 0, 1
+        return 0, 0, -1
+
+    # --------------------------------------------------------------------
+    # time query from other tools
+
+    def findtime(self, n):
+        if n == 0:
+            return 0
+        raise ValueError(&#34;no step %d exists&#34; % n)
+
+    # --------------------------------------------------------------------
+    # return list of atoms and bonds to viz for data object
+
+    def viz(self, isnap):
+        if isnap:
+            raise ValueError(&#34;cannot call data.viz() with isnap != 0&#34;)
+
+        id = self.names[&#34;id&#34;]
+        type = self.names[&#34;type&#34;]
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+
+        xlohi = self.headers[&#34;xlo xhi&#34;]
+        ylohi = self.headers[&#34;ylo yhi&#34;]
+        zlohi = self.headers[&#34;zlo zhi&#34;]
+        box = [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+
+        # create atom list needed by viz from id,type,x,y,z
+
+        atoms = []
+        atomlines = self.sections[&#34;Atoms&#34;]
+        for line in atomlines:
+            words = line.split()
+            atoms.append(
+                [
+                    int(words[id]),
+                    int(words[type]),
+                    float(words[x]),
+                    float(words[y]),
+                    float(words[z]),
+                ]
+            )
+
+        # create list of current bond coords from list of bonds
+        # assumes atoms are sorted so can lookup up the 2 atoms in each bond
+
+        bonds = []
+        if self.sections.has_key(&#34;Bonds&#34;):
+            bondlines = self.sections[&#34;Bonds&#34;]
+            for line in bondlines:
+                words = line.split()
+                bid, btype = int(words[0]), int(words[1])
+                atom1, atom2 = int(words[2]), int(words[3])
+                atom1words = atomlines[atom1 - 1].split()
+                atom2words = atomlines[atom2 - 1].split()
+                bonds.append(
+                    [
+                        bid,
+                        btype,
+                        float(atom1words[x]),
+                        float(atom1words[y]),
+                        float(atom1words[z]),
+                        float(atom2words[x]),
+                        float(atom2words[y]),
+                        float(atom2words[z]),
+                        float(atom1words[type]),
+                        float(atom2words[type]),
+                    ]
+                )
+
+        tris = []
+        lines = []
+        return 0, box, atoms, bonds, tris, lines
+
+    # --------------------------------------------------------------------
+    # return box size
+
+    def maxbox(self):
+        xlohi = self.headers[&#34;xlo xhi&#34;]
+        ylohi = self.headers[&#34;ylo yhi&#34;]
+        zlohi = self.headers[&#34;zlo zhi&#34;]
+        return [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+
+    # --------------------------------------------------------------------
+    # return number of atom types
+
+    def maxtype(self):
+        return self.headers[&#34;atom types&#34;]
+
+
+# --------------------------------------------------------------------
+# data file keywords, both header and main sections
+
+hkeywords = [
+    &#34;atoms&#34;,
+    &#34;ellipsoids&#34;,
+    &#34;lines&#34;,
+    &#34;triangles&#34;,
+    &#34;bodies&#34;,
+    &#34;bonds&#34;,
+    &#34;angles&#34;,
+    &#34;dihedrals&#34;,
+    &#34;impropers&#34;,
+    &#34;atom types&#34;,
+    &#34;bond types&#34;,
+    &#34;angle types&#34;,
+    &#34;dihedral types&#34;,
+    &#34;improper types&#34;,
+    &#34;xlo xhi&#34;,
+    &#34;ylo yhi&#34;,
+    &#34;zlo zhi&#34;,
+    &#34;xy xz yz&#34;,
+]
+
+skeywords = [
+    [&#34;Masses&#34;, &#34;atom types&#34;],
+    [&#34;Atoms&#34;, &#34;atoms&#34;],
+    [&#34;Ellipsoids&#34;, &#34;ellipsoids&#34;],
+    [&#34;Lines&#34;, &#34;lines&#34;],
+    [&#34;Triangles&#34;, &#34;triangles&#34;],
+    [&#34;Bodies&#34;, &#34;bodies&#34;],
+    [&#34;Bonds&#34;, &#34;bonds&#34;],
+    [&#34;Angles&#34;, &#34;angles&#34;],
+    [&#34;Dihedrals&#34;, &#34;dihedrals&#34;],
+    [&#34;Impropers&#34;, &#34;impropers&#34;],
+    [&#34;Velocities&#34;, &#34;atoms&#34;],
+    [&#34;Pair Coeffs&#34;, &#34;atom types&#34;],
+    [&#34;Bond Coeffs&#34;, &#34;bond types&#34;],
+    [&#34;Angle Coeffs&#34;, &#34;angle types&#34;],
+    [&#34;Dihedral Coeffs&#34;, &#34;dihedral types&#34;],
+    [&#34;Improper Coeffs&#34;, &#34;improper types&#34;],
+    [&#34;BondBond Coeffs&#34;, &#34;angle types&#34;],
+    [&#34;BondAngle Coeffs&#34;, &#34;angle types&#34;],
+    [&#34;MiddleBondTorsion Coeffs&#34;, &#34;dihedral types&#34;],
+    [&#34;EndBondTorsion Coeffs&#34;, &#34;dihedral types&#34;],
+    [&#34;AngleTorsion Coeffs&#34;, &#34;dihedral types&#34;],
+    [&#34;AngleAngleTorsion Coeffs&#34;, &#34;dihedral types&#34;],
+    [&#34;BondBond13 Coeffs&#34;, &#34;dihedral types&#34;],
+    [&#34;AngleAngle Coeffs&#34;, &#34;improper types&#34;],
+    [&#34;Molecules&#34;, &#34;atoms&#34;],
+    [&#34;Tinker Types&#34;, &#34;atoms&#34;],
+]
+
+# %%
+# ===================================================
+# main()
+# ===================================================
+# for debugging purposes (code called as a script)
+# the code is called from here
+# ===================================================
+if __name__ == &#39;__main__&#39;:
+    datafile = &#34;../data/play_data/data.play.lmp&#34;
+    X = data(datafile)
+    Y = dump(&#34;../data/play_data/dump.play.restartme&#34;)
+    t = Y.time()
+    step = 2000
+    R = data(Y,step)
+    R.write(&#34;../tmp/data.myfirstrestart.lmp&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="data3_legacy.data"><code class="flex name class">
+<span>class <span class="ident">data</span></span>
+<span>(</span><span>*list)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class data:
+
+    # --------------------------------------------------------------------
+
+    def __init__(self, *list):
+        self.nselect = 1
+
+        if len(list) == 0:
+
+        # ========================================
+        # Default Constructor (empty object)
+        # ========================================
+
+            self.title = &#34;LAMMPS data file&#34;
+            self.names = {}
+            self.headers = {}
+            self.sections = {}
+            self.flist = []
+            self.restart = False
+            return
+
+        elif isinstance(list[0],dump):
+
+        # ========================================
+        # Constructor from an existing DUMP object
+        # ========================================
+
+            X = list[0]     # supplied dump object
+            t = X.time()
+            nt = len(t)
+            if len(list)&gt;1:
+                tselect = list[1]
+                if tselect not in t:
+                    raise ValueError(&#34;the input time is not available in the dump object&#34;)
+            else:
+                tselect = t[-1]
+            itselect = next(i for i in range(nt) if t[i]==tselect)
+            # set object title
+            self.title = &#39;LAMMPS data file (restart from &#34;%s&#34; t = %0.5g (frame %d of %d))&#39; %  \
+                (X.flist[0],tselect,itselect,nt)
+            # set default names                       ------------- HEADERS SECTION -------------
+            self.names = {}
+            X.tselect.one(tselect)
+            snap = X.snaps[itselect]
+            # set headers
+            self.headers = {    &#39;atoms&#39;: snap.natoms,
+                                &#39;atom types&#39;: X.minmax(&#34;type&#34;)[1],
+                                &#39;xlo xhi&#39;: (snap.xlo, snap.xhi),
+                                &#39;ylo yhi&#39;: (snap.ylo, snap.yhi),
+                                &#39;zlo zhi&#39;: (snap.zlo, snap.zhi)}
+            # Default sections
+            self.sections = {}
+            # set atoms (specific to your style/kind) ------------- ATOMS SUBSECTION -------------
+            template_atoms = {&#34;smd&#34;: [&#34;id&#34;,&#34;type&#34;,&#34;mol&#34;,&#34;c_vol&#34;, &#34;mass&#34;, &#34;radius&#34;,
+                                      &#34;c_contact_radius&#34;, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;, &#34;f_1[1]&#34;, &#34;f_1[2]&#34;, &#34;f_1[3]&#34;] }
+            if X.kind(template_atoms[&#34;smd&#34;]):
+                for col in template_atoms[&#34;smd&#34;]:
+                    self.append(&#34;Atoms&#34;, X.vecs(tselect, col), col in [&#34;id&#34;,&#34;type&#34;,&#34;mol&#34;],col)
+            else:
+                raise ValueError(&#34;Please add your ATOMS section in the constructor&#34;)
+            # set velocities (if required)           ------------- VELOCITIES SUBSECTION -------------
+            template_velocities = {&#34;smd&#34;: [&#34;id&#34;,&#34;vx&#34;,&#34;vy&#34;,&#34;vz&#34;]}
+            if X.kind(template_atoms[&#34;smd&#34;]):
+                if X.kind(template_velocities[&#34;smd&#34;]):
+                    for col in template_velocities[&#34;smd&#34;]:
+                        self.append(&#34;Velocities&#34;, X.vecs(tselect, col), col == &#34;id&#34;,col)
+                else:
+                    raise ValueError(&#34;the velocities are missing for the style SMD&#34;)
+            # store filename
+            self.flist = list[0].flist
+            self.restart = True
+            return
+
+        # ===========================================================
+        # Regular constructor from DATA file (supplied as filename)
+        # ===========================================================
+
+        flist = list
+        file = list[0]
+        if file[-3:] == &#34;.gz&#34;:
+            f = popen(&#34;%s -c %s&#34; % (PIZZA_GUNZIP, file), &#34;r&#34;)
+        else:
+            f = open(file)
+
+        self.title = f.readline()
+        self.names = {}
+
+        headers = {}
+        while 1:
+            line = f.readline()
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            found = 0
+            for keyword in hkeywords:
+                if line.find(keyword) &gt;= 0:
+                    found = 1
+                    words = line.split()
+                    if (
+                        keyword == &#34;xlo xhi&#34;
+                        or keyword == &#34;ylo yhi&#34;
+                        or keyword == &#34;zlo zhi&#34;
+                    ):
+                        headers[keyword] = (float(words[0]), float(words[1]))
+                    elif keyword == &#34;xy xz yz&#34;:
+                        headers[keyword] = (
+                            float(words[0]),
+                            float(words[1]),
+                            float(words[2]),
+                        )
+                    else:
+                        headers[keyword] = int(words[0])
+            if not found:
+                break
+
+        sections = {}
+        while 1:
+            found = 0
+            for pair in skeywords:
+                keyword, length = pair[0], pair[1]
+                if keyword == line:
+                    found = 1
+                    if length not in headers: #if not headers.has_key(length):
+                        raise ValueError(&#34;data section %s has no matching header value&#34; % line)
+                    f.readline()
+                    list = []
+                    for i in range(headers[length]):
+                        list.append(f.readline())
+                    sections[keyword] = list
+            if not found:
+                raise ValueError(&#34;invalid section %s in data file&#34; % line)
+            f.readline()
+            line = f.readline()
+            if not line:
+                break
+            line = line.strip()
+
+        f.close()
+        self.headers = headers
+        self.sections = sections
+        self.flist = flist
+        self.restart = False
+
+    # --------------------------------------------------------------------
+    # Display method (added OV - 2022-02-03)
+    def __repr__(self):
+        if self.sections == {} or self.headers == {}:
+            ret = &#34;empty %s&#34; % self.title
+            print(ret)
+            return ret
+        if self.restart:
+            kind = &#34;restart&#34;
+        else:
+            kind = &#34;source&#34;
+        print(&#34;Data file: %s\n\tcontains %d atoms from %d atom types\n\twith box = [%0.4g %0.4g %0.4g %0.4g %0.4g %0.4g]&#34;
+              % (self.flist[0],
+                 self.headers[&#39;atoms&#39;],
+                 self.headers[&#39;atom types&#39;],
+                 self.headers[&#39;xlo xhi&#39;][0],
+                 self.headers[&#39;xlo xhi&#39;][1],
+                 self.headers[&#39;ylo yhi&#39;][0],
+                 self.headers[&#39;ylo yhi&#39;][1],
+                 self.headers[&#39;zlo zhi&#39;][0],
+                 self.headers[&#39;zlo zhi&#39;][1],
+                 ) )
+        print(&#34;\twith the following sections:&#34;)
+        for sectionname in self.sections.keys():
+            print(&#34;\t\t&#34; +self.dispsection(sectionname,False))
+        ret = &#39;LAMMPS data object including %d atoms (%d types, %s=&#34;%s&#34;)&#39; \
+            % (self.headers[&#39;atoms&#39;],self.maxtype(),kind,self.flist[0])
+        return ret
+
+
+    # --------------------------------------------------------------------
+    # assign names to atom columns
+
+    def map(self, *pairs):
+        if len(pairs) % 2 != 0:
+            raise ValueError (&#34;data map() requires pairs of mappings&#34;)
+        for i in range(0, len(pairs), 2):
+            j = i + 1
+            self.names[pairs[j]] = pairs[i] - 1
+
+    # --------------------------------------------------------------------
+    # extract info from data file fields
+
+    def get(self, *list):
+        if len(list) == 1:
+            field = list[0]
+            array = []
+            lines = self.sections[field]
+            for line in lines:
+                words = line.split()
+                values = map(float, words)
+                array.append(values)
+            return array
+        elif len(list) == 2:
+            field = list[0]
+            n = list[1] - 1
+            vec = []
+            lines = self.sections[field]
+            for line in lines:
+                words = line.split()
+                vec.append(float(words[n]))
+            return vec
+        else:
+            raise ValueError(&#34;invalid arguments for data.get()&#34;)
+
+    # --------------------------------------------------------------------
+    # reorder columns in a data file field
+
+    def reorder(self, name, *order):
+        &#34;&#34;&#34; reorder columns: reorder(&#34;section&#34;,colidxfirst,colidxsecond,colidxthird,...)  &#34;&#34;&#34;
+        if name not in self.sections:
+            raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+        n = len(order)
+        print(&#34;&gt;&gt; reorder for %d columns&#34; % n)
+        natoms = len(self.sections[name])
+        oldlines = self.sections[name]
+        newlines = natoms * [&#34;&#34;]
+        for index in order:
+            for i in range(len(newlines)):
+                words = oldlines[i].split()
+                newlines[i] += words[index - 1] + &#34; &#34;
+        for i in range(len(newlines)):
+            newlines[i] += &#34;\n&#34;
+        self.sections[name] = newlines
+
+    # --------------------------------------------------------------------
+    # replace a column of named section with vector of values
+    # the number of data is checked and repeated for scalars (added 2022-02-04)
+
+    def replace(self, name, icol, vector):
+        &#34;&#34;&#34; replace column values: replace(&#34;section&#34;,columnindex,vectorofvalues) with columnindex=1..ncolumns &#34;&#34;&#34;
+        lines = self.sections[name]
+        nlines = len(lines)
+        if name not in self.sections:
+            raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+        if not isinstance(vector,list): vector = [vector]
+        if len(vector)==1: vector = vector * nlines
+        if len(vector) != nlines:
+            raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                             (len(vector),name,nlines))
+        newlines = []
+        j = icol - 1
+        for i in range(nlines):
+            line = lines[i]
+            words = line.split()
+            words[j] = str(vector[i])
+            newline = &#34; &#34;.join(words) + &#34;\n&#34;
+            newlines.append(newline)
+        self.sections[name] = newlines
+
+    # --------------------------------------------------------------------
+    # append a column of named section with vector of values (added 2022-02-04)
+
+    def append(self, name, vector, forceinteger = False, propertyname=None):
+        &#34;&#34;&#34; append a new column: X.append(&#34;section&#34;,vectorofvalues,forceinteger=False,propertyname=None) &#34;&#34;&#34;
+        if name not in self.sections:
+            self.sections[name] = []
+            print(&#39;Add section [%s] - file=&#34;%s&#34;&#39; % (name,self.title) )
+        lines = self.sections[name]
+        nlines = len(lines)
+        if not isinstance(vector,list) and not isinstance(vector,np.ndarray):
+            vector = [vector]
+        if propertyname != None:
+            print(&#39;\t&gt; Add &#34;%s&#34; (%d values) to [%s]&#39; % (propertyname,len(vector),name))
+        else:
+            print(&#39;\t&gt; Add %d values (no name) to [%s]&#39; % (len(vector),name))
+        newlines = []
+        if nlines == 0:           # empty atoms section, create first column
+            nlines = len(vector)  # new column length = input column length
+            for i in range(nlines):
+                if forceinteger:
+                    line = str(int(vector[i]))
+                else:
+                    line = str(vector[i])
+                newlines.append(line)
+        else:
+            if len(vector)==1: vector = vector * nlines
+            if len(vector) != nlines:
+                raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                                 (len(vector),name,nlines))
+            for i in range(nlines):
+                line = lines[i]
+                words = line.split()
+                if forceinteger:
+                    words.append(str(int(vector[i])))
+                else:
+                    words.append(str(vector[i]))
+                newline = &#34; &#34;.join(words) + &#34;\n&#34;
+                newlines.append(newline)
+        self.sections[name] = newlines
+
+
+    # --------------------------------------------------------------------
+    # disp section info (added 2022-02-04)
+
+    def dispsection(self, name,flaghead=True):
+        &#34;&#34;&#34; display section info: X.dispsection(&#34;sectionname&#34;) &#34;&#34;&#34;
+        lines = self.sections[name]
+        nlines = len(lines)
+        line = lines[0]
+        words = line.split()
+        ret = &#39;&#34;%s&#34;: %d x %d values&#39; % (name,nlines,len(words))
+
+        if flaghead: ret = &#34;LAMMPS data section &#34;+ret
+        return ret
+
+    # --------------------------------------------------------------------
+    # replace x,y,z in Atoms with x,y,z values from snapshot ntime of dump object
+    # assumes id,x,y,z are defined in both data and dump files
+    # also replaces ix,iy,iz if they are defined
+
+    def newxyz(self, dm, ntime):
+        nsnap = dm.findtime(ntime)
+        print(&#34;&gt;&gt; newxyz for %d snaps&#34; % nsnap)
+
+        dm.sort(ntime)
+        x, y, z = dm.vecs(ntime, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;)
+
+        self.replace(&#34;Atoms&#34;, self.names[&#34;x&#34;] + 1, x)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;y&#34;] + 1, y)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;z&#34;] + 1, z)
+
+        if &#34;ix&#34; in dm.names and &#34;ix&#34; in self.names: #if dm.names.has_key(&#34;ix&#34;) and self.names.has_key(&#34;ix&#34;):
+            ix, iy, iz = dm.vecs(ntime, &#34;ix&#34;, &#34;iy&#34;, &#34;iz&#34;)
+            self.replace(&#34;Atoms&#34;, self.names[&#34;ix&#34;] + 1, ix)
+            self.replace(&#34;Atoms&#34;, self.names[&#34;iy&#34;] + 1, iy)
+            self.replace(&#34;Atoms&#34;, self.names[&#34;iz&#34;] + 1, iz)
+
+    # --------------------------------------------------------------------
+    # delete header value or section from data file
+
+    def delete(self, keyword):
+
+        if keyword in self.headers: # if self.headers.has_key(keyword):
+            del self.headers[keyword]
+        elif keyword in self.sections: # elif self.sections.has_key(keyword):
+            del self.sections[keyword]
+        else:
+            raise ValueError(&#34;keyword not found in data object&#34;)
+
+    # --------------------------------------------------------------------
+    # write out a LAMMPS data file
+
+    def write(self, file):
+        f = open(file, &#34;w&#34;)
+        print(self.title,file=f)
+        for keyword in hkeywords:
+            if keyword in self.headers: # self.headers.has_key(keyword):
+                if keyword == &#34;xlo xhi&#34; or keyword == &#34;ylo yhi&#34; or keyword == &#34;zlo zhi&#34;:
+                    pair = self.headers[keyword]
+                    print(pair[0], pair[1], keyword,file=f)
+                elif keyword == &#34;xy xz yz&#34;:
+                    triple = self.headers[keyword]
+                    print(triple[0], triple[1], triple[2], keyword,file=f)
+                else:
+                    print(self.headers[keyword], keyword,file=f)
+        for pair in skeywords:
+            keyword = pair[0]
+            if keyword in self.sections: #self.sections.has_key(keyword):
+                print(&#34;\n%s\n&#34; % keyword,file=f)
+                for line in self.sections[keyword]:
+                    print(line,file=f,end=&#34;&#34;)
+        f.close()
+
+    # --------------------------------------------------------------------
+    # iterator called from other tools
+
+    def iterator(self, flag):
+        if flag == 0:
+            return 0, 0, 1
+        return 0, 0, -1
+
+    # --------------------------------------------------------------------
+    # time query from other tools
+
+    def findtime(self, n):
+        if n == 0:
+            return 0
+        raise ValueError(&#34;no step %d exists&#34; % n)
+
+    # --------------------------------------------------------------------
+    # return list of atoms and bonds to viz for data object
+
+    def viz(self, isnap):
+        if isnap:
+            raise ValueError(&#34;cannot call data.viz() with isnap != 0&#34;)
+
+        id = self.names[&#34;id&#34;]
+        type = self.names[&#34;type&#34;]
+        x = self.names[&#34;x&#34;]
+        y = self.names[&#34;y&#34;]
+        z = self.names[&#34;z&#34;]
+
+        xlohi = self.headers[&#34;xlo xhi&#34;]
+        ylohi = self.headers[&#34;ylo yhi&#34;]
+        zlohi = self.headers[&#34;zlo zhi&#34;]
+        box = [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+
+        # create atom list needed by viz from id,type,x,y,z
+
+        atoms = []
+        atomlines = self.sections[&#34;Atoms&#34;]
+        for line in atomlines:
+            words = line.split()
+            atoms.append(
+                [
+                    int(words[id]),
+                    int(words[type]),
+                    float(words[x]),
+                    float(words[y]),
+                    float(words[z]),
+                ]
+            )
+
+        # create list of current bond coords from list of bonds
+        # assumes atoms are sorted so can lookup up the 2 atoms in each bond
+
+        bonds = []
+        if self.sections.has_key(&#34;Bonds&#34;):
+            bondlines = self.sections[&#34;Bonds&#34;]
+            for line in bondlines:
+                words = line.split()
+                bid, btype = int(words[0]), int(words[1])
+                atom1, atom2 = int(words[2]), int(words[3])
+                atom1words = atomlines[atom1 - 1].split()
+                atom2words = atomlines[atom2 - 1].split()
+                bonds.append(
+                    [
+                        bid,
+                        btype,
+                        float(atom1words[x]),
+                        float(atom1words[y]),
+                        float(atom1words[z]),
+                        float(atom2words[x]),
+                        float(atom2words[y]),
+                        float(atom2words[z]),
+                        float(atom1words[type]),
+                        float(atom2words[type]),
+                    ]
+                )
+
+        tris = []
+        lines = []
+        return 0, box, atoms, bonds, tris, lines
+
+    # --------------------------------------------------------------------
+    # return box size
+
+    def maxbox(self):
+        xlohi = self.headers[&#34;xlo xhi&#34;]
+        ylohi = self.headers[&#34;ylo yhi&#34;]
+        zlohi = self.headers[&#34;zlo zhi&#34;]
+        return [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+
+    # --------------------------------------------------------------------
+    # return number of atom types
+
+    def maxtype(self):
+        return self.headers[&#34;atom types&#34;]</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="data3_legacy.data.append"><code class="name flex">
+<span>def <span class="ident">append</span></span>(<span>self, name, vector, forceinteger=False, propertyname=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>append a new column: X.append("section",vectorofvalues,forceinteger=False,propertyname=None)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def append(self, name, vector, forceinteger = False, propertyname=None):
+    &#34;&#34;&#34; append a new column: X.append(&#34;section&#34;,vectorofvalues,forceinteger=False,propertyname=None) &#34;&#34;&#34;
+    if name not in self.sections:
+        self.sections[name] = []
+        print(&#39;Add section [%s] - file=&#34;%s&#34;&#39; % (name,self.title) )
+    lines = self.sections[name]
+    nlines = len(lines)
+    if not isinstance(vector,list) and not isinstance(vector,np.ndarray):
+        vector = [vector]
+    if propertyname != None:
+        print(&#39;\t&gt; Add &#34;%s&#34; (%d values) to [%s]&#39; % (propertyname,len(vector),name))
+    else:
+        print(&#39;\t&gt; Add %d values (no name) to [%s]&#39; % (len(vector),name))
+    newlines = []
+    if nlines == 0:           # empty atoms section, create first column
+        nlines = len(vector)  # new column length = input column length
+        for i in range(nlines):
+            if forceinteger:
+                line = str(int(vector[i]))
+            else:
+                line = str(vector[i])
+            newlines.append(line)
+    else:
+        if len(vector)==1: vector = vector * nlines
+        if len(vector) != nlines:
+            raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                             (len(vector),name,nlines))
+        for i in range(nlines):
+            line = lines[i]
+            words = line.split()
+            if forceinteger:
+                words.append(str(int(vector[i])))
+            else:
+                words.append(str(vector[i]))
+            newline = &#34; &#34;.join(words) + &#34;\n&#34;
+            newlines.append(newline)
+    self.sections[name] = newlines</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.delete"><code class="name flex">
+<span>def <span class="ident">delete</span></span>(<span>self, keyword)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete(self, keyword):
+
+    if keyword in self.headers: # if self.headers.has_key(keyword):
+        del self.headers[keyword]
+    elif keyword in self.sections: # elif self.sections.has_key(keyword):
+        del self.sections[keyword]
+    else:
+        raise ValueError(&#34;keyword not found in data object&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.dispsection"><code class="name flex">
+<span>def <span class="ident">dispsection</span></span>(<span>self, name, flaghead=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>display section info: X.dispsection("sectionname")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dispsection(self, name,flaghead=True):
+    &#34;&#34;&#34; display section info: X.dispsection(&#34;sectionname&#34;) &#34;&#34;&#34;
+    lines = self.sections[name]
+    nlines = len(lines)
+    line = lines[0]
+    words = line.split()
+    ret = &#39;&#34;%s&#34;: %d x %d values&#39; % (name,nlines,len(words))
+
+    if flaghead: ret = &#34;LAMMPS data section &#34;+ret
+    return ret</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.findtime"><code class="name flex">
+<span>def <span class="ident">findtime</span></span>(<span>self, n)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def findtime(self, n):
+    if n == 0:
+        return 0
+    raise ValueError(&#34;no step %d exists&#34; % n)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.get"><code class="name flex">
+<span>def <span class="ident">get</span></span>(<span>self, *list)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get(self, *list):
+    if len(list) == 1:
+        field = list[0]
+        array = []
+        lines = self.sections[field]
+        for line in lines:
+            words = line.split()
+            values = map(float, words)
+            array.append(values)
+        return array
+    elif len(list) == 2:
+        field = list[0]
+        n = list[1] - 1
+        vec = []
+        lines = self.sections[field]
+        for line in lines:
+            words = line.split()
+            vec.append(float(words[n]))
+        return vec
+    else:
+        raise ValueError(&#34;invalid arguments for data.get()&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.iterator"><code class="name flex">
+<span>def <span class="ident">iterator</span></span>(<span>self, flag)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def iterator(self, flag):
+    if flag == 0:
+        return 0, 0, 1
+    return 0, 0, -1</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.map"><code class="name flex">
+<span>def <span class="ident">map</span></span>(<span>self, *pairs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def map(self, *pairs):
+    if len(pairs) % 2 != 0:
+        raise ValueError (&#34;data map() requires pairs of mappings&#34;)
+    for i in range(0, len(pairs), 2):
+        j = i + 1
+        self.names[pairs[j]] = pairs[i] - 1</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.maxbox"><code class="name flex">
+<span>def <span class="ident">maxbox</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def maxbox(self):
+    xlohi = self.headers[&#34;xlo xhi&#34;]
+    ylohi = self.headers[&#34;ylo yhi&#34;]
+    zlohi = self.headers[&#34;zlo zhi&#34;]
+    return [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.maxtype"><code class="name flex">
+<span>def <span class="ident">maxtype</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def maxtype(self):
+    return self.headers[&#34;atom types&#34;]</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.newxyz"><code class="name flex">
+<span>def <span class="ident">newxyz</span></span>(<span>self, dm, ntime)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def newxyz(self, dm, ntime):
+    nsnap = dm.findtime(ntime)
+    print(&#34;&gt;&gt; newxyz for %d snaps&#34; % nsnap)
+
+    dm.sort(ntime)
+    x, y, z = dm.vecs(ntime, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;)
+
+    self.replace(&#34;Atoms&#34;, self.names[&#34;x&#34;] + 1, x)
+    self.replace(&#34;Atoms&#34;, self.names[&#34;y&#34;] + 1, y)
+    self.replace(&#34;Atoms&#34;, self.names[&#34;z&#34;] + 1, z)
+
+    if &#34;ix&#34; in dm.names and &#34;ix&#34; in self.names: #if dm.names.has_key(&#34;ix&#34;) and self.names.has_key(&#34;ix&#34;):
+        ix, iy, iz = dm.vecs(ntime, &#34;ix&#34;, &#34;iy&#34;, &#34;iz&#34;)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;ix&#34;] + 1, ix)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;iy&#34;] + 1, iy)
+        self.replace(&#34;Atoms&#34;, self.names[&#34;iz&#34;] + 1, iz)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.reorder"><code class="name flex">
+<span>def <span class="ident">reorder</span></span>(<span>self, name, *order)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>reorder columns: reorder("section",colidxfirst,colidxsecond,colidxthird,&hellip;)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reorder(self, name, *order):
+    &#34;&#34;&#34; reorder columns: reorder(&#34;section&#34;,colidxfirst,colidxsecond,colidxthird,...)  &#34;&#34;&#34;
+    if name not in self.sections:
+        raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+    n = len(order)
+    print(&#34;&gt;&gt; reorder for %d columns&#34; % n)
+    natoms = len(self.sections[name])
+    oldlines = self.sections[name]
+    newlines = natoms * [&#34;&#34;]
+    for index in order:
+        for i in range(len(newlines)):
+            words = oldlines[i].split()
+            newlines[i] += words[index - 1] + &#34; &#34;
+    for i in range(len(newlines)):
+        newlines[i] += &#34;\n&#34;
+    self.sections[name] = newlines</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.replace"><code class="name flex">
+<span>def <span class="ident">replace</span></span>(<span>self, name, icol, vector)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>replace column values: replace("section",columnindex,vectorofvalues) with columnindex=1..ncolumns</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def replace(self, name, icol, vector):
+    &#34;&#34;&#34; replace column values: replace(&#34;section&#34;,columnindex,vectorofvalues) with columnindex=1..ncolumns &#34;&#34;&#34;
+    lines = self.sections[name]
+    nlines = len(lines)
+    if name not in self.sections:
+        raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
+    if not isinstance(vector,list): vector = [vector]
+    if len(vector)==1: vector = vector * nlines
+    if len(vector) != nlines:
+        raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
+                         (len(vector),name,nlines))
+    newlines = []
+    j = icol - 1
+    for i in range(nlines):
+        line = lines[i]
+        words = line.split()
+        words[j] = str(vector[i])
+        newline = &#34; &#34;.join(words) + &#34;\n&#34;
+        newlines.append(newline)
+    self.sections[name] = newlines</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.viz"><code class="name flex">
+<span>def <span class="ident">viz</span></span>(<span>self, isnap)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def viz(self, isnap):
+    if isnap:
+        raise ValueError(&#34;cannot call data.viz() with isnap != 0&#34;)
+
+    id = self.names[&#34;id&#34;]
+    type = self.names[&#34;type&#34;]
+    x = self.names[&#34;x&#34;]
+    y = self.names[&#34;y&#34;]
+    z = self.names[&#34;z&#34;]
+
+    xlohi = self.headers[&#34;xlo xhi&#34;]
+    ylohi = self.headers[&#34;ylo yhi&#34;]
+    zlohi = self.headers[&#34;zlo zhi&#34;]
+    box = [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+
+    # create atom list needed by viz from id,type,x,y,z
+
+    atoms = []
+    atomlines = self.sections[&#34;Atoms&#34;]
+    for line in atomlines:
+        words = line.split()
+        atoms.append(
+            [
+                int(words[id]),
+                int(words[type]),
+                float(words[x]),
+                float(words[y]),
+                float(words[z]),
+            ]
+        )
+
+    # create list of current bond coords from list of bonds
+    # assumes atoms are sorted so can lookup up the 2 atoms in each bond
+
+    bonds = []
+    if self.sections.has_key(&#34;Bonds&#34;):
+        bondlines = self.sections[&#34;Bonds&#34;]
+        for line in bondlines:
+            words = line.split()
+            bid, btype = int(words[0]), int(words[1])
+            atom1, atom2 = int(words[2]), int(words[3])
+            atom1words = atomlines[atom1 - 1].split()
+            atom2words = atomlines[atom2 - 1].split()
+            bonds.append(
+                [
+                    bid,
+                    btype,
+                    float(atom1words[x]),
+                    float(atom1words[y]),
+                    float(atom1words[z]),
+                    float(atom2words[x]),
+                    float(atom2words[y]),
+                    float(atom2words[z]),
+                    float(atom1words[type]),
+                    float(atom2words[type]),
+                ]
+            )
+
+    tris = []
+    lines = []
+    return 0, box, atoms, bonds, tris, lines</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.data.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, file)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write(self, file):
+    f = open(file, &#34;w&#34;)
+    print(self.title,file=f)
+    for keyword in hkeywords:
+        if keyword in self.headers: # self.headers.has_key(keyword):
+            if keyword == &#34;xlo xhi&#34; or keyword == &#34;ylo yhi&#34; or keyword == &#34;zlo zhi&#34;:
+                pair = self.headers[keyword]
+                print(pair[0], pair[1], keyword,file=f)
+            elif keyword == &#34;xy xz yz&#34;:
+                triple = self.headers[keyword]
+                print(triple[0], triple[1], triple[2], keyword,file=f)
+            else:
+                print(self.headers[keyword], keyword,file=f)
+    for pair in skeywords:
+        keyword = pair[0]
+        if keyword in self.sections: #self.sections.has_key(keyword):
+            print(&#34;\n%s\n&#34; % keyword,file=f)
+            for line in self.sections[keyword]:
+                print(line,file=f,end=&#34;&#34;)
+    f.close()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="data3_legacy.dump"><code class="flex name class">
+<span>class <span class="ident">dump</span></span>
+<span>(</span><span>*file_list: str, read_files: bool = True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The <code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code> class provides comprehensive tools for reading, writing, and manipulating LAMMPS dump files and particle attributes. It handles both static and dynamic properties of snapshots with robust methods for data selection, transformation, and visualization.</p>
+<p>Initialize a dump object.</p>
+<h2 id="parameters">Parameters</h2>
+<p>*file_list (str): Variable length argument list of dump file paths. Can include wildcards.
+read_files (bool): If False, store filenames without reading. Default is True.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class dump:
+    &#34;&#34;&#34;
+    The `dump` class provides comprehensive tools for reading, writing, and manipulating LAMMPS dump files and particle attributes. It handles both static and dynamic properties of snapshots with robust methods for data selection, transformation, and visualization.
+    &#34;&#34;&#34;
+
+    def __init__(self, *file_list: str, read_files: bool = True):
+        &#34;&#34;&#34;
+        Initialize a dump object.
+
+        Parameters:
+            *file_list (str): Variable length argument list of dump file paths. Can include wildcards.
+            read_files (bool): If False, store filenames without reading. Default is True.
+        &#34;&#34;&#34;
+        self.snaps: List[Snap] = []
+        self.nsnaps: int = 0
+        self.nselect: int = 0
+        self.names: Dict[str, int] = {}
+        self.tselect = tselect(self)
+        self.aselect = aselect(self)
+        self.atype: str = &#34;type&#34;
+        self.bondflag: int = 0
+        self.bondlist: List[List[int]] = []
+        self.triflag: int = 0
+        self.trilist: List[List[float]] = []
+        self.lineflag: int = 0
+        self.linelist: List[List[float]] = []
+        self.objextra: Optional[Any] = None
+
+        # flist = list of all dump file names
+        raw_filenames = &#39; &#39;.join(file_list)
+        self.flist: List[str] = glob.glob(raw_filenames) if read_files else list(file_list)
+
+        if not self.flist and read_files:
+            logger.error(&#34;No dump file specified.&#34;)
+            raise ValueError(&#34;No dump file specified.&#34;)
+
+        if read_files:
+            self.increment: int = 0
+            self.read_all()
+        else:
+            self.increment = 1
+            self.nextfile = 0
+            self.eof = 0
+
+    def __repr__(self) -&gt; str:
+        &#34;&#34;&#34;
+        Return a string representation of the dump object.
+
+        Returns:
+            str: Description of the dump object.
+        &#34;&#34;&#34;
+        times = self.time()
+        ntimes = len(times)
+        lastime = times[-1] if ntimes &gt; 0 else 0
+        fields = self.names
+
+        field_names = &#34;, &#34;.join(sorted(fields.keys(), key=lambda k: fields[k]))
+        representation = (f&#39;Dump object from file &#34;{self.flist[0]}&#34; &#39;
+                          f&#39;with {ntimes} frames (last timestep={lastime}) &#39;
+                          f&#39;and fields: {field_names}&#39;)
+        logger.info(representation)
+        return representation
+
+    def read_all(self) -&gt; None:
+        &#34;&#34;&#34;
+        Read all snapshots from each file in the file list.
+        &#34;&#34;&#34;
+        for file in self.flist:
+            is_gzipped = file.endswith(&#34;.gz&#34;)
+            try:
+                if is_gzipped:
+                    with subprocess.Popen([PIZZA_GUNZIP, &#34;-c&#34;, file],
+                                          stdout=subprocess.PIPE,
+                                          text=True) as proc:
+                        file_handle = proc.stdout
+                        logger.debug(f&#34;Opened gzipped file: {file}&#34;)
+                else:
+                    file_handle = open(file, &#39;r&#39;)
+                    logger.debug(f&#34;Opened file: {file}&#34;)
+
+                with file_handle:
+                    snap = self.read_snapshot(file_handle)
+                    while snap:
+                        self.snaps.append(snap)
+                        logger.info(f&#34;Read snapshot at time {snap.time}&#34;)
+                        snap = self.read_snapshot(file_handle)
+            except subprocess.CalledProcessError as e:
+                logger.error(f&#34;Error decompressing file &#39;{file}&#39;: {e}&#34;)
+                raise
+            except FileNotFoundError:
+                logger.error(f&#34;File &#39;{file}&#39; not found.&#34;)
+                raise
+            except Exception as e:
+                logger.error(f&#34;Error reading file &#39;{file}&#39;: {e}&#34;)
+                raise
+
+        self.snaps.sort()
+        self.cull()
+        self.nsnaps = len(self.snaps)
+        logger.info(f&#34;Read {self.nsnaps} snapshots.&#34;)
+
+        # Select all timesteps and atoms by default
+        self.tselect.all()
+
+        # Log column assignments
+        if self.names:
+            logger.info(f&#34;Assigned columns: {&#39;, &#39;.join(sorted(self.names.keys(), key=lambda k: self.names[k]))}&#34;)
+        else:
+            logger.warning(&#34;No column assignments made.&#34;)
+
+        # Unscale if necessary
+        if self.nsnaps &gt; 0:
+            if getattr(self, &#39;scale_original&#39;, -1) == 1:
+                self.unscale()
+            elif getattr(self, &#39;scale_original&#39;, -1) == 0:
+                logger.info(&#34;Dump is already unscaled.&#34;)
+            else:
+                logger.warning(&#34;Dump scaling status is unknown.&#34;)
+
+    def read_snapshot(self, f) -&gt; Optional[&#39;Snap&#39;]:
+        &#34;&#34;&#34;
+        Read a single snapshot from a file.
+
+        Parameters:
+            f (file object): File handle to read from.
+
+        Returns:
+            Optional[Snap]: Snapshot object or None if failed.
+        &#34;&#34;&#34;
+        try:
+            snap = Snap()
+
+            # Read and assign ITEMS
+            while True:
+                item = f.readline()
+                if not item:
+                    break
+                if not item.startswith(&#34;ITEM:&#34;):
+                    continue
+                item_type = item.split(&#34;ITEM:&#34;)[1].strip()
+                if item_type == &#34;TIME&#34;:
+                    snap.realtime = float(f.readline().strip())
+                elif item_type == &#34;TIMESTEP&#34;:
+                    snap.time = int(f.readline().strip())
+                elif item_type == &#34;NUMBER OF ATOMS&#34;:
+                    snap.natoms = int(f.readline().strip())
+                elif item_type.startswith(&#34;BOX BOUNDS&#34;):
+                    snap.boxstr = item_type.split(&#34;BOX BOUNDS&#34;)[1].strip()
+                    box_bounds = []
+                    for _ in range(3):
+                        bounds = f.readline().strip().split()
+                        box_bounds.append(tuple(map(float, bounds[:2])))
+                        if len(bounds) &gt; 2:
+                            setattr(snap, bounds[2], float(bounds[2]))
+                        else:
+                            setattr(snap, bounds[2] if len(bounds) &gt; 2 else &#39;xy&#39;, 0.0)
+                    snap.xlo, snap.xhi = box_bounds[0]
+                    snap.ylo, snap.yhi = box_bounds[1]
+                    snap.zlo, snap.zhi = box_bounds[2]
+                    snap.triclinic = 1 if len(box_bounds[0]) &gt; 2 else 0
+                elif item_type == &#34;ATOMS&#34;:
+                    if not self.names:
+                        self.assign_column_names(f.readline())
+                    snap.aselect = np.ones(snap.natoms, dtype=bool)
+                    atoms = []
+                    for _ in range(snap.natoms):
+                        line = f.readline()
+                        if not line:
+                            break
+                        atoms.append(list(map(float, line.strip().split())))
+                    snap.atoms = np.array(atoms)
+                    break
+
+            if not hasattr(snap, &#39;time&#39;):
+                return None
+
+            return snap
+        except Exception as e:
+            logger.error(f&#34;Error reading snapshot: {e}&#34;)
+            return None
+
+    def assign_column_names(self, line: str) -&gt; None:
+        &#34;&#34;&#34;
+        Assign column names based on the ATOMS section header.
+
+        Parameters:
+            line (str): The header line containing column names.
+        &#34;&#34;&#34;
+        try:
+            columns = line.strip().split()[1:]  # Skip the first word (e.g., &#34;id&#34;)
+            for idx, col in enumerate(columns):
+                self.names[col] = idx
+            logger.debug(f&#34;Assigned column names: {self.names}&#34;)
+            # Determine scaling status based on column names
+            x_scaled = &#34;xs&#34; in self.names
+            y_scaled = &#34;ys&#34; in self.names
+            z_scaled = &#34;zs&#34; in self.names
+            self.scale_original = 1 if x_scaled and y_scaled and z_scaled else 0
+            logger.info(f&#34;Coordinate scaling status: {&#39;scaled&#39; if self.scale_original else &#39;unscaled&#39;}&#34;)
+        except Exception as e:
+            logger.error(f&#34;Error assigning column names: {e}&#34;)
+            raise
+
+    def __add__(self, other: &#39;dump&#39;) -&gt; &#39;dump&#39;:
+        &#34;&#34;&#34;
+        Merge two dump objects of the same type.
+
+        Parameters:
+            other (dump): Another dump object to merge with.
+
+        Returns:
+            dump: A new dump object containing snapshots from both dumps.
+
+        Raises:
+            ValueError: If the dump types do not match or other is not a dump instance.
+        &#34;&#34;&#34;
+        if not isinstance(other, dump):
+            raise ValueError(&#34;The second operand is not a dump object.&#34;)
+        if self.type != other.type:
+            raise ValueError(&#34;The dumps are not of the same type.&#34;)
+        combined_files = self.flist + other.flist
+        new_dump = dump(*combined_files)
+        return new_dump
+
+    def cull(self) -&gt; None:
+        &#34;&#34;&#34;
+        Remove duplicate snapshots based on timestep.
+        &#34;&#34;&#34;
+        unique_snaps = {}
+        culled_snaps = []
+        for snap in self.snaps:
+            if snap.time not in unique_snaps:
+                unique_snaps[snap.time] = snap
+                culled_snaps.append(snap)
+            else:
+                logger.warning(f&#34;Duplicate timestep {snap.time} found. Culling duplicate.&#34;)
+        self.snaps = culled_snaps
+        logger.info(f&#34;Culled duplicates. Total snapshots: {len(self.snaps)}&#34;)
+
+    def sort(self, key: Union[str, int] = &#34;id&#34;) -&gt; None:
+        &#34;&#34;&#34;
+        Sort atoms or snapshots.
+
+        Parameters:
+            key (Union[str, int]): The key to sort by. If str, sorts snapshots by that column. If int, sorts atoms in a specific timestep.
+        &#34;&#34;&#34;
+        if isinstance(key, str):
+            if key not in self.names:
+                raise ValueError(f&#34;Column &#39;{key}&#39; not found for sorting.&#34;)
+            logger.info(f&#34;Sorting snapshots by column &#39;{key}&#39;.&#34;)
+            icol = self.names[key]
+            for snap in self.snaps:
+                if not snap.tselect:
+                    continue
+                snap.atoms = snap.atoms[snap.atoms[:, icol].argsort()]
+        elif isinstance(key, int):
+            try:
+                snap = self.snaps[self.findtime(key)]
+                logger.info(f&#34;Sorting atoms in snapshot at timestep {key}.&#34;)
+                if &#34;id&#34; in self.names:
+                    id_col = self.names[&#34;id&#34;]
+                    snap.atoms = snap.atoms[snap.atoms[:, id_col].argsort()]
+                else:
+                    logger.warning(&#34;No &#39;id&#39; column found for sorting atoms.&#34;)
+            except ValueError as e:
+                logger.error(e)
+                raise
+        else:
+            logger.error(&#34;Invalid key type for sort().&#34;)
+            raise TypeError(&#34;Key must be a string or integer.&#34;)
+
+    def write(self, filename: str, head: int = 1, app: int = 0) -&gt; None:
+        &#34;&#34;&#34;
+        Write the dump object to a LAMMPS dump file.
+
+        Parameters:
+            filename (str): The output file path.
+            head (int): Whether to include the snapshot header (1 for yes, 0 for no).
+            app (int): Whether to append to the file (1 for yes, 0 for no).
+        &#34;&#34;&#34;
+        try:
+            mode = &#34;a&#34; if app else &#34;w&#34;
+            with open(filename, mode) as f:
+                for snap in self.snaps:
+                    if not snap.tselect:
+                        continue
+                    if head:
+                        f.write(&#34;ITEM: TIMESTEP\n&#34;)
+                        f.write(f&#34;{snap.time}\n&#34;)
+                        f.write(&#34;ITEM: NUMBER OF ATOMS\n&#34;)
+                        f.write(f&#34;{snap.nselect}\n&#34;)
+                        f.write(&#34;ITEM: BOX BOUNDS xy xz yz\n&#34; if snap.triclinic else &#34;ITEM: BOX BOUNDS pp pp pp\n&#34;)
+                        f.write(f&#34;{snap.xlo} {snap.xhi} {getattr(snap, &#39;xy&#39;, 0.0)}\n&#34;)
+                        f.write(f&#34;{snap.ylo} {snap.yhi} {getattr(snap, &#39;xz&#39;, 0.0)}\n&#34;)
+                        f.write(f&#34;{snap.zlo} {snap.zhi} {getattr(snap, &#39;yz&#39;, 0.0)}\n&#34;)
+                        f.write(f&#34;ITEM: ATOMS {&#39; &#39;.join(sorted(self.names.keys(), key=lambda k: self.names[k]))}\n&#34;)
+                    for atom in snap.atoms[snap.aselect]:
+                        atom_str = &#34; &#34;.join([f&#34;{int(atom[self.names[&#39;id&#39;]])}&#34; if key in [&#34;id&#34;, &#34;type&#34;] else f&#34;{atom[self.names[key]]}&#34; 
+                                             for key in sorted(self.names.keys(), key=lambda k: self.names[k])])
+                        f.write(f&#34;{atom_str}\n&#34;)
+            logger.info(f&#34;Dump object written to &#39;{filename}&#39;.&#34;)
+        except IOError as e:
+            logger.error(f&#34;Error writing to file &#39;{filename}&#39;: {e}&#34;)
+            raise
+
+    def scatter(self, root: str) -&gt; None:
+        &#34;&#34;&#34;
+        Write each selected snapshot to a separate dump file with timestep suffix.
+
+        Parameters:
+            root (str): The root name for output files. Suffix will be added based on timestep.
+        &#34;&#34;&#34;
+        try:
+            for snap in self.snaps:
+                if not snap.tselect:
+                    continue
+                filename = f&#34;{root}.{snap.time}&#34;
+                with open(filename, &#34;w&#34;) as f:
+                    f.write(&#34;ITEM: TIMESTEP\n&#34;)
+                    f.write(f&#34;{snap.time}\n&#34;)
+                    f.write(&#34;ITEM: NUMBER OF ATOMS\n&#34;)
+                    f.write(f&#34;{snap.nselect}\n&#34;)
+                    f.write(&#34;ITEM: BOX BOUNDS xy xz yz\n&#34; if snap.triclinic else &#34;ITEM: BOX BOUNDS pp pp pp\n&#34;)
+                    f.write(f&#34;{snap.xlo} {snap.xhi} {getattr(snap, &#39;xy&#39;, 0.0)}\n&#34;)
+                    f.write(f&#34;{snap.ylo} {snap.yhi} {getattr(snap, &#39;xz&#39;, 0.0)}\n&#34;)
+                    f.write(f&#34;{snap.zlo} {snap.zhi} {getattr(snap, &#39;yz&#39;, 0.0)}\n&#34;)
+                    f.write(f&#34;ITEM: ATOMS {&#39; &#39;.join(sorted(self.names.keys(), key=lambda k: self.names[k]))}\n&#34;)
+                    for atom in snap.atoms[snap.aselect]:
+                        atom_str = &#34; &#34;.join([f&#34;{int(atom[self.names[&#39;id&#39;]])}&#34; if key in [&#34;id&#34;, &#34;type&#34;] else f&#34;{atom[self.names[key]]}&#34; 
+                                             for key in sorted(self.names.keys(), key=lambda k: self.names[k])])
+                        f.write(f&#34;{atom_str}\n&#34;)
+            logger.info(f&#34;Scatter write completed with root &#39;{root}&#39;.&#34;)
+        except IOError as e:
+            logger.error(f&#34;Error writing scatter files: {e}&#34;)
+            raise
+
+    def minmax(self, colname: str) -&gt; Tuple[float, float]:
+        &#34;&#34;&#34;
+        Find the minimum and maximum values for a specified column across all selected snapshots and atoms.
+
+        Parameters:
+            colname (str): The column name to find min and max for.
+
+        Returns:
+            Tuple[float, float]: The minimum and maximum values.
+
+        Raises:
+            KeyError: If the column name does not exist.
+        &#34;&#34;&#34;
+        if colname not in self.names:
+            raise KeyError(f&#34;Column &#39;{colname}&#39; not found.&#34;)
+        icol = self.names[colname]
+        min_val = np.inf
+        max_val = -np.inf
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            selected_atoms = snap.atoms[snap.aselect]
+            if selected_atoms.size == 0:
+                continue
+            current_min = selected_atoms[:, icol].min()
+            current_max = selected_atoms[:, icol].max()
+            if current_min &lt; min_val:
+                min_val = current_min
+            if current_max &gt; max_val:
+                max_val = current_max
+        logger.info(f&#34;minmax for column &#39;{colname}&#39;: min={min_val}, max={max_val}&#34;)
+        return min_val, max_val
+
+    def set(self, eq: str) -&gt; None:
+        &#34;&#34;&#34;
+        Set a column value using an equation for all selected snapshots and atoms.
+
+        Parameters:
+            eq (str): The equation to compute the new column values. Use $&lt;column_name&gt; for variables.
+
+        Example:
+            d.set(&#34;$ke = $vx * $vx + $vy * $vy&#34;)
+        &#34;&#34;&#34;
+        logger.info(f&#34;Setting column using equation: {eq}&#34;)
+        pattern = r&#34;\$\w+&#34;
+        variables = re.findall(pattern, eq)
+        if not variables:
+            logger.warning(&#34;No variables found in equation.&#34;)
+            return
+        lhs = variables[0][1:]
+        if lhs not in self.names:
+            self.newcolumn(lhs)
+        try:
+            # Replace $var with appropriate array accesses
+            for var in variables:
+                var_name = var[1:]
+                if var_name not in self.names:
+                    raise KeyError(f&#34;Variable &#39;{var_name}&#39; not found in columns.&#34;)
+                col_index = self.names[var_name]
+                eq = eq.replace(var, f&#34;snap.atoms[i][{col_index}]&#34;)
+            compiled_eq = compile(eq, &#34;&lt;string&gt;&#34;, &#34;exec&#34;)
+            for snap in self.snaps:
+                if not snap.tselect:
+                    continue
+                for i in range(snap.natoms):
+                    if not snap.aselect[i]:
+                        continue
+                    exec(compiled_eq)
+            logger.info(&#34;Column values set successfully.&#34;)
+        except Exception as e:
+            logger.error(f&#34;Error setting column values: {e}&#34;)
+            raise
+
+    def setv(self, colname: str, vector: List[float]) -&gt; None:
+        &#34;&#34;&#34;
+        Set a column value using a vector of values for all selected snapshots and atoms.
+
+        Parameters:
+            colname (str): The column name to set.
+            vector (List[float]): The values to assign to the column.
+
+        Raises:
+            KeyError: If the column name does not exist.
+            ValueError: If the length of the vector does not match the number of selected atoms.
+        &#34;&#34;&#34;
+        logger.info(f&#34;Setting column &#39;{colname}&#39; using a vector of values.&#34;)
+        if colname not in self.names:
+            self.newcolumn(colname)
+        icol = self.names[colname]
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            if len(vector) != snap.nselect:
+                raise ValueError(&#34;Vector length does not match the number of selected atoms.&#34;)
+            selected_indices = np.where(snap.aselect)[0]
+            snap.atoms[selected_indices, icol] = vector
+        logger.info(f&#34;Column &#39;{colname}&#39; set successfully.&#34;)
+
+    def spread(self, old: str, n: int, new: str) -&gt; None:
+        &#34;&#34;&#34;
+        Spread values from an old column into a new column as integers from 1 to n based on their relative positions.
+
+        Parameters:
+            old (str): The column name to spread.
+            n (int): The number of spread values.
+            new (str): The new column name to create.
+
+        Raises:
+            KeyError: If the old column does not exist.
+        &#34;&#34;&#34;
+        logger.info(f&#34;Spreading column &#39;{old}&#39; into new column &#39;{new}&#39; with {n} spread values.&#34;)
+        if old not in self.names:
+            raise KeyError(f&#34;Column &#39;{old}&#39; not found.&#34;)
+        if new not in self.names:
+            self.newcolumn(new)
+        iold = self.names[old]
+        inew = self.names[new]
+        min_val, max_val = self.minmax(old)
+        gap = max_val - min_val
+        if gap == 0:
+            gap = 1.0  # Prevent division by zero
+        invdelta = n / gap
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            selected_atoms = snap.atoms[snap.aselect]
+            snap.atoms[snap.aselect, inew] = np.clip(((selected_atoms[:, iold] - min_val) * invdelta).astype(int) + 1, 1, n)
+        logger.info(f&#34;Column &#39;{new}&#39; spread successfully.&#34;)
+
+    def clone(self, nstep: int, col: str) -&gt; None:
+        &#34;&#34;&#34;
+        Clone the value from a specific timestep&#39;s column to all selected snapshots for atoms with the same ID.
+
+        Parameters:
+            nstep (int): The timestep to clone from.
+            col (str): The column name to clone.
+
+        Raises:
+            KeyError: If the column or ID column does not exist.
+            ValueError: If the specified timestep does not exist.
+        &#34;&#34;&#34;
+        logger.info(f&#34;Cloning column &#39;{col}&#39; from timestep {nstep} to all selected snapshots.&#34;)
+        if &#34;id&#34; not in self.names:
+            raise KeyError(&#34;Column &#39;id&#39; not found.&#34;)
+        if col not in self.names:
+            raise KeyError(f&#34;Column &#39;{col}&#39; not found.&#34;)
+        istep = self.findtime(nstep)
+        icol = self.names[col]
+        id_col = self.names[&#34;id&#34;]
+        id_to_index = {atom[id_col]: idx for idx, atom in enumerate(self.snaps[istep].atoms)}
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            for i, atom in enumerate(snap.atoms):
+                if not snap.aselect[i]:
+                    continue
+                atom_id = atom[id_col]
+                if atom_id in id_to_index:
+                    snap.atoms[i, icol] = self.snaps[istep].atoms[id_to_index[atom_id], icol]
+        logger.info(&#34;Cloning completed successfully.&#34;)
+
+    def time(self) -&gt; List[int]:
+        &#34;&#34;&#34;
+        Return a list of selected snapshot timesteps.
+
+        Returns:
+            List[int]: List of timestep values.
+        &#34;&#34;&#34;
+        times = [snap.time for snap in self.snaps if snap.tselect]
+        logger.debug(f&#34;Selected timesteps: {times}&#34;)
+        return times
+
+    def realtime(self) -&gt; List[float]:
+        &#34;&#34;&#34;
+        Return a list of selected snapshot real-time values.
+
+        Returns:
+            List[float]: List of real-time values.
+        &#34;&#34;&#34;
+        times = [snap.realtime for snap in self.snaps if snap.tselect and hasattr(snap, &#39;realtime&#39;)]
+        logger.debug(f&#34;Selected real-time values: {times}&#34;)
+        return times
+
+    def atom(self, n: int, *columns: str) -&gt; Union[List[float], List[List[float]]]:
+        &#34;&#34;&#34;
+        Extract values for a specific atom ID across all selected snapshots.
+
+        Parameters:
+            n (int): The atom ID to extract.
+            *columns (str): The column names to extract.
+
+        Returns:
+            Union[List[float], List[List[float]]]: The extracted values.
+
+        Raises:
+            KeyError: If any specified column does not exist.
+            ValueError: If the atom ID is not found in any snapshot.
+        &#34;&#34;&#34;
+        logger.info(f&#34;Extracting atom ID {n} values for columns {columns}.&#34;)
+        if not columns:
+            raise ValueError(&#34;No columns specified for extraction.&#34;)
+        column_indices = []
+        for col in columns:
+            if col not in self.names:
+                raise KeyError(f&#34;Column &#39;{col}&#39; not found.&#34;)
+            column_indices.append(self.names[col])
+
+        extracted = [[] for _ in columns]
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            atom_rows = snap.atoms[snap.aselect]
+            id_column = self.names[&#34;id&#34;]
+            matching_atoms = atom_rows[atom_rows[:, id_column] == n]
+            if matching_atoms.size == 0:
+                raise ValueError(f&#34;Atom ID {n} not found in snapshot at timestep {snap.time}.&#34;)
+            atom = matching_atoms[0]
+            for idx, col_idx in enumerate(column_indices):
+                extracted[idx].append(atom[col_idx])
+        if len(columns) == 1:
+            return extracted[0]
+        return extracted
+
+    def vecs(self, n: int, *columns: str) -&gt; Union[List[float], List[List[float]]]:
+        &#34;&#34;&#34;
+        Extract values for selected atoms at a specific timestep.
+
+        Parameters:
+            n (int): The timestep to extract from.
+            *columns (str): The column names to extract.
+
+        Returns:
+            Union[List[float], List[List[float]]]: The extracted values.
+
+        Raises:
+            KeyError: If any specified column does not exist.
+            ValueError: If the specified timestep does not exist.
+        &#34;&#34;&#34;
+        logger.info(f&#34;Extracting columns {columns} for timestep {n}.&#34;)
+        if not columns:
+            raise ValueError(&#34;No columns specified for extraction.&#34;)
+        try:
+            snap = self.snaps[self.findtime(n)]
+        except ValueError as e:
+            logger.error(e)
+            raise
+        column_indices = []
+        for col in columns:
+            if col not in self.names:
+                raise KeyError(f&#34;Column &#39;{col}&#39; not found.&#34;)
+            column_indices.append(self.names[col])
+        extracted = [[] for _ in columns]
+        selected_atoms = snap.atoms[snap.aselect]
+        for atom in selected_atoms:
+            for idx, col_idx in enumerate(column_indices):
+                extracted[idx].append(atom[col_idx])
+        if len(columns) == 1:
+            return extracted[0]
+        return extracted
+
+    def newcolumn(self, colname: str) -&gt; None:
+        &#34;&#34;&#34;
+        Add a new column to every snapshot and initialize it to zero.
+
+        Parameters:
+            colname (str): The name of the new column.
+        &#34;&#34;&#34;
+        logger.info(f&#34;Adding new column &#39;{colname}&#39; with default value 0.&#34;)
+        if colname in self.names:
+            logger.warning(f&#34;Column &#39;{colname}&#39; already exists.&#34;)
+            return
+        new_col_index = len(self.names)
+        self.names[colname] = new_col_index
+        for snap in self.snaps:
+            if snap.atoms is not None:
+                new_column = np.zeros((snap.atoms.shape[0], 1))
+                snap.atoms = np.hstack((snap.atoms, new_column))
+        logger.info(f&#34;New column &#39;{colname}&#39; added successfully.&#34;)
+
+    def kind(self, listtypes: Optional[Dict[str, List[str]]] = None) -&gt; Optional[str]:
+        &#34;&#34;&#34;
+        Guess the kind of dump file based on column names.
+
+        Parameters:
+            listtypes (Optional[Dict[str, List[str]]]): A dictionary defining possible types.
+
+        Returns:
+            Optional[str]: The kind of dump file if matched, else None.
+        &#34;&#34;&#34;
+        if listtypes is None:
+            listtypes = {
+                &#39;vxyz&#39;: [&#34;id&#34;, &#34;type&#34;, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;, &#34;vx&#34;, &#34;vy&#34;, &#34;vz&#34;],
+                &#39;xyz&#39;: [&#34;id&#34;, &#34;type&#34;, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;]
+            }
+            internaltypes = True
+        else:
+            listtypes = {&#34;user_type&#34;: listtypes}
+            internaltypes = False
+
+        for kind, columns in listtypes.items():
+            if all(col in self.names for col in columns):
+                logger.info(f&#34;Dump kind identified as &#39;{kind}&#39;.&#34;)
+                return kind
+        logger.warning(&#34;Dump kind could not be identified.&#34;)
+        return None
+
+    @property
+    def type(self) -&gt; int:
+        &#34;&#34;&#34;
+        Get the type of dump file defined as a hash of column names.
+
+        Returns:
+            int: Hash value representing the dump type.
+        &#34;&#34;&#34;
+        type_hash = hash(self.names2str())
+        logger.debug(f&#34;Dump type hash: {type_hash}&#34;)
+        return type_hash
+
+    def names2str(self) -&gt; str:
+        &#34;&#34;&#34;
+        Convert column names to a sorted string based on their indices.
+
+        Returns:
+            str: A string of column names sorted by their column index.
+        &#34;&#34;&#34;
+        sorted_columns = sorted(self.names.items(), key=lambda item: item[1])
+        names_str = &#34; &#34;.join([col for col, _ in sorted_columns])
+        logger.debug(f&#34;Column names string: {names_str}&#34;)
+        return names_str
+
+    def __add__(self, other: &#39;dump&#39;) -&gt; &#39;dump&#39;:
+        &#34;&#34;&#34;
+        Merge two dump objects of the same type.
+
+        Parameters:
+            other (dump): Another dump object to merge with.
+
+        Returns:
+            dump: A new dump object containing snapshots from both dumps.
+
+        Raises:
+            ValueError: If the dump types do not match or other is not a dump instance.
+        &#34;&#34;&#34;
+        return self.__add__(other)
+
+    def iterator(self, flag: int) -&gt; Tuple[int, int, int]:
+        &#34;&#34;&#34;
+        Iterator method to loop over selected snapshots.
+
+        Parameters:
+            flag (int): 0 for the first call, 1 for subsequent calls.
+
+        Returns:
+            Tuple[int, int, int]: (index, time, flag)
+        &#34;&#34;&#34;
+        if not hasattr(self, &#39;iterate&#39;):
+            self.iterate = -1
+        if flag == 0:
+            self.iterate = 0
+        else:
+            self.iterate += 1
+        while self.iterate &lt; self.nsnaps:
+            snap = self.snaps[self.iterate]
+            if snap.tselect:
+                logger.debug(f&#34;Iterator returning snapshot {self.iterate} at time {snap.time}.&#34;)
+                return self.iterate, snap.time, 1
+            self.iterate += 1
+        return 0, 0, -1
+
+    def viz(self, index: int, flag: int = 0) -&gt; Tuple[int, List[float], List[List[Union[int, float]]], 
+                                                   List[List[Union[int, float]]], List[Any], List[Any]]:
+        &#34;&#34;&#34;
+        Return visualization data for a specified snapshot.
+
+        Parameters:
+            index (int): Snapshot index or timestep value.
+            flag (int): If 1, treat index as timestep value. Default is 0.
+
+        Returns:
+            Tuple[int, List[float], List[List[Union[int, float]]], List[List[Union[int, float]]], List[Any], List[Any]]:
+                (time, box, atoms, bonds, tris, lines)
+
+        Raises:
+            ValueError: If the snapshot index is invalid.
+        &#34;&#34;&#34;
+        if flag:
+            try:
+                isnap = self.findtime(index)
+            except ValueError as e:
+                logger.error(e)
+                raise
+        else:
+            isnap = index
+            if isnap &lt; 0 or isnap &gt;= self.nsnaps:
+                raise ValueError(&#34;Snapshot index out of range.&#34;)
+
+        snap = self.snaps[isnap]
+        time = snap.time
+        box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+        id_idx = self.names.get(&#34;id&#34;)
+        type_idx = self.names.get(self.atype)
+        x_idx = self.names.get(&#34;x&#34;)
+        y_idx = self.names.get(&#34;y&#34;)
+        z_idx = self.names.get(&#34;z&#34;)
+
+        if None in [id_idx, type_idx, x_idx, y_idx, z_idx]:
+            raise ValueError(&#34;One or more required columns (id, type, x, y, z) are not defined.&#34;)
+
+        # Create atom list for visualization
+        atoms = snap.atoms[snap.aselect][:, [id_idx, type_idx, x_idx, y_idx, z_idx]].astype(object).tolist()
+
+        # Create bonds list if bonds are defined
+        bonds = []
+        if self.bondflag:
+            if self.bondflag == 1:
+                bondlist = self.bondlist
+            elif self.bondflag == 2 and self.objextra:
+                _, _, _, bondlist, _, _ = self.objextra.viz(time, 1)
+            else:
+                bondlist = []
+            if bondlist:
+                id_to_atom = {atom[0]: atom for atom in atoms}
+                for bond in bondlist:
+                    try:
+                        atom1 = id_to_atom[bond[2]]
+                        atom2 = id_to_atom[bond[3]]
+                        bonds.append([
+                            bond[0],
+                            bond[1],
+                            atom1[2], atom1[3], atom1[4],
+                            atom2[2], atom2[3], atom2[4],
+                            atom1[1], atom2[1]
+                        ])
+                    except KeyError:
+                        logger.warning(f&#34;Bond with atom IDs {bond[2]}, {bond[3]} not found in selected atoms.&#34;)
+                        continue
+
+        # Create tris list if tris are defined
+        tris = []
+        if self.triflag:
+            if self.triflag == 1:
+                tris = self.trilist
+            elif self.triflag == 2 and self.objextra:
+                _, _, _, _, tris, _ = self.objextra.viz(time, 1)
+        # Create lines list if lines are defined
+        lines = []
+        if self.lineflag:
+            if self.lineflag == 1:
+                lines = self.linelist
+            elif self.lineflag == 2 and self.objextra:
+                _, _, _, _, _, lines = self.objextra.viz(time, 1)
+
+        logger.debug(f&#34;Visualization data prepared for snapshot {isnap} at time {time}.&#34;)
+        return time, box, atoms, bonds, tris, lines
+
+    def findtime(self, n: int) -&gt; int:
+        &#34;&#34;&#34;
+        Find the index of a given timestep.
+
+        Parameters:
+            n (int): The timestep to find.
+
+        Returns:
+            int: The index of the timestep.
+
+        Raises:
+            ValueError: If the timestep does not exist.
+        &#34;&#34;&#34;
+        for i, snap in enumerate(self.snaps):
+            if snap.time == n:
+                return i
+        raise ValueError(f&#34;No step {n} exists.&#34;)
+
+    def maxbox(self) -&gt; List[float]:
+        &#34;&#34;&#34;
+        Return the maximum box dimensions across all selected snapshots.
+
+        Returns:
+            List[float]: [xlo, ylo, zlo, xhi, yhi, zhi]
+        &#34;&#34;&#34;
+        xlo = ylo = zlo = np.inf
+        xhi = yhi = zhi = -np.inf
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            xlo = min(xlo, snap.xlo)
+            ylo = min(ylo, snap.ylo)
+            zlo = min(zlo, snap.zlo)
+            xhi = max(xhi, snap.xhi)
+            yhi = max(yhi, snap.yhi)
+            zhi = max(zhi, snap.zhi)
+        box = [xlo, ylo, zlo, xhi, yhi, zhi]
+        logger.debug(f&#34;Maximum box dimensions: {box}&#34;)
+        return box
+
+    def maxtype(self) -&gt; int:
+        &#34;&#34;&#34;
+        Return the maximum atom type across all selected snapshots and atoms.
+
+        Returns:
+            int: Maximum atom type.
+        &#34;&#34;&#34;
+        if &#34;type&#34; not in self.names:
+            logger.warning(&#34;Column &#39;type&#39; not found.&#34;)
+            return 0
+        icol = self.names[&#34;type&#34;]
+        max_type = 0
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            selected_atoms = snap.atoms[snap.aselect]
+            if selected_atoms.size == 0:
+                continue
+            current_max = int(selected_atoms[:, icol].max())
+            if current_max &gt; max_type:
+                max_type = current_max
+        logger.info(f&#34;Maximum atom type: {max_type}&#34;)
+        return max_type
+
+    def extra(self, obj: Any) -&gt; None:
+        &#34;&#34;&#34;
+        Extract bonds, tris, or lines from another object.
+
+        Parameters:
+            obj (Any): The object to extract from. Can be a data object, cdata, bdump, etc.
+
+        Raises:
+            ValueError: If the argument type is unrecognized.
+        &#34;&#34;&#34;
+        from pizza.data3 import data
+        from pizza.converted.cdata3 import cdata
+        from pizza.converted.bdump3 import bdump
+        from pizza.converted.ldump3 import ldump
+        from pizza.converted.tdump3 import tdump
+
+        logger.info(f&#34;Extracting extra information from object of type &#39;{type(obj)}&#39;.&#34;)
+        if isinstance(obj, data) and &#34;Bonds&#34; in obj.sections:
+            self.bondflag = 1
+            self.bondlist = [
+                [int(line.split()[0]), int(line.split()[1]), int(line.split()[2]), int(line.split()[3])]
+                for line in obj.sections[&#34;Bonds&#34;]
+            ]
+            logger.debug(f&#34;Extracted {len(self.bondlist)} bonds from data object.&#34;)
+        elif hasattr(obj, &#39;viz&#39;):
+            if isinstance(obj, cdata):
+                tris, lines = obj.viz()
+                if tris:
+                    self.triflag = 1
+                    self.trilist = tris
+                if lines:
+                    self.lineflag = 1
+                    self.linelist = lines
+                logger.debug(f&#34;Extracted tris and lines from cdata object.&#34;)
+            elif isinstance(obj, bdump):
+                self.bondflag = 2
+                self.objextra = obj
+                logger.debug(f&#34;Configured dynamic bond extraction from bdump object.&#34;)
+            elif isinstance(obj, tdump):
+                self.triflag = 2
+                self.objextra = obj
+                logger.debug(f&#34;Configured dynamic tri extraction from tdump object.&#34;)
+            elif isinstance(obj, ldump):
+                self.lineflag = 2
+                self.objextra = obj
+                logger.debug(f&#34;Configured dynamic line extraction from ldump object.&#34;)
+            else:
+                logger.error(&#34;Unrecognized object type for extra extraction.&#34;)
+                raise ValueError(&#34;Unrecognized argument to dump.extra().&#34;)
+        else:
+            logger.error(&#34;Unrecognized argument type for extra extraction.&#34;)
+            raise ValueError(&#34;Unrecognized argument to dump.extra().&#34;)</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="data3_legacy.dump.type"><code class="name">var <span class="ident">type</span> : int</code></dt>
+<dd>
+<div class="desc"><p>Get the type of dump file defined as a hash of column names.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>Hash value representing the dump type.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def type(self) -&gt; int:
+    &#34;&#34;&#34;
+    Get the type of dump file defined as a hash of column names.
+
+    Returns:
+        int: Hash value representing the dump type.
+    &#34;&#34;&#34;
+    type_hash = hash(self.names2str())
+    logger.debug(f&#34;Dump type hash: {type_hash}&#34;)
+    return type_hash</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="data3_legacy.dump.assign_column_names"><code class="name flex">
+<span>def <span class="ident">assign_column_names</span></span>(<span>self, line: str) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Assign column names based on the ATOMS section header.</p>
+<h2 id="parameters">Parameters</h2>
+<p>line (str): The header line containing column names.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def assign_column_names(self, line: str) -&gt; None:
+    &#34;&#34;&#34;
+    Assign column names based on the ATOMS section header.
+
+    Parameters:
+        line (str): The header line containing column names.
+    &#34;&#34;&#34;
+    try:
+        columns = line.strip().split()[1:]  # Skip the first word (e.g., &#34;id&#34;)
+        for idx, col in enumerate(columns):
+            self.names[col] = idx
+        logger.debug(f&#34;Assigned column names: {self.names}&#34;)
+        # Determine scaling status based on column names
+        x_scaled = &#34;xs&#34; in self.names
+        y_scaled = &#34;ys&#34; in self.names
+        z_scaled = &#34;zs&#34; in self.names
+        self.scale_original = 1 if x_scaled and y_scaled and z_scaled else 0
+        logger.info(f&#34;Coordinate scaling status: {&#39;scaled&#39; if self.scale_original else &#39;unscaled&#39;}&#34;)
+    except Exception as e:
+        logger.error(f&#34;Error assigning column names: {e}&#34;)
+        raise</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.atom"><code class="name flex">
+<span>def <span class="ident">atom</span></span>(<span>self, n: int, *columns: str) ‑> Union[List[float], List[List[float]]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract values for a specific atom ID across all selected snapshots.</p>
+<h2 id="parameters">Parameters</h2>
+<p>n (int): The atom ID to extract.
+*columns (str): The column names to extract.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Union[List[float], List[List[float]]]</code></dt>
+<dd>The extracted values.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>If any specified column does not exist.</dd>
+<dt><code>ValueError</code></dt>
+<dd>If the atom ID is not found in any snapshot.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def atom(self, n: int, *columns: str) -&gt; Union[List[float], List[List[float]]]:
+    &#34;&#34;&#34;
+    Extract values for a specific atom ID across all selected snapshots.
+
+    Parameters:
+        n (int): The atom ID to extract.
+        *columns (str): The column names to extract.
+
+    Returns:
+        Union[List[float], List[List[float]]]: The extracted values.
+
+    Raises:
+        KeyError: If any specified column does not exist.
+        ValueError: If the atom ID is not found in any snapshot.
+    &#34;&#34;&#34;
+    logger.info(f&#34;Extracting atom ID {n} values for columns {columns}.&#34;)
+    if not columns:
+        raise ValueError(&#34;No columns specified for extraction.&#34;)
+    column_indices = []
+    for col in columns:
+        if col not in self.names:
+            raise KeyError(f&#34;Column &#39;{col}&#39; not found.&#34;)
+        column_indices.append(self.names[col])
+
+    extracted = [[] for _ in columns]
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        atom_rows = snap.atoms[snap.aselect]
+        id_column = self.names[&#34;id&#34;]
+        matching_atoms = atom_rows[atom_rows[:, id_column] == n]
+        if matching_atoms.size == 0:
+            raise ValueError(f&#34;Atom ID {n} not found in snapshot at timestep {snap.time}.&#34;)
+        atom = matching_atoms[0]
+        for idx, col_idx in enumerate(column_indices):
+            extracted[idx].append(atom[col_idx])
+    if len(columns) == 1:
+        return extracted[0]
+    return extracted</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>self, nstep: int, col: str) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Clone the value from a specific timestep's column to all selected snapshots for atoms with the same ID.</p>
+<h2 id="parameters">Parameters</h2>
+<p>nstep (int): The timestep to clone from.
+col (str): The column name to clone.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>If the column or ID column does not exist.</dd>
+<dt><code>ValueError</code></dt>
+<dd>If the specified timestep does not exist.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(self, nstep: int, col: str) -&gt; None:
+    &#34;&#34;&#34;
+    Clone the value from a specific timestep&#39;s column to all selected snapshots for atoms with the same ID.
+
+    Parameters:
+        nstep (int): The timestep to clone from.
+        col (str): The column name to clone.
+
+    Raises:
+        KeyError: If the column or ID column does not exist.
+        ValueError: If the specified timestep does not exist.
+    &#34;&#34;&#34;
+    logger.info(f&#34;Cloning column &#39;{col}&#39; from timestep {nstep} to all selected snapshots.&#34;)
+    if &#34;id&#34; not in self.names:
+        raise KeyError(&#34;Column &#39;id&#39; not found.&#34;)
+    if col not in self.names:
+        raise KeyError(f&#34;Column &#39;{col}&#39; not found.&#34;)
+    istep = self.findtime(nstep)
+    icol = self.names[col]
+    id_col = self.names[&#34;id&#34;]
+    id_to_index = {atom[id_col]: idx for idx, atom in enumerate(self.snaps[istep].atoms)}
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        for i, atom in enumerate(snap.atoms):
+            if not snap.aselect[i]:
+                continue
+            atom_id = atom[id_col]
+            if atom_id in id_to_index:
+                snap.atoms[i, icol] = self.snaps[istep].atoms[id_to_index[atom_id], icol]
+    logger.info(&#34;Cloning completed successfully.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.cull"><code class="name flex">
+<span>def <span class="ident">cull</span></span>(<span>self) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Remove duplicate snapshots based on timestep.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cull(self) -&gt; None:
+    &#34;&#34;&#34;
+    Remove duplicate snapshots based on timestep.
+    &#34;&#34;&#34;
+    unique_snaps = {}
+    culled_snaps = []
+    for snap in self.snaps:
+        if snap.time not in unique_snaps:
+            unique_snaps[snap.time] = snap
+            culled_snaps.append(snap)
+        else:
+            logger.warning(f&#34;Duplicate timestep {snap.time} found. Culling duplicate.&#34;)
+    self.snaps = culled_snaps
+    logger.info(f&#34;Culled duplicates. Total snapshots: {len(self.snaps)}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.extra"><code class="name flex">
+<span>def <span class="ident">extra</span></span>(<span>self, obj: Any) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract bonds, tris, or lines from another object.</p>
+<h2 id="parameters">Parameters</h2>
+<p>obj (Any): The object to extract from. Can be a data object, cdata, bdump, etc.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the argument type is unrecognized.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extra(self, obj: Any) -&gt; None:
+    &#34;&#34;&#34;
+    Extract bonds, tris, or lines from another object.
+
+    Parameters:
+        obj (Any): The object to extract from. Can be a data object, cdata, bdump, etc.
+
+    Raises:
+        ValueError: If the argument type is unrecognized.
+    &#34;&#34;&#34;
+    from pizza.data3 import data
+    from pizza.converted.cdata3 import cdata
+    from pizza.converted.bdump3 import bdump
+    from pizza.converted.ldump3 import ldump
+    from pizza.converted.tdump3 import tdump
+
+    logger.info(f&#34;Extracting extra information from object of type &#39;{type(obj)}&#39;.&#34;)
+    if isinstance(obj, data) and &#34;Bonds&#34; in obj.sections:
+        self.bondflag = 1
+        self.bondlist = [
+            [int(line.split()[0]), int(line.split()[1]), int(line.split()[2]), int(line.split()[3])]
+            for line in obj.sections[&#34;Bonds&#34;]
+        ]
+        logger.debug(f&#34;Extracted {len(self.bondlist)} bonds from data object.&#34;)
+    elif hasattr(obj, &#39;viz&#39;):
+        if isinstance(obj, cdata):
+            tris, lines = obj.viz()
+            if tris:
+                self.triflag = 1
+                self.trilist = tris
+            if lines:
+                self.lineflag = 1
+                self.linelist = lines
+            logger.debug(f&#34;Extracted tris and lines from cdata object.&#34;)
+        elif isinstance(obj, bdump):
+            self.bondflag = 2
+            self.objextra = obj
+            logger.debug(f&#34;Configured dynamic bond extraction from bdump object.&#34;)
+        elif isinstance(obj, tdump):
+            self.triflag = 2
+            self.objextra = obj
+            logger.debug(f&#34;Configured dynamic tri extraction from tdump object.&#34;)
+        elif isinstance(obj, ldump):
+            self.lineflag = 2
+            self.objextra = obj
+            logger.debug(f&#34;Configured dynamic line extraction from ldump object.&#34;)
+        else:
+            logger.error(&#34;Unrecognized object type for extra extraction.&#34;)
+            raise ValueError(&#34;Unrecognized argument to dump.extra().&#34;)
+    else:
+        logger.error(&#34;Unrecognized argument type for extra extraction.&#34;)
+        raise ValueError(&#34;Unrecognized argument to dump.extra().&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.findtime"><code class="name flex">
+<span>def <span class="ident">findtime</span></span>(<span>self, n: int) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find the index of a given timestep.</p>
+<h2 id="parameters">Parameters</h2>
+<p>n (int): The timestep to find.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>The index of the timestep.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the timestep does not exist.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def findtime(self, n: int) -&gt; int:
+    &#34;&#34;&#34;
+    Find the index of a given timestep.
+
+    Parameters:
+        n (int): The timestep to find.
+
+    Returns:
+        int: The index of the timestep.
+
+    Raises:
+        ValueError: If the timestep does not exist.
+    &#34;&#34;&#34;
+    for i, snap in enumerate(self.snaps):
+        if snap.time == n:
+            return i
+    raise ValueError(f&#34;No step {n} exists.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.iterator"><code class="name flex">
+<span>def <span class="ident">iterator</span></span>(<span>self, flag: int) ‑> Tuple[int, int, int]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Iterator method to loop over selected snapshots.</p>
+<h2 id="parameters">Parameters</h2>
+<p>flag (int): 0 for the first call, 1 for subsequent calls.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Tuple[int, int, int]</code></dt>
+<dd>(index, time, flag)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def iterator(self, flag: int) -&gt; Tuple[int, int, int]:
+    &#34;&#34;&#34;
+    Iterator method to loop over selected snapshots.
+
+    Parameters:
+        flag (int): 0 for the first call, 1 for subsequent calls.
+
+    Returns:
+        Tuple[int, int, int]: (index, time, flag)
+    &#34;&#34;&#34;
+    if not hasattr(self, &#39;iterate&#39;):
+        self.iterate = -1
+    if flag == 0:
+        self.iterate = 0
+    else:
+        self.iterate += 1
+    while self.iterate &lt; self.nsnaps:
+        snap = self.snaps[self.iterate]
+        if snap.tselect:
+            logger.debug(f&#34;Iterator returning snapshot {self.iterate} at time {snap.time}.&#34;)
+            return self.iterate, snap.time, 1
+        self.iterate += 1
+    return 0, 0, -1</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.kind"><code class="name flex">
+<span>def <span class="ident">kind</span></span>(<span>self, listtypes: Optional[Dict[str, List[str]]] = None) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Guess the kind of dump file based on column names.</p>
+<h2 id="parameters">Parameters</h2>
+<p>listtypes (Optional[Dict[str, List[str]]]): A dictionary defining possible types.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Optional[str]</code></dt>
+<dd>The kind of dump file if matched, else None.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def kind(self, listtypes: Optional[Dict[str, List[str]]] = None) -&gt; Optional[str]:
+    &#34;&#34;&#34;
+    Guess the kind of dump file based on column names.
+
+    Parameters:
+        listtypes (Optional[Dict[str, List[str]]]): A dictionary defining possible types.
+
+    Returns:
+        Optional[str]: The kind of dump file if matched, else None.
+    &#34;&#34;&#34;
+    if listtypes is None:
+        listtypes = {
+            &#39;vxyz&#39;: [&#34;id&#34;, &#34;type&#34;, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;, &#34;vx&#34;, &#34;vy&#34;, &#34;vz&#34;],
+            &#39;xyz&#39;: [&#34;id&#34;, &#34;type&#34;, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;]
+        }
+        internaltypes = True
+    else:
+        listtypes = {&#34;user_type&#34;: listtypes}
+        internaltypes = False
+
+    for kind, columns in listtypes.items():
+        if all(col in self.names for col in columns):
+            logger.info(f&#34;Dump kind identified as &#39;{kind}&#39;.&#34;)
+            return kind
+    logger.warning(&#34;Dump kind could not be identified.&#34;)
+    return None</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.maxbox"><code class="name flex">
+<span>def <span class="ident">maxbox</span></span>(<span>self) ‑> List[float]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return the maximum box dimensions across all selected snapshots.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>List[float]</code></dt>
+<dd>[xlo, ylo, zlo, xhi, yhi, zhi]</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def maxbox(self) -&gt; List[float]:
+    &#34;&#34;&#34;
+    Return the maximum box dimensions across all selected snapshots.
+
+    Returns:
+        List[float]: [xlo, ylo, zlo, xhi, yhi, zhi]
+    &#34;&#34;&#34;
+    xlo = ylo = zlo = np.inf
+    xhi = yhi = zhi = -np.inf
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        xlo = min(xlo, snap.xlo)
+        ylo = min(ylo, snap.ylo)
+        zlo = min(zlo, snap.zlo)
+        xhi = max(xhi, snap.xhi)
+        yhi = max(yhi, snap.yhi)
+        zhi = max(zhi, snap.zhi)
+    box = [xlo, ylo, zlo, xhi, yhi, zhi]
+    logger.debug(f&#34;Maximum box dimensions: {box}&#34;)
+    return box</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.maxtype"><code class="name flex">
+<span>def <span class="ident">maxtype</span></span>(<span>self) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return the maximum atom type across all selected snapshots and atoms.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>Maximum atom type.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def maxtype(self) -&gt; int:
+    &#34;&#34;&#34;
+    Return the maximum atom type across all selected snapshots and atoms.
+
+    Returns:
+        int: Maximum atom type.
+    &#34;&#34;&#34;
+    if &#34;type&#34; not in self.names:
+        logger.warning(&#34;Column &#39;type&#39; not found.&#34;)
+        return 0
+    icol = self.names[&#34;type&#34;]
+    max_type = 0
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        selected_atoms = snap.atoms[snap.aselect]
+        if selected_atoms.size == 0:
+            continue
+        current_max = int(selected_atoms[:, icol].max())
+        if current_max &gt; max_type:
+            max_type = current_max
+    logger.info(f&#34;Maximum atom type: {max_type}&#34;)
+    return max_type</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.minmax"><code class="name flex">
+<span>def <span class="ident">minmax</span></span>(<span>self, colname: str) ‑> Tuple[float, float]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find the minimum and maximum values for a specified column across all selected snapshots and atoms.</p>
+<h2 id="parameters">Parameters</h2>
+<p>colname (str): The column name to find min and max for.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Tuple[float, float]</code></dt>
+<dd>The minimum and maximum values.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>If the column name does not exist.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def minmax(self, colname: str) -&gt; Tuple[float, float]:
+    &#34;&#34;&#34;
+    Find the minimum and maximum values for a specified column across all selected snapshots and atoms.
+
+    Parameters:
+        colname (str): The column name to find min and max for.
+
+    Returns:
+        Tuple[float, float]: The minimum and maximum values.
+
+    Raises:
+        KeyError: If the column name does not exist.
+    &#34;&#34;&#34;
+    if colname not in self.names:
+        raise KeyError(f&#34;Column &#39;{colname}&#39; not found.&#34;)
+    icol = self.names[colname]
+    min_val = np.inf
+    max_val = -np.inf
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        selected_atoms = snap.atoms[snap.aselect]
+        if selected_atoms.size == 0:
+            continue
+        current_min = selected_atoms[:, icol].min()
+        current_max = selected_atoms[:, icol].max()
+        if current_min &lt; min_val:
+            min_val = current_min
+        if current_max &gt; max_val:
+            max_val = current_max
+    logger.info(f&#34;minmax for column &#39;{colname}&#39;: min={min_val}, max={max_val}&#34;)
+    return min_val, max_val</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.names2str"><code class="name flex">
+<span>def <span class="ident">names2str</span></span>(<span>self) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert column names to a sorted string based on their indices.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>A string of column names sorted by their column index.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def names2str(self) -&gt; str:
+    &#34;&#34;&#34;
+    Convert column names to a sorted string based on their indices.
+
+    Returns:
+        str: A string of column names sorted by their column index.
+    &#34;&#34;&#34;
+    sorted_columns = sorted(self.names.items(), key=lambda item: item[1])
+    names_str = &#34; &#34;.join([col for col, _ in sorted_columns])
+    logger.debug(f&#34;Column names string: {names_str}&#34;)
+    return names_str</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.newcolumn"><code class="name flex">
+<span>def <span class="ident">newcolumn</span></span>(<span>self, colname: str) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add a new column to every snapshot and initialize it to zero.</p>
+<h2 id="parameters">Parameters</h2>
+<p>colname (str): The name of the new column.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def newcolumn(self, colname: str) -&gt; None:
+    &#34;&#34;&#34;
+    Add a new column to every snapshot and initialize it to zero.
+
+    Parameters:
+        colname (str): The name of the new column.
+    &#34;&#34;&#34;
+    logger.info(f&#34;Adding new column &#39;{colname}&#39; with default value 0.&#34;)
+    if colname in self.names:
+        logger.warning(f&#34;Column &#39;{colname}&#39; already exists.&#34;)
+        return
+    new_col_index = len(self.names)
+    self.names[colname] = new_col_index
+    for snap in self.snaps:
+        if snap.atoms is not None:
+            new_column = np.zeros((snap.atoms.shape[0], 1))
+            snap.atoms = np.hstack((snap.atoms, new_column))
+    logger.info(f&#34;New column &#39;{colname}&#39; added successfully.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.read_all"><code class="name flex">
+<span>def <span class="ident">read_all</span></span>(<span>self) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read all snapshots from each file in the file list.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_all(self) -&gt; None:
+    &#34;&#34;&#34;
+    Read all snapshots from each file in the file list.
+    &#34;&#34;&#34;
+    for file in self.flist:
+        is_gzipped = file.endswith(&#34;.gz&#34;)
+        try:
+            if is_gzipped:
+                with subprocess.Popen([PIZZA_GUNZIP, &#34;-c&#34;, file],
+                                      stdout=subprocess.PIPE,
+                                      text=True) as proc:
+                    file_handle = proc.stdout
+                    logger.debug(f&#34;Opened gzipped file: {file}&#34;)
+            else:
+                file_handle = open(file, &#39;r&#39;)
+                logger.debug(f&#34;Opened file: {file}&#34;)
+
+            with file_handle:
+                snap = self.read_snapshot(file_handle)
+                while snap:
+                    self.snaps.append(snap)
+                    logger.info(f&#34;Read snapshot at time {snap.time}&#34;)
+                    snap = self.read_snapshot(file_handle)
+        except subprocess.CalledProcessError as e:
+            logger.error(f&#34;Error decompressing file &#39;{file}&#39;: {e}&#34;)
+            raise
+        except FileNotFoundError:
+            logger.error(f&#34;File &#39;{file}&#39; not found.&#34;)
+            raise
+        except Exception as e:
+            logger.error(f&#34;Error reading file &#39;{file}&#39;: {e}&#34;)
+            raise
+
+    self.snaps.sort()
+    self.cull()
+    self.nsnaps = len(self.snaps)
+    logger.info(f&#34;Read {self.nsnaps} snapshots.&#34;)
+
+    # Select all timesteps and atoms by default
+    self.tselect.all()
+
+    # Log column assignments
+    if self.names:
+        logger.info(f&#34;Assigned columns: {&#39;, &#39;.join(sorted(self.names.keys(), key=lambda k: self.names[k]))}&#34;)
+    else:
+        logger.warning(&#34;No column assignments made.&#34;)
+
+    # Unscale if necessary
+    if self.nsnaps &gt; 0:
+        if getattr(self, &#39;scale_original&#39;, -1) == 1:
+            self.unscale()
+        elif getattr(self, &#39;scale_original&#39;, -1) == 0:
+            logger.info(&#34;Dump is already unscaled.&#34;)
+        else:
+            logger.warning(&#34;Dump scaling status is unknown.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.read_snapshot"><code class="name flex">
+<span>def <span class="ident">read_snapshot</span></span>(<span>self, f) ‑> Optional[pizza.dump3.Snap]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read a single snapshot from a file.</p>
+<h2 id="parameters">Parameters</h2>
+<p>f (file object): File handle to read from.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Optional[Snap]</code></dt>
+<dd>Snapshot object or None if failed.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_snapshot(self, f) -&gt; Optional[&#39;Snap&#39;]:
+    &#34;&#34;&#34;
+    Read a single snapshot from a file.
+
+    Parameters:
+        f (file object): File handle to read from.
+
+    Returns:
+        Optional[Snap]: Snapshot object or None if failed.
+    &#34;&#34;&#34;
+    try:
+        snap = Snap()
+
+        # Read and assign ITEMS
+        while True:
+            item = f.readline()
+            if not item:
+                break
+            if not item.startswith(&#34;ITEM:&#34;):
+                continue
+            item_type = item.split(&#34;ITEM:&#34;)[1].strip()
+            if item_type == &#34;TIME&#34;:
+                snap.realtime = float(f.readline().strip())
+            elif item_type == &#34;TIMESTEP&#34;:
+                snap.time = int(f.readline().strip())
+            elif item_type == &#34;NUMBER OF ATOMS&#34;:
+                snap.natoms = int(f.readline().strip())
+            elif item_type.startswith(&#34;BOX BOUNDS&#34;):
+                snap.boxstr = item_type.split(&#34;BOX BOUNDS&#34;)[1].strip()
+                box_bounds = []
+                for _ in range(3):
+                    bounds = f.readline().strip().split()
+                    box_bounds.append(tuple(map(float, bounds[:2])))
+                    if len(bounds) &gt; 2:
+                        setattr(snap, bounds[2], float(bounds[2]))
+                    else:
+                        setattr(snap, bounds[2] if len(bounds) &gt; 2 else &#39;xy&#39;, 0.0)
+                snap.xlo, snap.xhi = box_bounds[0]
+                snap.ylo, snap.yhi = box_bounds[1]
+                snap.zlo, snap.zhi = box_bounds[2]
+                snap.triclinic = 1 if len(box_bounds[0]) &gt; 2 else 0
+            elif item_type == &#34;ATOMS&#34;:
+                if not self.names:
+                    self.assign_column_names(f.readline())
+                snap.aselect = np.ones(snap.natoms, dtype=bool)
+                atoms = []
+                for _ in range(snap.natoms):
+                    line = f.readline()
+                    if not line:
+                        break
+                    atoms.append(list(map(float, line.strip().split())))
+                snap.atoms = np.array(atoms)
+                break
+
+        if not hasattr(snap, &#39;time&#39;):
+            return None
+
+        return snap
+    except Exception as e:
+        logger.error(f&#34;Error reading snapshot: {e}&#34;)
+        return None</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.realtime"><code class="name flex">
+<span>def <span class="ident">realtime</span></span>(<span>self) ‑> List[float]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a list of selected snapshot real-time values.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>List[float]</code></dt>
+<dd>List of real-time values.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def realtime(self) -&gt; List[float]:
+    &#34;&#34;&#34;
+    Return a list of selected snapshot real-time values.
+
+    Returns:
+        List[float]: List of real-time values.
+    &#34;&#34;&#34;
+    times = [snap.realtime for snap in self.snaps if snap.tselect and hasattr(snap, &#39;realtime&#39;)]
+    logger.debug(f&#34;Selected real-time values: {times}&#34;)
+    return times</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.scatter"><code class="name flex">
+<span>def <span class="ident">scatter</span></span>(<span>self, root: str) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Write each selected snapshot to a separate dump file with timestep suffix.</p>
+<h2 id="parameters">Parameters</h2>
+<p>root (str): The root name for output files. Suffix will be added based on timestep.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def scatter(self, root: str) -&gt; None:
+    &#34;&#34;&#34;
+    Write each selected snapshot to a separate dump file with timestep suffix.
+
+    Parameters:
+        root (str): The root name for output files. Suffix will be added based on timestep.
+    &#34;&#34;&#34;
+    try:
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            filename = f&#34;{root}.{snap.time}&#34;
+            with open(filename, &#34;w&#34;) as f:
+                f.write(&#34;ITEM: TIMESTEP\n&#34;)
+                f.write(f&#34;{snap.time}\n&#34;)
+                f.write(&#34;ITEM: NUMBER OF ATOMS\n&#34;)
+                f.write(f&#34;{snap.nselect}\n&#34;)
+                f.write(&#34;ITEM: BOX BOUNDS xy xz yz\n&#34; if snap.triclinic else &#34;ITEM: BOX BOUNDS pp pp pp\n&#34;)
+                f.write(f&#34;{snap.xlo} {snap.xhi} {getattr(snap, &#39;xy&#39;, 0.0)}\n&#34;)
+                f.write(f&#34;{snap.ylo} {snap.yhi} {getattr(snap, &#39;xz&#39;, 0.0)}\n&#34;)
+                f.write(f&#34;{snap.zlo} {snap.zhi} {getattr(snap, &#39;yz&#39;, 0.0)}\n&#34;)
+                f.write(f&#34;ITEM: ATOMS {&#39; &#39;.join(sorted(self.names.keys(), key=lambda k: self.names[k]))}\n&#34;)
+                for atom in snap.atoms[snap.aselect]:
+                    atom_str = &#34; &#34;.join([f&#34;{int(atom[self.names[&#39;id&#39;]])}&#34; if key in [&#34;id&#34;, &#34;type&#34;] else f&#34;{atom[self.names[key]]}&#34; 
+                                         for key in sorted(self.names.keys(), key=lambda k: self.names[k])])
+                    f.write(f&#34;{atom_str}\n&#34;)
+        logger.info(f&#34;Scatter write completed with root &#39;{root}&#39;.&#34;)
+    except IOError as e:
+        logger.error(f&#34;Error writing scatter files: {e}&#34;)
+        raise</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.set"><code class="name flex">
+<span>def <span class="ident">set</span></span>(<span>self, eq: str) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set a column value using an equation for all selected snapshots and atoms.</p>
+<h2 id="parameters">Parameters</h2>
+<p>eq (str): The equation to compute the new column values. Use $<column_name> for variables.</p>
+<h2 id="example">Example</h2>
+<p>d.set("$ke = $vx * $vx + $vy * $vy")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set(self, eq: str) -&gt; None:
+    &#34;&#34;&#34;
+    Set a column value using an equation for all selected snapshots and atoms.
+
+    Parameters:
+        eq (str): The equation to compute the new column values. Use $&lt;column_name&gt; for variables.
+
+    Example:
+        d.set(&#34;$ke = $vx * $vx + $vy * $vy&#34;)
+    &#34;&#34;&#34;
+    logger.info(f&#34;Setting column using equation: {eq}&#34;)
+    pattern = r&#34;\$\w+&#34;
+    variables = re.findall(pattern, eq)
+    if not variables:
+        logger.warning(&#34;No variables found in equation.&#34;)
+        return
+    lhs = variables[0][1:]
+    if lhs not in self.names:
+        self.newcolumn(lhs)
+    try:
+        # Replace $var with appropriate array accesses
+        for var in variables:
+            var_name = var[1:]
+            if var_name not in self.names:
+                raise KeyError(f&#34;Variable &#39;{var_name}&#39; not found in columns.&#34;)
+            col_index = self.names[var_name]
+            eq = eq.replace(var, f&#34;snap.atoms[i][{col_index}]&#34;)
+        compiled_eq = compile(eq, &#34;&lt;string&gt;&#34;, &#34;exec&#34;)
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            for i in range(snap.natoms):
+                if not snap.aselect[i]:
+                    continue
+                exec(compiled_eq)
+        logger.info(&#34;Column values set successfully.&#34;)
+    except Exception as e:
+        logger.error(f&#34;Error setting column values: {e}&#34;)
+        raise</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.setv"><code class="name flex">
+<span>def <span class="ident">setv</span></span>(<span>self, colname: str, vector: List[float]) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set a column value using a vector of values for all selected snapshots and atoms.</p>
+<h2 id="parameters">Parameters</h2>
+<p>colname (str): The column name to set.
+vector (List[float]): The values to assign to the column.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>If the column name does not exist.</dd>
+<dt><code>ValueError</code></dt>
+<dd>If the length of the vector does not match the number of selected atoms.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setv(self, colname: str, vector: List[float]) -&gt; None:
+    &#34;&#34;&#34;
+    Set a column value using a vector of values for all selected snapshots and atoms.
+
+    Parameters:
+        colname (str): The column name to set.
+        vector (List[float]): The values to assign to the column.
+
+    Raises:
+        KeyError: If the column name does not exist.
+        ValueError: If the length of the vector does not match the number of selected atoms.
+    &#34;&#34;&#34;
+    logger.info(f&#34;Setting column &#39;{colname}&#39; using a vector of values.&#34;)
+    if colname not in self.names:
+        self.newcolumn(colname)
+    icol = self.names[colname]
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        if len(vector) != snap.nselect:
+            raise ValueError(&#34;Vector length does not match the number of selected atoms.&#34;)
+        selected_indices = np.where(snap.aselect)[0]
+        snap.atoms[selected_indices, icol] = vector
+    logger.info(f&#34;Column &#39;{colname}&#39; set successfully.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.sort"><code class="name flex">
+<span>def <span class="ident">sort</span></span>(<span>self, key: Union[str, int] = 'id') ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sort atoms or snapshots.</p>
+<h2 id="parameters">Parameters</h2>
+<p>key (Union[str, int]): The key to sort by. If str, sorts snapshots by that column. If int, sorts atoms in a specific timestep.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sort(self, key: Union[str, int] = &#34;id&#34;) -&gt; None:
+    &#34;&#34;&#34;
+    Sort atoms or snapshots.
+
+    Parameters:
+        key (Union[str, int]): The key to sort by. If str, sorts snapshots by that column. If int, sorts atoms in a specific timestep.
+    &#34;&#34;&#34;
+    if isinstance(key, str):
+        if key not in self.names:
+            raise ValueError(f&#34;Column &#39;{key}&#39; not found for sorting.&#34;)
+        logger.info(f&#34;Sorting snapshots by column &#39;{key}&#39;.&#34;)
+        icol = self.names[key]
+        for snap in self.snaps:
+            if not snap.tselect:
+                continue
+            snap.atoms = snap.atoms[snap.atoms[:, icol].argsort()]
+    elif isinstance(key, int):
+        try:
+            snap = self.snaps[self.findtime(key)]
+            logger.info(f&#34;Sorting atoms in snapshot at timestep {key}.&#34;)
+            if &#34;id&#34; in self.names:
+                id_col = self.names[&#34;id&#34;]
+                snap.atoms = snap.atoms[snap.atoms[:, id_col].argsort()]
+            else:
+                logger.warning(&#34;No &#39;id&#39; column found for sorting atoms.&#34;)
+        except ValueError as e:
+            logger.error(e)
+            raise
+    else:
+        logger.error(&#34;Invalid key type for sort().&#34;)
+        raise TypeError(&#34;Key must be a string or integer.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.spread"><code class="name flex">
+<span>def <span class="ident">spread</span></span>(<span>self, old: str, n: int, new: str) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Spread values from an old column into a new column as integers from 1 to n based on their relative positions.</p>
+<h2 id="parameters">Parameters</h2>
+<p>old (str): The column name to spread.
+n (int): The number of spread values.
+new (str): The new column name to create.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>If the old column does not exist.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def spread(self, old: str, n: int, new: str) -&gt; None:
+    &#34;&#34;&#34;
+    Spread values from an old column into a new column as integers from 1 to n based on their relative positions.
+
+    Parameters:
+        old (str): The column name to spread.
+        n (int): The number of spread values.
+        new (str): The new column name to create.
+
+    Raises:
+        KeyError: If the old column does not exist.
+    &#34;&#34;&#34;
+    logger.info(f&#34;Spreading column &#39;{old}&#39; into new column &#39;{new}&#39; with {n} spread values.&#34;)
+    if old not in self.names:
+        raise KeyError(f&#34;Column &#39;{old}&#39; not found.&#34;)
+    if new not in self.names:
+        self.newcolumn(new)
+    iold = self.names[old]
+    inew = self.names[new]
+    min_val, max_val = self.minmax(old)
+    gap = max_val - min_val
+    if gap == 0:
+        gap = 1.0  # Prevent division by zero
+    invdelta = n / gap
+    for snap in self.snaps:
+        if not snap.tselect:
+            continue
+        selected_atoms = snap.atoms[snap.aselect]
+        snap.atoms[snap.aselect, inew] = np.clip(((selected_atoms[:, iold] - min_val) * invdelta).astype(int) + 1, 1, n)
+    logger.info(f&#34;Column &#39;{new}&#39; spread successfully.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.time"><code class="name flex">
+<span>def <span class="ident">time</span></span>(<span>self) ‑> List[int]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a list of selected snapshot timesteps.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>List[int]</code></dt>
+<dd>List of timestep values.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def time(self) -&gt; List[int]:
+    &#34;&#34;&#34;
+    Return a list of selected snapshot timesteps.
+
+    Returns:
+        List[int]: List of timestep values.
+    &#34;&#34;&#34;
+    times = [snap.time for snap in self.snaps if snap.tselect]
+    logger.debug(f&#34;Selected timesteps: {times}&#34;)
+    return times</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.vecs"><code class="name flex">
+<span>def <span class="ident">vecs</span></span>(<span>self, n: int, *columns: str) ‑> Union[List[float], List[List[float]]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract values for selected atoms at a specific timestep.</p>
+<h2 id="parameters">Parameters</h2>
+<p>n (int): The timestep to extract from.
+*columns (str): The column names to extract.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Union[List[float], List[List[float]]]</code></dt>
+<dd>The extracted values.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>KeyError</code></dt>
+<dd>If any specified column does not exist.</dd>
+<dt><code>ValueError</code></dt>
+<dd>If the specified timestep does not exist.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def vecs(self, n: int, *columns: str) -&gt; Union[List[float], List[List[float]]]:
+    &#34;&#34;&#34;
+    Extract values for selected atoms at a specific timestep.
+
+    Parameters:
+        n (int): The timestep to extract from.
+        *columns (str): The column names to extract.
+
+    Returns:
+        Union[List[float], List[List[float]]]: The extracted values.
+
+    Raises:
+        KeyError: If any specified column does not exist.
+        ValueError: If the specified timestep does not exist.
+    &#34;&#34;&#34;
+    logger.info(f&#34;Extracting columns {columns} for timestep {n}.&#34;)
+    if not columns:
+        raise ValueError(&#34;No columns specified for extraction.&#34;)
+    try:
+        snap = self.snaps[self.findtime(n)]
+    except ValueError as e:
+        logger.error(e)
+        raise
+    column_indices = []
+    for col in columns:
+        if col not in self.names:
+            raise KeyError(f&#34;Column &#39;{col}&#39; not found.&#34;)
+        column_indices.append(self.names[col])
+    extracted = [[] for _ in columns]
+    selected_atoms = snap.atoms[snap.aselect]
+    for atom in selected_atoms:
+        for idx, col_idx in enumerate(column_indices):
+            extracted[idx].append(atom[col_idx])
+    if len(columns) == 1:
+        return extracted[0]
+    return extracted</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.viz"><code class="name flex">
+<span>def <span class="ident">viz</span></span>(<span>self, index: int, flag: int = 0) ‑> Tuple[int, List[float], List[List[Union[int, float]]], List[List[Union[int, float]]], List[Any], List[Any]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return visualization data for a specified snapshot.</p>
+<h2 id="parameters">Parameters</h2>
+<p>index (int): Snapshot index or timestep value.
+flag (int): If 1, treat index as timestep value. Default is 0.</p>
+<h2 id="returns">Returns</h2>
+<p>Tuple[int, List[float], List[List[Union[int, float]]], List[List[Union[int, float]]], List[Any], List[Any]]:
+(time, box, atoms, bonds, tris, lines)</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the snapshot index is invalid.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def viz(self, index: int, flag: int = 0) -&gt; Tuple[int, List[float], List[List[Union[int, float]]], 
+                                               List[List[Union[int, float]]], List[Any], List[Any]]:
+    &#34;&#34;&#34;
+    Return visualization data for a specified snapshot.
+
+    Parameters:
+        index (int): Snapshot index or timestep value.
+        flag (int): If 1, treat index as timestep value. Default is 0.
+
+    Returns:
+        Tuple[int, List[float], List[List[Union[int, float]]], List[List[Union[int, float]]], List[Any], List[Any]]:
+            (time, box, atoms, bonds, tris, lines)
+
+    Raises:
+        ValueError: If the snapshot index is invalid.
+    &#34;&#34;&#34;
+    if flag:
+        try:
+            isnap = self.findtime(index)
+        except ValueError as e:
+            logger.error(e)
+            raise
+    else:
+        isnap = index
+        if isnap &lt; 0 or isnap &gt;= self.nsnaps:
+            raise ValueError(&#34;Snapshot index out of range.&#34;)
+
+    snap = self.snaps[isnap]
+    time = snap.time
+    box = [snap.xlo, snap.ylo, snap.zlo, snap.xhi, snap.yhi, snap.zhi]
+    id_idx = self.names.get(&#34;id&#34;)
+    type_idx = self.names.get(self.atype)
+    x_idx = self.names.get(&#34;x&#34;)
+    y_idx = self.names.get(&#34;y&#34;)
+    z_idx = self.names.get(&#34;z&#34;)
+
+    if None in [id_idx, type_idx, x_idx, y_idx, z_idx]:
+        raise ValueError(&#34;One or more required columns (id, type, x, y, z) are not defined.&#34;)
+
+    # Create atom list for visualization
+    atoms = snap.atoms[snap.aselect][:, [id_idx, type_idx, x_idx, y_idx, z_idx]].astype(object).tolist()
+
+    # Create bonds list if bonds are defined
+    bonds = []
+    if self.bondflag:
+        if self.bondflag == 1:
+            bondlist = self.bondlist
+        elif self.bondflag == 2 and self.objextra:
+            _, _, _, bondlist, _, _ = self.objextra.viz(time, 1)
+        else:
+            bondlist = []
+        if bondlist:
+            id_to_atom = {atom[0]: atom for atom in atoms}
+            for bond in bondlist:
+                try:
+                    atom1 = id_to_atom[bond[2]]
+                    atom2 = id_to_atom[bond[3]]
+                    bonds.append([
+                        bond[0],
+                        bond[1],
+                        atom1[2], atom1[3], atom1[4],
+                        atom2[2], atom2[3], atom2[4],
+                        atom1[1], atom2[1]
+                    ])
+                except KeyError:
+                    logger.warning(f&#34;Bond with atom IDs {bond[2]}, {bond[3]} not found in selected atoms.&#34;)
+                    continue
+
+    # Create tris list if tris are defined
+    tris = []
+    if self.triflag:
+        if self.triflag == 1:
+            tris = self.trilist
+        elif self.triflag == 2 and self.objextra:
+            _, _, _, _, tris, _ = self.objextra.viz(time, 1)
+    # Create lines list if lines are defined
+    lines = []
+    if self.lineflag:
+        if self.lineflag == 1:
+            lines = self.linelist
+        elif self.lineflag == 2 and self.objextra:
+            _, _, _, _, _, lines = self.objextra.viz(time, 1)
+
+    logger.debug(f&#34;Visualization data prepared for snapshot {isnap} at time {time}.&#34;)
+    return time, box, atoms, bonds, tris, lines</code></pre>
+</details>
+</dd>
+<dt id="data3_legacy.dump.write"><code class="name flex">
+<span>def <span class="ident">write</span></span>(<span>self, filename: str, head: int = 1, app: int = 0) ‑> NoneType</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Write the dump object to a LAMMPS dump file.</p>
+<h2 id="parameters">Parameters</h2>
+<p>filename (str): The output file path.
+head (int): Whether to include the snapshot header (1 for yes, 0 for no).
+app (int): Whether to append to the file (1 for yes, 0 for no).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write(self, filename: str, head: int = 1, app: int = 0) -&gt; None:
+    &#34;&#34;&#34;
+    Write the dump object to a LAMMPS dump file.
+
+    Parameters:
+        filename (str): The output file path.
+        head (int): Whether to include the snapshot header (1 for yes, 0 for no).
+        app (int): Whether to append to the file (1 for yes, 0 for no).
+    &#34;&#34;&#34;
+    try:
+        mode = &#34;a&#34; if app else &#34;w&#34;
+        with open(filename, mode) as f:
+            for snap in self.snaps:
+                if not snap.tselect:
+                    continue
+                if head:
+                    f.write(&#34;ITEM: TIMESTEP\n&#34;)
+                    f.write(f&#34;{snap.time}\n&#34;)
+                    f.write(&#34;ITEM: NUMBER OF ATOMS\n&#34;)
+                    f.write(f&#34;{snap.nselect}\n&#34;)
+                    f.write(&#34;ITEM: BOX BOUNDS xy xz yz\n&#34; if snap.triclinic else &#34;ITEM: BOX BOUNDS pp pp pp\n&#34;)
+                    f.write(f&#34;{snap.xlo} {snap.xhi} {getattr(snap, &#39;xy&#39;, 0.0)}\n&#34;)
+                    f.write(f&#34;{snap.ylo} {snap.yhi} {getattr(snap, &#39;xz&#39;, 0.0)}\n&#34;)
+                    f.write(f&#34;{snap.zlo} {snap.zhi} {getattr(snap, &#39;yz&#39;, 0.0)}\n&#34;)
+                    f.write(f&#34;ITEM: ATOMS {&#39; &#39;.join(sorted(self.names.keys(), key=lambda k: self.names[k]))}\n&#34;)
+                for atom in snap.atoms[snap.aselect]:
+                    atom_str = &#34; &#34;.join([f&#34;{int(atom[self.names[&#39;id&#39;]])}&#34; if key in [&#34;id&#34;, &#34;type&#34;] else f&#34;{atom[self.names[key]]}&#34; 
+                                         for key in sorted(self.names.keys(), key=lambda k: self.names[k])])
+                    f.write(f&#34;{atom_str}\n&#34;)
+        logger.info(f&#34;Dump object written to &#39;{filename}&#39;.&#34;)
+    except IOError as e:
+        logger.error(f&#34;Error writing to file &#39;{filename}&#39;: {e}&#34;)
+        raise</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#data-class-legacy-code">data Class (legacy code)</a><ul>
+<li><a href="#features">Features</a></li>
+<li><a href="#usage">Usage</a><ul>
+<li><a href="#initialization">Initialization</a></li>
+<li><a href="#accessing-data">Accessing Data</a></li>
+<li><a href="#manipulation">Manipulation</a></li>
+<li><a href="#output">Output</a></li>
+<li><a href="#visualization">Visualization</a></li>
+<li><a href="#integration-with-dump">Integration with dump</a></li>
+</ul>
+</li>
+<li><a href="#examples">Examples</a><ul>
+<li><a href="#basic-usage">Basic Usage</a></li>
+<li><a href="#restart-generation">Restart Generation</a></li>
+<li><a href="#visualization_1">Visualization</a></li>
+</ul>
+</li>
+<li><a href="#properties">Properties</a></li>
+<li><a href="#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="data3_legacy.data" href="#data3_legacy.data">data</a></code></h4>
+<ul class="two-column">
+<li><code><a title="data3_legacy.data.append" href="#data3_legacy.data.append">append</a></code></li>
+<li><code><a title="data3_legacy.data.delete" href="#data3_legacy.data.delete">delete</a></code></li>
+<li><code><a title="data3_legacy.data.dispsection" href="#data3_legacy.data.dispsection">dispsection</a></code></li>
+<li><code><a title="data3_legacy.data.findtime" href="#data3_legacy.data.findtime">findtime</a></code></li>
+<li><code><a title="data3_legacy.data.get" href="#data3_legacy.data.get">get</a></code></li>
+<li><code><a title="data3_legacy.data.iterator" href="#data3_legacy.data.iterator">iterator</a></code></li>
+<li><code><a title="data3_legacy.data.map" href="#data3_legacy.data.map">map</a></code></li>
+<li><code><a title="data3_legacy.data.maxbox" href="#data3_legacy.data.maxbox">maxbox</a></code></li>
+<li><code><a title="data3_legacy.data.maxtype" href="#data3_legacy.data.maxtype">maxtype</a></code></li>
+<li><code><a title="data3_legacy.data.newxyz" href="#data3_legacy.data.newxyz">newxyz</a></code></li>
+<li><code><a title="data3_legacy.data.reorder" href="#data3_legacy.data.reorder">reorder</a></code></li>
+<li><code><a title="data3_legacy.data.replace" href="#data3_legacy.data.replace">replace</a></code></li>
+<li><code><a title="data3_legacy.data.viz" href="#data3_legacy.data.viz">viz</a></code></li>
+<li><code><a title="data3_legacy.data.write" href="#data3_legacy.data.write">write</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="data3_legacy.dump" href="#data3_legacy.dump">dump</a></code></h4>
+<ul class="two-column">
+<li><code><a title="data3_legacy.dump.assign_column_names" href="#data3_legacy.dump.assign_column_names">assign_column_names</a></code></li>
+<li><code><a title="data3_legacy.dump.atom" href="#data3_legacy.dump.atom">atom</a></code></li>
+<li><code><a title="data3_legacy.dump.clone" href="#data3_legacy.dump.clone">clone</a></code></li>
+<li><code><a title="data3_legacy.dump.cull" href="#data3_legacy.dump.cull">cull</a></code></li>
+<li><code><a title="data3_legacy.dump.extra" href="#data3_legacy.dump.extra">extra</a></code></li>
+<li><code><a title="data3_legacy.dump.findtime" href="#data3_legacy.dump.findtime">findtime</a></code></li>
+<li><code><a title="data3_legacy.dump.iterator" href="#data3_legacy.dump.iterator">iterator</a></code></li>
+<li><code><a title="data3_legacy.dump.kind" href="#data3_legacy.dump.kind">kind</a></code></li>
+<li><code><a title="data3_legacy.dump.maxbox" href="#data3_legacy.dump.maxbox">maxbox</a></code></li>
+<li><code><a title="data3_legacy.dump.maxtype" href="#data3_legacy.dump.maxtype">maxtype</a></code></li>
+<li><code><a title="data3_legacy.dump.minmax" href="#data3_legacy.dump.minmax">minmax</a></code></li>
+<li><code><a title="data3_legacy.dump.names2str" href="#data3_legacy.dump.names2str">names2str</a></code></li>
+<li><code><a title="data3_legacy.dump.newcolumn" href="#data3_legacy.dump.newcolumn">newcolumn</a></code></li>
+<li><code><a title="data3_legacy.dump.read_all" href="#data3_legacy.dump.read_all">read_all</a></code></li>
+<li><code><a title="data3_legacy.dump.read_snapshot" href="#data3_legacy.dump.read_snapshot">read_snapshot</a></code></li>
+<li><code><a title="data3_legacy.dump.realtime" href="#data3_legacy.dump.realtime">realtime</a></code></li>
+<li><code><a title="data3_legacy.dump.scatter" href="#data3_legacy.dump.scatter">scatter</a></code></li>
+<li><code><a title="data3_legacy.dump.set" href="#data3_legacy.dump.set">set</a></code></li>
+<li><code><a title="data3_legacy.dump.setv" href="#data3_legacy.dump.setv">setv</a></code></li>
+<li><code><a title="data3_legacy.dump.sort" href="#data3_legacy.dump.sort">sort</a></code></li>
+<li><code><a title="data3_legacy.dump.spread" href="#data3_legacy.dump.spread">spread</a></code></li>
+<li><code><a title="data3_legacy.dump.time" href="#data3_legacy.dump.time">time</a></code></li>
+<li><code><a title="data3_legacy.dump.type" href="#data3_legacy.dump.type">type</a></code></li>
+<li><code><a title="data3_legacy.dump.vecs" href="#data3_legacy.dump.vecs">vecs</a></code></li>
+<li><code><a title="data3_legacy.dump.viz" href="#data3_legacy.dump.viz">viz</a></code></li>
+<li><code><a title="data3_legacy.dump.write" href="#data3_legacy.dump.write">write</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

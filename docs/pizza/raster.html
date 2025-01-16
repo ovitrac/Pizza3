@@ -3305,861 +3305,1407 @@ f&#34;The external radius={rshell} cannot be smaller than the shell thickness={t
 </dd>
 <dt id="raster.data"><code class="flex name class">
 <span>class <span class="ident">data3</span></span>
-<span>(</span><span>*list)</span>
+<span>(</span><span>*args: Any)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The <code><a title="raster.data" href="#raster.data">data</a></code> class provides tools to read, write, and manipulate LAMMPS data files,
+enabling seamless integration with the <code>dump</code> class for restart generation and
+simulation data management.</p>
+<p>Initialize a data object.</p>
+<h2 id="parameters">Parameters</h2>
+<p>*args: Variable length argument list.
+- No arguments: Creates an empty data object.
+- One argument (filename or dump object): Initializes from a file or dump object.
+- Two arguments (dump object, timestep): Initializes from a dump object at a specific timestep.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class data:
+    &#34;&#34;&#34;
+    The `data` class provides tools to read, write, and manipulate LAMMPS data files,
+    enabling seamless integration with the `dump` class for restart generation and
+    simulation data management.
+    &#34;&#34;&#34;
 
-    # --------------------------------------------------------------------
+    # Class-level keywords for headers and sections
+    HKEYWORDS = [
+        &#34;atoms&#34;,
+        &#34;ellipsoids&#34;,
+        &#34;lines&#34;,
+        &#34;triangles&#34;,
+        &#34;bodies&#34;,
+        &#34;bonds&#34;,
+        &#34;angles&#34;,
+        &#34;dihedrals&#34;,
+        &#34;impropers&#34;,
+        &#34;atom types&#34;,
+        &#34;bond types&#34;,
+        &#34;angle types&#34;,
+        &#34;dihedral types&#34;,
+        &#34;improper types&#34;,
+        &#34;xlo xhi&#34;,
+        &#34;ylo yhi&#34;,
+        &#34;zlo zhi&#34;,
+        &#34;xy xz yz&#34;,
+    ]
 
-    def __init__(self, *list):
+    SKEYWORDS = [
+        [&#34;Masses&#34;, &#34;atom types&#34;],
+        [&#34;Atoms&#34;, &#34;atoms&#34;],
+        [&#34;Ellipsoids&#34;, &#34;ellipsoids&#34;],
+        [&#34;Lines&#34;, &#34;lines&#34;],
+        [&#34;Triangles&#34;, &#34;triangles&#34;],
+        [&#34;Bodies&#34;, &#34;bodies&#34;],
+        [&#34;Bonds&#34;, &#34;bonds&#34;],
+        [&#34;Angles&#34;, &#34;angles&#34;],
+        [&#34;Dihedrals&#34;, &#34;dihedrals&#34;],
+        [&#34;Impropers&#34;, &#34;impropers&#34;],
+        [&#34;Velocities&#34;, &#34;atoms&#34;],
+        [&#34;Pair Coeffs&#34;, &#34;atom types&#34;],
+        [&#34;Bond Coeffs&#34;, &#34;bond types&#34;],
+        [&#34;Angle Coeffs&#34;, &#34;angle types&#34;],
+        [&#34;Dihedral Coeffs&#34;, &#34;dihedral types&#34;],
+        [&#34;Improper Coeffs&#34;, &#34;improper types&#34;],
+        [&#34;BondBond Coeffs&#34;, &#34;angle types&#34;],
+        [&#34;BondAngle Coeffs&#34;, &#34;angle types&#34;],
+        [&#34;MiddleBondTorsion Coeffs&#34;, &#34;dihedral types&#34;],
+        [&#34;EndBondTorsion Coeffs&#34;, &#34;dihedral types&#34;],
+        [&#34;AngleTorsion Coeffs&#34;, &#34;dihedral types&#34;],
+        [&#34;AngleAngleTorsion Coeffs&#34;, &#34;dihedral types&#34;],
+        [&#34;BondBond13 Coeffs&#34;, &#34;dihedral types&#34;],
+        [&#34;AngleAngle Coeffs&#34;, &#34;improper types&#34;],
+        [&#34;Molecules&#34;, &#34;atoms&#34;],
+        [&#34;Tinker Types&#34;, &#34;atoms&#34;],
+    ]
+
+    def __init__(self, *args: Any):
+        &#34;&#34;&#34;
+        Initialize a data object.
+
+        Parameters:
+            *args: Variable length argument list.
+                - No arguments: Creates an empty data object.
+                - One argument (filename or dump object): Initializes from a file or dump object.
+                - Two arguments (dump object, timestep): Initializes from a dump object at a specific timestep.
+        &#34;&#34;&#34;
         self.nselect = 1
+        self.names: Dict[str, int] = {}
+        self.headers: Dict[str, Union[int, Tuple[float, float], Tuple[float, float, float]]] = {}
+        self.sections: Dict[str, List[str]] = {}
+        self.flist: List[str] = []
+        self.restart: bool = False
 
-        if len(list) == 0:
-
-        # ========================================
-        # Default Constructor (empty object)
-        # ========================================
-
+        if not args:
+            # Default Constructor (empty object)
             self.title = &#34;LAMMPS data file&#34;
-            self.names = {}
-            self.headers = {}
-            self.sections = {}
-            self.flist = []
+            logger.debug(&#34;Initialized empty data object.&#34;)
+            return
+
+        first_arg = args[0]
+
+        if isinstance(first_arg, dump):
+            # Constructor from an existing dump object
+            self._init_from_dump(first_arg, *args[1:])
+        elif isinstance(first_arg, str):
+            # Constructor from a DATA file
+            self._init_from_file(*args)
+        else:
+            raise TypeError(&#34;Invalid argument type for data constructor.&#34;)
+
+    def _init_from_dump(self, dump_obj: dump, timestep: Optional[int] = None) -&gt; None:
+        &#34;&#34;&#34;
+        Initialize the data object from a dump object.
+
+        Parameters:
+            dump_obj (dump): The dump object to initialize from.
+            timestep (Optional[int]): The specific timestep to use. If None, the last timestep is used.
+        &#34;&#34;&#34;
+        times = dump_obj.time()
+        num_timesteps = len(times)
+
+        if timestep is not None:
+            if timestep not in times:
+                raise ValueError(&#34;The input timestep is not available in the dump object.&#34;)
+            selected_time = timestep
+        else:
+            selected_time = times[-1]
+
+        try:
+            index = times.index(selected_time)
+        except ValueError:
+            raise ValueError(&#34;Selected timestep not found in dump object.&#34;)
+
+        self.title = (f&#39;LAMMPS data file (restart from &#34;{dump_obj.flist[0]}&#34; &#39;
+                      f&#39;t = {selected_time:.5g} (frame {index + 1} of {num_timesteps}))&#39;)
+        logger.debug(f&#34;Set title: {self.title}&#34;)
+
+        # Set headers
+        snap = dump_obj.snaps[index]
+        self.headers = {
+            &#39;atoms&#39;: snap.natoms,
+            &#39;atom types&#39;: dump_obj.minmax(&#34;type&#34;)[1],
+            &#39;xlo xhi&#39;: (snap.xlo, snap.xhi),
+            &#39;ylo yhi&#39;: (snap.ylo, snap.yhi),
+            &#39;zlo zhi&#39;: (snap.zlo, snap.zhi)
+        }
+        logger.debug(f&#34;Set headers: {self.headers}&#34;)
+
+        # Initialize sections
+        self.sections = {}
+        template_atoms = {
+            &#34;smd&#34;: [&#34;id&#34;, &#34;type&#34;, &#34;mol&#34;, &#34;c_vol&#34;, &#34;mass&#34;, &#34;radius&#34;,
+                    &#34;c_contact_radius&#34;, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;, &#34;f_1[1]&#34;, &#34;f_1[2]&#34;, &#34;f_1[3]&#34;]
+        }
+
+        if dump_obj.kind(template_atoms[&#34;smd&#34;]):
+            for col in template_atoms[&#34;smd&#34;]:
+                vector = dump_obj.vecs(selected_time, col)
+                is_id_type_mol = col in [&#34;id&#34;, &#34;type&#34;, &#34;mol&#34;]
+                self.append(&#34;Atoms&#34;, vector, force_integer=is_id_type_mol, property_name=col)
+        else:
+            raise ValueError(&#34;Please add your ATOMS section in the constructor.&#34;)
+
+        # Set velocities if required
+        template_velocities = {&#34;smd&#34;: [&#34;id&#34;, &#34;vx&#34;, &#34;vy&#34;, &#34;vz&#34;]}
+        if dump_obj.kind(template_atoms[&#34;smd&#34;]):
+            if dump_obj.kind(template_velocities[&#34;smd&#34;]):
+                for col in template_velocities[&#34;smd&#34;]:
+                    vector = dump_obj.vecs(selected_time, col)
+                    is_id = col == &#34;id&#34;
+                    self.append(&#34;Velocities&#34;, vector, force_integer=is_id, property_name=col)
+            else:
+                raise ValueError(&#34;The velocities are missing for the style SMD.&#34;)
+
+        # Store filename
+        self.flist = dump_obj.flist.copy()
+        self.restart = True
+        logger.debug(&#34;Initialized data object from dump.&#34;)
+
+    def _init_from_file(self, filename: str) -&gt; None:
+        &#34;&#34;&#34;
+        Initialize the data object from a LAMMPS data file.
+
+        Parameters:
+            filename (str): Path to the LAMMPS data file.
+        &#34;&#34;&#34;
+        flist = [filename]
+        is_gzipped = filename.endswith(&#34;.gz&#34;)
+
+        try:
+            if is_gzipped:
+                with subprocess.Popen([PIZZA_GUNZIP, &#34;-c&#34;, filename],
+                                      stdout=subprocess.PIPE,
+                                      text=True) as proc:
+                    file_handle = proc.stdout
+                    logger.debug(f&#34;Opened gzipped file: {filename}&#34;)
+            else:
+                file_handle = open(filename, &#39;r&#39;)
+                logger.debug(f&#34;Opened file: {filename}&#34;)
+
+            with file_handle:
+                self.title = file_handle.readline().strip()
+                logger.debug(f&#34;Read title: {self.title}&#34;)
+
+                # Read headers
+                while True:
+                    line = file_handle.readline()
+                    if not line:
+                        break
+                    line = line.strip()
+                    if not line:
+                        continue
+
+                    found = False
+                    for keyword in self.HKEYWORDS:
+                        if keyword in line:
+                            found = True
+                            words = line.split()
+                            if keyword in [&#34;xlo xhi&#34;, &#34;ylo yhi&#34;, &#34;zlo zhi&#34;]:
+                                self.headers[keyword] = (float(words[0]), float(words[1]))
+                            elif keyword == &#34;xy xz yz&#34;:
+                                self.headers[keyword] = (float(words[0]), float(words[1]), float(words[2]))
+                            else:
+                                self.headers[keyword] = int(words[0])
+                            logger.debug(f&#34;Set header &#39;{keyword}&#39;: {self.headers[keyword]}&#34;)
+                            break
+                    if not found:
+                        break  # Reached the end of headers
+
+                # Read sections
+                while line:
+                    found_section = False
+                    for pair in self.SKEYWORDS:
+                        keyword, length_key = pair
+                        if keyword == line:
+                            found_section = True
+                            if length_key not in self.headers:
+                                raise ValueError(f&#34;Data section &#39;{keyword}&#39; has no matching header value.&#34;)
+                            count = self.headers[length_key]
+                            file_handle.readline()  # Read the blank line after section keyword
+                            section_lines = [file_handle.readline() for _ in range(count)]
+                            self.sections[keyword] = section_lines
+                            logger.debug(f&#34;Read section &#39;{keyword}&#39; with {count} entries.&#34;)
+                            break
+                    if not found_section:
+                        raise ValueError(f&#34;Invalid section &#39;{line}&#39; in data file.&#34;)
+                    # Read next section keyword
+                    line = file_handle.readline()
+                    if line:
+                        line = line.strip()
+
+            self.flist = flist
             self.restart = False
-            return
+            logger.info(f&#34;Initialized data object from file &#39;{filename}&#39;.&#34;)
+        except subprocess.CalledProcessError as e:
+            logger.error(f&#34;Error decompressing file &#39;{filename}&#39;: {e}&#34;)
+            raise
+        except FileNotFoundError:
+            logger.error(f&#34;File &#39;{filename}&#39; not found.&#34;)
+            raise
+        except Exception as e:
+            logger.error(f&#34;Error reading file &#39;{filename}&#39;: {e}&#34;)
+            raise
 
-        elif isinstance(list[0],dump):
+    def __repr__(self) -&gt; str:
+        &#34;&#34;&#34;
+        Return a string representation of the data object.
 
-        # ========================================
-        # Constructor from an existing DUMP object
-        # ========================================
-
-            X = list[0]     # supplied dump object
-            t = X.time()
-            nt = len(t)
-            if len(list)&gt;1:
-                tselect = list[1]
-                if tselect not in t:
-                    raise ValueError(&#34;the input time is not available in the dump object&#34;)
-            else:
-                tselect = t[-1]
-            itselect = next(i for i in range(nt) if t[i]==tselect)
-            # set object title
-            self.title = &#39;LAMMPS data file (restart from &#34;%s&#34; t = %0.5g (frame %d of %d))&#39; %  \
-                (X.flist[0],tselect,itselect,nt)
-            # set default names                       ------------- HEADERS SECTION -------------
-            self.names = {}
-            X.tselect.one(tselect)
-            snap = X.snaps[itselect]
-            # set headers
-            self.headers = {    &#39;atoms&#39;: snap.natoms,
-                                &#39;atom types&#39;: X.minmax(&#34;type&#34;)[1],
-                                &#39;xlo xhi&#39;: (snap.xlo, snap.xhi),
-                                &#39;ylo yhi&#39;: (snap.ylo, snap.yhi),
-                                &#39;zlo zhi&#39;: (snap.zlo, snap.zhi)}
-            # Default sections
-            self.sections = {}
-            # set atoms (specific to your style/kind) ------------- ATOMS SUBSECTION -------------
-            template_atoms = {&#34;smd&#34;: [&#34;id&#34;,&#34;type&#34;,&#34;mol&#34;,&#34;c_vol&#34;, &#34;mass&#34;, &#34;radius&#34;,
-                                      &#34;c_contact_radius&#34;, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;, &#34;f_1[1]&#34;, &#34;f_1[2]&#34;, &#34;f_1[3]&#34;] }
-            if X.kind(template_atoms[&#34;smd&#34;]):
-                for col in template_atoms[&#34;smd&#34;]:
-                    self.append(&#34;Atoms&#34;, X.vecs(tselect, col), col in [&#34;id&#34;,&#34;type&#34;,&#34;mol&#34;],col)
-            else:
-                raise ValueError(&#34;Please add your ATOMS section in the constructor&#34;)
-            # set velocities (if required)           ------------- VELOCITIES SUBSECTION -------------
-            template_velocities = {&#34;smd&#34;: [&#34;id&#34;,&#34;vx&#34;,&#34;vy&#34;,&#34;vz&#34;]}
-            if X.kind(template_atoms[&#34;smd&#34;]):
-                if X.kind(template_velocities[&#34;smd&#34;]):
-                    for col in template_velocities[&#34;smd&#34;]:
-                        self.append(&#34;Velocities&#34;, X.vecs(tselect, col), col == &#34;id&#34;,col)
-                else:
-                    raise ValueError(&#34;the velocities are missing for the style SMD&#34;)
-            # store filename
-            self.flist = list[0].flist
-            self.restart = True
-            return
-
-        # ===========================================================
-        # Regular constructor from DATA file (supplied as filename)
-        # ===========================================================
-
-        flist = list
-        file = list[0]
-        if file[-3:] == &#34;.gz&#34;:
-            f = popen(&#34;%s -c %s&#34; % (PIZZA_GUNZIP, file), &#34;r&#34;)
-        else:
-            f = open(file)
-
-        self.title = f.readline()
-        self.names = {}
-
-        headers = {}
-        while 1:
-            line = f.readline()
-            line = line.strip()
-            if len(line) == 0:
-                continue
-            found = 0
-            for keyword in hkeywords:
-                if line.find(keyword) &gt;= 0:
-                    found = 1
-                    words = line.split()
-                    if (
-                        keyword == &#34;xlo xhi&#34;
-                        or keyword == &#34;ylo yhi&#34;
-                        or keyword == &#34;zlo zhi&#34;
-                    ):
-                        headers[keyword] = (float(words[0]), float(words[1]))
-                    elif keyword == &#34;xy xz yz&#34;:
-                        headers[keyword] = (
-                            float(words[0]),
-                            float(words[1]),
-                            float(words[2]),
-                        )
-                    else:
-                        headers[keyword] = int(words[0])
-            if not found:
-                break
-
-        sections = {}
-        while 1:
-            found = 0
-            for pair in skeywords:
-                keyword, length = pair[0], pair[1]
-                if keyword == line:
-                    found = 1
-                    if length not in headers: #if not headers.has_key(length):
-                        raise ValueError(&#34;data section %s has no matching header value&#34; % line)
-                    f.readline()
-                    list = []
-                    for i in range(headers[length]):
-                        list.append(f.readline())
-                    sections[keyword] = list
-            if not found:
-                raise ValueError(&#34;invalid section %s in data file&#34; % line)
-            f.readline()
-            line = f.readline()
-            if not line:
-                break
-            line = line.strip()
-
-        f.close()
-        self.headers = headers
-        self.sections = sections
-        self.flist = flist
-        self.restart = False
-
-    # --------------------------------------------------------------------
-    # Display method (added OV - 2022-02-03)
-    def __repr__(self):
-        if self.sections == {} or self.headers == {}:
-            ret = &#34;empty %s&#34; % self.title
-            print(ret)
+        Returns:
+            str: Description of the data object.
+        &#34;&#34;&#34;
+        if not self.sections or not self.headers:
+            ret = f&#34;empty {self.title}&#34;
+            logger.info(ret)
             return ret
-        if self.restart:
-            kind = &#34;restart&#34;
-        else:
-            kind = &#34;source&#34;
-        print(&#34;Data file: %s\n\tcontains %d atoms from %d atom types\n\twith box = [%0.4g %0.4g %0.4g %0.4g %0.4g %0.4g]&#34;
-              % (self.flist[0],
-                 self.headers[&#39;atoms&#39;],
-                 self.headers[&#39;atom types&#39;],
-                 self.headers[&#39;xlo xhi&#39;][0],
-                 self.headers[&#39;xlo xhi&#39;][1],
-                 self.headers[&#39;ylo yhi&#39;][0],
-                 self.headers[&#39;ylo yhi&#39;][1],
-                 self.headers[&#39;zlo zhi&#39;][0],
-                 self.headers[&#39;zlo zhi&#39;][1],
-                 ) )
-        print(&#34;\twith the following sections:&#34;)
-        for sectionname in self.sections.keys():
-            print(&#34;\t\t&#34; +self.dispsection(sectionname,False))
-        ret = &#39;LAMMPS data object including %d atoms (%d types, %s=&#34;%s&#34;)&#39; \
-            % (self.headers[&#39;atoms&#39;],self.maxtype(),kind,self.flist[0])
+
+        kind = &#34;restart&#34; if self.restart else &#34;source&#34;
+        header_info = (f&#34;Data file: {self.flist[0]}\n&#34;
+                       f&#34;\tcontains {self.headers.get(&#39;atoms&#39;, 0)} atoms from {self.headers.get(&#39;atom types&#39;, 0)} atom types\n&#34;
+                       f&#34;\twith box = [{self.headers.get(&#39;xlo xhi&#39;, (0, 0))[0]} &#34;
+                       f&#34;{self.headers.get(&#39;xlo xhi&#39;, (0, 0))[1]} &#34;
+                       f&#34;{self.headers.get(&#39;ylo yhi&#39;, (0, 0))[0]} &#34;
+                       f&#34;{self.headers.get(&#39;ylo yhi&#39;, (0, 0))[1]} &#34;
+                       f&#34;{self.headers.get(&#39;zlo zhi&#39;, (0, 0))[0]} &#34;
+                       f&#34;{self.headers.get(&#39;zlo zhi&#39;, (0, 0))[1]}]&#34;)
+
+        logger.info(header_info)
+        section_info = &#34;\twith the following sections:&#34;
+        logger.info(section_info)
+        for section_name in self.sections.keys():
+            section_details = f&#34;\t\t{self.dispsection(section_name, False)}&#34;
+            logger.info(section_details)
+
+        ret = (f&#39;LAMMPS data object including {self.headers.get(&#34;atoms&#34;, 0)} atoms &#39;
+               f&#39;({self.maxtype()} types, {kind}=&#34;{self.flist[0]}&#34;)&#39;)
         return ret
 
+    def map(self, *pairs: Any) -&gt; None:
+        &#34;&#34;&#34;
+        Assign names to atom columns.
 
-    # --------------------------------------------------------------------
-    # assign names to atom columns
+        Parameters:
+            *pairs (Any): Pairs of column indices and names.
 
-    def map(self, *pairs):
+        Raises:
+            ValueError: If an odd number of arguments is provided.
+        &#34;&#34;&#34;
         if len(pairs) % 2 != 0:
-            raise ValueError (&#34;data map() requires pairs of mappings&#34;)
+            raise ValueError(&#34;data.map() requires pairs of mappings.&#34;)
+
         for i in range(0, len(pairs), 2):
-            j = i + 1
-            self.names[pairs[j]] = pairs[i] - 1
+            column_index = pairs[i] - 1
+            name = pairs[i + 1]
+            self.names[name] = column_index
+            logger.debug(f&#34;Mapped column &#39;{name}&#39; to index {column_index + 1}.&#34;)
 
-    # --------------------------------------------------------------------
-    # extract info from data file fields
+    def get(self, *args: Any) -&gt; Union[List[List[float]], List[float]]:
+        &#34;&#34;&#34;
+        Extract information from data file fields.
 
-    def get(self, *list):
-        if len(list) == 1:
-            field = list[0]
+        Parameters:
+            *args: Variable length argument list.
+                - One argument: Returns all columns as a 2D list of floats.
+                - Two arguments: Returns the specified column as a list of floats.
+
+        Returns:
+            Union[List[List[float]], List[float]]: Extracted data.
+
+        Raises:
+            ValueError: If invalid number of arguments is provided.
+            KeyError: If the specified field is not found.
+        &#34;&#34;&#34;
+        if len(args) == 1:
+            field = args[0]
             array = []
-            lines = self.sections[field]
+            lines = self.sections.get(field, [])
             for line in lines:
                 words = line.split()
-                values = map(float, words)
+                values = [float(word) for word in words]
                 array.append(values)
+            logger.debug(f&#34;Extracted all columns from field &#39;{field}&#39;.&#34;)
             return array
-        elif len(list) == 2:
-            field = list[0]
-            n = list[1] - 1
+        elif len(args) == 2:
+            field, column = args
+            column_index = column - 1
             vec = []
-            lines = self.sections[field]
+            lines = self.sections.get(field, [])
             for line in lines:
                 words = line.split()
-                vec.append(float(words[n]))
+                vec.append(float(words[column_index]))
+            logger.debug(f&#34;Extracted column {column} from field &#39;{field}&#39;.&#34;)
             return vec
         else:
-            raise ValueError(&#34;invalid arguments for data.get()&#34;)
+            raise ValueError(&#34;Invalid arguments for data.get().&#34;)
 
-    # --------------------------------------------------------------------
-    # reorder columns in a data file field
+    def reorder(self, section: str, *order: int) -&gt; None:
+        &#34;&#34;&#34;
+        Reorder columns in a data file section.
 
-    def reorder(self, name, *order):
-        &#34;&#34;&#34; reorder columns: reorder(&#34;section&#34;,colidxfirst,colidxsecond,colidxthird,...)  &#34;&#34;&#34;
-        if name not in self.sections:
-            raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
-        n = len(order)
-        print(&#34;&gt;&gt; reorder for %d columns&#34; % n)
-        natoms = len(self.sections[name])
-        oldlines = self.sections[name]
-        newlines = natoms * [&#34;&#34;]
-        for index in order:
-            for i in range(len(newlines)):
-                words = oldlines[i].split()
-                newlines[i] += words[index - 1] + &#34; &#34;
-        for i in range(len(newlines)):
-            newlines[i] += &#34;\n&#34;
-        self.sections[name] = newlines
+        Parameters:
+            section (str): The name of the section to reorder.
+            *order (int): The new order of column indices.
 
-    # --------------------------------------------------------------------
-    # replace a column of named section with vector of values
-    # the number of data is checked and repeated for scalars (added 2022-02-04)
+        Raises:
+            ValueError: If the section name is invalid.
+        &#34;&#34;&#34;
+        if section not in self.sections:
+            raise ValueError(f&#39;&#34;{section}&#34; is not a valid section name.&#39;)
 
-    def replace(self, name, icol, vector):
-        &#34;&#34;&#34; replace column values: replace(&#34;section&#34;,columnindex,vectorofvalues) with columnindex=1..ncolumns &#34;&#34;&#34;
-        lines = self.sections[name]
-        nlines = len(lines)
-        if name not in self.sections:
-            raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
-        if not isinstance(vector,list): vector = [vector]
-        if len(vector)==1: vector = vector * nlines
-        if len(vector) != nlines:
-            raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
-                             (len(vector),name,nlines))
-        newlines = []
-        j = icol - 1
-        for i in range(nlines):
-            line = lines[i]
+        num_columns = len(order)
+        logger.info(f&#34;&gt;&gt; Reordering {num_columns} columns in section &#39;{section}&#39;.&#34;)
+
+        old_lines = self.sections[section]
+        new_lines = []
+
+        for line in old_lines:
             words = line.split()
-            words[j] = str(vector[i])
-            newline = &#34; &#34;.join(words) + &#34;\n&#34;
-            newlines.append(newline)
-        self.sections[name] = newlines
+            try:
+                reordered = &#34; &#34;.join(words[i - 1] for i in order) + &#34;\n&#34;
+            except IndexError:
+                raise ValueError(&#34;Column index out of range during reorder.&#34;)
+            new_lines.append(reordered)
 
-    # --------------------------------------------------------------------
-    # append a column of named section with vector of values (added 2022-02-04)
+        self.sections[section] = new_lines
+        logger.debug(f&#34;Reordered columns in section &#39;{section}&#39;.&#34;)
 
-    def append(self, name, vector, forceinteger = False, propertyname=None):
-        &#34;&#34;&#34; append a new column: X.append(&#34;section&#34;,vectorofvalues,forceinteger=False,propertyname=None) &#34;&#34;&#34;
-        if name not in self.sections:
-            self.sections[name] = []
-            print(&#39;Add section [%s] - file=&#34;%s&#34;&#39; % (name,self.title) )
-        lines = self.sections[name]
-        nlines = len(lines)
-        if not isinstance(vector,list) and not isinstance(vector,np.ndarray):
+    def replace(self, section: str, column: int, vector: Union[List[float], float]) -&gt; None:
+        &#34;&#34;&#34;
+        Replace a column in a named section with a vector of values.
+
+        Parameters:
+            section (str): The name of the section.
+            column (int): The column index to replace (1-based).
+            vector (Union[List[float], float]): The new values or a single scalar value.
+
+        Raises:
+            ValueError: If the section is invalid or vector length mismatch.
+        &#34;&#34;&#34;
+        if section not in self.sections:
+            raise ValueError(f&#39;&#34;{section}&#34; is not a valid section name.&#39;)
+
+        lines = self.sections[section]
+        num_lines = len(lines)
+
+        if not isinstance(vector, list):
             vector = [vector]
-        if propertyname != None:
-            print(&#39;\t&gt; Add &#34;%s&#34; (%d values) to [%s]&#39; % (propertyname,len(vector),name))
+        if len(vector) == 1:
+            vector = vector * num_lines
+        if len(vector) != num_lines:
+            raise ValueError(f&#39;The length of new data ({len(vector)}) in section &#34;{section}&#34; does not match the number of rows {num_lines}.&#39;)
+
+        new_lines = []
+        column_index = column - 1
+        for i, line in enumerate(lines):
+            words = line.split()
+            if column_index &gt;= len(words):
+                raise ValueError(f&#34;Column index {column} out of range for section &#39;{section}&#39;.&#34;)
+            words[column_index] = str(vector[i])
+            new_line = &#34; &#34;.join(words) + &#34;\n&#34;
+            new_lines.append(new_line)
+
+        self.sections[section] = new_lines
+        logger.debug(f&#34;Replaced column {column} in section &#39;{section}&#39; with new data.&#34;)
+
+    def append(self, section: str, vector: Union[List[float], np.ndarray, float],
+               force_integer: bool = False, property_name: Optional[str] = None) -&gt; None:
+        &#34;&#34;&#34;
+        Append a new column to a named section.
+
+        Parameters:
+            section (str): The name of the section.
+            vector (Union[List[float], np.ndarray, float]): The values to append.
+            force_integer (bool): If True, values are converted to integers.
+            property_name (Optional[str]): The name of the property being appended.
+
+        Raises:
+            ValueError: If vector length mismatch occurs.
+        &#34;&#34;&#34;
+        if section not in self.sections:
+            self.sections[section] = []
+            logger.info(f&#39;Added new section [{section}] - file=&#34;{self.title}&#34;.&#39;)
+
+        lines = self.sections[section]
+        num_lines = len(lines)
+
+        if not isinstance(vector, (list, np.ndarray)):
+            vector = [vector]
+        if property_name:
+            logger.info(f&#39;\t&gt; Adding property &#34;{property_name}&#34; with {len(vector)} values to [{section}].&#39;)
         else:
-            print(&#39;\t&gt; Add %d values (no name) to [%s]&#39; % (len(vector),name))
-        newlines = []
-        if nlines == 0:           # empty atoms section, create first column
-            nlines = len(vector)  # new column length = input column length
-            for i in range(nlines):
-                if forceinteger:
-                    line = str(int(vector[i]))
-                else:
-                    line = str(vector[i])
-                newlines.append(line)
+            logger.info(f&#39;\t&gt; Adding {len(vector)} values to [{section}] (no name).&#39;)
+
+        new_lines = []
+
+        if num_lines == 0:
+            # Empty section, create initial lines
+            num_entries = len(vector)
+            for i in range(num_entries):
+                value = int(vector[i]) if force_integer else vector[i]
+                new_line = f&#34;{int(value) if force_integer else value}\n&#34;
+                new_lines.append(new_line)
+            logger.debug(f&#34;Initialized empty section &#39;{section}&#39; with new column.&#34;)
         else:
-            if len(vector)==1: vector = vector * nlines
-            if len(vector) != nlines:
-                raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
-                                 (len(vector),name,nlines))
-            for i in range(nlines):
-                line = lines[i]
-                words = line.split()
-                if forceinteger:
-                    words.append(str(int(vector[i])))
-                else:
-                    words.append(str(vector[i]))
-                newline = &#34; &#34;.join(words) + &#34;\n&#34;
-                newlines.append(newline)
-        self.sections[name] = newlines
+            if len(vector) == 1:
+                vector = vector * num_lines
+            if len(vector) != num_lines:
+                raise ValueError(f&#39;The length of new data ({len(vector)}) in section &#34;{section}&#34; does not match the number of rows {num_lines}.&#39;)
 
+            for i, line in enumerate(lines):
+                value = int(vector[i]) if force_integer else vector[i]
+                new_word = str(value)
+                new_line = line.rstrip(&#39;\n&#39;) + f&#34; {new_word}\n&#34;
+                new_lines.append(new_line)
 
-    # --------------------------------------------------------------------
-    # disp section info (added 2022-02-04)
+        self.sections[section] = new_lines
+        logger.debug(f&#34;Appended new column to section &#39;{section}&#39;.&#34;)
 
-    def dispsection(self, name,flaghead=True):
-        &#34;&#34;&#34; display section info: X.dispsection(&#34;sectionname&#34;) &#34;&#34;&#34;
-        lines = self.sections[name]
-        nlines = len(lines)
-        line = lines[0]
-        words = line.split()
-        ret = &#39;&#34;%s&#34;: %d x %d values&#39; % (name,nlines,len(words))
+    def dispsection(self, section: str, include_header: bool = True) -&gt; str:
+        &#34;&#34;&#34;
+        Display information about a section.
 
-        if flaghead: ret = &#34;LAMMPS data section &#34;+ret
+        Parameters:
+            section (str): The name of the section.
+            include_header (bool): Whether to include &#34;LAMMPS data section&#34; in the output.
+
+        Returns:
+            str: Description of the section.
+        &#34;&#34;&#34;
+        if section not in self.sections:
+            raise ValueError(f&#34;Section &#39;{section}&#39; not found in data object.&#34;)
+
+        lines = self.sections[section]
+        num_lines = len(lines)
+        num_columns = len(lines[0].split()) if lines else 0
+        ret = f&#39;&#34;{section}&#34;: {num_lines} x {num_columns} values&#39;
+
+        if include_header:
+            ret = f&#34;LAMMPS data section {ret}&#34;
         return ret
 
-    # --------------------------------------------------------------------
-    # replace x,y,z in Atoms with x,y,z values from snapshot ntime of dump object
-    # assumes id,x,y,z are defined in both data and dump files
-    # also replaces ix,iy,iz if they are defined
+    def newxyz(self, dm: dump, ntime: int) -&gt; None:
+        &#34;&#34;&#34;
+        Replace x, y, z coordinates in the Atoms section with those from a dump object.
 
-    def newxyz(self, dm, ntime):
+        Parameters:
+            dm (dump): The dump object containing new coordinates.
+            ntime (int): The timestep to extract coordinates from.
+
+        Raises:
+            ValueError: If required columns are not defined.
+        &#34;&#34;&#34;
         nsnap = dm.findtime(ntime)
-        print(&#34;&gt;&gt; newxyz for %d snaps&#34; % nsnap)
+        logger.info(f&#34;&gt;&gt; Replacing XYZ for {nsnap} snapshots.&#34;)
 
         dm.sort(ntime)
         x, y, z = dm.vecs(ntime, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;)
 
-        self.replace(&#34;Atoms&#34;, self.names[&#34;x&#34;] + 1, x)
-        self.replace(&#34;Atoms&#34;, self.names[&#34;y&#34;] + 1, y)
-        self.replace(&#34;Atoms&#34;, self.names[&#34;z&#34;] + 1, z)
+        self.replace(&#34;Atoms&#34;, self.names.get(&#34;x&#34;, 0) + 1, x)
+        self.replace(&#34;Atoms&#34;, self.names.get(&#34;y&#34;, 0) + 1, y)
+        self.replace(&#34;Atoms&#34;, self.names.get(&#34;z&#34;, 0) + 1, z)
 
-        if &#34;ix&#34; in dm.names and &#34;ix&#34; in self.names: #if dm.names.has_key(&#34;ix&#34;) and self.names.has_key(&#34;ix&#34;):
+        if &#34;ix&#34; in dm.names and &#34;ix&#34; in self.names:
             ix, iy, iz = dm.vecs(ntime, &#34;ix&#34;, &#34;iy&#34;, &#34;iz&#34;)
-            self.replace(&#34;Atoms&#34;, self.names[&#34;ix&#34;] + 1, ix)
-            self.replace(&#34;Atoms&#34;, self.names[&#34;iy&#34;] + 1, iy)
-            self.replace(&#34;Atoms&#34;, self.names[&#34;iz&#34;] + 1, iz)
+            self.replace(&#34;Atoms&#34;, self.names.get(&#34;ix&#34;, 0) + 1, ix)
+            self.replace(&#34;Atoms&#34;, self.names.get(&#34;iy&#34;, 0) + 1, iy)
+            self.replace(&#34;Atoms&#34;, self.names.get(&#34;iz&#34;, 0) + 1, iz)
 
-    # --------------------------------------------------------------------
-    # delete header value or section from data file
+        logger.debug(f&#34;Replaced XYZ coordinates at timestep {ntime}.&#34;)
 
-    def delete(self, keyword):
+    def delete(self, keyword: str) -&gt; None:
+        &#34;&#34;&#34;
+        Delete a header value or section from the data object.
 
-        if keyword in self.headers: # if self.headers.has_key(keyword):
+        Parameters:
+            keyword (str): The header or section name to delete.
+
+        Raises:
+            ValueError: If the keyword is not found.
+        &#34;&#34;&#34;
+        if keyword in self.headers:
             del self.headers[keyword]
-        elif keyword in self.sections: # elif self.sections.has_key(keyword):
+            logger.debug(f&#34;Deleted header &#39;{keyword}&#39;.&#34;)
+        elif keyword in self.sections:
             del self.sections[keyword]
+            logger.debug(f&#34;Deleted section &#39;{keyword}&#39;.&#34;)
         else:
-            raise ValueError(&#34;keyword not found in data object&#34;)
+            raise ValueError(&#34;Keyword not found in data object.&#34;)
 
-    # --------------------------------------------------------------------
-    # write out a LAMMPS data file
+    def write(self, filename: str) -&gt; None:
+        &#34;&#34;&#34;
+        Write the data object to a LAMMPS data file.
 
-    def write(self, file):
-        f = open(file, &#34;w&#34;)
-        print(self.title,file=f)
-        for keyword in hkeywords:
-            if keyword in self.headers: # self.headers.has_key(keyword):
-                if keyword == &#34;xlo xhi&#34; or keyword == &#34;ylo yhi&#34; or keyword == &#34;zlo zhi&#34;:
-                    pair = self.headers[keyword]
-                    print(pair[0], pair[1], keyword,file=f)
-                elif keyword == &#34;xy xz yz&#34;:
-                    triple = self.headers[keyword]
-                    print(triple[0], triple[1], triple[2], keyword,file=f)
-                else:
-                    print(self.headers[keyword], keyword,file=f)
-        for pair in skeywords:
-            keyword = pair[0]
-            if keyword in self.sections: #self.sections.has_key(keyword):
-                print(&#34;\n%s\n&#34; % keyword,file=f)
-                for line in self.sections[keyword]:
-                    print(line,file=f,end=&#34;&#34;)
-        f.close()
+        Parameters:
+            filename (str): The output file path.
+        &#34;&#34;&#34;
+        try:
+            with open(filename, &#34;w&#34;) as f:
+                f.write(f&#34;{self.title}\n&#34;)
+                logger.debug(f&#34;Wrote title to file &#39;{filename}&#39;.&#34;)
 
-    # --------------------------------------------------------------------
-    # iterator called from other tools
+                # Write headers
+                for keyword in self.HKEYWORDS:
+                    if keyword in self.headers:
+                        value = self.headers[keyword]
+                        if keyword in [&#34;xlo xhi&#34;, &#34;ylo yhi&#34;, &#34;zlo zhi&#34;]:
+                            f.write(f&#34;{value[0]} {value[1]} {keyword}\n&#34;)
+                        elif keyword == &#34;xy xz yz&#34;:
+                            f.write(f&#34;{value[0]} {value[1]} {value[2]} {keyword}\n&#34;)
+                        else:
+                            f.write(f&#34;{value} {keyword}\n&#34;)
+                        logger.debug(f&#34;Wrote header &#39;{keyword}&#39; to file.&#34;)
 
-    def iterator(self, flag):
+                # Write sections
+                for pair in self.SKEYWORDS:
+                    keyword = pair[0]
+                    if keyword in self.sections:
+                        f.write(f&#34;\n{keyword}\n\n&#34;)
+                        for line in self.sections[keyword]:
+                            f.write(line)
+                        logger.debug(f&#34;Wrote section &#39;{keyword}&#39; to file.&#34;)
+
+            logger.info(f&#34;Data object written to &#39;{filename}&#39;.&#34;)
+        except IOError as e:
+            logger.error(f&#34;Error writing to file &#39;{filename}&#39;: {e}&#34;)
+            raise
+
+    def iterator(self, flag: int) -&gt; Tuple[int, int, int]:
+        &#34;&#34;&#34;
+        Iterator method compatible with other tools.
+
+        Parameters:
+            flag (int): 0 for the first call, 1 for subsequent calls.
+
+        Returns:
+            Tuple[int, int, int]: (index, time, flag)
+        &#34;&#34;&#34;
         if flag == 0:
             return 0, 0, 1
         return 0, 0, -1
 
-    # --------------------------------------------------------------------
-    # time query from other tools
+    def findtime(self, n: int) -&gt; int:
+        &#34;&#34;&#34;
+        Find the index of a given timestep.
 
-    def findtime(self, n):
+        Parameters:
+            n (int): The timestep to find.
+
+        Returns:
+            int: The index of the timestep.
+
+        Raises:
+            ValueError: If the timestep does not exist.
+        &#34;&#34;&#34;
         if n == 0:
             return 0
-        raise ValueError(&#34;no step %d exists&#34; % n)
+        raise ValueError(f&#34;No step {n} exists.&#34;)
 
-    # --------------------------------------------------------------------
-    # return list of atoms and bonds to viz for data object
+    def viz(self, isnap: int) -&gt; Tuple[int, List[float], List[List[Union[int, float]]],
+                                      List[List[Union[int, float]]], List[Any], List[Any]]:
+        &#34;&#34;&#34;
+        Return visualization data for a specified snapshot.
 
-    def viz(self, isnap):
+        Parameters:
+            isnap (int): Snapshot index (must be 0 for data object).
+
+        Returns:
+            Tuple containing time, box dimensions, atoms, bonds, tris, and lines.
+
+        Raises:
+            ValueError: If isnap is not 0.
+        &#34;&#34;&#34;
         if isnap:
-            raise ValueError(&#34;cannot call data.viz() with isnap != 0&#34;)
+            raise ValueError(&#34;Cannot call data.viz() with isnap != 0.&#34;)
 
-        id = self.names[&#34;id&#34;]
-        type = self.names[&#34;type&#34;]
-        x = self.names[&#34;x&#34;]
-        y = self.names[&#34;y&#34;]
-        z = self.names[&#34;z&#34;]
+        id_idx = self.names.get(&#34;id&#34;)
+        type_idx = self.names.get(&#34;type&#34;)
+        x_idx = self.names.get(&#34;x&#34;)
+        y_idx = self.names.get(&#34;y&#34;)
+        z_idx = self.names.get(&#34;z&#34;)
 
-        xlohi = self.headers[&#34;xlo xhi&#34;]
-        ylohi = self.headers[&#34;ylo yhi&#34;]
-        zlohi = self.headers[&#34;zlo zhi&#34;]
+        if None in [id_idx, type_idx, x_idx, y_idx, z_idx]:
+            raise ValueError(&#34;One or more required columns (id, type, x, y, z) are not defined.&#34;)
+
+        xlohi = self.headers.get(&#34;xlo xhi&#34;, (0.0, 0.0))
+        ylohi = self.headers.get(&#34;ylo yhi&#34;, (0.0, 0.0))
+        zlohi = self.headers.get(&#34;zlo zhi&#34;, (0.0, 0.0))
         box = [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
 
-        # create atom list needed by viz from id,type,x,y,z
-
+        # Create atom list needed by viz from id, type, x, y, z
         atoms = []
-        atomlines = self.sections[&#34;Atoms&#34;]
-        for line in atomlines:
+        atom_lines = self.sections.get(&#34;Atoms&#34;, [])
+        for line in atom_lines:
             words = line.split()
-            atoms.append(
-                [
-                    int(words[id]),
-                    int(words[type]),
-                    float(words[x]),
-                    float(words[y]),
-                    float(words[z]),
-                ]
-            )
+            atoms.append([
+                int(words[id_idx]),
+                int(words[type_idx]),
+                float(words[x_idx]),
+                float(words[y_idx]),
+                float(words[z_idx]),
+            ])
 
-        # create list of current bond coords from list of bonds
-        # assumes atoms are sorted so can lookup up the 2 atoms in each bond
-
+        # Create list of current bond coords from list of bonds
         bonds = []
-        if self.sections.has_key(&#34;Bonds&#34;):
-            bondlines = self.sections[&#34;Bonds&#34;]
-            for line in bondlines:
+        if &#34;Bonds&#34; in self.sections:
+            bond_lines = self.sections[&#34;Bonds&#34;]
+            for line in bond_lines:
                 words = line.split()
-                bid, btype = int(words[0]), int(words[1])
-                atom1, atom2 = int(words[2]), int(words[3])
-                atom1words = atomlines[atom1 - 1].split()
-                atom2words = atomlines[atom2 - 1].split()
-                bonds.append(
-                    [
-                        bid,
-                        btype,
-                        float(atom1words[x]),
-                        float(atom1words[y]),
-                        float(atom1words[z]),
-                        float(atom2words[x]),
-                        float(atom2words[y]),
-                        float(atom2words[z]),
-                        float(atom1words[type]),
-                        float(atom2words[type]),
-                    ]
-                )
+                bid = int(words[0])
+                btype = int(words[1])
+                atom1 = int(words[2])
+                atom2 = int(words[3])
+                if atom1 - 1 &gt;= len(atom_lines) or atom2 - 1 &gt;= len(atom_lines):
+                    raise ValueError(&#34;Atom index in Bonds section out of range.&#34;)
+                atom1_words = self.sections[&#34;Atoms&#34;][atom1 - 1].split()
+                atom2_words = self.sections[&#34;Atoms&#34;][atom2 - 1].split()
+                bonds.append([
+                    bid,
+                    btype,
+                    float(atom1_words[x_idx]),
+                    float(atom1_words[y_idx]),
+                    float(atom1_words[z_idx]),
+                    float(atom2_words[x_idx]),
+                    float(atom2_words[y_idx]),
+                    float(atom2_words[z_idx]),
+                    int(atom1_words[type_idx]),
+                    int(atom2_words[type_idx]),
+                ])
 
         tris = []
         lines = []
+        logger.debug(&#34;Prepared visualization data.&#34;)
         return 0, box, atoms, bonds, tris, lines
 
-    # --------------------------------------------------------------------
-    # return box size
+    def maxbox(self) -&gt; List[float]:
+        &#34;&#34;&#34;
+        Return the box dimensions.
 
-    def maxbox(self):
-        xlohi = self.headers[&#34;xlo xhi&#34;]
-        ylohi = self.headers[&#34;ylo yhi&#34;]
-        zlohi = self.headers[&#34;zlo zhi&#34;]
-        return [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+        Returns:
+            List[float]: [xlo, ylo, zlo, xhi, yhi, zhi]
+        &#34;&#34;&#34;
+        xlohi = self.headers.get(&#34;xlo xhi&#34;, (0.0, 0.0))
+        ylohi = self.headers.get(&#34;ylo yhi&#34;, (0.0, 0.0))
+        zlohi = self.headers.get(&#34;zlo zhi&#34;, (0.0, 0.0))
+        box = [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+        logger.debug(f&#34;Box dimensions: {box}&#34;)
+        return box
 
-    # --------------------------------------------------------------------
-    # return number of atom types
+    def maxtype(self) -&gt; int:
+        &#34;&#34;&#34;
+        Return the number of atom types.
 
-    def maxtype(self):
-        return self.headers[&#34;atom types&#34;]</code></pre>
+        Returns:
+            int: Number of atom types.
+        &#34;&#34;&#34;
+        maxtype = self.headers.get(&#34;atom types&#34;, 0)
+        logger.debug(f&#34;Number of atom types: {maxtype}&#34;)
+        return maxtype</code></pre>
 </details>
+<h3>Class variables</h3>
+<dl>
+<dt id="raster.data.HKEYWORDS"><code class="name">var <span class="ident">HKEYWORDS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="raster.data.SKEYWORDS"><code class="name">var <span class="ident">SKEYWORDS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="raster.data.append"><code class="name flex">
-<span>def <span class="ident">append</span></span>(<span>self, name, vector, forceinteger=False, propertyname=None)</span>
+<span>def <span class="ident">append</span></span>(<span>self, section: str, vector: Union[List[float], numpy.ndarray, float], force_integer: bool = False, property_name: Optional[str] = None) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"><p>append a new column: X.append("section",vectorofvalues,forceinteger=False,propertyname=None)</p></div>
+<div class="desc"><p>Append a new column to a named section.</p>
+<h2 id="parameters">Parameters</h2>
+<p>section (str): The name of the section.
+vector (Union[List[float], np.ndarray, float]): The values to append.
+force_integer (bool): If True, values are converted to integers.
+property_name (Optional[str]): The name of the property being appended.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If vector length mismatch occurs.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def append(self, name, vector, forceinteger = False, propertyname=None):
-    &#34;&#34;&#34; append a new column: X.append(&#34;section&#34;,vectorofvalues,forceinteger=False,propertyname=None) &#34;&#34;&#34;
-    if name not in self.sections:
-        self.sections[name] = []
-        print(&#39;Add section [%s] - file=&#34;%s&#34;&#39; % (name,self.title) )
-    lines = self.sections[name]
-    nlines = len(lines)
-    if not isinstance(vector,list) and not isinstance(vector,np.ndarray):
+<pre><code class="python">def append(self, section: str, vector: Union[List[float], np.ndarray, float],
+           force_integer: bool = False, property_name: Optional[str] = None) -&gt; None:
+    &#34;&#34;&#34;
+    Append a new column to a named section.
+
+    Parameters:
+        section (str): The name of the section.
+        vector (Union[List[float], np.ndarray, float]): The values to append.
+        force_integer (bool): If True, values are converted to integers.
+        property_name (Optional[str]): The name of the property being appended.
+
+    Raises:
+        ValueError: If vector length mismatch occurs.
+    &#34;&#34;&#34;
+    if section not in self.sections:
+        self.sections[section] = []
+        logger.info(f&#39;Added new section [{section}] - file=&#34;{self.title}&#34;.&#39;)
+
+    lines = self.sections[section]
+    num_lines = len(lines)
+
+    if not isinstance(vector, (list, np.ndarray)):
         vector = [vector]
-    if propertyname != None:
-        print(&#39;\t&gt; Add &#34;%s&#34; (%d values) to [%s]&#39; % (propertyname,len(vector),name))
+    if property_name:
+        logger.info(f&#39;\t&gt; Adding property &#34;{property_name}&#34; with {len(vector)} values to [{section}].&#39;)
     else:
-        print(&#39;\t&gt; Add %d values (no name) to [%s]&#39; % (len(vector),name))
-    newlines = []
-    if nlines == 0:           # empty atoms section, create first column
-        nlines = len(vector)  # new column length = input column length
-        for i in range(nlines):
-            if forceinteger:
-                line = str(int(vector[i]))
-            else:
-                line = str(vector[i])
-            newlines.append(line)
+        logger.info(f&#39;\t&gt; Adding {len(vector)} values to [{section}] (no name).&#39;)
+
+    new_lines = []
+
+    if num_lines == 0:
+        # Empty section, create initial lines
+        num_entries = len(vector)
+        for i in range(num_entries):
+            value = int(vector[i]) if force_integer else vector[i]
+            new_line = f&#34;{int(value) if force_integer else value}\n&#34;
+            new_lines.append(new_line)
+        logger.debug(f&#34;Initialized empty section &#39;{section}&#39; with new column.&#34;)
     else:
-        if len(vector)==1: vector = vector * nlines
-        if len(vector) != nlines:
-            raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
-                             (len(vector),name,nlines))
-        for i in range(nlines):
-            line = lines[i]
-            words = line.split()
-            if forceinteger:
-                words.append(str(int(vector[i])))
-            else:
-                words.append(str(vector[i]))
-            newline = &#34; &#34;.join(words) + &#34;\n&#34;
-            newlines.append(newline)
-    self.sections[name] = newlines</code></pre>
+        if len(vector) == 1:
+            vector = vector * num_lines
+        if len(vector) != num_lines:
+            raise ValueError(f&#39;The length of new data ({len(vector)}) in section &#34;{section}&#34; does not match the number of rows {num_lines}.&#39;)
+
+        for i, line in enumerate(lines):
+            value = int(vector[i]) if force_integer else vector[i]
+            new_word = str(value)
+            new_line = line.rstrip(&#39;\n&#39;) + f&#34; {new_word}\n&#34;
+            new_lines.append(new_line)
+
+    self.sections[section] = new_lines
+    logger.debug(f&#34;Appended new column to section &#39;{section}&#39;.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="raster.data.delete"><code class="name flex">
-<span>def <span class="ident">delete</span></span>(<span>self, keyword)</span>
+<span>def <span class="ident">delete</span></span>(<span>self, keyword: str) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Delete a header value or section from the data object.</p>
+<h2 id="parameters">Parameters</h2>
+<p>keyword (str): The header or section name to delete.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the keyword is not found.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def delete(self, keyword):
+<pre><code class="python">def delete(self, keyword: str) -&gt; None:
+    &#34;&#34;&#34;
+    Delete a header value or section from the data object.
 
-    if keyword in self.headers: # if self.headers.has_key(keyword):
+    Parameters:
+        keyword (str): The header or section name to delete.
+
+    Raises:
+        ValueError: If the keyword is not found.
+    &#34;&#34;&#34;
+    if keyword in self.headers:
         del self.headers[keyword]
-    elif keyword in self.sections: # elif self.sections.has_key(keyword):
+        logger.debug(f&#34;Deleted header &#39;{keyword}&#39;.&#34;)
+    elif keyword in self.sections:
         del self.sections[keyword]
+        logger.debug(f&#34;Deleted section &#39;{keyword}&#39;.&#34;)
     else:
-        raise ValueError(&#34;keyword not found in data object&#34;)</code></pre>
+        raise ValueError(&#34;Keyword not found in data object.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="raster.data.dispsection"><code class="name flex">
-<span>def <span class="ident">dispsection</span></span>(<span>self, name, flaghead=True)</span>
+<span>def <span class="ident">dispsection</span></span>(<span>self, section: str, include_header: bool = True) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>display section info: X.dispsection("sectionname")</p></div>
+<div class="desc"><p>Display information about a section.</p>
+<h2 id="parameters">Parameters</h2>
+<p>section (str): The name of the section.
+include_header (bool): Whether to include "LAMMPS data section" in the output.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>Description of the section.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def dispsection(self, name,flaghead=True):
-    &#34;&#34;&#34; display section info: X.dispsection(&#34;sectionname&#34;) &#34;&#34;&#34;
-    lines = self.sections[name]
-    nlines = len(lines)
-    line = lines[0]
-    words = line.split()
-    ret = &#39;&#34;%s&#34;: %d x %d values&#39; % (name,nlines,len(words))
+<pre><code class="python">def dispsection(self, section: str, include_header: bool = True) -&gt; str:
+    &#34;&#34;&#34;
+    Display information about a section.
 
-    if flaghead: ret = &#34;LAMMPS data section &#34;+ret
+    Parameters:
+        section (str): The name of the section.
+        include_header (bool): Whether to include &#34;LAMMPS data section&#34; in the output.
+
+    Returns:
+        str: Description of the section.
+    &#34;&#34;&#34;
+    if section not in self.sections:
+        raise ValueError(f&#34;Section &#39;{section}&#39; not found in data object.&#34;)
+
+    lines = self.sections[section]
+    num_lines = len(lines)
+    num_columns = len(lines[0].split()) if lines else 0
+    ret = f&#39;&#34;{section}&#34;: {num_lines} x {num_columns} values&#39;
+
+    if include_header:
+        ret = f&#34;LAMMPS data section {ret}&#34;
     return ret</code></pre>
 </details>
 </dd>
 <dt id="raster.data.findtime"><code class="name flex">
-<span>def <span class="ident">findtime</span></span>(<span>self, n)</span>
+<span>def <span class="ident">findtime</span></span>(<span>self, n: int) ‑> int</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Find the index of a given timestep.</p>
+<h2 id="parameters">Parameters</h2>
+<p>n (int): The timestep to find.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>The index of the timestep.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the timestep does not exist.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def findtime(self, n):
+<pre><code class="python">def findtime(self, n: int) -&gt; int:
+    &#34;&#34;&#34;
+    Find the index of a given timestep.
+
+    Parameters:
+        n (int): The timestep to find.
+
+    Returns:
+        int: The index of the timestep.
+
+    Raises:
+        ValueError: If the timestep does not exist.
+    &#34;&#34;&#34;
     if n == 0:
         return 0
-    raise ValueError(&#34;no step %d exists&#34; % n)</code></pre>
+    raise ValueError(f&#34;No step {n} exists.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="raster.data.get"><code class="name flex">
-<span>def <span class="ident">get</span></span>(<span>self, *list)</span>
+<span>def <span class="ident">get</span></span>(<span>self, *args: Any) ‑> Union[List[List[float]], List[float]]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Extract information from data file fields.</p>
+<h2 id="parameters">Parameters</h2>
+<p>*args: Variable length argument list.
+- One argument: Returns all columns as a 2D list of floats.
+- Two arguments: Returns the specified column as a list of floats.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Union[List[List[float]], List[float]]</code></dt>
+<dd>Extracted data.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If invalid number of arguments is provided.</dd>
+<dt><code>KeyError</code></dt>
+<dd>If the specified field is not found.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get(self, *list):
-    if len(list) == 1:
-        field = list[0]
+<pre><code class="python">def get(self, *args: Any) -&gt; Union[List[List[float]], List[float]]:
+    &#34;&#34;&#34;
+    Extract information from data file fields.
+
+    Parameters:
+        *args: Variable length argument list.
+            - One argument: Returns all columns as a 2D list of floats.
+            - Two arguments: Returns the specified column as a list of floats.
+
+    Returns:
+        Union[List[List[float]], List[float]]: Extracted data.
+
+    Raises:
+        ValueError: If invalid number of arguments is provided.
+        KeyError: If the specified field is not found.
+    &#34;&#34;&#34;
+    if len(args) == 1:
+        field = args[0]
         array = []
-        lines = self.sections[field]
+        lines = self.sections.get(field, [])
         for line in lines:
             words = line.split()
-            values = map(float, words)
+            values = [float(word) for word in words]
             array.append(values)
+        logger.debug(f&#34;Extracted all columns from field &#39;{field}&#39;.&#34;)
         return array
-    elif len(list) == 2:
-        field = list[0]
-        n = list[1] - 1
+    elif len(args) == 2:
+        field, column = args
+        column_index = column - 1
         vec = []
-        lines = self.sections[field]
+        lines = self.sections.get(field, [])
         for line in lines:
             words = line.split()
-            vec.append(float(words[n]))
+            vec.append(float(words[column_index]))
+        logger.debug(f&#34;Extracted column {column} from field &#39;{field}&#39;.&#34;)
         return vec
     else:
-        raise ValueError(&#34;invalid arguments for data.get()&#34;)</code></pre>
+        raise ValueError(&#34;Invalid arguments for data.get().&#34;)</code></pre>
 </details>
 </dd>
 <dt id="raster.data.iterator"><code class="name flex">
-<span>def <span class="ident">iterator</span></span>(<span>self, flag)</span>
+<span>def <span class="ident">iterator</span></span>(<span>self, flag: int) ‑> Tuple[int, int, int]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Iterator method compatible with other tools.</p>
+<h2 id="parameters">Parameters</h2>
+<p>flag (int): 0 for the first call, 1 for subsequent calls.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Tuple[int, int, int]</code></dt>
+<dd>(index, time, flag)</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def iterator(self, flag):
+<pre><code class="python">def iterator(self, flag: int) -&gt; Tuple[int, int, int]:
+    &#34;&#34;&#34;
+    Iterator method compatible with other tools.
+
+    Parameters:
+        flag (int): 0 for the first call, 1 for subsequent calls.
+
+    Returns:
+        Tuple[int, int, int]: (index, time, flag)
+    &#34;&#34;&#34;
     if flag == 0:
         return 0, 0, 1
     return 0, 0, -1</code></pre>
 </details>
 </dd>
 <dt id="raster.data.map"><code class="name flex">
-<span>def <span class="ident">map</span></span>(<span>self, *pairs)</span>
+<span>def <span class="ident">map</span></span>(<span>self, *pairs: Any) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Assign names to atom columns.</p>
+<h2 id="parameters">Parameters</h2>
+<p>*pairs (Any): Pairs of column indices and names.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If an odd number of arguments is provided.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def map(self, *pairs):
+<pre><code class="python">def map(self, *pairs: Any) -&gt; None:
+    &#34;&#34;&#34;
+    Assign names to atom columns.
+
+    Parameters:
+        *pairs (Any): Pairs of column indices and names.
+
+    Raises:
+        ValueError: If an odd number of arguments is provided.
+    &#34;&#34;&#34;
     if len(pairs) % 2 != 0:
-        raise ValueError (&#34;data map() requires pairs of mappings&#34;)
+        raise ValueError(&#34;data.map() requires pairs of mappings.&#34;)
+
     for i in range(0, len(pairs), 2):
-        j = i + 1
-        self.names[pairs[j]] = pairs[i] - 1</code></pre>
+        column_index = pairs[i] - 1
+        name = pairs[i + 1]
+        self.names[name] = column_index
+        logger.debug(f&#34;Mapped column &#39;{name}&#39; to index {column_index + 1}.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="raster.data.maxbox"><code class="name flex">
-<span>def <span class="ident">maxbox</span></span>(<span>self)</span>
+<span>def <span class="ident">maxbox</span></span>(<span>self) ‑> List[float]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return the box dimensions.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>List[float]</code></dt>
+<dd>[xlo, ylo, zlo, xhi, yhi, zhi]</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def maxbox(self):
-    xlohi = self.headers[&#34;xlo xhi&#34;]
-    ylohi = self.headers[&#34;ylo yhi&#34;]
-    zlohi = self.headers[&#34;zlo zhi&#34;]
-    return [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]</code></pre>
+<pre><code class="python">def maxbox(self) -&gt; List[float]:
+    &#34;&#34;&#34;
+    Return the box dimensions.
+
+    Returns:
+        List[float]: [xlo, ylo, zlo, xhi, yhi, zhi]
+    &#34;&#34;&#34;
+    xlohi = self.headers.get(&#34;xlo xhi&#34;, (0.0, 0.0))
+    ylohi = self.headers.get(&#34;ylo yhi&#34;, (0.0, 0.0))
+    zlohi = self.headers.get(&#34;zlo zhi&#34;, (0.0, 0.0))
+    box = [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
+    logger.debug(f&#34;Box dimensions: {box}&#34;)
+    return box</code></pre>
 </details>
 </dd>
 <dt id="raster.data.maxtype"><code class="name flex">
-<span>def <span class="ident">maxtype</span></span>(<span>self)</span>
+<span>def <span class="ident">maxtype</span></span>(<span>self) ‑> int</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return the number of atom types.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>Number of atom types.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def maxtype(self):
-    return self.headers[&#34;atom types&#34;]</code></pre>
+<pre><code class="python">def maxtype(self) -&gt; int:
+    &#34;&#34;&#34;
+    Return the number of atom types.
+
+    Returns:
+        int: Number of atom types.
+    &#34;&#34;&#34;
+    maxtype = self.headers.get(&#34;atom types&#34;, 0)
+    logger.debug(f&#34;Number of atom types: {maxtype}&#34;)
+    return maxtype</code></pre>
 </details>
 </dd>
 <dt id="raster.data.newxyz"><code class="name flex">
-<span>def <span class="ident">newxyz</span></span>(<span>self, dm, ntime)</span>
+<span>def <span class="ident">newxyz</span></span>(<span>self, dm: pizza.dump3.dump, ntime: int) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Replace x, y, z coordinates in the Atoms section with those from a dump object.</p>
+<h2 id="parameters">Parameters</h2>
+<p>dm (dump): The dump object containing new coordinates.
+ntime (int): The timestep to extract coordinates from.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If required columns are not defined.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def newxyz(self, dm, ntime):
+<pre><code class="python">def newxyz(self, dm: dump, ntime: int) -&gt; None:
+    &#34;&#34;&#34;
+    Replace x, y, z coordinates in the Atoms section with those from a dump object.
+
+    Parameters:
+        dm (dump): The dump object containing new coordinates.
+        ntime (int): The timestep to extract coordinates from.
+
+    Raises:
+        ValueError: If required columns are not defined.
+    &#34;&#34;&#34;
     nsnap = dm.findtime(ntime)
-    print(&#34;&gt;&gt; newxyz for %d snaps&#34; % nsnap)
+    logger.info(f&#34;&gt;&gt; Replacing XYZ for {nsnap} snapshots.&#34;)
 
     dm.sort(ntime)
     x, y, z = dm.vecs(ntime, &#34;x&#34;, &#34;y&#34;, &#34;z&#34;)
 
-    self.replace(&#34;Atoms&#34;, self.names[&#34;x&#34;] + 1, x)
-    self.replace(&#34;Atoms&#34;, self.names[&#34;y&#34;] + 1, y)
-    self.replace(&#34;Atoms&#34;, self.names[&#34;z&#34;] + 1, z)
+    self.replace(&#34;Atoms&#34;, self.names.get(&#34;x&#34;, 0) + 1, x)
+    self.replace(&#34;Atoms&#34;, self.names.get(&#34;y&#34;, 0) + 1, y)
+    self.replace(&#34;Atoms&#34;, self.names.get(&#34;z&#34;, 0) + 1, z)
 
-    if &#34;ix&#34; in dm.names and &#34;ix&#34; in self.names: #if dm.names.has_key(&#34;ix&#34;) and self.names.has_key(&#34;ix&#34;):
+    if &#34;ix&#34; in dm.names and &#34;ix&#34; in self.names:
         ix, iy, iz = dm.vecs(ntime, &#34;ix&#34;, &#34;iy&#34;, &#34;iz&#34;)
-        self.replace(&#34;Atoms&#34;, self.names[&#34;ix&#34;] + 1, ix)
-        self.replace(&#34;Atoms&#34;, self.names[&#34;iy&#34;] + 1, iy)
-        self.replace(&#34;Atoms&#34;, self.names[&#34;iz&#34;] + 1, iz)</code></pre>
+        self.replace(&#34;Atoms&#34;, self.names.get(&#34;ix&#34;, 0) + 1, ix)
+        self.replace(&#34;Atoms&#34;, self.names.get(&#34;iy&#34;, 0) + 1, iy)
+        self.replace(&#34;Atoms&#34;, self.names.get(&#34;iz&#34;, 0) + 1, iz)
+
+    logger.debug(f&#34;Replaced XYZ coordinates at timestep {ntime}.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="raster.data.reorder"><code class="name flex">
-<span>def <span class="ident">reorder</span></span>(<span>self, name, *order)</span>
+<span>def <span class="ident">reorder</span></span>(<span>self, section: str, *order: int) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"><p>reorder columns: reorder("section",colidxfirst,colidxsecond,colidxthird,&hellip;)</p></div>
+<div class="desc"><p>Reorder columns in a data file section.</p>
+<h2 id="parameters">Parameters</h2>
+<p>section (str): The name of the section to reorder.
+*order (int): The new order of column indices.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the section name is invalid.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def reorder(self, name, *order):
-    &#34;&#34;&#34; reorder columns: reorder(&#34;section&#34;,colidxfirst,colidxsecond,colidxthird,...)  &#34;&#34;&#34;
-    if name not in self.sections:
-        raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
-    n = len(order)
-    print(&#34;&gt;&gt; reorder for %d columns&#34; % n)
-    natoms = len(self.sections[name])
-    oldlines = self.sections[name]
-    newlines = natoms * [&#34;&#34;]
-    for index in order:
-        for i in range(len(newlines)):
-            words = oldlines[i].split()
-            newlines[i] += words[index - 1] + &#34; &#34;
-    for i in range(len(newlines)):
-        newlines[i] += &#34;\n&#34;
-    self.sections[name] = newlines</code></pre>
+<pre><code class="python">def reorder(self, section: str, *order: int) -&gt; None:
+    &#34;&#34;&#34;
+    Reorder columns in a data file section.
+
+    Parameters:
+        section (str): The name of the section to reorder.
+        *order (int): The new order of column indices.
+
+    Raises:
+        ValueError: If the section name is invalid.
+    &#34;&#34;&#34;
+    if section not in self.sections:
+        raise ValueError(f&#39;&#34;{section}&#34; is not a valid section name.&#39;)
+
+    num_columns = len(order)
+    logger.info(f&#34;&gt;&gt; Reordering {num_columns} columns in section &#39;{section}&#39;.&#34;)
+
+    old_lines = self.sections[section]
+    new_lines = []
+
+    for line in old_lines:
+        words = line.split()
+        try:
+            reordered = &#34; &#34;.join(words[i - 1] for i in order) + &#34;\n&#34;
+        except IndexError:
+            raise ValueError(&#34;Column index out of range during reorder.&#34;)
+        new_lines.append(reordered)
+
+    self.sections[section] = new_lines
+    logger.debug(f&#34;Reordered columns in section &#39;{section}&#39;.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="raster.data.replace"><code class="name flex">
-<span>def <span class="ident">replace</span></span>(<span>self, name, icol, vector)</span>
+<span>def <span class="ident">replace</span></span>(<span>self, section: str, column: int, vector: Union[List[float], float]) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"><p>replace column values: replace("section",columnindex,vectorofvalues) with columnindex=1..ncolumns</p></div>
+<div class="desc"><p>Replace a column in a named section with a vector of values.</p>
+<h2 id="parameters">Parameters</h2>
+<p>section (str): The name of the section.
+column (int): The column index to replace (1-based).
+vector (Union[List[float], float]): The new values or a single scalar value.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the section is invalid or vector length mismatch.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def replace(self, name, icol, vector):
-    &#34;&#34;&#34; replace column values: replace(&#34;section&#34;,columnindex,vectorofvalues) with columnindex=1..ncolumns &#34;&#34;&#34;
-    lines = self.sections[name]
-    nlines = len(lines)
-    if name not in self.sections:
-        raise ValueError(&#39;&#34;%s&#34; is not a valid section name&#39; % name)
-    if not isinstance(vector,list): vector = [vector]
-    if len(vector)==1: vector = vector * nlines
-    if len(vector) != nlines:
-        raise ValueError(&#39;the length of new data (%d) in section &#34;%s&#34; does not match the number of rows %d&#39; % \
-                         (len(vector),name,nlines))
-    newlines = []
-    j = icol - 1
-    for i in range(nlines):
-        line = lines[i]
+<pre><code class="python">def replace(self, section: str, column: int, vector: Union[List[float], float]) -&gt; None:
+    &#34;&#34;&#34;
+    Replace a column in a named section with a vector of values.
+
+    Parameters:
+        section (str): The name of the section.
+        column (int): The column index to replace (1-based).
+        vector (Union[List[float], float]): The new values or a single scalar value.
+
+    Raises:
+        ValueError: If the section is invalid or vector length mismatch.
+    &#34;&#34;&#34;
+    if section not in self.sections:
+        raise ValueError(f&#39;&#34;{section}&#34; is not a valid section name.&#39;)
+
+    lines = self.sections[section]
+    num_lines = len(lines)
+
+    if not isinstance(vector, list):
+        vector = [vector]
+    if len(vector) == 1:
+        vector = vector * num_lines
+    if len(vector) != num_lines:
+        raise ValueError(f&#39;The length of new data ({len(vector)}) in section &#34;{section}&#34; does not match the number of rows {num_lines}.&#39;)
+
+    new_lines = []
+    column_index = column - 1
+    for i, line in enumerate(lines):
         words = line.split()
-        words[j] = str(vector[i])
-        newline = &#34; &#34;.join(words) + &#34;\n&#34;
-        newlines.append(newline)
-    self.sections[name] = newlines</code></pre>
+        if column_index &gt;= len(words):
+            raise ValueError(f&#34;Column index {column} out of range for section &#39;{section}&#39;.&#34;)
+        words[column_index] = str(vector[i])
+        new_line = &#34; &#34;.join(words) + &#34;\n&#34;
+        new_lines.append(new_line)
+
+    self.sections[section] = new_lines
+    logger.debug(f&#34;Replaced column {column} in section &#39;{section}&#39; with new data.&#34;)</code></pre>
 </details>
 </dd>
 <dt id="raster.data.viz"><code class="name flex">
-<span>def <span class="ident">viz</span></span>(<span>self, isnap)</span>
+<span>def <span class="ident">viz</span></span>(<span>self, isnap: int) ‑> Tuple[int, List[float], List[List[Union[int, float]]], List[List[Union[int, float]]], List[Any], List[Any]]</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return visualization data for a specified snapshot.</p>
+<h2 id="parameters">Parameters</h2>
+<p>isnap (int): Snapshot index (must be 0 for data object).</p>
+<h2 id="returns">Returns</h2>
+<p>Tuple containing time, box dimensions, atoms, bonds, tris, and lines.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If isnap is not 0.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def viz(self, isnap):
+<pre><code class="python">def viz(self, isnap: int) -&gt; Tuple[int, List[float], List[List[Union[int, float]]],
+                                  List[List[Union[int, float]]], List[Any], List[Any]]:
+    &#34;&#34;&#34;
+    Return visualization data for a specified snapshot.
+
+    Parameters:
+        isnap (int): Snapshot index (must be 0 for data object).
+
+    Returns:
+        Tuple containing time, box dimensions, atoms, bonds, tris, and lines.
+
+    Raises:
+        ValueError: If isnap is not 0.
+    &#34;&#34;&#34;
     if isnap:
-        raise ValueError(&#34;cannot call data.viz() with isnap != 0&#34;)
+        raise ValueError(&#34;Cannot call data.viz() with isnap != 0.&#34;)
 
-    id = self.names[&#34;id&#34;]
-    type = self.names[&#34;type&#34;]
-    x = self.names[&#34;x&#34;]
-    y = self.names[&#34;y&#34;]
-    z = self.names[&#34;z&#34;]
+    id_idx = self.names.get(&#34;id&#34;)
+    type_idx = self.names.get(&#34;type&#34;)
+    x_idx = self.names.get(&#34;x&#34;)
+    y_idx = self.names.get(&#34;y&#34;)
+    z_idx = self.names.get(&#34;z&#34;)
 
-    xlohi = self.headers[&#34;xlo xhi&#34;]
-    ylohi = self.headers[&#34;ylo yhi&#34;]
-    zlohi = self.headers[&#34;zlo zhi&#34;]
+    if None in [id_idx, type_idx, x_idx, y_idx, z_idx]:
+        raise ValueError(&#34;One or more required columns (id, type, x, y, z) are not defined.&#34;)
+
+    xlohi = self.headers.get(&#34;xlo xhi&#34;, (0.0, 0.0))
+    ylohi = self.headers.get(&#34;ylo yhi&#34;, (0.0, 0.0))
+    zlohi = self.headers.get(&#34;zlo zhi&#34;, (0.0, 0.0))
     box = [xlohi[0], ylohi[0], zlohi[0], xlohi[1], ylohi[1], zlohi[1]]
 
-    # create atom list needed by viz from id,type,x,y,z
-
+    # Create atom list needed by viz from id, type, x, y, z
     atoms = []
-    atomlines = self.sections[&#34;Atoms&#34;]
-    for line in atomlines:
+    atom_lines = self.sections.get(&#34;Atoms&#34;, [])
+    for line in atom_lines:
         words = line.split()
-        atoms.append(
-            [
-                int(words[id]),
-                int(words[type]),
-                float(words[x]),
-                float(words[y]),
-                float(words[z]),
-            ]
-        )
+        atoms.append([
+            int(words[id_idx]),
+            int(words[type_idx]),
+            float(words[x_idx]),
+            float(words[y_idx]),
+            float(words[z_idx]),
+        ])
 
-    # create list of current bond coords from list of bonds
-    # assumes atoms are sorted so can lookup up the 2 atoms in each bond
-
+    # Create list of current bond coords from list of bonds
     bonds = []
-    if self.sections.has_key(&#34;Bonds&#34;):
-        bondlines = self.sections[&#34;Bonds&#34;]
-        for line in bondlines:
+    if &#34;Bonds&#34; in self.sections:
+        bond_lines = self.sections[&#34;Bonds&#34;]
+        for line in bond_lines:
             words = line.split()
-            bid, btype = int(words[0]), int(words[1])
-            atom1, atom2 = int(words[2]), int(words[3])
-            atom1words = atomlines[atom1 - 1].split()
-            atom2words = atomlines[atom2 - 1].split()
-            bonds.append(
-                [
-                    bid,
-                    btype,
-                    float(atom1words[x]),
-                    float(atom1words[y]),
-                    float(atom1words[z]),
-                    float(atom2words[x]),
-                    float(atom2words[y]),
-                    float(atom2words[z]),
-                    float(atom1words[type]),
-                    float(atom2words[type]),
-                ]
-            )
+            bid = int(words[0])
+            btype = int(words[1])
+            atom1 = int(words[2])
+            atom2 = int(words[3])
+            if atom1 - 1 &gt;= len(atom_lines) or atom2 - 1 &gt;= len(atom_lines):
+                raise ValueError(&#34;Atom index in Bonds section out of range.&#34;)
+            atom1_words = self.sections[&#34;Atoms&#34;][atom1 - 1].split()
+            atom2_words = self.sections[&#34;Atoms&#34;][atom2 - 1].split()
+            bonds.append([
+                bid,
+                btype,
+                float(atom1_words[x_idx]),
+                float(atom1_words[y_idx]),
+                float(atom1_words[z_idx]),
+                float(atom2_words[x_idx]),
+                float(atom2_words[y_idx]),
+                float(atom2_words[z_idx]),
+                int(atom1_words[type_idx]),
+                int(atom2_words[type_idx]),
+            ])
 
     tris = []
     lines = []
+    logger.debug(&#34;Prepared visualization data.&#34;)
     return 0, box, atoms, bonds, tris, lines</code></pre>
 </details>
 </dd>
 <dt id="raster.data.write"><code class="name flex">
-<span>def <span class="ident">write</span></span>(<span>self, file)</span>
+<span>def <span class="ident">write</span></span>(<span>self, filename: str) ‑> NoneType</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Write the data object to a LAMMPS data file.</p>
+<h2 id="parameters">Parameters</h2>
+<p>filename (str): The output file path.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def write(self, file):
-    f = open(file, &#34;w&#34;)
-    print(self.title,file=f)
-    for keyword in hkeywords:
-        if keyword in self.headers: # self.headers.has_key(keyword):
-            if keyword == &#34;xlo xhi&#34; or keyword == &#34;ylo yhi&#34; or keyword == &#34;zlo zhi&#34;:
-                pair = self.headers[keyword]
-                print(pair[0], pair[1], keyword,file=f)
-            elif keyword == &#34;xy xz yz&#34;:
-                triple = self.headers[keyword]
-                print(triple[0], triple[1], triple[2], keyword,file=f)
-            else:
-                print(self.headers[keyword], keyword,file=f)
-    for pair in skeywords:
-        keyword = pair[0]
-        if keyword in self.sections: #self.sections.has_key(keyword):
-            print(&#34;\n%s\n&#34; % keyword,file=f)
-            for line in self.sections[keyword]:
-                print(line,file=f,end=&#34;&#34;)
-    f.close()</code></pre>
+<pre><code class="python">def write(self, filename: str) -&gt; None:
+    &#34;&#34;&#34;
+    Write the data object to a LAMMPS data file.
+
+    Parameters:
+        filename (str): The output file path.
+    &#34;&#34;&#34;
+    try:
+        with open(filename, &#34;w&#34;) as f:
+            f.write(f&#34;{self.title}\n&#34;)
+            logger.debug(f&#34;Wrote title to file &#39;{filename}&#39;.&#34;)
+
+            # Write headers
+            for keyword in self.HKEYWORDS:
+                if keyword in self.headers:
+                    value = self.headers[keyword]
+                    if keyword in [&#34;xlo xhi&#34;, &#34;ylo yhi&#34;, &#34;zlo zhi&#34;]:
+                        f.write(f&#34;{value[0]} {value[1]} {keyword}\n&#34;)
+                    elif keyword == &#34;xy xz yz&#34;:
+                        f.write(f&#34;{value[0]} {value[1]} {value[2]} {keyword}\n&#34;)
+                    else:
+                        f.write(f&#34;{value} {keyword}\n&#34;)
+                    logger.debug(f&#34;Wrote header &#39;{keyword}&#39; to file.&#34;)
+
+            # Write sections
+            for pair in self.SKEYWORDS:
+                keyword = pair[0]
+                if keyword in self.sections:
+                    f.write(f&#34;\n{keyword}\n\n&#34;)
+                    for line in self.sections[keyword]:
+                        f.write(line)
+                    logger.debug(f&#34;Wrote section &#39;{keyword}&#39; to file.&#34;)
+
+        logger.info(f&#34;Data object written to &#39;{filename}&#39;.&#34;)
+    except IOError as e:
+        logger.error(f&#34;Error writing to file &#39;{filename}&#39;: {e}&#34;)
+        raise</code></pre>
 </details>
 </dd>
 </dl>
@@ -9126,6 +9672,8 @@ write(filename, overwrite=True, mkdir=False)</p>
 <li>
 <h4><code><a title="raster.data" href="#raster.data">data</a></code></h4>
 <ul class="two-column">
+<li><code><a title="raster.data.HKEYWORDS" href="#raster.data.HKEYWORDS">HKEYWORDS</a></code></li>
+<li><code><a title="raster.data.SKEYWORDS" href="#raster.data.SKEYWORDS">SKEYWORDS</a></code></li>
 <li><code><a title="raster.data.append" href="#raster.data.append">append</a></code></li>
 <li><code><a title="raster.data.delete" href="#raster.data.delete">delete</a></code></li>
 <li><code><a title="raster.data.dispsection" href="#raster.data.dispsection">dispsection</a></code></li>

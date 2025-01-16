@@ -13,7 +13,7 @@
 
 # INRAE\\Olivier Vitrac
 # Email: olivier.vitrac@agroparistech.fr
-# Last Revised: 2024-12-20
+# Last Revised: 2025-01-17
 
 # ------------------------
 # Ensure Script is Run in Proper Context
@@ -97,6 +97,7 @@ moduleexamplesHTML="class_examples.html"
 lookfolders=(
     "$mainfolder/pizza"
     "$mainfolder/pizza/private"
+    "$mainfolder/pizza/converted"
 )
 
 # Find .py files and generate the modules list

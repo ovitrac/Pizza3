@@ -300,7 +300,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </header>
 <div id='content'>
 <div id='nav'>
-<p><strong>Version:</strong> Pizza3 v.1.00</p>
+<p><strong>Version:</strong> Pizza3 v.1.001</p>
 <p><strong>Maintained by:</strong> INRAE\olivier.vitrac@agroparistech.fr</p>
 <hr>
 <ul>
@@ -309,15 +309,28 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <ul class="folder-content">
 <ul>
 <li class="file"><a href="#pizza_data3" onclick="loadDoc('pizza_data3')">data3.py</a></li>
+<li class="file"><a href="#pizza_data3_legacy" onclick="loadDoc('pizza_data3_legacy')">data3_legacy.py</a></li>
 <li class="file"><a href="#pizza_dforcefield" onclick="loadDoc('pizza_dforcefield')">dforcefield.py</a></li>
 <li class="file"><a href="#pizza_dscript" onclick="loadDoc('pizza_dscript')">dscript.py</a></li>
 <li class="file"><a href="#pizza_dump3" onclick="loadDoc('pizza_dump3')">dump3.py</a></li>
+<li class="file"><a href="#pizza_dump3_legacy" onclick="loadDoc('pizza_dump3_legacy')">dump3_legacy.py</a></li>
 <li class="file"><a href="#pizza_forcefield" onclick="loadDoc('pizza_forcefield')">forcefield.py</a></li>
 <li class="file"><a href="#pizza_generic" onclick="loadDoc('pizza_generic')">generic.py</a></li>
 <li class="file"><a href="#pizza_group" onclick="loadDoc('pizza_group')">group.py</a></li>
 <li class="file"><a href="#pizza_raster" onclick="loadDoc('pizza_raster')">raster.py</a></li>
 <li class="file"><a href="#pizza_region" onclick="loadDoc('pizza_region')">region.py</a></li>
 <li class="file"><a href="#pizza_script" onclick="loadDoc('pizza_script')">script.py</a></li>
+<li class="folder">
+<div class="folder-title" onclick="toggleFolder(this)">converted</div>
+<ul class="folder-content">
+<ul>
+<li class="file"><a href="#pizza_converted_bdump3" onclick="loadDoc('pizza_converted_bdump3')">bdump3.py</a></li>
+<li class="file"><a href="#pizza_converted_ldump3" onclick="loadDoc('pizza_converted_ldump3')">ldump3.py</a></li>
+<li class="file"><a href="#pizza_converted_mdump3" onclick="loadDoc('pizza_converted_mdump3')">mdump3.py</a></li>
+<li class="file"><a href="#pizza_converted_tdump3" onclick="loadDoc('pizza_converted_tdump3')">tdump3.py</a></li>
+</ul>
+</ul>
+</li>
 <li class="folder">
 <div class="folder-title" onclick="toggleFolder(this)">private</div>
 <ul class="folder-content">
@@ -340,11 +353,84 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <p>Select a module in the left menu to view usage examples. These examples are not for production and are automatically extracted from the main section of each module.</p>
 <p>Back to the <a href='index.html'>Python'Pizza3 documentation</a>.</p>
 <p>When no module is selected, you see this welcome page. They are used to test classes with typical codes. The main section often serves as a testing script, example usage block, or self-contained test block. It's a way to demonstrate how the module's functionality works or to run simple unit tests and examples inline.</p>
-<p>Generated on: 2025-01-09 16:44:08</p>
+<p>Generated on: 2025-01-16 11:26:22</p>
 
 </div>
 
-<div id="pizza_data3" class="module-content" style="display:none;">
+<div id="pizza_converted_bdump3" class="module-content" style="display:none;">
+<button onclick="toggleAllCode(this)" class="collapsible">Toggle All Code Sections</button>
+
+    <button type="button" class="collapsible">Show Code Example 1</button>
+    <div class="content">
+    <pre class="code"><span class="n">b</span> <span class="o">=</span> <span class="n">bdump</span><span class="p">(</span><span class="s2">&quot;dump.one&quot;</span><span class="p">)</span>
+    <span class="n">b</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">time</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Snapshot Time: </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bonds</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">viz</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bonds: </span><span class="si">{</span><span class="n">bonds</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre>
+    </div>
+    </div>
+<div id="pizza_converted_ldump3" class="module-content" style="display:none;">
+<button onclick="toggleAllCode(this)" class="collapsible">Toggle All Code Sections</button>
+
+    <button type="button" class="collapsible">Show Code Example 1</button>
+    <div class="content">
+    <pre class="code"><span class="n">l</span> <span class="o">=</span> <span class="n">ldump</span><span class="p">(</span><span class="s2">&quot;dump.one&quot;</span><span class="p">)</span>
+    <span class="n">l</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;end1x&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="s2">&quot;end1y&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;end2x&quot;</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="s2">&quot;end2y&quot;</span><span class="p">)</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">time</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Snapshot Time: </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lines</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">viz</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lines: </span><span class="si">{</span><span class="n">lines</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre>
+    </div>
+    </div>
+<div id="pizza_converted_mdump3" class="module-content" style="display:none;">
+<button onclick="toggleAllCode(this)" class="collapsible">Toggle All Code Sections</button>
+
+    <button type="button" class="collapsible">Show Code Example 1</button>
+    <div class="content">
+    <pre class="code"><span class="n">m</span> <span class="o">=</span> <span class="n">mdump</span><span class="p">(</span><span class="s2">&quot;mesh.one&quot;</span><span class="p">)</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;temperature&quot;</span><span class="p">)</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">tselect</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">time</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Snapshot Time: </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">elements</span><span class="p">,</span> <span class="n">nvalues</span><span class="p">,</span> <span class="n">evalues</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">viz</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Nodes: </span><span class="si">{</span><span class="n">nodes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Elements: </span><span class="si">{</span><span class="n">elements</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre>
+    </div>
+    </div>
+<div id="pizza_converted_tdump3" class="module-content" style="display:none;">
+<button onclick="toggleAllCode(this)" class="collapsible">Toggle All Code Sections</button>
+
+    <button type="button" class="collapsible">Show Code Example 1</button>
+    <div class="content">
+    <pre class="code"><span class="n">t</span> <span class="o">=</span> <span class="n">tdump</span><span class="p">(</span><span class="s2">&quot;dump.one&quot;</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span>
+          <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;corner1x&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="s2">&quot;corner1y&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;corner1z&quot;</span><span class="p">,</span>
+          <span class="mi">9</span><span class="p">,</span> <span class="s2">&quot;corner2x&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;corner2y&quot;</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="s2">&quot;corner2z&quot;</span><span class="p">,</span>
+          <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;corner3x&quot;</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="s2">&quot;corner3y&quot;</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="s2">&quot;corner3z&quot;</span><span class="p">)</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">time</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Snapshot Time: </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">bonds</span><span class="p">,</span> <span class="n">tris</span><span class="p">,</span> <span class="n">lines</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">viz</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Triangles: </span><span class="si">{</span><span class="n">tris</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre>
+    </div>
+    </div>
+<div id="pizza_data3_legacy" class="module-content" style="display:none;">
 <button onclick="toggleAllCode(this)" class="collapsible">Toggle All Code Sections</button>
 
     <button type="button" class="collapsible">Show Code Example 1</button>
@@ -356,6 +442,31 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
     <span class="n">step</span> <span class="o">=</span> <span class="mi">2000</span>
     <span class="n">R</span> <span class="o">=</span> <span class="n">data</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="n">step</span><span class="p">)</span>
     <span class="n">R</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;../tmp/data.myfirstrestart.lmp&quot;</span><span class="p">)</span>
+</pre>
+    </div>
+    </div>
+<div id="pizza_data3" class="module-content" style="display:none;">
+<button onclick="toggleAllCode(this)" class="collapsible">Toggle All Code Sections</button>
+
+    <button type="button" class="collapsible">Show Code Example 1</button>
+    <div class="content">
+    <pre class="code"><span class="kn">import</span> <span class="nn">sys</span>
+</pre>
+    </div>
+    <p>Example usage</p>
+
+    <button type="button" class="collapsible">Show Code Example 2</button>
+    <div class="content">
+    <pre class="code"><span class="k">try</span><span class="p">:</span>
+        <span class="n">datafile</span> <span class="o">=</span> <span class="s2">&quot;../data/play_data/data.play.lmp&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">dump</span><span class="p">(</span><span class="s2">&quot;../data/play_data/dump.play.restartme&quot;</span><span class="p">)</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="mi">2000</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">data</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+        <span class="n">R</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;../tmp/data.myfirstrestart.lmp&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred during execution: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre>
     </div>
     </div>
@@ -1028,7 +1139,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </pre>
     </div>
     </div>
-<div id="pizza_dump3" class="module-content" style="display:none;">
+<div id="pizza_dump3_legacy" class="module-content" style="display:none;">
 <button onclick="toggleAllCode(this)" class="collapsible">Toggle All Code Sections</button>
 <p>X = dump(&quot;../issues/time/dump.vwall_0.01&quot;)</p>
 
@@ -1044,6 +1155,35 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
     <span class="n">X50</span><span class="o">.</span><span class="n">type</span>
     <span class="n">X</span> <span class="o">=</span> <span class="n">X50</span> <span class="o">+</span> <span class="n">X1</span>
     <span class="n">xy</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">vecs</span><span class="p">(</span><span class="mi">82500</span><span class="p">,(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">))</span>
+</pre>
+    </div>
+    </div>
+<div id="pizza_dump3" class="module-content" style="display:none;">
+<button onclick="toggleAllCode(this)" class="collapsible">Toggle All Code Sections</button>
+
+    <button type="button" class="collapsible">Show Code Example 1</button>
+    <div class="content">
+    <pre class="code"><span class="k">try</span><span class="p">:</span>
+</pre>
+    </div>
+    <p>Example usage</p>
+
+    <button type="button" class="collapsible">Show Code Example 2</button>
+    <div class="content">
+    <pre class="code"><span class="n">datafile1</span> <span class="o">=</span> <span class="s2">&quot;../data/play_data/dump.play.1frames&quot;</span>
+        <span class="n">datafile2</span> <span class="o">=</span> <span class="s2">&quot;../data/play_data/dump.play.50frames&quot;</span>
+        <span class="n">X1</span> <span class="o">=</span> <span class="n">dump</span><span class="p">(</span><span class="n">datafile1</span><span class="p">)</span>
+        <span class="n">X1_kind</span> <span class="o">=</span> <span class="n">X1</span><span class="o">.</span><span class="n">kind</span><span class="p">()</span>
+        <span class="n">X1_type</span> <span class="o">=</span> <span class="n">X1</span><span class="o">.</span><span class="n">type</span>
+        <span class="n">X50</span> <span class="o">=</span> <span class="n">dump</span><span class="p">(</span><span class="n">datafile2</span><span class="p">)</span>
+        <span class="n">X50_kind</span> <span class="o">=</span> <span class="n">X50</span><span class="o">.</span><span class="n">kind</span><span class="p">()</span>
+        <span class="n">X50_type</span> <span class="o">=</span> <span class="n">X50</span><span class="o">.</span><span class="n">type</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X50</span> <span class="o">+</span> <span class="n">X1</span>
+        <span class="n">xy</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">vecs</span><span class="p">(</span><span class="mi">82500</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Extracted vectors: </span><span class="si">{</span><span class="n">xy</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred during execution: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre>
     </div>
     </div>

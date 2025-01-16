@@ -520,7 +520,7 @@ __version__ = &#34;0.99995&#34;
 
 
 
-# INRAE\Olivier Vitrac - rev. 2025-01-01 (community)
+# INRAE\Olivier Vitrac - rev. 2025-01-15 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -532,6 +532,7 @@ __version__ = &#34;0.99995&#34;
 # 2024-12-30 rename parse as generator, parsesyntax and authentificaiton (consistent with dscript)
 # 2024-12-31 add base_class_name
 # 2025-01-01 update the copy method to pass updated parameters
+# 2025-01-15 fix error message if the base_name is not recognized
 
 
 # Dependencies
@@ -2250,7 +2251,8 @@ class dforcefield:
 
         #♠ Dynamically set the base class based on the string value (e.g., &#34;tlsph&#34;)
         resolved_base_class  = cls._load_base_class(base_class_name)
-        if resolved_base_class  is None or not issubclass(resolved_base_class, forcefield):
+        if resolved_base_class is None or not issubclass(resolved_base_class, forcefield):
+            value = str(resolved_base_class)
             raise ValueError(f&#34;Invalid base_class: &#39;{value}&#39; must be a subclass of forcefield.&#34;)
 
         # Step 6: Create and return the new dforcefield instance
@@ -4959,7 +4961,8 @@ lj/cut
 
         #♠ Dynamically set the base class based on the string value (e.g., &#34;tlsph&#34;)
         resolved_base_class  = cls._load_base_class(base_class_name)
-        if resolved_base_class  is None or not issubclass(resolved_base_class, forcefield):
+        if resolved_base_class is None or not issubclass(resolved_base_class, forcefield):
+            value = str(resolved_base_class)
             raise ValueError(f&#34;Invalid base_class: &#39;{value}&#39; must be a subclass of forcefield.&#34;)
 
         # Step 6: Create and return the new dforcefield instance
@@ -6018,7 +6021,8 @@ def parsesyntax(cls, content, authentication=True):
 
     #♠ Dynamically set the base class based on the string value (e.g., &#34;tlsph&#34;)
     resolved_base_class  = cls._load_base_class(base_class_name)
-    if resolved_base_class  is None or not issubclass(resolved_base_class, forcefield):
+    if resolved_base_class is None or not issubclass(resolved_base_class, forcefield):
+        value = str(resolved_base_class)
         raise ValueError(f&#34;Invalid base_class: &#39;{value}&#39; must be a subclass of forcefield.&#34;)
 
     # Step 6: Create and return the new dforcefield instance
