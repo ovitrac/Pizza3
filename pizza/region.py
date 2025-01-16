@@ -14,7 +14,7 @@ Credits: Olivier Vitrac, Han Chen
 License: GPLv3
 Maintainer: Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Version: 0.9999
+Version: 1.0
 
 Overview
 --------
@@ -186,12 +186,12 @@ __credits__ = ["Olivier Vitrac", "Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.99991"
+__version__ = "1.0"
 
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-12-09 (community)
+# INRAE\Olivier Vitrac - rev. 2025-01-17 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -238,10 +238,12 @@ __version__ = "0.99991"
 # 2024-10-08 add lattice_scale
 # 2024-12-01 standarize scripting features, automatically call script/pscript methods
 # 2024-12-09 fix getattr for region objects to be compatible with inspect, pdoc
+# 2025-01-17 fix numpy import (it was removed)
 
 
 # %% Imports and private library
 import os, sys, math
+import numpy as np
 from datetime import datetime
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate

@@ -229,8 +229,21 @@ def main():
         # Write the configuration preambule
         f.write(ConfigurationPreambule + &#34;\n\n&#34;)
         f.write(&#39;&lt;hr style=&#34;border: none; height: 1px; background-color: #e0e0e0;&#34; /&gt;\n\n&#39;)
+
+        # Add a styled, responsive Table of Contents with three columns
+        f.write(&#39;&lt;a id=&#34;table_of_contents&#34; name=&#34;table_of_contents&#34;&gt;&lt;/a&gt;\n&#39;)
+        f.write(&#34;## Main Classes\n\n&#34;)
+        f.write(&#39;&lt;div id=&#34;table_of_contents&#34; style=&#34;display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; overflow-x: auto; padding: 10px;&#34;&gt;\n&#39;)
+        for idx, mod_name in enumerate(sorted(modules)):
+            f.write(&#39;&lt;div style=&#34;flex: 1 1 calc(33.33% - 20px); min-width: 200px;&#34;&gt;\n&#39;)
+            f.write(f&#39;&lt;a href=&#34;#{mod_name.replace(&#34;.&#34;, &#34;_&#34;)}&#34; style=&#34;text-decoration: none; font-weight: bold;&#34;&gt;\n&#39;)
+            f.write(f&#39;{idx + 1}. {mod_name}\n&#39;)
+            f.write(&#39;&lt;/a&gt;\n&#39;)
+            f.write(&#39;&lt;/div&gt;\n&#39;)
+        f.write(&#39;&lt;/div&gt;\n\n&#39;)
+
         # Iterate over each module
-        for mod_name in sorted(modules):
+        for i, mod_name in enumerate(sorted(modules)):
             # Attempt to import the module
             try:
                 mod = importlib.import_module(mod_name)
@@ -239,7 +252,30 @@ def main():
                 f.write(f&#34;**Error importing module**: {e}\n\n&#34;)
                 continue
 
-            f.write(f&#34;## Module `{mod_name}`\n\n&#34;)
+            # anchor
+            f.write(f&#39;&lt;a id=&#34;{mod_name.replace(&#34;.&#34;, &#34;_&#34;)}&#34; name=&#34;{mod_name.replace(&#34;.&#34;, &#34;_&#34;)}&#34;&gt;&lt;/a&gt;\n&#39;)
+            # Generate anchors for TOC, previous module, and next module
+            prev_mod = sorted(modules)[i - 1] if i &gt; 0 else None
+            next_mod = sorted(modules)[i + 1] if i &lt; len(modules) - 1 else None
+            # Navigation links container with alignment styling
+            f.write(&#39;&lt;div style=&#34;display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;&#34;&gt;&#39;)
+            # Add link to the previous module if it exists (left-aligned)
+            if prev_mod:
+                f.write(f&#39;&lt;a href=&#34;#{prev_mod.replace(&#34;.&#34;, &#34;_&#34;)}&#34; title=&#34;Go to Previous Module: {prev_mod}&#34; style=&#34;text-decoration: none;&#34;&gt;⬅️ Previous&lt;/a&gt;\n&#39;)
+            else:
+                f.write(&#39;&lt;span&gt;&lt;/span&gt;\n&#39;)  # Empty span to maintain layout consistency
+            # Add link to TOC (centered)
+            f.write(&#39;&lt;a href=&#34;#table_of_contents&#34; title=&#34;Back to Table of Contents&#34; style=&#34;text-decoration: none;&#34;&gt;⬆️ TOC&lt;/a&gt;\n&#39;)
+            # Add link to the next module if it exists (right-aligned)
+            if next_mod:
+                f.write(f&#39;&lt;a href=&#34;#{next_mod.replace(&#34;.&#34;, &#34;_&#34;)}&#34; title=&#34;Go to Next Module: {next_mod}&#34; style=&#34;text-decoration: none;&#34;&gt;➡️ Next&lt;/a&gt;\n&#39;)
+            else:
+                f.write(&#39;&lt;span&gt;&lt;/span&gt;\n&#39;)  # Empty span to maintain layout consistency
+            # Close the navigation container
+            f.write(&#39;&lt;/div&gt;\n\n&#39;)
+
+            # Start the module section
+            f.write(f&#39;## Module `{mod_name}`\n\n&#39;)
 
             # Get class inheritance tree
             module_classes, inheritances = classes_tree(mod, base_module=&#39;pizza&#39;)
@@ -487,8 +523,21 @@ if __name__ == &#34;__main__&#34;:
         # Write the configuration preambule
         f.write(ConfigurationPreambule + &#34;\n\n&#34;)
         f.write(&#39;&lt;hr style=&#34;border: none; height: 1px; background-color: #e0e0e0;&#34; /&gt;\n\n&#39;)
+
+        # Add a styled, responsive Table of Contents with three columns
+        f.write(&#39;&lt;a id=&#34;table_of_contents&#34; name=&#34;table_of_contents&#34;&gt;&lt;/a&gt;\n&#39;)
+        f.write(&#34;## Main Classes\n\n&#34;)
+        f.write(&#39;&lt;div id=&#34;table_of_contents&#34; style=&#34;display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; overflow-x: auto; padding: 10px;&#34;&gt;\n&#39;)
+        for idx, mod_name in enumerate(sorted(modules)):
+            f.write(&#39;&lt;div style=&#34;flex: 1 1 calc(33.33% - 20px); min-width: 200px;&#34;&gt;\n&#39;)
+            f.write(f&#39;&lt;a href=&#34;#{mod_name.replace(&#34;.&#34;, &#34;_&#34;)}&#34; style=&#34;text-decoration: none; font-weight: bold;&#34;&gt;\n&#39;)
+            f.write(f&#39;{idx + 1}. {mod_name}\n&#39;)
+            f.write(&#39;&lt;/a&gt;\n&#39;)
+            f.write(&#39;&lt;/div&gt;\n&#39;)
+        f.write(&#39;&lt;/div&gt;\n\n&#39;)
+
         # Iterate over each module
-        for mod_name in sorted(modules):
+        for i, mod_name in enumerate(sorted(modules)):
             # Attempt to import the module
             try:
                 mod = importlib.import_module(mod_name)
@@ -497,7 +546,30 @@ if __name__ == &#34;__main__&#34;:
                 f.write(f&#34;**Error importing module**: {e}\n\n&#34;)
                 continue
 
-            f.write(f&#34;## Module `{mod_name}`\n\n&#34;)
+            # anchor
+            f.write(f&#39;&lt;a id=&#34;{mod_name.replace(&#34;.&#34;, &#34;_&#34;)}&#34; name=&#34;{mod_name.replace(&#34;.&#34;, &#34;_&#34;)}&#34;&gt;&lt;/a&gt;\n&#39;)
+            # Generate anchors for TOC, previous module, and next module
+            prev_mod = sorted(modules)[i - 1] if i &gt; 0 else None
+            next_mod = sorted(modules)[i + 1] if i &lt; len(modules) - 1 else None
+            # Navigation links container with alignment styling
+            f.write(&#39;&lt;div style=&#34;display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;&#34;&gt;&#39;)
+            # Add link to the previous module if it exists (left-aligned)
+            if prev_mod:
+                f.write(f&#39;&lt;a href=&#34;#{prev_mod.replace(&#34;.&#34;, &#34;_&#34;)}&#34; title=&#34;Go to Previous Module: {prev_mod}&#34; style=&#34;text-decoration: none;&#34;&gt;⬅️ Previous&lt;/a&gt;\n&#39;)
+            else:
+                f.write(&#39;&lt;span&gt;&lt;/span&gt;\n&#39;)  # Empty span to maintain layout consistency
+            # Add link to TOC (centered)
+            f.write(&#39;&lt;a href=&#34;#table_of_contents&#34; title=&#34;Back to Table of Contents&#34; style=&#34;text-decoration: none;&#34;&gt;⬆️ TOC&lt;/a&gt;\n&#39;)
+            # Add link to the next module if it exists (right-aligned)
+            if next_mod:
+                f.write(f&#39;&lt;a href=&#34;#{next_mod.replace(&#34;.&#34;, &#34;_&#34;)}&#34; title=&#34;Go to Next Module: {next_mod}&#34; style=&#34;text-decoration: none;&#34;&gt;➡️ Next&lt;/a&gt;\n&#39;)
+            else:
+                f.write(&#39;&lt;span&gt;&lt;/span&gt;\n&#39;)  # Empty span to maintain layout consistency
+            # Close the navigation container
+            f.write(&#39;&lt;/div&gt;\n\n&#39;)
+
+            # Start the module section
+            f.write(f&#39;## Module `{mod_name}`\n\n&#39;)
 
             # Get class inheritance tree
             module_classes, inheritances = classes_tree(mod, base_module=&#39;pizza&#39;)

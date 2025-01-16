@@ -1,6 +1,6 @@
 # Pizza Modules Documentation
 
-Generated on: **2025-01-16 11:26:22**
+Generated on: **2025-01-16 14:46:49**
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
 
@@ -58,6 +58,118 @@ You can now generate your first LAMMPS code from Python and run it with [LAMMPS-
 
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
+
+<a id="table_of_contents" name="table_of_contents"></a>
+## Main Classes
+
+<div id="table_of_contents" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; overflow-x: auto; padding: 10px;">
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza___init__" style="text-decoration: none; font-weight: bold;">
+1. pizza.__init__
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_converted_bdump3" style="text-decoration: none; font-weight: bold;">
+2. pizza.converted.bdump3
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_converted_cdata3" style="text-decoration: none; font-weight: bold;">
+3. pizza.converted.cdata3
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_converted_ldump3" style="text-decoration: none; font-weight: bold;">
+4. pizza.converted.ldump3
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_converted_mdump3" style="text-decoration: none; font-weight: bold;">
+5. pizza.converted.mdump3
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_converted_tdump3" style="text-decoration: none; font-weight: bold;">
+6. pizza.converted.tdump3
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_data3" style="text-decoration: none; font-weight: bold;">
+7. pizza.data3
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_data3_legacy" style="text-decoration: none; font-weight: bold;">
+8. pizza.data3_legacy
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_dforcefield" style="text-decoration: none; font-weight: bold;">
+9. pizza.dforcefield
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_dscript" style="text-decoration: none; font-weight: bold;">
+10. pizza.dscript
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_dump3" style="text-decoration: none; font-weight: bold;">
+11. pizza.dump3
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_dump3_legacy" style="text-decoration: none; font-weight: bold;">
+12. pizza.dump3_legacy
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_forcefield" style="text-decoration: none; font-weight: bold;">
+13. pizza.forcefield
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_generic" style="text-decoration: none; font-weight: bold;">
+14. pizza.generic
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_group" style="text-decoration: none; font-weight: bold;">
+15. pizza.group
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_private_mstruct" style="text-decoration: none; font-weight: bold;">
+16. pizza.private.mstruct
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_private_utils" style="text-decoration: none; font-weight: bold;">
+17. pizza.private.utils
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_raster" style="text-decoration: none; font-weight: bold;">
+18. pizza.raster
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_region" style="text-decoration: none; font-weight: bold;">
+19. pizza.region
+</a>
+</div>
+<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
+<a href="#pizza_script" style="text-decoration: none; font-weight: bold;">
+20. pizza.script
+</a>
+</div>
+</div>
+
+<a id="pizza___init__" name="pizza___init__"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><span></span>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_converted_bdump3" title="Go to Next Module: pizza.converted.bdump3" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.__init__`
 
@@ -234,6 +346,12 @@ ulsph --> water
 |-------|---------|---------------------------|---------|-------------|
 | (module-level) | `check_PIL` |  | 14 |  |
 
+<a id="pizza_converted_bdump3" name="pizza_converted_bdump3"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza___init__" title="Go to Previous Module: pizza.__init__" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_converted_cdata3" title="Go to Next Module: pizza.converted.cdata3" style="text-decoration: none;">➡️ Next</a>
+</div>
+
 ## Module `pizza.converted.bdump3`
 
 ### Class Inheritance Diagram
@@ -260,6 +378,12 @@ object --> bdump
 | `bdump` | `read_snapshot` | Read a single snapshot from the file. | 49 |  |
 | `bdump` | `time` | Get a list of all snapshot time stamps. | 8 |  |
 | `bdump` | `viz` | Return bond information for visualization. | 53 |  |
+
+<a id="pizza_converted_cdata3" name="pizza_converted_cdata3"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_converted_bdump3" title="Go to Previous Module: pizza.converted.bdump3" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_converted_ldump3" title="Go to Next Module: pizza.converted.ldump3" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.converted.cdata3`
 
@@ -399,6 +523,12 @@ object --> cdata
 | `cdata` | `viz` | Return list of atoms, bonds, tris, and lines for visualization. | 69 |  |
 | `cdata` | `write` | Write selected objects to a ChemCell data file. | 19 |  |
 
+<a id="pizza_converted_ldump3" name="pizza_converted_ldump3"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_converted_cdata3" title="Go to Previous Module: pizza.converted.cdata3" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_converted_mdump3" title="Go to Next Module: pizza.converted.mdump3" style="text-decoration: none;">➡️ Next</a>
+</div>
+
 ## Module `pizza.converted.ldump3`
 
 ### Class Inheritance Diagram
@@ -427,6 +557,12 @@ object --> ldump
 | `ldump` | `read_snapshot` | Read a single snapshot from the file. | 67 |  |
 | `ldump` | `time` | Get a list of all snapshot time stamps. | 8 |  |
 | `ldump` | `viz` | Return line segment information for visualization. | 63 |  |
+
+<a id="pizza_converted_mdump3" name="pizza_converted_mdump3"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_converted_ldump3" title="Go to Previous Module: pizza.converted.ldump3" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_converted_tdump3" title="Go to Next Module: pizza.converted.tdump3" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.converted.mdump3`
 
@@ -478,6 +614,12 @@ object --> tselect
 | `tselect` | `skip` | Select every Mth step. | 20 |  |
 | `tselect` | `test` | Select timesteps based on a Python Boolean expression. | 30 |  |
 
+<a id="pizza_converted_tdump3" name="pizza_converted_tdump3"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_converted_mdump3" title="Go to Previous Module: pizza.converted.mdump3" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_data3" title="Go to Next Module: pizza.data3" style="text-decoration: none;">➡️ Next</a>
+</div>
+
 ## Module `pizza.converted.tdump3`
 
 ### Class Inheritance Diagram
@@ -508,6 +650,12 @@ object --> tdump
 | `tdump` | `read_snapshot` | Read a single snapshot from the file. | 67 |  |
 | `tdump` | `time` | Get a list of all snapshot time stamps. | 8 |  |
 | `tdump` | `viz` | Return triangle information for visualization. | 68 |  |
+
+<a id="pizza_data3" name="pizza_data3"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_converted_tdump3" title="Go to Previous Module: pizza.converted.tdump3" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_data3_legacy" title="Go to Next Module: pizza.data3_legacy" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.data3`
 
@@ -545,6 +693,12 @@ object --> dump
 | `data` | `viz` | Return visualization data for a specified snapshot. | 75 | 1.0 |
 | `data` | `write` | Write the data object to a LAMMPS data file. | 37 | 1.0 |
 
+<a id="pizza_data3_legacy" name="pizza_data3_legacy"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_data3" title="Go to Previous Module: pizza.data3" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_dforcefield" title="Go to Next Module: pizza.dforcefield" style="text-decoration: none;">➡️ Next</a>
+</div>
+
 ## Module `pizza.data3_legacy`
 
 ### Class Inheritance Diagram
@@ -578,6 +732,12 @@ object --> dump
 | `data` | `replace` | replace column values: replace("section",columnindex,vectorofvalues) with columnindex=1..ncolumns | 20 | 1.0 |
 | `data` | `viz` |  | 61 | 1.0 |
 | `data` | `write` |  | 20 | 1.0 |
+
+<a id="pizza_dforcefield" name="pizza_dforcefield"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_data3_legacy" title="Go to Previous Module: pizza.data3_legacy" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_dscript" title="Go to Next Module: pizza.dscript" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.dforcefield`
 
@@ -658,6 +818,12 @@ struct --> scriptobject
 | `dforcefield` | `update_parameters` | Update self.parameters by combining GLOBAL, LOCAL, RULES, and USER parameters. | 6 | 0.99995 |
 | `dforcefield` | `validate` | Validate the dforcefield instance to ensure all required attributes are set. | 14 | 0.99995 |
 | `dforcefield` | `values` | Return the values of the merged struct, parameters, and scalar attributes. | 8 | 0.99995 |
+
+<a id="pizza_dscript" name="pizza_dscript"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_dforcefield" title="Go to Previous Module: pizza.dforcefield" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_dump3" title="Go to Next Module: pizza.dump3" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.dscript`
 
@@ -760,6 +926,12 @@ struct --> scriptobjectgroup
 | `lambdaScriptdata` | `__init__` | Constructor for lambdaScriptdata. It forces the parent's _returnerror parameter to False. | 19 | 1.0 |
 | `lamdaScript` | `__init__` | Initialize a new `lambdaScript` instance. | 66 | 1.0 |
 
+<a id="pizza_dump3" name="pizza_dump3"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_dscript" title="Go to Previous Module: pizza.dscript" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_dump3_legacy" title="Go to Next Module: pizza.dump3_legacy" style="text-decoration: none;">➡️ Next</a>
+</div>
+
 ## Module `pizza.dump3`
 
 ### Class Inheritance Diagram
@@ -828,6 +1000,12 @@ object --> tselect
 | `tselect` | `one` | Select only a specific timestep. | 18 | 1.0 |
 | `tselect` | `skip` | Select every Mth timestep. | 20 | 1.0 |
 | `tselect` | `test` | Select timesteps based on a boolean expression. | 23 | 1.0 |
+
+<a id="pizza_dump3_legacy" name="pizza_dump3_legacy"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_dump3" title="Go to Previous Module: pizza.dump3" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_forcefield" title="Go to Next Module: pizza.forcefield" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.dump3_legacy`
 
@@ -918,6 +1096,12 @@ object --> tselect
 | `tselect` | `one` |  | 9 | 1.0 |
 | `tselect` | `skip` |  | 14 | 1.0 |
 | `tselect` | `test` |  | 19 | 1.0 |
+
+<a id="pizza_forcefield" name="pizza_forcefield"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_dump3_legacy" title="Go to Previous Module: pizza.dump3_legacy" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_generic" title="Go to Next Module: pizza.generic" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.forcefield`
 
@@ -1018,9 +1202,11 @@ ulsph --> water
 | `water` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
 | `water` | `printheader` | print header | 7 | 0.9971 |
 
-## Module `pizza.fork.region`
-
-**Error importing module**: No module named 'pizza.private.struct'
+<a id="pizza_generic" name="pizza_generic"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_forcefield" title="Go to Previous Module: pizza.forcefield" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_group" title="Go to Next Module: pizza.group" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.generic`
 
@@ -1062,6 +1248,12 @@ ulsph --> water
 | `USERSMD` | `newtonianfluid` | newtonianfluid() returns a parameterized ULSPH forcefield with prescribed viscosity (mu [Pa.s] or nu in [m2/s]) and density (rho). Based on recommendations of J. Comput. Phys 1997, 136, 214–226 | 24 | 0.9971 |
 | `generic` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 3 | 0.9971 |
 | `generic` | `__repr__` | representation of generic() | 12 | 0.9971 |
+
+<a id="pizza_group" name="pizza_group"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_generic" title="Go to Previous Module: pizza.generic" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_private_mstruct" title="Go to Next Module: pizza.private.mstruct" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.group`
 
@@ -1169,6 +1361,12 @@ object --> pipescript
 | `groupobject` | `__radd__` | Adds this groupobject to another groupobject or a groupcollection from the right. | 19 | 0.9999 |
 | `groupobject` | `__repr__` | Returns an unambiguous string representation of the groupobject. | 8 | 0.9999 |
 | `groupobject` | `__str__` | Returns a readable string representation of the groupobject. | 5 | 0.9999 |
+
+<a id="pizza_private_mstruct" name="pizza_private_mstruct"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_group" title="Go to Previous Module: pizza.group" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_private_utils" title="Go to Next Module: pizza.private.utils" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.private.mstruct`
 
@@ -1357,6 +1555,12 @@ struct --> param
 | `struct` | `write` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 33 | 0.99991 |
 | `struct` | `zip` | zip keys and values | 3 | 0.99991 |
 
+<a id="pizza_private_utils" name="pizza_private_utils"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_private_mstruct" title="Go to Previous Module: pizza.private.mstruct" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_raster" title="Go to Next Module: pizza.raster" style="text-decoration: none;">➡️ Next</a>
+</div>
+
 ## Module `pizza.private.utils`
 
 *No classes found in this module.*
@@ -1370,6 +1574,12 @@ struct --> param
 | (module-level) | `list` | list folders and files | 7 |  |
 | (module-level) | `replaceall` | replaceall("some_dir", "find this", "replace with this", "*.txt") | 34 |  |
 | (module-level) | `updatepptx` | update PPTX | 22 |  |
+
+<a id="pizza_raster" name="pizza_raster"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_private_utils" title="Go to Previous Module: pizza.private.utils" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_region" title="Go to Next Module: pizza.region" style="text-decoration: none;">➡️ Next</a>
+</div>
 
 ## Module `pizza.raster`
 
@@ -1521,6 +1731,12 @@ struct --> collection
 | `scatter` | `__init__` | The scatter class provides an easy constructor to distribute in space objects according to their positions x,y, size r (radius) and beadtype. | 17 | 0.99991 |
 | `scatter` | `pairdist` | pair distance to the surface of all disks/spheres | 6 | 0.99991 |
 
+<a id="pizza_region" name="pizza_region"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_raster" title="Go to Previous Module: pizza.raster" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<a href="#pizza_script" title="Go to Next Module: pizza.script" style="text-decoration: none;">➡️ Next</a>
+</div>
+
 ## Module `pizza.region`
 
 ### Class Inheritance Diagram
@@ -1638,387 +1854,393 @@ ulsph --> water
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| (module-level) | `<lambda>` |  | 1 | 0.99991 |
-| (module-level) | `<lambda>` |  | 7 | 0.99991 |
-| `Block` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Block` | `__copy__` | copy method | 6 | 0.99991 |
-| `Block` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Block` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Block` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Block` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 24 | 0.99991 |
-| `Block` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Block` | `__repr__` | display method | 24 | 0.99991 |
-| `Block` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Block` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Block` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Block` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Block` | `do` | generates a script | 6 | 0.99991 |
-| `Block` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Block` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Block` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Block` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Block` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Block` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Block` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Block` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Block` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Block` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Block` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Block` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Block` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `Block` | `volume` | Calculate the volume of the block based on USER.args | 24 | 0.99991 |
-| `Collection` | `__getattr__` | get attribute override | 3 | 0.99991 |
-| `Collection` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 26 | 0.99991 |
-| `Collection` | `__len__` | return length of collection | 3 | 0.99991 |
-| `Collection` | `__repr__` | Return repr(self). | 14 | 0.99991 |
-| `Collection` | `creategroup` | force the group creation in script | 5 | 0.99991 |
-| `Collection` | `get` | returns the object | 8 | 0.99991 |
-| `Collection` | `group` | return the grouped coregeometry object | 13 | 0.99991 |
-| `Collection` | `list` | return the list of objects | 3 | 0.99991 |
-| `Collection` | `removegroup` | force the group creation in script | 5 | 0.99991 |
-| `Collection` | `update` | update the USER content for the script | 6 | 0.99991 |
-| `Cone` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Cone` | `__copy__` | copy method | 6 | 0.99991 |
-| `Cone` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Cone` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Cone` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Cone` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 0.99991 |
-| `Cone` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Cone` | `__repr__` | display method | 24 | 0.99991 |
-| `Cone` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Cone` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Cone` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Cone` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Cone` | `do` | generates a script | 6 | 0.99991 |
-| `Cone` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Cone` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Cone` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Cone` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Cone` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Cone` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Cone` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Cone` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Cone` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Cone` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Cone` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Cone` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Cone` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `Cone` | `volume` | Calculate the volume of the cone based on USER.args | 21 | 0.99991 |
-| `Cylinder` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Cylinder` | `__copy__` | copy method | 6 | 0.99991 |
-| `Cylinder` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Cylinder` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Cylinder` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Cylinder` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 0.99991 |
-| `Cylinder` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Cylinder` | `__repr__` | display method | 24 | 0.99991 |
-| `Cylinder` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Cylinder` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Cylinder` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Cylinder` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Cylinder` | `do` | generates a script | 6 | 0.99991 |
-| `Cylinder` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Cylinder` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Cylinder` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Cylinder` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Cylinder` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Cylinder` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Cylinder` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Cylinder` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Cylinder` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Cylinder` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Cylinder` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Cylinder` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Cylinder` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `Cylinder` | `volume` | Calculate the volume of the cylinder based on USER.args | 17 | 0.99991 |
-| `Ellipsoid` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Ellipsoid` | `__copy__` | copy method | 6 | 0.99991 |
-| `Ellipsoid` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Ellipsoid` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Ellipsoid` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Ellipsoid` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 0.99991 |
-| `Ellipsoid` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Ellipsoid` | `__repr__` | display method | 24 | 0.99991 |
-| `Ellipsoid` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Ellipsoid` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Ellipsoid` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Ellipsoid` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Ellipsoid` | `do` | generates a script | 6 | 0.99991 |
-| `Ellipsoid` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Ellipsoid` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Ellipsoid` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Ellipsoid` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Ellipsoid` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Ellipsoid` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Ellipsoid` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Ellipsoid` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Ellipsoid` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Ellipsoid` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Ellipsoid` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Ellipsoid` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Ellipsoid` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `Ellipsoid` | `volume` | Calculate the volume of the ellipsoid based on USER.args | 15 | 0.99991 |
-| `Evalgeometry` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Evalgeometry` | `__copy__` | copy method | 6 | 0.99991 |
-| `Evalgeometry` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Evalgeometry` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Evalgeometry` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Evalgeometry` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 9 | 0.99991 |
-| `Evalgeometry` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Evalgeometry` | `__repr__` | display method | 24 | 0.99991 |
-| `Evalgeometry` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Evalgeometry` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Evalgeometry` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Evalgeometry` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Evalgeometry` | `do` | generates a script | 6 | 0.99991 |
-| `Evalgeometry` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Evalgeometry` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Evalgeometry` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Evalgeometry` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Evalgeometry` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Evalgeometry` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Evalgeometry` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Evalgeometry` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Evalgeometry` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Evalgeometry` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Evalgeometry` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Evalgeometry` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Evalgeometry` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `Intersect` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Intersect` | `__copy__` | copy method | 6 | 0.99991 |
-| `Intersect` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Intersect` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Intersect` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Intersect` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 14 | 0.99991 |
-| `Intersect` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Intersect` | `__repr__` | display method | 24 | 0.99991 |
-| `Intersect` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Intersect` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Intersect` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Intersect` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Intersect` | `do` | generates a script | 6 | 0.99991 |
-| `Intersect` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Intersect` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Intersect` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Intersect` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Intersect` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Intersect` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Intersect` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Intersect` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Intersect` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Intersect` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Intersect` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Intersect` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Intersect` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `LammpsCollectionGroup` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsCreate` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsFooter` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsFooterPreview` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsGeneric` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsGroup` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsHeader` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsHeaderBox` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsHeaderInit` | `__init__` | Constructor adding instance definitions stored in USER. | 4 | 0.99991 |
-| `LammpsHeaderInit` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsHeaderInit` | `generate_template` | Generate the TEMPLATE based on USER definitions. | 15 | 0.99991 |
-| `LammpsHeaderLattice` | `__init__` | Constructor adding instance definitions stored in USER. | 4 | 0.99991 |
-| `LammpsHeaderLattice` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsHeaderLattice` | `generate_template` | Generate the TEMPLATE based on USER definitions. | 8 | 0.99991 |
-| `LammpsHeaderMass` | `__init__` | Constructor adding instance definitions stored in USER. | 14 | 0.99991 |
-| `LammpsHeaderMass` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsHeaderMass` | `generate_template` | Generate the TEMPLATE for mass assignments based on USER definitions. | 32 | 0.99991 |
-| `LammpsMove` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsRegion` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsSetGroup` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsSpacefilling` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `LammpsVariables` | `__init__` | constructor of LammpsVariables | 4 | 0.99991 |
-| `LammpsVariables` | `__rshift__` | overload right  shift operator (keep only the last template) | 12 | 0.99991 |
-| `LammpsVariables` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 0.99991 |
-| `Plane` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Plane` | `__copy__` | copy method | 6 | 0.99991 |
-| `Plane` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Plane` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Plane` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Plane` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 19 | 0.99991 |
-| `Plane` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Plane` | `__repr__` | display method | 24 | 0.99991 |
-| `Plane` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Plane` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Plane` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Plane` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Plane` | `do` | generates a script | 6 | 0.99991 |
-| `Plane` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Plane` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Plane` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Plane` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Plane` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Plane` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Plane` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Plane` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Plane` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Plane` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Plane` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Plane` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Plane` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `Prism` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Prism` | `__copy__` | copy method | 6 | 0.99991 |
-| `Prism` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Prism` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Prism` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Prism` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 0.99991 |
-| `Prism` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Prism` | `__repr__` | display method | 24 | 0.99991 |
-| `Prism` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Prism` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Prism` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Prism` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Prism` | `do` | generates a script | 6 | 0.99991 |
-| `Prism` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Prism` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Prism` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Prism` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Prism` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Prism` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Prism` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Prism` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Prism` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Prism` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Prism` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Prism` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Prism` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `Prism` | `volume` | Calculate the volume of the prism based on USER.args | 22 | 0.99991 |
-| `Sphere` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Sphere` | `__copy__` | copy method | 6 | 0.99991 |
-| `Sphere` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Sphere` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Sphere` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Sphere` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 0.99991 |
-| `Sphere` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Sphere` | `__repr__` | display method | 24 | 0.99991 |
-| `Sphere` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Sphere` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Sphere` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Sphere` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Sphere` | `do` | generates a script | 6 | 0.99991 |
-| `Sphere` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Sphere` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Sphere` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Sphere` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Sphere` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Sphere` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Sphere` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Sphere` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Sphere` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Sphere` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Sphere` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Sphere` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Sphere` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `Sphere` | `volume` | Calculate the volume of the sphere based on USER.args | 13 | 0.99991 |
-| `Union` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `Union` | `__copy__` | copy method | 6 | 0.99991 |
-| `Union` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `Union` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Union` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `Union` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 14 | 0.99991 |
-| `Union` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `Union` | `__repr__` | display method | 24 | 0.99991 |
-| `Union` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `Union` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `Union` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `Union` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `Union` | `do` | generates a script | 6 | 0.99991 |
-| `Union` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `Union` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `Union` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `Union` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `Union` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `Union` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `Union` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `Union` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `Union` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `Union` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `Union` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `Union` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `Union` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `coregeometry` | `__add__` | overload addition ("+") operator | 19 | 0.99991 |
-| `coregeometry` | `__copy__` | copy method | 6 | 0.99991 |
-| `coregeometry` | `__deepcopy__` | deep copy method | 8 | 0.99991 |
-| `coregeometry` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `coregeometry` | `__iadd__` | overload iaddition ("+=") operator | 16 | 0.99991 |
-| `coregeometry` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 48 | 0.99991 |
-| `coregeometry` | `__or__` | overload | pipe | 19 | 0.99991 |
-| `coregeometry` | `__repr__` | display method | 24 | 0.99991 |
-| `coregeometry` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `coregeometry` | `copy` | returns a copy of the graphical object | 11 | 0.99991 |
-| `coregeometry` | `creategroup` | force the group creation in script | 3 | 0.99991 |
-| `coregeometry` | `createmove` | force the fix move creation in script | 3 | 0.99991 |
-| `coregeometry` | `do` | generates a script | 6 | 0.99991 |
-| `coregeometry` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 0.99991 |
-| `coregeometry` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 0.99991 |
-| `coregeometry` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 0.99991 |
-| `coregeometry` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 0.99991 |
-| `coregeometry` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 0.99991 |
-| `coregeometry` | `removegroup` | force the group creation in script | 3 | 0.99991 |
-| `coregeometry` | `removemove` | force the fix move creation in script | 3 | 0.99991 |
-| `coregeometry` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 0.99991 |
-| `coregeometry` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 0.99991 |
-| `coregeometry` | `setgroup` | force the group creation in script | 3 | 0.99991 |
-| `coregeometry` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 0.99991 |
-| `coregeometry` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 0.99991 |
-| `coregeometry` | `update` | update the USER content for all three scripts | 14 | 0.99991 |
-| `emulsion` | `__init__` | Parameters ---------- The insertions are performed between xmin,ymin and xmax,ymax xmin : int64 or real, optional x left corner. The default is 10. ymin : int64 or real, optional y bottom corner. The default is 10. zmin : int64 or real, optional z bottom corner. The default is 10. xmax : int64 or real, optional x right corner. The default is 90. ymax : int64 or real, optional y top corner. The default is 90. zmax : int64 or real, optional z top corner. The default is 90. beadtype : default beadtype to apply if not precised at insertion maxtrials : integer, optional Maximum of attempts for an object. The default is 1000. forcedinsertion : logical, optional Set it to true to force the next insertion. The default is True. | 40 | 0.99991 |
-| `emulsion` | `__repr__` | Return repr(self). | 6 | 0.99991 |
-| `emulsion` | `accepted` | acceptation criterion | 3 | 0.99991 |
-| `emulsion` | `dist` | shortest distance of the center (x,y) to the wall or any object | 3 | 0.99991 |
-| `emulsion` | `insertion` | insert a list of objects nsuccess=insertion(rlist,beadtype=None) beadtype=b forces the value b if None, defaultbeadtype is used instead | 21 | 0.99991 |
-| `emulsion` | `insertone` | insert one object of radius r properties: x,y,z coordinates (if missing, picked randomly from uniform distribution) r radius (default = 2% of diagonal) beadtype (default = defautbeadtype) overlap = False (accept only if no overlap) | 28 | 0.99991 |
-| `emulsion` | `pairdist` | pair distance to the surface of all disks/spheres | 6 | 0.99991 |
-| `emulsion` | `rand` | random position x,y | 5 | 0.99991 |
-| `emulsion` | `setbeadtype` | set the default or the supplied beadtype | 8 | 0.99991 |
-| `emulsion` | `walldist` | shortest distance to the wall | 3 | 0.99991 |
-| `headersRegiondata` | `generatorforlammps` | generate LAMMPS code from regiondata (struct) generatorforlammps(verbose,hasvariables) hasvariables = False is used to prevent a call of generatorforLammps() for scripts others than LammpsGeneric ones | 31 | 0.99991 |
-| `region` | `__contains__` | in override | 3 | 0.99991 |
-| `region` | `__getattr__` | getattr attribute override | 14 | 0.99991 |
-| `region` | `__getitem__` | R[i] returns the ith element of the structure R[:4] returns a structure with the four first fields R[[1,3]] returns the second and fourth elements | 20 | 0.99991 |
-| `region` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `region` | `__init__` | constructor | 202 | 0.99991 |
-| `region` | `__iter__` | region iterator | 6 | 0.99991 |
-| `region` | `__len__` | len method | 3 | 0.99991 |
-| `region` | `__next__` | region iterator | 7 | 0.99991 |
-| `region` | `__repr__` | display method | 24 | 0.99991 |
-| `region` | `__setattr__` | setattr override | 6 | 0.99991 |
-| `region` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 0.99991 |
-| `region` | `__str__` | string representation of a region | 4 | 0.99991 |
-| `region` | `block` | creates a block region xlo,xhi,ylo,yhi,zlo,zhi = bounds of block in all dimensions (distance units) | 96 | 0.99991 |
-| `region` | `collection` |  | 27 | 0.99991 |
-| `region` | `cone` | creates a cone region dim = "x" or "y" or "z" = axis of the cone note: USER, LAMMPS variables are not authorized here c1,c2 = coords of cone axis in other 2 dimensions (distance units) radlo,radhi = cone radii at lo and hi end (distance units) lo,hi = bounds of cone in dim (distance units) | 127 | 0.99991 |
-| `region` | `count` | count objects by type | 13 | 0.99991 |
-| `region` | `cylinder` | creates a cylinder region dim = x or y or z = axis of cylinder c1,c2 = coords of cylinder axis in other 2 dimensions (distance units) radius = cylinder radius (distance units) c1,c2, and radius can be a LAMMPS variable lo,hi = bounds of cylinder in dim (distance units) | 122 | 0.99991 |
-| `region` | `delete` | delete object | 10 | 0.99991 |
-| `region` | `do` | execute the entire script | 3 | 0.99991 |
-| `region` | `dolive` | execute the entire script for online testing see: https://editor.lammps.org/ | 10 | 0.99991 |
-| `region` | `ellipsoid` | creates an ellipsoid region ellipsoid(x,y,z,a,b,c [,name=None,beadtype=None,property=value,...]) x,y,z = center of ellipsoid (distance units) a,b,c = half the length of the principal axes of the ellipsoid (distance units) | 114 | 0.99991 |
-| `region` | `eval` | evaluates (i.e, combine scripts) an expression combining objects R= region(name="my region") R.eval(o1+o2+...,name='obj') R.eval(o1|o2|...,name='obj') R.name will be the resulting object of class region.eval (region.coregeometry) | 41 | 0.99991 |
-| `region` | `get` | returns the object | 6 | 0.99991 |
-| `region` | `group` |  | 2 | 0.99991 |
-| `region` | `hasattr` | return true if the object exist | 4 | 0.99991 |
-| `region` | `intersect` | creates an intersection region intersect("reg-ID1","reg-ID2",name="myname",beadtype=1,...) reg-ID1,reg-ID2, ... = IDs of regions to join together | 60 | 0.99991 |
-| `region` | `list` | list objects | 10 | 0.99991 |
-| `region` | `pipescript` |  | 24 | 0.99991 |
-| `region` | `plane` | creates a plane region px,py,pz = point on the plane (distance units) nx,ny,nz = direction normal to plane (distance units) | 93 | 0.99991 |
-| `region` | `prism` | creates a prism region xlo,xhi,ylo,yhi,zlo,zhi = bounds of untilted prism (distance units) xy = distance to tilt y in x direction (distance units) xz = distance to tilt z in x direction (distance units) yz = distance to tilt z in y direction (distance units) | 101 | 0.99991 |
-| `region` | `pscriptHeaders` | Surrogate method for generating LAMMPS pipescript headers. Calls the `scriptHeaders` method with `pipescript=True`. | 19 | 0.99991 |
-| `region` | `scale_and_translate` | Scale and translate a value or encapsulate the formula within a string. | 47 | 0.99991 |
-| `region` | `scatter` | Parameters ---------- E : scatter or emulsion object codes for x,y,z and r. name : string, optional name of the collection. The default is "emulsion". beadtype : integer, optional for all objects. The default is 1. | 37 | 0.99991 |
-| `region` | `script` | script all objects in the region | 30 | 0.99991 |
-| `region` | `scriptHeaders` | Generate and return LAMMPS header scripts for initializing the simulation, defining the lattice, and specifying the simulation box for all region objects. | 71 | 0.99991 |
-| `region` | `set` | set field and value | 17 | 0.99991 |
-| `region` | `sphere` | creates a sphere region x,y,z = center of sphere (distance units) radius = radius of sphere (distance units) x,y,z, and radius can be a variable | 95 | 0.99991 |
-| `region` | `union` | creates a union region union("reg-ID1","reg-ID2",name="myname",beadtype=1,...) reg-ID1,reg-ID2, ... = IDs of regions to join together | 60 | 0.99991 |
-| `regioncollection` | `__init__` | constructor | 11 | 0.99991 |
-| `regiondata` | `generatorforlammps` | generate LAMMPS code from regiondata (struct) generatorforlammps(verbose,hasvariables) hasvariables = False is used to prevent a call of generatorforLammps() for scripts others than LammpsGeneric ones | 31 | 0.99991 |
-| `scatter` | `__init__` | The scatter class provides an easy constructor to distribute in space objects according to their positions x,y,z size r (radius) and beadtype. | 17 | 0.99991 |
-| `scatter` | `pairdist` | pair distance to the surface of all disks/spheres | 6 | 0.99991 |
+| (module-level) | `<lambda>` |  | 1 | 1.0 |
+| (module-level) | `<lambda>` |  | 7 | 1.0 |
+| `Block` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Block` | `__copy__` | copy method | 6 | 1.0 |
+| `Block` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Block` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Block` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Block` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 24 | 1.0 |
+| `Block` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Block` | `__repr__` | display method | 24 | 1.0 |
+| `Block` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Block` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Block` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Block` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Block` | `do` | generates a script | 6 | 1.0 |
+| `Block` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Block` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Block` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Block` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Block` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Block` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Block` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Block` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Block` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Block` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Block` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Block` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Block` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `Block` | `volume` | Calculate the volume of the block based on USER.args | 24 | 1.0 |
+| `Collection` | `__getattr__` | get attribute override | 3 | 1.0 |
+| `Collection` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 26 | 1.0 |
+| `Collection` | `__len__` | return length of collection | 3 | 1.0 |
+| `Collection` | `__repr__` | Return repr(self). | 14 | 1.0 |
+| `Collection` | `creategroup` | force the group creation in script | 5 | 1.0 |
+| `Collection` | `get` | returns the object | 8 | 1.0 |
+| `Collection` | `group` | return the grouped coregeometry object | 13 | 1.0 |
+| `Collection` | `list` | return the list of objects | 3 | 1.0 |
+| `Collection` | `removegroup` | force the group creation in script | 5 | 1.0 |
+| `Collection` | `update` | update the USER content for the script | 6 | 1.0 |
+| `Cone` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Cone` | `__copy__` | copy method | 6 | 1.0 |
+| `Cone` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Cone` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Cone` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Cone` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 1.0 |
+| `Cone` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Cone` | `__repr__` | display method | 24 | 1.0 |
+| `Cone` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Cone` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Cone` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Cone` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Cone` | `do` | generates a script | 6 | 1.0 |
+| `Cone` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Cone` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Cone` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Cone` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Cone` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Cone` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Cone` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Cone` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Cone` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Cone` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Cone` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Cone` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Cone` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `Cone` | `volume` | Calculate the volume of the cone based on USER.args | 21 | 1.0 |
+| `Cylinder` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Cylinder` | `__copy__` | copy method | 6 | 1.0 |
+| `Cylinder` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Cylinder` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Cylinder` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Cylinder` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 1.0 |
+| `Cylinder` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Cylinder` | `__repr__` | display method | 24 | 1.0 |
+| `Cylinder` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Cylinder` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Cylinder` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Cylinder` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Cylinder` | `do` | generates a script | 6 | 1.0 |
+| `Cylinder` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Cylinder` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Cylinder` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Cylinder` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Cylinder` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Cylinder` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Cylinder` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Cylinder` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Cylinder` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Cylinder` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Cylinder` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Cylinder` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Cylinder` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `Cylinder` | `volume` | Calculate the volume of the cylinder based on USER.args | 17 | 1.0 |
+| `Ellipsoid` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Ellipsoid` | `__copy__` | copy method | 6 | 1.0 |
+| `Ellipsoid` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Ellipsoid` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Ellipsoid` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Ellipsoid` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 1.0 |
+| `Ellipsoid` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Ellipsoid` | `__repr__` | display method | 24 | 1.0 |
+| `Ellipsoid` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Ellipsoid` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Ellipsoid` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Ellipsoid` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Ellipsoid` | `do` | generates a script | 6 | 1.0 |
+| `Ellipsoid` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Ellipsoid` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Ellipsoid` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Ellipsoid` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Ellipsoid` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Ellipsoid` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Ellipsoid` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Ellipsoid` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Ellipsoid` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Ellipsoid` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Ellipsoid` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Ellipsoid` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Ellipsoid` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `Ellipsoid` | `volume` | Calculate the volume of the ellipsoid based on USER.args | 15 | 1.0 |
+| `Evalgeometry` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Evalgeometry` | `__copy__` | copy method | 6 | 1.0 |
+| `Evalgeometry` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Evalgeometry` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Evalgeometry` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Evalgeometry` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 9 | 1.0 |
+| `Evalgeometry` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Evalgeometry` | `__repr__` | display method | 24 | 1.0 |
+| `Evalgeometry` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Evalgeometry` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Evalgeometry` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Evalgeometry` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Evalgeometry` | `do` | generates a script | 6 | 1.0 |
+| `Evalgeometry` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Evalgeometry` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Evalgeometry` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Evalgeometry` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Evalgeometry` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Evalgeometry` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Evalgeometry` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Evalgeometry` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Evalgeometry` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Evalgeometry` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Evalgeometry` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Evalgeometry` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Evalgeometry` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `Intersect` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Intersect` | `__copy__` | copy method | 6 | 1.0 |
+| `Intersect` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Intersect` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Intersect` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Intersect` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 14 | 1.0 |
+| `Intersect` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Intersect` | `__repr__` | display method | 24 | 1.0 |
+| `Intersect` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Intersect` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Intersect` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Intersect` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Intersect` | `do` | generates a script | 6 | 1.0 |
+| `Intersect` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Intersect` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Intersect` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Intersect` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Intersect` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Intersect` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Intersect` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Intersect` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Intersect` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Intersect` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Intersect` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Intersect` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Intersect` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `LammpsCollectionGroup` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsCreate` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsFooter` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsFooterPreview` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsGeneric` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsGroup` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsHeader` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsHeaderBox` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsHeaderInit` | `__init__` | Constructor adding instance definitions stored in USER. | 4 | 1.0 |
+| `LammpsHeaderInit` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsHeaderInit` | `generate_template` | Generate the TEMPLATE based on USER definitions. | 15 | 1.0 |
+| `LammpsHeaderLattice` | `__init__` | Constructor adding instance definitions stored in USER. | 4 | 1.0 |
+| `LammpsHeaderLattice` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsHeaderLattice` | `generate_template` | Generate the TEMPLATE based on USER definitions. | 8 | 1.0 |
+| `LammpsHeaderMass` | `__init__` | Constructor adding instance definitions stored in USER. | 14 | 1.0 |
+| `LammpsHeaderMass` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsHeaderMass` | `generate_template` | Generate the TEMPLATE for mass assignments based on USER definitions. | 32 | 1.0 |
+| `LammpsMove` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsRegion` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsSetGroup` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsSpacefilling` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `LammpsVariables` | `__init__` | constructor of LammpsVariables | 4 | 1.0 |
+| `LammpsVariables` | `__rshift__` | overload right  shift operator (keep only the last template) | 12 | 1.0 |
+| `LammpsVariables` | `do` | generate the LAMMPS code with VARIABLE definitions | 12 | 1.0 |
+| `Plane` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Plane` | `__copy__` | copy method | 6 | 1.0 |
+| `Plane` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Plane` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Plane` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Plane` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 19 | 1.0 |
+| `Plane` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Plane` | `__repr__` | display method | 24 | 1.0 |
+| `Plane` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Plane` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Plane` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Plane` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Plane` | `do` | generates a script | 6 | 1.0 |
+| `Plane` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Plane` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Plane` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Plane` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Plane` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Plane` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Plane` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Plane` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Plane` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Plane` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Plane` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Plane` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Plane` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `Prism` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Prism` | `__copy__` | copy method | 6 | 1.0 |
+| `Prism` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Prism` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Prism` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Prism` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 1.0 |
+| `Prism` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Prism` | `__repr__` | display method | 24 | 1.0 |
+| `Prism` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Prism` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Prism` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Prism` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Prism` | `do` | generates a script | 6 | 1.0 |
+| `Prism` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Prism` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Prism` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Prism` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Prism` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Prism` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Prism` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Prism` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Prism` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Prism` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Prism` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Prism` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Prism` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `Prism` | `volume` | Calculate the volume of the prism based on USER.args | 22 | 1.0 |
+| `Sphere` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Sphere` | `__copy__` | copy method | 6 | 1.0 |
+| `Sphere` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Sphere` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Sphere` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Sphere` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 23 | 1.0 |
+| `Sphere` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Sphere` | `__repr__` | display method | 24 | 1.0 |
+| `Sphere` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Sphere` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Sphere` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Sphere` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Sphere` | `do` | generates a script | 6 | 1.0 |
+| `Sphere` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Sphere` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Sphere` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Sphere` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Sphere` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Sphere` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Sphere` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Sphere` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Sphere` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Sphere` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Sphere` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Sphere` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Sphere` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `Sphere` | `volume` | Calculate the volume of the sphere based on USER.args | 13 | 1.0 |
+| `Union` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `Union` | `__copy__` | copy method | 6 | 1.0 |
+| `Union` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `Union` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Union` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `Union` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 14 | 1.0 |
+| `Union` | `__or__` | overload | pipe | 19 | 1.0 |
+| `Union` | `__repr__` | display method | 24 | 1.0 |
+| `Union` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `Union` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `Union` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `Union` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `Union` | `do` | generates a script | 6 | 1.0 |
+| `Union` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `Union` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `Union` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `Union` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `Union` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `Union` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `Union` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `Union` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `Union` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `Union` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `Union` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `Union` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `Union` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `coregeometry` | `__add__` | overload addition ("+") operator | 19 | 1.0 |
+| `coregeometry` | `__copy__` | copy method | 6 | 1.0 |
+| `coregeometry` | `__deepcopy__` | deep copy method | 8 | 1.0 |
+| `coregeometry` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `coregeometry` | `__iadd__` | overload iaddition ("+=") operator | 16 | 1.0 |
+| `coregeometry` | `__init__` | constructor of the generic core geometry USER: any definitions requires by the geometry VARIABLES: variables used to define the geometry (to be used in LAMMPS) hasgroup, hasmove: flag to force the sections group and move SECTIONS: they must be PIZZA.script | 48 | 1.0 |
+| `coregeometry` | `__or__` | overload | pipe | 19 | 1.0 |
+| `coregeometry` | `__repr__` | display method | 24 | 1.0 |
+| `coregeometry` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `coregeometry` | `copy` | returns a copy of the graphical object | 11 | 1.0 |
+| `coregeometry` | `creategroup` | force the group creation in script | 3 | 1.0 |
+| `coregeometry` | `createmove` | force the fix move creation in script | 3 | 1.0 |
+| `coregeometry` | `do` | generates a script | 6 | 1.0 |
+| `coregeometry` | `fixmoveargs` | Validates all arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) the result is adictionary, all fixmove can be combined | 18 | 1.0 |
+| `coregeometry` | `fixmoveargvalidator` | Validation of arguments for fix move command in LAMMPS (https://docs.lammps.org/fix_move.html) | 39 | 1.0 |
+| `coregeometry` | `get_fixmovesyntax` | Returns the syntax for LAMMPS command, or detailed explanation for a specific argument type | 39 | 1.0 |
+| `coregeometry` | `movearg` | Validation of move arguments for region command (https://docs.lammps.org/region.html) move args = v_x v_y v_z v_x,v_y,v_z = equal-style variables for x,y,z displacement of region over time (distance units) | 39 | 1.0 |
+| `coregeometry` | `openarg` | Validation of open arguments for region command (https://docs.lammps.org/region.html) open value = integer from 1-6 corresponding to face index (see below) The indices specified as part of the open keyword have the following meanings: | 32 | 1.0 |
+| `coregeometry` | `removegroup` | force the group creation in script | 3 | 1.0 |
+| `coregeometry` | `removemove` | force the fix move creation in script | 3 | 1.0 |
+| `coregeometry` | `rotatearg` | Validation of rotate arguments for region command (https://docs.lammps.org/region.html) rotate args = v_theta Px Py Pz Rx Ry Rz v_theta = equal-style variable for rotaton of region over time (in radians) Px,Py,Pz = origin for axis of rotation (distance units) Rx,Ry,Rz = axis of rotation vector | 36 | 1.0 |
+| `coregeometry` | `scriptobject` | Method to return a scriptobject based on region instead of an input file Syntax similar to script.scriptobject OBJ = scriptobject(...) Implemented properties: beadtype=1,2,... name="short name" fullname = "comprehensive name" style = "smd" forcefield = any valid forcefield instance (default = rigidwall()) | 34 | 1.0 |
+| `coregeometry` | `setgroup` | force the group creation in script | 3 | 1.0 |
+| `coregeometry` | `sidearg` | Validation of side arguments for region command (https://docs.lammps.org/region.html) side value = in or out in = the region is inside the specified geometry out = the region is outside the specified geometry | 20 | 1.0 |
+| `coregeometry` | `unitsarg` | Validation for units arguments for region command (https://docs.lammps.org/region.html) units value = lattice or box lattice = the geometry is defined in lattice units box = the geometry is defined in simulation box units | 20 | 1.0 |
+| `coregeometry` | `update` | update the USER content for all three scripts | 14 | 1.0 |
+| `emulsion` | `__init__` | Parameters ---------- The insertions are performed between xmin,ymin and xmax,ymax xmin : int64 or real, optional x left corner. The default is 10. ymin : int64 or real, optional y bottom corner. The default is 10. zmin : int64 or real, optional z bottom corner. The default is 10. xmax : int64 or real, optional x right corner. The default is 90. ymax : int64 or real, optional y top corner. The default is 90. zmax : int64 or real, optional z top corner. The default is 90. beadtype : default beadtype to apply if not precised at insertion maxtrials : integer, optional Maximum of attempts for an object. The default is 1000. forcedinsertion : logical, optional Set it to true to force the next insertion. The default is True. | 40 | 1.0 |
+| `emulsion` | `__repr__` | Return repr(self). | 6 | 1.0 |
+| `emulsion` | `accepted` | acceptation criterion | 3 | 1.0 |
+| `emulsion` | `dist` | shortest distance of the center (x,y) to the wall or any object | 3 | 1.0 |
+| `emulsion` | `insertion` | insert a list of objects nsuccess=insertion(rlist,beadtype=None) beadtype=b forces the value b if None, defaultbeadtype is used instead | 21 | 1.0 |
+| `emulsion` | `insertone` | insert one object of radius r properties: x,y,z coordinates (if missing, picked randomly from uniform distribution) r radius (default = 2% of diagonal) beadtype (default = defautbeadtype) overlap = False (accept only if no overlap) | 28 | 1.0 |
+| `emulsion` | `pairdist` | pair distance to the surface of all disks/spheres | 6 | 1.0 |
+| `emulsion` | `rand` | random position x,y | 5 | 1.0 |
+| `emulsion` | `setbeadtype` | set the default or the supplied beadtype | 8 | 1.0 |
+| `emulsion` | `walldist` | shortest distance to the wall | 3 | 1.0 |
+| `headersRegiondata` | `generatorforlammps` | generate LAMMPS code from regiondata (struct) generatorforlammps(verbose,hasvariables) hasvariables = False is used to prevent a call of generatorforLammps() for scripts others than LammpsGeneric ones | 31 | 1.0 |
+| `region` | `__contains__` | in override | 3 | 1.0 |
+| `region` | `__getattr__` | getattr attribute override | 14 | 1.0 |
+| `region` | `__getitem__` | R[i] returns the ith element of the structure R[:4] returns a structure with the four first fields R[[1,3]] returns the second and fourth elements | 20 | 1.0 |
+| `region` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `region` | `__init__` | constructor | 202 | 1.0 |
+| `region` | `__iter__` | region iterator | 6 | 1.0 |
+| `region` | `__len__` | len method | 3 | 1.0 |
+| `region` | `__next__` | region iterator | 7 | 1.0 |
+| `region` | `__repr__` | display method | 24 | 1.0 |
+| `region` | `__setattr__` | setattr override | 6 | 1.0 |
+| `region` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0 |
+| `region` | `__str__` | string representation of a region | 4 | 1.0 |
+| `region` | `block` | creates a block region xlo,xhi,ylo,yhi,zlo,zhi = bounds of block in all dimensions (distance units) | 96 | 1.0 |
+| `region` | `collection` |  | 27 | 1.0 |
+| `region` | `cone` | creates a cone region dim = "x" or "y" or "z" = axis of the cone note: USER, LAMMPS variables are not authorized here c1,c2 = coords of cone axis in other 2 dimensions (distance units) radlo,radhi = cone radii at lo and hi end (distance units) lo,hi = bounds of cone in dim (distance units) | 127 | 1.0 |
+| `region` | `count` | count objects by type | 13 | 1.0 |
+| `region` | `cylinder` | creates a cylinder region dim = x or y or z = axis of cylinder c1,c2 = coords of cylinder axis in other 2 dimensions (distance units) radius = cylinder radius (distance units) c1,c2, and radius can be a LAMMPS variable lo,hi = bounds of cylinder in dim (distance units) | 122 | 1.0 |
+| `region` | `delete` | delete object | 10 | 1.0 |
+| `region` | `do` | execute the entire script | 3 | 1.0 |
+| `region` | `dolive` | execute the entire script for online testing see: https://editor.lammps.org/ | 10 | 1.0 |
+| `region` | `ellipsoid` | creates an ellipsoid region ellipsoid(x,y,z,a,b,c [,name=None,beadtype=None,property=value,...]) x,y,z = center of ellipsoid (distance units) a,b,c = half the length of the principal axes of the ellipsoid (distance units) | 114 | 1.0 |
+| `region` | `eval` | evaluates (i.e, combine scripts) an expression combining objects R= region(name="my region") R.eval(o1+o2+...,name='obj') R.eval(o1|o2|...,name='obj') R.name will be the resulting object of class region.eval (region.coregeometry) | 41 | 1.0 |
+| `region` | `get` | returns the object | 6 | 1.0 |
+| `region` | `group` |  | 2 | 1.0 |
+| `region` | `hasattr` | return true if the object exist | 4 | 1.0 |
+| `region` | `intersect` | creates an intersection region intersect("reg-ID1","reg-ID2",name="myname",beadtype=1,...) reg-ID1,reg-ID2, ... = IDs of regions to join together | 60 | 1.0 |
+| `region` | `list` | list objects | 10 | 1.0 |
+| `region` | `pipescript` |  | 24 | 1.0 |
+| `region` | `plane` | creates a plane region px,py,pz = point on the plane (distance units) nx,ny,nz = direction normal to plane (distance units) | 93 | 1.0 |
+| `region` | `prism` | creates a prism region xlo,xhi,ylo,yhi,zlo,zhi = bounds of untilted prism (distance units) xy = distance to tilt y in x direction (distance units) xz = distance to tilt z in x direction (distance units) yz = distance to tilt z in y direction (distance units) | 101 | 1.0 |
+| `region` | `pscriptHeaders` | Surrogate method for generating LAMMPS pipescript headers. Calls the `scriptHeaders` method with `pipescript=True`. | 19 | 1.0 |
+| `region` | `scale_and_translate` | Scale and translate a value or encapsulate the formula within a string. | 47 | 1.0 |
+| `region` | `scatter` | Parameters ---------- E : scatter or emulsion object codes for x,y,z and r. name : string, optional name of the collection. The default is "emulsion". beadtype : integer, optional for all objects. The default is 1. | 37 | 1.0 |
+| `region` | `script` | script all objects in the region | 30 | 1.0 |
+| `region` | `scriptHeaders` | Generate and return LAMMPS header scripts for initializing the simulation, defining the lattice, and specifying the simulation box for all region objects. | 71 | 1.0 |
+| `region` | `set` | set field and value | 17 | 1.0 |
+| `region` | `sphere` | creates a sphere region x,y,z = center of sphere (distance units) radius = radius of sphere (distance units) x,y,z, and radius can be a variable | 95 | 1.0 |
+| `region` | `union` | creates a union region union("reg-ID1","reg-ID2",name="myname",beadtype=1,...) reg-ID1,reg-ID2, ... = IDs of regions to join together | 60 | 1.0 |
+| `regioncollection` | `__init__` | constructor | 11 | 1.0 |
+| `regiondata` | `generatorforlammps` | generate LAMMPS code from regiondata (struct) generatorforlammps(verbose,hasvariables) hasvariables = False is used to prevent a call of generatorforLammps() for scripts others than LammpsGeneric ones | 31 | 1.0 |
+| `scatter` | `__init__` | The scatter class provides an easy constructor to distribute in space objects according to their positions x,y,z size r (radius) and beadtype. | 17 | 1.0 |
+| `scatter` | `pairdist` | pair distance to the surface of all disks/spheres | 6 | 1.0 |
+
+<a id="pizza_script" name="pizza_script"></a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_region" title="Go to Previous Module: pizza.region" style="text-decoration: none;">⬅️ Previous</a>
+<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
+<span></span>
+</div>
 
 ## Module `pizza.script`
 

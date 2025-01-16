@@ -248,6 +248,7 @@ excluded_dirs=(
     "history"
     "help"
     "debug"
+    "fork"
     "tmp"
     "PIL"
     "restore"

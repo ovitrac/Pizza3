@@ -33,7 +33,7 @@ Credits: Olivier Vitrac, Han Chen
 License: GPLv3
 Maintainer: Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Version: 0.9999</p>
+Version: 1.0</p>
 <h2 id="overview">Overview</h2>
 <p>The REGION module provides a suite of tools to define and manipulate native geometries in Python
 for LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator). It is designed to facilitate
@@ -227,7 +227,7 @@ Credits: Olivier Vitrac, Han Chen
 License: GPLv3
 Maintainer: Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Version: 0.9999
+Version: 1.0
 
 Overview
 --------
@@ -399,12 +399,12 @@ __credits__ = [&#34;Olivier Vitrac&#34;, &#34;Han Chen&#34;]
 __license__ = &#34;GPLv3&#34;
 __maintainer__ = &#34;Olivier Vitrac&#34;
 __email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
-__version__ = &#34;0.99991&#34;
+__version__ = &#34;1.0&#34;
 
 
 
 
-# INRAE\Olivier Vitrac - rev. 2024-12-09 (community)
+# INRAE\Olivier Vitrac - rev. 2025-01-17 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -451,10 +451,12 @@ __version__ = &#34;0.99991&#34;
 # 2024-10-08 add lattice_scale
 # 2024-12-01 standarize scripting features, automatically call script/pscript methods
 # 2024-12-09 fix getattr for region objects to be compatible with inspect, pdoc
+# 2025-01-17 fix numpy import (it was removed)
 
 
 # %% Imports and private library
 import os, sys, math
+import numpy as np
 from datetime import datetime
 from copy import copy as duplicate
 from copy import deepcopy as deepduplicate

@@ -67,7 +67,7 @@ Notes:
 Author:
     - **INRAE\Olivier Vitrac**
     - **Email:** olivier.vitrac@agroparistech.fr
-    - **Last Revised:** 2025-01-09
+    - **Last Revised:** 2025-01-17
 
 Version:
     Pizza3 v.1.00
@@ -418,6 +418,7 @@ excluded_dirs = [
     "history",
     "help",
     "debug",
+    "fork",
     "tmp",
     "PIL",
     "restore",

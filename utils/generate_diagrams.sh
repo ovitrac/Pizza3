@@ -65,6 +65,7 @@ excluded_dirs=(
     "debug"
     "sandbox"
     "windowsONLY"
+    "fork"
 )
 
 # ------------------------
