@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.99991"
+__version__ = "1.002"
 
 
 """
@@ -132,6 +132,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2024-10-25 add dellatr()
 # 2024-10-26 force silentmode to + and += operators
 # 2024-12-08 fix help
+# 2025-01-17 enable evaluation with ! and first recursion for lists (v1.002)
 
 
 # %% Dependencies
@@ -140,6 +141,7 @@ import types       # to check types
 import re          # regular expression
 from pathlib import Path # for write
 import numpy as np
+from ast import literal_eval # used to evaluate strings starting with !
 from copy import copy as duplicate # to duplicate objects
 from copy import deepcopy as duplicatedeep # used by __deepcopy__()
 from pathlib import PurePosixPath as PurePath
@@ -1117,6 +1119,21 @@ class param(struct):
     # --------
     ```
 
+    #### Internal Evaluation and Recursion with !
+    ```python
+    p=param()
+    p.a = [0,1,2]
+    p.b = '![1,2,"test","${a[1]}"]'
+    p
+    # Output:
+    #  -------------:----------------------------------------
+    #          a: [0, 1, 2]
+    #          b: ![1,2,"test","${a[1]}"]
+    #           = [1, 2, 'test', '1']
+    #  -------------:----------------------------------------
+    # Out: parameter list (param object) with 2 definitions
+    ```
+
     #### Error Handling
     ```python
     p = param(b="${a}+1", c="${a}+${d}", a=1)
@@ -1268,9 +1285,22 @@ class param(struct):
                 # if the first character is '#', it is not comment (e.g. MarkDown titles)
                 poscomment = valuesafe.find("#")
                 if poscomment>0: valuesafe = valuesafe[0:poscomment].strip()
-                # Literal string starts with $
+                # Literal string starts with $ (no interpretation), ! (evaluation)
                 if not self._evaluation:
                     tmp.setattr(key, pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr))
+                elif valuesafe.startswith("!"):
+                    try:
+                        vtmp = literal_eval(valuesafe[1:])
+                        if isinstance(vtmp,list):
+                            for i,item in enumerate(vtmp):
+                                if isinstance(item,str) and not item.strip().startswith("$"):
+                                    try:
+                                        vtmp[i] = tmp.format(item, raiseerror=False)
+                                    except Exception as ve:
+                                        vtmp[i] = f"Error in <{item}>: {ve.__class__.__name__} - {str(ve)}"
+                        tmp.setattr(key,vtmp)
+                    except (SyntaxError, ValueError):
+                        tmp.setattr(key, f"Error: {e.__class__.__name__} - {str(e)}")
                 elif valuesafe.startswith("$") and not escape:
                     tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard $
                 elif valuesafe.startswith("%"):
@@ -1817,3 +1847,9 @@ if __name__ == '__main__':
     s.disp()
     p = param(b="${a}+1",c="${a}+${d}",a=1)
     p.disp()
+
+# features 2025
+    p=param()
+    p.a = [0,1,2]
+    p.b = '![1,2,"test","${a[1]}"]'
+    p

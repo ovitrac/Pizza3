@@ -14,6 +14,7 @@ pizza/generic.py
 pizza/group.py
 pizza/__init__.py
 pizza/private/mstruct.py
+pizza/private/test.py
 pizza/private/utils.py
 pizza/raster.py
 pizza/region.py

@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>example2ter API documentation</title>
+<meta name="description" content="example2ter.py: First version of part 3 of example2 setting displacements …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>example2ter</code></h1>
+</header>
+<section id="section-intro">
+<p>example2ter.py: First version of part 3 of example2 setting displacements.</p>
+<p>This script demonstrates the use of DSCRIPT templates for generating and managing
+LAMMPS fix commands related to various types of displacements, including gravity,
+oscillation, translation, and rotation. It showcases the following features:</p>
+<ol>
+<li><strong>Template Definition</strong>:</li>
+<li>Templates are defined in DSCRIPT language within the <code>movetemplates</code> variable.</li>
+<li>
+<p>Each template specifies parameters and generates LAMMPS fix commands dynamically.</p>
+</li>
+<li>
+<p><strong>Supported Displacement Types</strong>:</p>
+</li>
+<li><strong>Gravity</strong>:
+Adds gravitational acceleration to a specified group of atoms.</li>
+<li><strong>Oscillation</strong>:
+Defines sinusoidal velocity components to simulate periodic motion along specified axes.</li>
+<li><strong>Translation</strong>:
+Moves atoms at a constant velocity to achieve a specified displacement over a given time.</li>
+<li>
+<p><strong>Rotation</strong>:
+Simulates rotational motion around a defined axis with a specified angular velocity.</p>
+</li>
+<li>
+<p><strong>Template Syntax</strong>:</p>
+</li>
+<li>Templates use DSCRIPT features such as the <code>!</code> flag for Pythonic evaluation of expressions
+and <code>${var[i]}</code> for indexed variable access.</li>
+<li>
+<p>Each displacement type is encapsulated in a named section, allowing modularity and reuse.</p>
+</li>
+<li>
+<p><strong>Template Parsing and Execution</strong>:</p>
+</li>
+<li>All templates are parsed into a single DSCRIPT instance (<code>M</code>) using <code>dscript.parsesyntax</code>.</li>
+<li>
+<p>Specific templates can be selected and executed, demonstrating flexible template management.</p>
+</li>
+<li>
+<p><strong>Selection and Export</strong>:</p>
+</li>
+<li>A subset of templates is selected for execution using <code>M("rotation", "translation")</code>.</li>
+<li>
+<p>The selected templates are saved to a DSCRIPT file (<code>tmp/example2ter_selection.d.txt</code>)
+for reuse or further modification.</p>
+</li>
+<li>
+<p><strong>Re-Loading and Execution</strong>:</p>
+</li>
+<li>The saved DSCRIPT file is reloaded into a new DSCRIPT instance (<code>Dter</code>), verifying
+the persistence and correctness of the saved templates.</li>
+</ol>
+<h3 id="script-workflow">Script Workflow:</h3>
+<ol>
+<li><strong>Define Templates</strong>:</li>
+<li>Templates for gravity, oscillation, translation, and rotation are written in the DSCRIPT language.</li>
+<li><strong>Parse and Select Templates</strong>:</li>
+<li>Parse all templates into a single instance (<code>M</code>) and select specific templates for execution (<code>Mselection</code>).</li>
+<li><strong>Generate DSCRIPT File</strong>:</li>
+<li>Save the selected templates to a file for future use.</li>
+<li><strong>Reload and Execute</strong>:</li>
+<li>Reload the DSCRIPT file into a new instance and execute the templates to ensure functionality.</li>
+</ol>
+<h3 id="example-output">Example Output:</h3>
+<p>For the selected templates "rotation" and "translation", the generated DSCRIPT commands might look like:</p>
+<pre><code>fix rfix rotatableatoms smd/setvel v_r_vx v_r_vy v_r_vz
+fix tfix translatableatoms smd/setvel ${t_vel1} ${t_vel2} ${t_vel3}
+</code></pre>
+<h3 id="key-notes">Key Notes:</h3>
+<ul>
+<li>The use of DSCRIPT enables dynamic and modular creation of LAMMPS commands, reducing the need
+for manual edits and repetitive definitions.</li>
+<li>The modularity allows users to manage, save, and reuse templates efficiently.</li>
+<li>The extended parsing and execution capabilities demonstrate the flexibility of DSCRIPT in managing
+complex simulation configurations.</li>
+</ul>
+<h3 id="dependencies">Dependencies:</h3>
+<ul>
+<li><strong>pizza.dscript</strong>: A Python library for managing DSCRIPT templates. Ensure it is installed and accessible.</li>
+</ul>
+<h3 id="output-files">Output Files:</h3>
+<ul>
+<li><code>tmp/example2ter_selection.d.txt</code>: Contains the selected DSCRIPT templates, saved for further use or modifications.</li>
+</ul>
+<h3 id="usage">Usage:</h3>
+<p>Run this script as a standalone program or integrate it into a larger simulation workflow to dynamically manage LAMMPS displacements.</p>
+<p>last revision: 2025-01-1
+Author: INRAE\olivier.vitrac@agroparistech.fr</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+&#34;&#34;&#34;
+example2ter.py: First version of part 3 of example2 setting displacements.
+
+This script demonstrates the use of DSCRIPT templates for generating and managing
+LAMMPS fix commands related to various types of displacements, including gravity,
+oscillation, translation, and rotation. It showcases the following features:
+
+1. **Template Definition**:
+   - Templates are defined in DSCRIPT language within the `movetemplates` variable.
+   - Each template specifies parameters and generates LAMMPS fix commands dynamically.
+
+2. **Supported Displacement Types**:
+   - **Gravity**:
+     Adds gravitational acceleration to a specified group of atoms.
+   - **Oscillation**:
+     Defines sinusoidal velocity components to simulate periodic motion along specified axes.
+   - **Translation**:
+     Moves atoms at a constant velocity to achieve a specified displacement over a given time.
+   - **Rotation**:
+     Simulates rotational motion around a defined axis with a specified angular velocity.
+
+3. **Template Syntax**:
+   - Templates use DSCRIPT features such as the `!` flag for Pythonic evaluation of expressions
+     and `${var[i]}` for indexed variable access.
+   - Each displacement type is encapsulated in a named section, allowing modularity and reuse.
+
+4. **Template Parsing and Execution**:
+   - All templates are parsed into a single DSCRIPT instance (`M`) using `dscript.parsesyntax`.
+   - Specific templates can be selected and executed, demonstrating flexible template management.
+
+5. **Selection and Export**:
+   - A subset of templates is selected for execution using `M(&#34;rotation&#34;, &#34;translation&#34;)`.
+   - The selected templates are saved to a DSCRIPT file (`tmp/example2ter_selection.d.txt`)
+     for reuse or further modification.
+
+6. **Re-Loading and Execution**:
+   - The saved DSCRIPT file is reloaded into a new DSCRIPT instance (`Dter`), verifying
+     the persistence and correctness of the saved templates.
+
+### Script Workflow:
+1. **Define Templates**:
+   - Templates for gravity, oscillation, translation, and rotation are written in the DSCRIPT language.
+2. **Parse and Select Templates**:
+   - Parse all templates into a single instance (`M`) and select specific templates for execution (`Mselection`).
+3. **Generate DSCRIPT File**:
+   - Save the selected templates to a file for future use.
+4. **Reload and Execute**:
+   - Reload the DSCRIPT file into a new instance and execute the templates to ensure functionality.
+
+### Example Output:
+For the selected templates &#34;rotation&#34; and &#34;translation&#34;, the generated DSCRIPT commands might look like:
+
+```
+fix rfix rotatableatoms smd/setvel v_r_vx v_r_vy v_r_vz
+fix tfix translatableatoms smd/setvel ${t_vel1} ${t_vel2} ${t_vel3}
+```
+
+### Key Notes:
+- The use of DSCRIPT enables dynamic and modular creation of LAMMPS commands, reducing the need
+  for manual edits and repetitive definitions.
+- The modularity allows users to manage, save, and reuse templates efficiently.
+- The extended parsing and execution capabilities demonstrate the flexibility of DSCRIPT in managing
+  complex simulation configurations.
+
+### Dependencies:
+- **pizza.dscript**: A Python library for managing DSCRIPT templates. Ensure it is installed and accessible.
+
+### Output Files:
+- `tmp/example2ter_selection.d.txt`: Contains the selected DSCRIPT templates, saved for further use or modifications.
+
+### Usage:
+Run this script as a standalone program or integrate it into a larger simulation workflow to dynamically manage LAMMPS displacements.
+
+
+
+last revision: 2025-01-1
+Author: INRAE\olivier.vitrac@agroparistech.fr
+
+&#34;&#34;&#34;
+
+# Imports
+from pizza.dscript import dscript
+
+# Templates written in DSCRIPT language
+movetemplates = &#34;&#34;&#34;
+
+# MOVETEMPLATES
+
+# Generic template structure:
+#   fix_template: [!
+#       # Description of the fix
+#       ...
+#       # Parameters
+#       ...
+#       # Resulting fix command
+#       ...
+# ]
+
+# Error Handling:
+# - If an expression fails to evaluate, return an error string indicating the failed variable and context.
+# - Fallback mechanism for undefined .
+
+# note1: The attributes are not explicitly defined for concision. The flag ! is used instead:
+#        block:[! ... ] is equivalent to block: {...,eval=True,...}
+# note2: ${var[i]} gives access to the ith component of the list ${var}
+
+
+{
+    section = None,
+    position = None,
+    role = &#34;dscript instance&#34;,
+    description = &#34;Fix for gravity, move and translation&#34;,
+    userid = &#34;movefix&#34;,
+    version = 1.0,
+    verbose = False
+}
+
+
+# -----------------------------------------------
+# GRAVITY TEMPLATE
+# local variables start with the preffix &#34;g_&#34;
+# -----------------------------------------------
+
+# Gravity parameters
+g_acceleration = 9.81       # acceleration (earth=9.81 m/s^2)
+g_direction = [0,1,0]       # direction of gravity foeld
+g_orientation = &#34;$-&#34;        # either &#34;&#34; or &#34;$-&#34;
+
+# Fix parameters
+g_targetGRP = &#34;$heavyatoms&#34; # group ID to be set by user
+g_fixID = &#34;$gfix&#34;           # internal fix ID
+
+# Gravity template (keep flag ! =evaluate)
+gravity: [!
+    # Add gravity
+    fix ${g_fixID} ${g_targetGRP} gravity ${g_orientation}${g_acceleration} vector ${g_direction}
+]
+
+# -----------------------------------------------
+# OSCILLATION MOVE TEMPLATE
+# local variables start with the preffix &#34;mo_&#34;
+# -----------------------------------------------
+
+# Oscillation parameters: mO_l, mO_T with i=1,2,3
+mO_l = [0,1e-3,0]    # maximum displacement along dimension 1,2,3
+mO_T = [0.5,0.5,0.5] # period for motion along dimension 1,2,3
+
+# Fix parameters
+mO_targetGRP = &#34;$oscillableatoms&#34; # group ID to be set by user
+mO_fixID = &#34;$mOfix&#34;               # internal fix ID
+
+# Oscillation template  (keep flag ! =evaluate)
+oscillation: [!
+    # Angular frequencies (pulsations) of oscillations (LAMMPS variables)
+    variable mOw1 equal 2*PI/${mO_T[0]}  # Pulsation for motion along 1
+    variable mOw2 equal 2*PI/${mO_T[1]}  # Pulsation for motion along 2
+    variable mOw3 equal 2*PI/${mO_T[2]}  # Pulsation for motion along 3
+    # Maximum velocities of oscillations (LAMMPS variables)
+    variable mOvel10 equal ${mO_l[0]}*PI/${mO_T[0]}  # Maximum velocity along 1
+    variable mOvel20 equal ${mO_l[1]}*PI/${mO_T[1]}  # Maximum velocity along 2
+    variable mOvel30 equal ${mO_l[2]}*PI/${mO_T[2]}  # Maximum velocity along 3
+    # Define sinusoidal velocity components as functions of time (oscillations)
+    variable mOvel1 atom ${mOvel10}*sin(${mOw1}*time)
+    variable mOvel2 atom ${mOvel20}*sin(${mOw2}*time)
+    variable mOvel3 atom ${mOvel30}*sin(${mOw3}*time)
+    # Add oscillations
+    fix ${mO_fixID} ${mO_targetGRP} smd/setvel v_mOvel1 v_mOvel2 v_mOvel3
+    ]
+
+# -----------------------------------------------
+# TRANSLATION MOVE TEMPLATE
+# local variables start with the prefix &#34;t_&#34;
+# -----------------------------------------------
+
+# Translation parameters: t_distance (displacement) and t_time (duration)
+t_distance = [1.0, 0.0, 0.0]  # translation distance along dimension 1,2,3
+t_time = 10.0                  # total translation time (LAMMPS time units)
+
+# Fix parameters
+t_targetGRP = &#34;$translatableatoms&#34; # group ID to be set by user
+t_fixID = &#34;$tfix&#34;                  # internal fix ID
+
+# Translation template (keep flag ! =evaluate)
+translation: [!
+    # Calculate translation velocity components
+    variable t_vel1 equal ${t_distance[0]}/${t_time}  # Velocity along dimension 1
+    variable t_vel2 equal ${t_distance[1]}/${t_time}  # Velocity along dimension 2
+    variable t_vel3 equal ${t_distance[2]}/${t_time}  # Velocity along dimension 3
+    # Add constant translation
+    fix ${t_fixID} ${t_targetGRP} smd/setvel ${t_vel1} ${t_vel2} ${t_vel3}
+]
+
+# -----------------------------------------------
+# ROTATIONAL DISPLACEMENT TEMPLATE (smd/setvel)
+# local variables start with the prefix &#34;r_&#34;
+# -----------------------------------------------
+
+# Rotation parameters (keep ![...] to defne numeric vectors)
+r_center = [0, 0, 0]      # Center of rotation along dimension 1,2,3
+r_axis = [0, 0, 1]        # Axis of rotation (normalized vector)
+r_angular_velocity = 1.0   # Angular velocity in radians per time unit
+
+# Fix parameters
+r_targetGRP = &#34;$rotatableatoms&#34;   # group ID to be set by user
+r_fixID = &#34;$rfix&#34;                # internal fix ID
+
+# Rotational template (keep flag ! =evaluate)
+rotation: [!
+    # Ensure the rotation axis is normalized (magnitude = 1)
+    variable r_axis_norm equal sqrt(${r_axis[0]}^2 + ${r_axis[1]}^2 + ${r_axis[2]}^2)
+    variable r_axis1 equal ${r_axis[0]}/${r_axis_norm}
+    variable r_axis2 equal ${r_axis[1]}/${r_axis_norm}
+    variable r_axis3 equal ${r_axis[2]}/${r_axis_norm}
+    # Define angular velocity
+    variable r_omega equal ${r_angular_velocity}
+    # Compute relative positions of atoms to the rotation center
+    variable dx atom x - ${r_center[0]}
+    variable dy atom y - ${r_center[1]}
+    variable dz atom z - ${r_center[2]}
+    # Compute velocity components for rotation
+    variable r_vx atom ${r_omega} * (${r_axis2} * dz - ${r_axis3} * dy)
+    variable r_vy atom ${r_omega} * (${r_axis3} * dx - ${r_axis1} * dz)
+    variable r_vz atom ${r_omega} * (${r_axis1} * dy - ${r_axis2} * dx)
+    # Apply the rotational velocity using smd/setvel
+    fix ${r_fixID} ${r_targetGRP} smd/setvel v_r_vx v_r_vy v_r_vz
+]
+
+&#34;&#34;&#34;
+
+# Parse all templates at once
+M = dscript.parsesyntax(movetemplates,name=&#34;move template database&#34;,authentification=False)
+
+# check one template with M[index] or M[&#34;name&#34;]
+M[&#34;gravity&#34;]
+
+# Selection of displacements, note that () are used instead of []
+Mselection = M(&#34;rotation&#34;,&#34;translation&#34;)
+print(Mselection.do(verbose=True))
+
+# Generate the Dscript file for the selection
+MselectionScriptFile = Mselection.save(&#34;tmp/example2ter_selection.d.txt&#34;, overwrite=True)
+
+# Load again the Dscript file, and compare the outputs (control)
+Dter = dscript.load(MselectionScriptFile)
+print(Dter.do(verbose=True))
+
+# Change the distance of translation
+Dter.DEFINITIONS.t_distance = [1e-3,0,0]
+print(Dter.do(verbose=True))</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#script-workflow">Script Workflow:</a></li>
+<li><a href="#example-output">Example Output:</a></li>
+<li><a href="#key-notes">Key Notes:</a></li>
+<li><a href="#dependencies">Dependencies:</a></li>
+<li><a href="#output-files">Output Files:</a></li>
+<li><a href="#usage">Usage:</a></li>
+</ul>
+</div>
+<ul id="index">
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

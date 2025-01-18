@@ -1553,11 +1553,11 @@ __credits__ = [&#34;Olivier Vitrac&#34;, &#34;Han Chen&#34;, &#34;Joseph Fine&#3
 __license__ = &#34;GPLv3&#34;
 __maintainer__ = &#34;Olivier Vitrac&#34;
 __email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
-__version__ = &#34;1.0&#34;
+__version__ = &#34;1.002&#34;
 
 
 
-# INRAE\Olivier Vitrac - rev. 2025-01-07 (community)
+# INRAE\Olivier Vitrac - rev. 2025-01-17 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -1589,6 +1589,7 @@ __version__ = &#34;1.0&#34;
 # 2025-01-05 consolidation and improve compatibility with pizza.script incl. the use of VariableOccurrences
 # 2025-01-06 split dscipt.save() so that it uses var_info() as a standard method to retrive variable information
 # 2025-01-07 fine tunning of dscipt.save(), add print dscript.print_var_info() - version 1.0
+# 2025-01-17 fix parsing global parameters containing &#34;,&#34;, full implementation of variables with indices ${var[i]}
 
 # Dependencies
 import os, getpass, socket, time, datetime
@@ -2317,7 +2318,7 @@ class ScriptTemplate:
             # Initialize _CACHE if it does not exist
             if &#39;_CACHE&#39; not in self.__dict__:
                 self.__dict__[&#39;_CACHE&#39;] = {
-                    &#39;variables&#39;: {&#39;result&#39;: None},
+                    &#39;variables&#39;: {&#39;result&#39;: None, &#39;with_index&#39;: None, &#39;only_indexed&#39;: None},
                     &#39;check_variables&#39;: {&#39;result&#39;: None}
                 }
             return self.__dict__[&#39;_CACHE&#39;]  # Access _CACHE directly
@@ -2381,6 +2382,16 @@ class ScriptTemplate:
           content lines, applying transformations based on both `definitions` and `USER` definitions if provided.
           This allows variables to be dynamically substituted within the script content.
 
+        Known Issues for indexed variables
+        ----------------------------------
+        List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+        each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+        full, such as ${varlist}. Then it is preferable to define varlist as a string:
+            &#34;![v1,v2,...]&#34; where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+             evaluation).
+        The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+        at later stages during the evaluation so that its content can be indexed.
+
         Processing Workflow
         -------------------
         1. **Facultative Check**: If the `facultative` attribute is `True`, immediately returns an empty string.
@@ -2423,11 +2434,15 @@ class ScriptTemplate:
             if self.attributes.get(&#34;eval&#34;, True):
                 #return &#34;\n&#34;.join([self.definitions.formateval(line, protected) for line in self.content])
                 inputs = globaldefinitions + self.definitions + USER + lambdaScriptdata(**kwargs)
+                usedvariables = self.detect_variables(with_index=False,only_indexed=False)
+                variables_used_with_index = self.detect_variables(with_index=False,only_indexed=True)
+                usedvariables_withoutindex = [ var for var in usedvariables if var not in variables_used_with_index ]
                 for k in inputs.keys():
-                    if isinstance(inputs.getattr(k),list):
-                        inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
-                    elif isinstance(inputs.getattr(k),tuple):
-                        inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+                    if k in usedvariables_withoutindex:
+                        if isinstance(inputs.getattr(k),list):
+                            inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
+                        elif isinstance(inputs.getattr(k),tuple):
+                            inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
                 return &#34;\n&#34;.join([inputs.formateval(line, protected) for line in self.content])
 
             else:
@@ -2436,27 +2451,52 @@ class ScriptTemplate:
         return &#34;&#34;
 
 
-
-    def detect_variables(self):
+    def detect_variables(self, with_index=False, only_indexed=False):
         &#34;&#34;&#34;
-        Detects variables in the content of the template using the pattern r&#39;\$\{(\w+)\}&#39;.
+        Detects variables in the content of the template using an extended pattern
+        to include indexed variables (e.g., ${var[i]}) if `with_index` is True.
+
+        Parameters:
+        -----------
+        with_index : bool, optional
+            If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+        only_indexed : bool, optional
+            If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.
 
         Returns:
         --------
         list
-            A list of unique variable names detected in the content.
+            A list of unique variable names detected in the content based on the flags.
         &#34;&#34;&#34;
         # Check cache first
         cache_entry = self._CACHE[&#39;variables&#39;]
-        if cache_entry[&#39;result&#39;] is not None:
+        # Use the cache only if both flags match the current request
+        if (
+            cache_entry[&#39;result&#39;] is not None
+            and cache_entry.get(&#39;with_index&#39;) == with_index
+            and cache_entry.get(&#39;only_indexed&#39;) == only_indexed
+        ):
             return cache_entry[&#39;result&#39;]
-        # Detect variables if cache miss or content changed
-        variable_pattern = re.compile(r&#39;\$\{(\w+)\}&#39;)
-        detected_vars = {variable for line in self.content for variable in variable_pattern.findall(line)}
-        # Cache the result and return output
+        # Extended pattern to detect both plain and indexed variables
+        variable_pattern = re.compile(r&#39;\$\{(\w+)(\[\w+\])?\}&#39;)
+        # Detect variables in the content
+        detected_vars = set()
+        for line in self.content:
+            matches = variable_pattern.findall(line)
+            for match in matches:
+                variable_name = match[0]  # Base variable name
+                index = match[1]          # Optional index (e.g., &#39;[i]&#39;)
+                if only_indexed and not index:
+                    continue  # Skip non-indexed variables if targeting only indexed ones
+                if with_index and index:
+                    detected_vars.add(f&#34;{variable_name}{index}&#34;)  # Include the full indexed variable
+                elif not with_index:
+                    detected_vars.add(variable_name)  # Include only the base variable
+        # Cache the result and return
         cache_entry[&#39;result&#39;] = list(detected_vars)
+        cache_entry[&#39;with_index&#39;] = with_index
+        cache_entry[&#39;only_indexed&#39;] = only_indexed
         return cache_entry[&#39;result&#39;]
-
 
 
     def refreshvar(self,globaldefinitions = lambdaScriptdata()):
@@ -2969,9 +3009,37 @@ class dscript:
         repr_str += f&#34;Descr: {self.description}\n&#34; if self.description else &#34;&#34;
         repr_str += f&#34;Role: {self.role} (v. {self.version})\n&#34;
         repr_str += f&#39;SECTIONS {span(self.SECTIONS,&#34;,&#34;,&#34;[&#34;,&#34;]&#34;)} | index: {self.section} | position: {self.position}\n&#39;
-        repr_str += f&#34;\n\n\twith {len(self.TEMPLATE)} TEMPLATE&#34;
-        repr_str += &#34;s&#34; if len(self.TEMPLATE)&gt;1 else &#34;&#34;
-        repr_str += f&#34; (with {len(self.DEFINITIONS)} DEFINITIONS)\n\n&#34;
+        repr_str += &#39;\n&#39;
+
+        # Add GLOBAL DEFINITIONS information
+        gvars = self.DEFINITIONS.keys()
+        ngvars = len(gvars)
+        repr_str += &#34;-&#34; * 50 + &#34;\n&#34;
+        if ngvars&gt;0:
+            flag = &#39;[G]&#39; # with G for GLOBAL
+            head = f&#34;with {ngvars} GLOBAL DEFINITION{&#39;S&#39; if ngvars&gt;1 else &#39;&#39;}  &#34;
+            dashes = (50 - len(head)) // 2
+            repr_str += f&#34;{&#39; &#39; * dashes}{head}{&#39; &#39; * dashes}\n&#34;
+            repr_str += &#34;-&#34; * 50 + &#34;\n&#34;
+            for i in range(0, len(gvars), 3):
+                var_set = gvars[i:i+3]
+                line = &#34;&#34;
+                for var in var_set:
+                    var_name = (var[:10] + &#39; &#39;) if len(var) &gt; 10 else var.ljust(11)
+                    line += f&#34;{flag} {var_name}  &#34;
+                repr_str += f&#34;{line}\n&#34;
+        else:
+            head = &#34;  NO GLOBAL DEFINITION  &#34;
+            dashes = (50 - len(head)) // 2
+            repr_str += f&#34;{&#39;!&#39; * dashes}{head}{&#39;!&#39; * dashes}\n&#34;
+            repr_str += &#34;-&#34; * 50 + &#34;\n&#34;
+
+        # Add TEMPLATE header
+        ntemplates = len(self.TEMPLATE)
+        head = f&#34;and with {ntemplates} TEMPLATE{&#39;S&#39; if ntemplates&gt;1 else &#39;&#39;} &#34;
+        dashes = (50 - len(head)) // 2
+        repr_str += f&#34;\n\n{&#39; &#39; * dashes}{head}{&#39; &#39; * dashes}\n\n&#34;
+
         # Add TEMPLATE information
         c = 0
         for k, s in self.TEMPLATE.items():
@@ -5374,21 +5442,32 @@ class dscript:
         # Remove braces from the content
         content = content.strip().strip(&#34;{}&#34;)
 
-        # Split the content into lines by commas
-        lines = re.split(r&#39;,(?![^(){}\[\]]*[\)\}\]])&#39;, content.strip())
+        # Old method to split the content into lines by commas
+        # lines = re.split(r&#39;,(?![^(){}\[\]]*[\)\}\]])&#39;, content.strip())
+        # old parser
+        # for line in lines:
+        #     line = line.strip()
+        #     # Match key-value pairs
+        #     match = re.match(r&#39;([\w_]+)\s*=\s*(.+)&#39;, line)
+        #     if match:
+        #         key, value = match.groups()
+        #         key = key.strip()
+        #         value = value.strip()
+        #         # Convert the value to the appropriate Python type and store it
+        #         global_params[key] = cls._convert_value(value)
+        #     else:
+        #         raise ValueError(f&#34;Invalid parameter line: &#39;{line}&#39;&#34;)
 
-        for line in lines:
-            line = line.strip()
-            # Match key-value pairs
-            match = re.match(r&#39;([\w_]+)\s*=\s*(.+)&#39;, line)
-            if match:
-                key, value = match.groups()
-                key = key.strip()
-                value = value.strip()
-                # Convert the value to the appropriate Python type and store it
-                global_params[key] = cls._convert_value(value)
-            else:
-                raise ValueError(f&#34;Invalid parameter line: &#39;{line}&#39;&#34;)
+        # Pattern to match key-value pairs, allowing for quoted strings and nested brackets
+        pattern = r&#39;([\w_]+)\s*=\s*(&#34;.*?&#34;|\&#39;.*?\&#39;|[^\s,]+|{.*?}|\[.*?\]|\(.*?\))&#39;
+        # Find all matches of key-value pairs
+        matches = re.findall(pattern, content)
+        for match in matches:
+            key, value = match
+            key = key.strip()
+            value = value.strip()
+            # Convert the value to the appropriate Python type and store it
+            global_params[key] = cls._convert_value(value)
 
 
     @classmethod
@@ -7635,7 +7714,7 @@ attribute values.</p>
             # Initialize _CACHE if it does not exist
             if &#39;_CACHE&#39; not in self.__dict__:
                 self.__dict__[&#39;_CACHE&#39;] = {
-                    &#39;variables&#39;: {&#39;result&#39;: None},
+                    &#39;variables&#39;: {&#39;result&#39;: None, &#39;with_index&#39;: None, &#39;only_indexed&#39;: None},
                     &#39;check_variables&#39;: {&#39;result&#39;: None}
                 }
             return self.__dict__[&#39;_CACHE&#39;]  # Access _CACHE directly
@@ -7699,6 +7778,16 @@ attribute values.</p>
           content lines, applying transformations based on both `definitions` and `USER` definitions if provided.
           This allows variables to be dynamically substituted within the script content.
 
+        Known Issues for indexed variables
+        ----------------------------------
+        List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+        each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+        full, such as ${varlist}. Then it is preferable to define varlist as a string:
+            &#34;![v1,v2,...]&#34; where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+             evaluation).
+        The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+        at later stages during the evaluation so that its content can be indexed.
+
         Processing Workflow
         -------------------
         1. **Facultative Check**: If the `facultative` attribute is `True`, immediately returns an empty string.
@@ -7741,11 +7830,15 @@ attribute values.</p>
             if self.attributes.get(&#34;eval&#34;, True):
                 #return &#34;\n&#34;.join([self.definitions.formateval(line, protected) for line in self.content])
                 inputs = globaldefinitions + self.definitions + USER + lambdaScriptdata(**kwargs)
+                usedvariables = self.detect_variables(with_index=False,only_indexed=False)
+                variables_used_with_index = self.detect_variables(with_index=False,only_indexed=True)
+                usedvariables_withoutindex = [ var for var in usedvariables if var not in variables_used_with_index ]
                 for k in inputs.keys():
-                    if isinstance(inputs.getattr(k),list):
-                        inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
-                    elif isinstance(inputs.getattr(k),tuple):
-                        inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+                    if k in usedvariables_withoutindex:
+                        if isinstance(inputs.getattr(k),list):
+                            inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
+                        elif isinstance(inputs.getattr(k),tuple):
+                            inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
                 return &#34;\n&#34;.join([inputs.formateval(line, protected) for line in self.content])
 
             else:
@@ -7754,27 +7847,52 @@ attribute values.</p>
         return &#34;&#34;
 
 
-
-    def detect_variables(self):
+    def detect_variables(self, with_index=False, only_indexed=False):
         &#34;&#34;&#34;
-        Detects variables in the content of the template using the pattern r&#39;\$\{(\w+)\}&#39;.
+        Detects variables in the content of the template using an extended pattern
+        to include indexed variables (e.g., ${var[i]}) if `with_index` is True.
+
+        Parameters:
+        -----------
+        with_index : bool, optional
+            If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+        only_indexed : bool, optional
+            If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.
 
         Returns:
         --------
         list
-            A list of unique variable names detected in the content.
+            A list of unique variable names detected in the content based on the flags.
         &#34;&#34;&#34;
         # Check cache first
         cache_entry = self._CACHE[&#39;variables&#39;]
-        if cache_entry[&#39;result&#39;] is not None:
+        # Use the cache only if both flags match the current request
+        if (
+            cache_entry[&#39;result&#39;] is not None
+            and cache_entry.get(&#39;with_index&#39;) == with_index
+            and cache_entry.get(&#39;only_indexed&#39;) == only_indexed
+        ):
             return cache_entry[&#39;result&#39;]
-        # Detect variables if cache miss or content changed
-        variable_pattern = re.compile(r&#39;\$\{(\w+)\}&#39;)
-        detected_vars = {variable for line in self.content for variable in variable_pattern.findall(line)}
-        # Cache the result and return output
+        # Extended pattern to detect both plain and indexed variables
+        variable_pattern = re.compile(r&#39;\$\{(\w+)(\[\w+\])?\}&#39;)
+        # Detect variables in the content
+        detected_vars = set()
+        for line in self.content:
+            matches = variable_pattern.findall(line)
+            for match in matches:
+                variable_name = match[0]  # Base variable name
+                index = match[1]          # Optional index (e.g., &#39;[i]&#39;)
+                if only_indexed and not index:
+                    continue  # Skip non-indexed variables if targeting only indexed ones
+                if with_index and index:
+                    detected_vars.add(f&#34;{variable_name}{index}&#34;)  # Include the full indexed variable
+                elif not with_index:
+                    detected_vars.add(variable_name)  # Include only the base variable
+        # Cache the result and return
         cache_entry[&#39;result&#39;] = list(detected_vars)
+        cache_entry[&#39;with_index&#39;] = with_index
+        cache_entry[&#39;only_indexed&#39;] = only_indexed
         return cache_entry[&#39;result&#39;]
-
 
 
     def refreshvar(self,globaldefinitions = lambdaScriptdata()):
@@ -8125,35 +8243,68 @@ A dictionary with lists of default variables, set variables, and undefined varia
 </details>
 </dd>
 <dt id="dscript.ScriptTemplate.detect_variables"><code class="name flex">
-<span>def <span class="ident">detect_variables</span></span>(<span>self)</span>
+<span>def <span class="ident">detect_variables</span></span>(<span>self, with_index=False, only_indexed=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Detects variables in the content of the template using the pattern r'\${(\w+)}'.</p>
+<div class="desc"><p>Detects variables in the content of the template using an extended pattern
+to include indexed variables (e.g., ${var[i]}) if <code>with_index</code> is True.</p>
+<h2 id="parameters">Parameters:</h2>
+<p>with_index : bool, optional
+If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+only_indexed : bool, optional
+If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.</p>
 <h2 id="returns">Returns:</h2>
 <p>list
-A list of unique variable names detected in the content.</p></div>
+A list of unique variable names detected in the content based on the flags.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def detect_variables(self):
+<pre><code class="python">def detect_variables(self, with_index=False, only_indexed=False):
     &#34;&#34;&#34;
-    Detects variables in the content of the template using the pattern r&#39;\$\{(\w+)\}&#39;.
+    Detects variables in the content of the template using an extended pattern
+    to include indexed variables (e.g., ${var[i]}) if `with_index` is True.
+
+    Parameters:
+    -----------
+    with_index : bool, optional
+        If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+    only_indexed : bool, optional
+        If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.
 
     Returns:
     --------
     list
-        A list of unique variable names detected in the content.
+        A list of unique variable names detected in the content based on the flags.
     &#34;&#34;&#34;
     # Check cache first
     cache_entry = self._CACHE[&#39;variables&#39;]
-    if cache_entry[&#39;result&#39;] is not None:
+    # Use the cache only if both flags match the current request
+    if (
+        cache_entry[&#39;result&#39;] is not None
+        and cache_entry.get(&#39;with_index&#39;) == with_index
+        and cache_entry.get(&#39;only_indexed&#39;) == only_indexed
+    ):
         return cache_entry[&#39;result&#39;]
-    # Detect variables if cache miss or content changed
-    variable_pattern = re.compile(r&#39;\$\{(\w+)\}&#39;)
-    detected_vars = {variable for line in self.content for variable in variable_pattern.findall(line)}
-    # Cache the result and return output
+    # Extended pattern to detect both plain and indexed variables
+    variable_pattern = re.compile(r&#39;\$\{(\w+)(\[\w+\])?\}&#39;)
+    # Detect variables in the content
+    detected_vars = set()
+    for line in self.content:
+        matches = variable_pattern.findall(line)
+        for match in matches:
+            variable_name = match[0]  # Base variable name
+            index = match[1]          # Optional index (e.g., &#39;[i]&#39;)
+            if only_indexed and not index:
+                continue  # Skip non-indexed variables if targeting only indexed ones
+            if with_index and index:
+                detected_vars.add(f&#34;{variable_name}{index}&#34;)  # Include the full indexed variable
+            elif not with_index:
+                detected_vars.add(variable_name)  # Include only the base variable
+    # Cache the result and return
     cache_entry[&#39;result&#39;] = list(detected_vars)
+    cache_entry[&#39;with_index&#39;] = with_index
+    cache_entry[&#39;only_indexed&#39;] = only_indexed
     return cache_entry[&#39;result&#39;]</code></pre>
 </details>
 </dd>
@@ -8193,6 +8344,16 @@ A list of unique variable names detected in the content.</p></div>
     - &lt;code&gt;eval&lt;/code&gt;: If &lt;code&gt;True&lt;/code&gt; and &lt;code&gt;softrun&lt;/code&gt; is &lt;code&gt;False&lt;/code&gt;, performs evaluation for variable substitution on the
       content lines, applying transformations based on both &lt;code&gt;definitions&lt;/code&gt; and &lt;code&gt;USER&lt;/code&gt; definitions if provided.
       This allows variables to be dynamically substituted within the script content.
+
+    Known Issues for indexed variables
+    ----------------------------------
+    List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+    each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+    full, such as ${varlist}. Then it is preferable to define varlist as a string:
+        "![v1,v2,...]" where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+         evaluation).
+    The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+    at later stages during the evaluation so that its content can be indexed.
 
     Processing Workflow
     -------------------
@@ -8256,6 +8417,16 @@ A list of unique variable names detected in the content.</p></div>
       content lines, applying transformations based on both `definitions` and `USER` definitions if provided.
       This allows variables to be dynamically substituted within the script content.
 
+    Known Issues for indexed variables
+    ----------------------------------
+    List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+    each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+    full, such as ${varlist}. Then it is preferable to define varlist as a string:
+        &#34;![v1,v2,...]&#34; where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+         evaluation).
+    The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+    at later stages during the evaluation so that its content can be indexed.
+
     Processing Workflow
     -------------------
     1. **Facultative Check**: If the `facultative` attribute is `True`, immediately returns an empty string.
@@ -8298,11 +8469,15 @@ A list of unique variable names detected in the content.</p></div>
         if self.attributes.get(&#34;eval&#34;, True):
             #return &#34;\n&#34;.join([self.definitions.formateval(line, protected) for line in self.content])
             inputs = globaldefinitions + self.definitions + USER + lambdaScriptdata(**kwargs)
+            usedvariables = self.detect_variables(with_index=False,only_indexed=False)
+            variables_used_with_index = self.detect_variables(with_index=False,only_indexed=True)
+            usedvariables_withoutindex = [ var for var in usedvariables if var not in variables_used_with_index ]
             for k in inputs.keys():
-                if isinstance(inputs.getattr(k),list):
-                    inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
-                elif isinstance(inputs.getattr(k),tuple):
-                    inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+                if k in usedvariables_withoutindex:
+                    if isinstance(inputs.getattr(k),list):
+                        inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
+                    elif isinstance(inputs.getattr(k),tuple):
+                        inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
             return &#34;\n&#34;.join([inputs.formateval(line, protected) for line in self.content])
 
         else:
@@ -10141,9 +10316,37 @@ script, especially when managing multiple scripts.</p>
         repr_str += f&#34;Descr: {self.description}\n&#34; if self.description else &#34;&#34;
         repr_str += f&#34;Role: {self.role} (v. {self.version})\n&#34;
         repr_str += f&#39;SECTIONS {span(self.SECTIONS,&#34;,&#34;,&#34;[&#34;,&#34;]&#34;)} | index: {self.section} | position: {self.position}\n&#39;
-        repr_str += f&#34;\n\n\twith {len(self.TEMPLATE)} TEMPLATE&#34;
-        repr_str += &#34;s&#34; if len(self.TEMPLATE)&gt;1 else &#34;&#34;
-        repr_str += f&#34; (with {len(self.DEFINITIONS)} DEFINITIONS)\n\n&#34;
+        repr_str += &#39;\n&#39;
+
+        # Add GLOBAL DEFINITIONS information
+        gvars = self.DEFINITIONS.keys()
+        ngvars = len(gvars)
+        repr_str += &#34;-&#34; * 50 + &#34;\n&#34;
+        if ngvars&gt;0:
+            flag = &#39;[G]&#39; # with G for GLOBAL
+            head = f&#34;with {ngvars} GLOBAL DEFINITION{&#39;S&#39; if ngvars&gt;1 else &#39;&#39;}  &#34;
+            dashes = (50 - len(head)) // 2
+            repr_str += f&#34;{&#39; &#39; * dashes}{head}{&#39; &#39; * dashes}\n&#34;
+            repr_str += &#34;-&#34; * 50 + &#34;\n&#34;
+            for i in range(0, len(gvars), 3):
+                var_set = gvars[i:i+3]
+                line = &#34;&#34;
+                for var in var_set:
+                    var_name = (var[:10] + &#39; &#39;) if len(var) &gt; 10 else var.ljust(11)
+                    line += f&#34;{flag} {var_name}  &#34;
+                repr_str += f&#34;{line}\n&#34;
+        else:
+            head = &#34;  NO GLOBAL DEFINITION  &#34;
+            dashes = (50 - len(head)) // 2
+            repr_str += f&#34;{&#39;!&#39; * dashes}{head}{&#39;!&#39; * dashes}\n&#34;
+            repr_str += &#34;-&#34; * 50 + &#34;\n&#34;
+
+        # Add TEMPLATE header
+        ntemplates = len(self.TEMPLATE)
+        head = f&#34;and with {ntemplates} TEMPLATE{&#39;S&#39; if ntemplates&gt;1 else &#39;&#39;} &#34;
+        dashes = (50 - len(head)) // 2
+        repr_str += f&#34;\n\n{&#39; &#39; * dashes}{head}{&#39; &#39; * dashes}\n\n&#34;
+
         # Add TEMPLATE information
         c = 0
         for k, s in self.TEMPLATE.items():
@@ -12546,21 +12749,32 @@ script, especially when managing multiple scripts.</p>
         # Remove braces from the content
         content = content.strip().strip(&#34;{}&#34;)
 
-        # Split the content into lines by commas
-        lines = re.split(r&#39;,(?![^(){}\[\]]*[\)\}\]])&#39;, content.strip())
+        # Old method to split the content into lines by commas
+        # lines = re.split(r&#39;,(?![^(){}\[\]]*[\)\}\]])&#39;, content.strip())
+        # old parser
+        # for line in lines:
+        #     line = line.strip()
+        #     # Match key-value pairs
+        #     match = re.match(r&#39;([\w_]+)\s*=\s*(.+)&#39;, line)
+        #     if match:
+        #         key, value = match.groups()
+        #         key = key.strip()
+        #         value = value.strip()
+        #         # Convert the value to the appropriate Python type and store it
+        #         global_params[key] = cls._convert_value(value)
+        #     else:
+        #         raise ValueError(f&#34;Invalid parameter line: &#39;{line}&#39;&#34;)
 
-        for line in lines:
-            line = line.strip()
-            # Match key-value pairs
-            match = re.match(r&#39;([\w_]+)\s*=\s*(.+)&#39;, line)
-            if match:
-                key, value = match.groups()
-                key = key.strip()
-                value = value.strip()
-                # Convert the value to the appropriate Python type and store it
-                global_params[key] = cls._convert_value(value)
-            else:
-                raise ValueError(f&#34;Invalid parameter line: &#39;{line}&#39;&#34;)
+        # Pattern to match key-value pairs, allowing for quoted strings and nested brackets
+        pattern = r&#39;([\w_]+)\s*=\s*(&#34;.*?&#34;|\&#39;.*?\&#39;|[^\s,]+|{.*?}|\[.*?\]|\(.*?\))&#39;
+        # Find all matches of key-value pairs
+        matches = re.findall(pattern, content)
+        for match in matches:
+            key, value = match
+            key = key.strip()
+            value = value.strip()
+            # Convert the value to the appropriate Python type and store it
+            global_params[key] = cls._convert_value(value)
 
 
     @classmethod
@@ -21310,6 +21524,7 @@ s.do()
         and optionally include comments for debugging or clarity.
 
         Parameters:
+        -----------
         - printflag (bool, optional): If True, the generated script is printed to the console.
                                       Default is True.
         - verbose (bool, optional): If True, comments and additional information are included
@@ -21317,6 +21532,7 @@ s.do()
                                     Default is True.
 
         Returns:
+        ---------
         - str: The generated LAMMPS script.
 
         Method Behavior:
@@ -21328,6 +21544,7 @@ s.do()
         - If `verbose` is set to False, comments in the generated script are removed.
         - The script is then printed if `printflag` is True.
         - Finally, the formatted script is returned as a string.
+
 
         Example Usage:
         --------------
@@ -21345,15 +21562,31 @@ s.do()
         - Comments are indicated in the script with &#39;%&#39; or &#39;#&#39;.
         - The [position {self.position}:{self.userid}] marker is inserted for tracking
           script sections or modifications.
+
+
+        Known Issues for indexed variables
+        ----------------------------------
+        List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+        each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+        full, such as ${varlist}. Then it is preferable to define varlist as a string:
+            &#34;![v1,v2,...]&#34; where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+             evaluation).
+        The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+        at later stages during the evaluation so that its content can be indexed.
+
         &#34;&#34;&#34;
         printflag = self.printflag if printflag is None else printflag
         verbose = self.verbose if verbose is None else verbose
         inputs = self.DEFINITIONS + self.USER
+        usedvariables = self.detect_variables(with_index=False,only_indexed=False)
+        variables_used_with_index = self.detect_variables(with_index=False,only_indexed=True)
+        usedvariables_withoutindex = [ var for var in usedvariables if var not in variables_used_with_index ]
         for k in inputs.keys():
-            if isinstance(inputs.getattr(k),list):
-                inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
-            elif isinstance(inputs.getattr(k),tuple):
-                inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+            if k in usedvariables_withoutindex:
+                if isinstance(inputs.getattr(k),list):
+                    inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
+                elif isinstance(inputs.getattr(k),tuple):
+                    inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
         cmd = inputs.formateval(self.TEMPLATE)
         cmd = cmd.replace(&#34;[comment]&#34;,f&#34;[position {self.position}:{self.userid}]&#34;)
         if not verbose: cmd=remove_comments(cmd)
@@ -21659,17 +21892,26 @@ s.do()
             setattr(copie, k, deepduplicate(v, memo))
         return copie
 
-    def detect_variables(self):
+
+    def detect_variables(self, with_index=False, only_indexed=False):
         &#34;&#34;&#34;
-        Detects variables in the content of the template using the pattern r&#39;\$\{(\w+)\}&#39;.
+        Detects variables in the content of the template using an extended pattern
+        to include indexed variables (e.g., ${var[i]}) if `with_index` is True.
+
+        Parameters:
+        -----------
+        with_index : bool, optional
+            If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+        only_indexed : bool, optional
+            If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.
 
         Returns:
         --------
         list
-            A list of unique variable names detected in the content.
+            A list of unique variable names detected in the content based on the flags.
         &#34;&#34;&#34;
-        # Regular expression to match variables in the format ${varname}
-        variable_pattern = re.compile(r&#39;\$\{(\w+)\}&#39;)
+        # Regular expression to match variables with optional indexing
+        variable_pattern = re.compile(r&#39;\$\{(\w+)(\[\w+\])?\}&#39;)
         # Ensure TEMPLATE is iterable (split string into lines if needed)
         if isinstance(self.TEMPLATE, str):
             lines = self.TEMPLATE.splitlines()  # Split string into lines
@@ -21678,7 +21920,19 @@ s.do()
         else:
             raise TypeError(&#34;TEMPLATE must be a string or a list of strings.&#34;)
         # Detect variables from all lines
-        detected_vars = {variable for line in lines for variable in variable_pattern.findall(line)}
+        detected_vars = set()
+        for line in lines:
+            matches = variable_pattern.findall(line)
+            for match in matches:
+                variable_name = match[0]  # Base variable name
+                index = match[1]          # Optional index (e.g., &#39;[i]&#39;)
+                if only_indexed and not index:
+                    continue  # Skip non-indexed variables if targeting only indexed ones
+                if with_index and index:
+                    detected_vars.add(f&#34;{variable_name}{index}&#34;)  # Include the full indexed variable
+                elif not with_index:
+                    detected_vars.add(variable_name)  # Include only the base variable
+
         # Return the list of unique variables
         return list(detected_vars)</code></pre>
 </details>
@@ -21800,28 +22054,42 @@ def role(self):
 <h3>Methods</h3>
 <dl>
 <dt id="dscript.script.detect_variables"><code class="name flex">
-<span>def <span class="ident">detect_variables</span></span>(<span>self)</span>
+<span>def <span class="ident">detect_variables</span></span>(<span>self, with_index=False, only_indexed=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Detects variables in the content of the template using the pattern r'\${(\w+)}'.</p>
+<div class="desc"><p>Detects variables in the content of the template using an extended pattern
+to include indexed variables (e.g., ${var[i]}) if <code>with_index</code> is True.</p>
+<h2 id="parameters">Parameters:</h2>
+<p>with_index : bool, optional
+If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+only_indexed : bool, optional
+If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.</p>
 <h2 id="returns">Returns:</h2>
 <p>list
-A list of unique variable names detected in the content.</p></div>
+A list of unique variable names detected in the content based on the flags.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def detect_variables(self):
+<pre><code class="python">def detect_variables(self, with_index=False, only_indexed=False):
     &#34;&#34;&#34;
-    Detects variables in the content of the template using the pattern r&#39;\$\{(\w+)\}&#39;.
+    Detects variables in the content of the template using an extended pattern
+    to include indexed variables (e.g., ${var[i]}) if `with_index` is True.
+
+    Parameters:
+    -----------
+    with_index : bool, optional
+        If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+    only_indexed : bool, optional
+        If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.
 
     Returns:
     --------
     list
-        A list of unique variable names detected in the content.
+        A list of unique variable names detected in the content based on the flags.
     &#34;&#34;&#34;
-    # Regular expression to match variables in the format ${varname}
-    variable_pattern = re.compile(r&#39;\$\{(\w+)\}&#39;)
+    # Regular expression to match variables with optional indexing
+    variable_pattern = re.compile(r&#39;\$\{(\w+)(\[\w+\])?\}&#39;)
     # Ensure TEMPLATE is iterable (split string into lines if needed)
     if isinstance(self.TEMPLATE, str):
         lines = self.TEMPLATE.splitlines()  # Split string into lines
@@ -21830,7 +22098,19 @@ A list of unique variable names detected in the content.</p></div>
     else:
         raise TypeError(&#34;TEMPLATE must be a string or a list of strings.&#34;)
     # Detect variables from all lines
-    detected_vars = {variable for line in lines for variable in variable_pattern.findall(line)}
+    detected_vars = set()
+    for line in lines:
+        matches = variable_pattern.findall(line)
+        for match in matches:
+            variable_name = match[0]  # Base variable name
+            index = match[1]          # Optional index (e.g., &#39;[i]&#39;)
+            if only_indexed and not index:
+                continue  # Skip non-indexed variables if targeting only indexed ones
+            if with_index and index:
+                detected_vars.add(f&#34;{variable_name}{index}&#34;)  # Include the full indexed variable
+            elif not with_index:
+                detected_vars.add(variable_name)  # Include only the base variable
+
     # Return the list of unique variables
     return list(detected_vars)</code></pre>
 </details>
@@ -21845,6 +22125,7 @@ A list of unique variable names detected in the content.</p></div>
     and optionally include comments for debugging or clarity.
 
     Parameters:
+    -----------
     - printflag (bool, optional): If True, the generated script is printed to the console.
                                   Default is True.
     - verbose (bool, optional): If True, comments and additional information are included
@@ -21852,6 +22133,7 @@ A list of unique variable names detected in the content.</p></div>
                                 Default is True.
 
     Returns:
+    ---------
     - str: The generated LAMMPS script.
 
     Method Behavior:
@@ -21863,6 +22145,7 @@ A list of unique variable names detected in the content.</p></div>
     - If &lt;code&gt;verbose&lt;/code&gt; is set to False, comments in the generated script are removed.
     - The script is then printed if &lt;code&gt;printflag&lt;/code&gt; is True.
     - Finally, the formatted script is returned as a string.
+
 
     Example Usage:
     --------------
@@ -21883,6 +22166,17 @@ boundary f f f</p>
     - Comments are indicated in the script with '%' or '#'.
     - The [position {self.position}:{self.userid}] marker is inserted for tracking
       script sections or modifications.
+
+
+    Known Issues for indexed variables
+    ----------------------------------
+    List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+    each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+    full, such as ${varlist}. Then it is preferable to define varlist as a string:
+        "![v1,v2,...]" where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+         evaluation).
+    The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+    at later stages during the evaluation so that its content can be indexed.
 </code></pre></div>
 <details class="source">
 <summary>
@@ -21897,6 +22191,7 @@ boundary f f f</p>
     and optionally include comments for debugging or clarity.
 
     Parameters:
+    -----------
     - printflag (bool, optional): If True, the generated script is printed to the console.
                                   Default is True.
     - verbose (bool, optional): If True, comments and additional information are included
@@ -21904,6 +22199,7 @@ boundary f f f</p>
                                 Default is True.
 
     Returns:
+    ---------
     - str: The generated LAMMPS script.
 
     Method Behavior:
@@ -21915,6 +22211,7 @@ boundary f f f</p>
     - If `verbose` is set to False, comments in the generated script are removed.
     - The script is then printed if `printflag` is True.
     - Finally, the formatted script is returned as a string.
+
 
     Example Usage:
     --------------
@@ -21932,15 +22229,31 @@ boundary f f f</p>
     - Comments are indicated in the script with &#39;%&#39; or &#39;#&#39;.
     - The [position {self.position}:{self.userid}] marker is inserted for tracking
       script sections or modifications.
+
+
+    Known Issues for indexed variables
+    ----------------------------------
+    List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+    each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+    full, such as ${varlist}. Then it is preferable to define varlist as a string:
+        &#34;![v1,v2,...]&#34; where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+         evaluation).
+    The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+    at later stages during the evaluation so that its content can be indexed.
+
     &#34;&#34;&#34;
     printflag = self.printflag if printflag is None else printflag
     verbose = self.verbose if verbose is None else verbose
     inputs = self.DEFINITIONS + self.USER
+    usedvariables = self.detect_variables(with_index=False,only_indexed=False)
+    variables_used_with_index = self.detect_variables(with_index=False,only_indexed=True)
+    usedvariables_withoutindex = [ var for var in usedvariables if var not in variables_used_with_index ]
     for k in inputs.keys():
-        if isinstance(inputs.getattr(k),list):
-            inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
-        elif isinstance(inputs.getattr(k),tuple):
-            inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+        if k in usedvariables_withoutindex:
+            if isinstance(inputs.getattr(k),list):
+                inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
+            elif isinstance(inputs.getattr(k),tuple):
+                inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
     cmd = inputs.formateval(self.TEMPLATE)
     cmd = cmd.replace(&#34;[comment]&#34;,f&#34;[position {self.position}:{self.userid}]&#34;)
     if not verbose: cmd=remove_comments(cmd)

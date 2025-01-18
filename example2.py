@@ -298,10 +298,9 @@ This example is a **comprehensive guide** to using Pizza3 for managing LAMMPS si
 
 
 
-Created on Tue Nov 26, 2024
-Author: olivi
+Author: INRAE\olivier.vitrac@agroparistech.fr
 
-last revision: 2024-01-07
+last revision: 2025-01-07
 """
 
 # Dependencies

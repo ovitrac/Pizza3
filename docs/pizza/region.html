@@ -10999,6 +10999,19 @@ s.eval()
 #      f: ${e} / 3 (= 1.0)
 # --------
 </code></pre>
+<h4 id="internal-evaluation-and-recursion-with">Internal Evaluation and Recursion with !</h4>
+<pre><code class="language-python">p=param()
+p.a = [0,1,2]
+p.b = '![1,2,&quot;test&quot;,&quot;${a[1]}&quot;]'
+p
+# Output:
+#  -------------:----------------------------------------
+#          a: [0, 1, 2]
+#          b: ![1,2,&quot;test&quot;,&quot;${a[1]}&quot;]
+#           = [1, 2, 'test', '1']
+#  -------------:----------------------------------------
+# Out: parameter list (param object) with 2 definitions
+</code></pre>
 <h4 id="error-handling">Error Handling</h4>
 <pre><code class="language-python">p = param(b=&quot;${a}+1&quot;, c=&quot;${a}+${d}&quot;, a=1)
 p.disp()
@@ -11174,6 +11187,21 @@ p.disp()
     # --------
     ```
 
+    #### Internal Evaluation and Recursion with !
+    ```python
+    p=param()
+    p.a = [0,1,2]
+    p.b = &#39;![1,2,&#34;test&#34;,&#34;${a[1]}&#34;]&#39;
+    p
+    # Output:
+    #  -------------:----------------------------------------
+    #          a: [0, 1, 2]
+    #          b: ![1,2,&#34;test&#34;,&#34;${a[1]}&#34;]
+    #           = [1, 2, &#39;test&#39;, &#39;1&#39;]
+    #  -------------:----------------------------------------
+    # Out: parameter list (param object) with 2 definitions
+    ```
+
     #### Error Handling
     ```python
     p = param(b=&#34;${a}+1&#34;, c=&#34;${a}+${d}&#34;, a=1)
@@ -11325,9 +11353,22 @@ p.disp()
                 # if the first character is &#39;#&#39;, it is not comment (e.g. MarkDown titles)
                 poscomment = valuesafe.find(&#34;#&#34;)
                 if poscomment&gt;0: valuesafe = valuesafe[0:poscomment].strip()
-                # Literal string starts with $
+                # Literal string starts with $ (no interpretation), ! (evaluation)
                 if not self._evaluation:
                     tmp.setattr(key, pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr))
+                elif valuesafe.startswith(&#34;!&#34;):
+                    try:
+                        vtmp = literal_eval(valuesafe[1:])
+                        if isinstance(vtmp,list):
+                            for i,item in enumerate(vtmp):
+                                if isinstance(item,str) and not item.strip().startswith(&#34;$&#34;):
+                                    try:
+                                        vtmp[i] = tmp.format(item, raiseerror=False)
+                                    except Exception as ve:
+                                        vtmp[i] = f&#34;Error in &lt;{item}&gt;: {ve.__class__.__name__} - {str(ve)}&#34;
+                        tmp.setattr(key,vtmp)
+                    except (SyntaxError, ValueError):
+                        tmp.setattr(key, f&#34;Error: {e.__class__.__name__} - {str(e)}&#34;)
                 elif valuesafe.startswith(&#34;$&#34;) and not escape:
                     tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard $
                 elif valuesafe.startswith(&#34;%&#34;):
@@ -11557,9 +11598,22 @@ where :
             # if the first character is &#39;#&#39;, it is not comment (e.g. MarkDown titles)
             poscomment = valuesafe.find(&#34;#&#34;)
             if poscomment&gt;0: valuesafe = valuesafe[0:poscomment].strip()
-            # Literal string starts with $
+            # Literal string starts with $ (no interpretation), ! (evaluation)
             if not self._evaluation:
                 tmp.setattr(key, pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr))
+            elif valuesafe.startswith(&#34;!&#34;):
+                try:
+                    vtmp = literal_eval(valuesafe[1:])
+                    if isinstance(vtmp,list):
+                        for i,item in enumerate(vtmp):
+                            if isinstance(item,str) and not item.strip().startswith(&#34;$&#34;):
+                                try:
+                                    vtmp[i] = tmp.format(item, raiseerror=False)
+                                except Exception as ve:
+                                    vtmp[i] = f&#34;Error in &lt;{item}&gt;: {ve.__class__.__name__} - {str(ve)}&#34;
+                    tmp.setattr(key,vtmp)
+                except (SyntaxError, ValueError):
+                    tmp.setattr(key, f&#34;Error: {e.__class__.__name__} - {str(e)}&#34;)
             elif valuesafe.startswith(&#34;$&#34;) and not escape:
                 tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard $
             elif valuesafe.startswith(&#34;%&#34;):
@@ -20411,6 +20465,7 @@ s.do()
         and optionally include comments for debugging or clarity.
 
         Parameters:
+        -----------
         - printflag (bool, optional): If True, the generated script is printed to the console.
                                       Default is True.
         - verbose (bool, optional): If True, comments and additional information are included
@@ -20418,6 +20473,7 @@ s.do()
                                     Default is True.
 
         Returns:
+        ---------
         - str: The generated LAMMPS script.
 
         Method Behavior:
@@ -20429,6 +20485,7 @@ s.do()
         - If `verbose` is set to False, comments in the generated script are removed.
         - The script is then printed if `printflag` is True.
         - Finally, the formatted script is returned as a string.
+
 
         Example Usage:
         --------------
@@ -20446,15 +20503,31 @@ s.do()
         - Comments are indicated in the script with &#39;%&#39; or &#39;#&#39;.
         - The [position {self.position}:{self.userid}] marker is inserted for tracking
           script sections or modifications.
+
+
+        Known Issues for indexed variables
+        ----------------------------------
+        List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+        each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+        full, such as ${varlist}. Then it is preferable to define varlist as a string:
+            &#34;![v1,v2,...]&#34; where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+             evaluation).
+        The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+        at later stages during the evaluation so that its content can be indexed.
+
         &#34;&#34;&#34;
         printflag = self.printflag if printflag is None else printflag
         verbose = self.verbose if verbose is None else verbose
         inputs = self.DEFINITIONS + self.USER
+        usedvariables = self.detect_variables(with_index=False,only_indexed=False)
+        variables_used_with_index = self.detect_variables(with_index=False,only_indexed=True)
+        usedvariables_withoutindex = [ var for var in usedvariables if var not in variables_used_with_index ]
         for k in inputs.keys():
-            if isinstance(inputs.getattr(k),list):
-                inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
-            elif isinstance(inputs.getattr(k),tuple):
-                inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+            if k in usedvariables_withoutindex:
+                if isinstance(inputs.getattr(k),list):
+                    inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
+                elif isinstance(inputs.getattr(k),tuple):
+                    inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
         cmd = inputs.formateval(self.TEMPLATE)
         cmd = cmd.replace(&#34;[comment]&#34;,f&#34;[position {self.position}:{self.userid}]&#34;)
         if not verbose: cmd=remove_comments(cmd)
@@ -20760,17 +20833,26 @@ s.do()
             setattr(copie, k, deepduplicate(v, memo))
         return copie
 
-    def detect_variables(self):
+
+    def detect_variables(self, with_index=False, only_indexed=False):
         &#34;&#34;&#34;
-        Detects variables in the content of the template using the pattern r&#39;\$\{(\w+)\}&#39;.
+        Detects variables in the content of the template using an extended pattern
+        to include indexed variables (e.g., ${var[i]}) if `with_index` is True.
+
+        Parameters:
+        -----------
+        with_index : bool, optional
+            If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+        only_indexed : bool, optional
+            If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.
 
         Returns:
         --------
         list
-            A list of unique variable names detected in the content.
+            A list of unique variable names detected in the content based on the flags.
         &#34;&#34;&#34;
-        # Regular expression to match variables in the format ${varname}
-        variable_pattern = re.compile(r&#39;\$\{(\w+)\}&#39;)
+        # Regular expression to match variables with optional indexing
+        variable_pattern = re.compile(r&#39;\$\{(\w+)(\[\w+\])?\}&#39;)
         # Ensure TEMPLATE is iterable (split string into lines if needed)
         if isinstance(self.TEMPLATE, str):
             lines = self.TEMPLATE.splitlines()  # Split string into lines
@@ -20779,7 +20861,19 @@ s.do()
         else:
             raise TypeError(&#34;TEMPLATE must be a string or a list of strings.&#34;)
         # Detect variables from all lines
-        detected_vars = {variable for line in lines for variable in variable_pattern.findall(line)}
+        detected_vars = set()
+        for line in lines:
+            matches = variable_pattern.findall(line)
+            for match in matches:
+                variable_name = match[0]  # Base variable name
+                index = match[1]          # Optional index (e.g., &#39;[i]&#39;)
+                if only_indexed and not index:
+                    continue  # Skip non-indexed variables if targeting only indexed ones
+                if with_index and index:
+                    detected_vars.add(f&#34;{variable_name}{index}&#34;)  # Include the full indexed variable
+                elif not with_index:
+                    detected_vars.add(variable_name)  # Include only the base variable
+
         # Return the list of unique variables
         return list(detected_vars)</code></pre>
 </details>
@@ -20901,28 +20995,42 @@ def role(self):
 <h3>Methods</h3>
 <dl>
 <dt id="region.script.detect_variables"><code class="name flex">
-<span>def <span class="ident">detect_variables</span></span>(<span>self)</span>
+<span>def <span class="ident">detect_variables</span></span>(<span>self, with_index=False, only_indexed=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Detects variables in the content of the template using the pattern r'\${(\w+)}'.</p>
+<div class="desc"><p>Detects variables in the content of the template using an extended pattern
+to include indexed variables (e.g., ${var[i]}) if <code>with_index</code> is True.</p>
+<h2 id="parameters">Parameters:</h2>
+<p>with_index : bool, optional
+If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+only_indexed : bool, optional
+If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.</p>
 <h2 id="returns">Returns:</h2>
 <p>list
-A list of unique variable names detected in the content.</p></div>
+A list of unique variable names detected in the content based on the flags.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def detect_variables(self):
+<pre><code class="python">def detect_variables(self, with_index=False, only_indexed=False):
     &#34;&#34;&#34;
-    Detects variables in the content of the template using the pattern r&#39;\$\{(\w+)\}&#39;.
+    Detects variables in the content of the template using an extended pattern
+    to include indexed variables (e.g., ${var[i]}) if `with_index` is True.
+
+    Parameters:
+    -----------
+    with_index : bool, optional
+        If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+    only_indexed : bool, optional
+        If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.
 
     Returns:
     --------
     list
-        A list of unique variable names detected in the content.
+        A list of unique variable names detected in the content based on the flags.
     &#34;&#34;&#34;
-    # Regular expression to match variables in the format ${varname}
-    variable_pattern = re.compile(r&#39;\$\{(\w+)\}&#39;)
+    # Regular expression to match variables with optional indexing
+    variable_pattern = re.compile(r&#39;\$\{(\w+)(\[\w+\])?\}&#39;)
     # Ensure TEMPLATE is iterable (split string into lines if needed)
     if isinstance(self.TEMPLATE, str):
         lines = self.TEMPLATE.splitlines()  # Split string into lines
@@ -20931,7 +21039,19 @@ A list of unique variable names detected in the content.</p></div>
     else:
         raise TypeError(&#34;TEMPLATE must be a string or a list of strings.&#34;)
     # Detect variables from all lines
-    detected_vars = {variable for line in lines for variable in variable_pattern.findall(line)}
+    detected_vars = set()
+    for line in lines:
+        matches = variable_pattern.findall(line)
+        for match in matches:
+            variable_name = match[0]  # Base variable name
+            index = match[1]          # Optional index (e.g., &#39;[i]&#39;)
+            if only_indexed and not index:
+                continue  # Skip non-indexed variables if targeting only indexed ones
+            if with_index and index:
+                detected_vars.add(f&#34;{variable_name}{index}&#34;)  # Include the full indexed variable
+            elif not with_index:
+                detected_vars.add(variable_name)  # Include only the base variable
+
     # Return the list of unique variables
     return list(detected_vars)</code></pre>
 </details>
@@ -20946,6 +21066,7 @@ A list of unique variable names detected in the content.</p></div>
     and optionally include comments for debugging or clarity.
 
     Parameters:
+    -----------
     - printflag (bool, optional): If True, the generated script is printed to the console.
                                   Default is True.
     - verbose (bool, optional): If True, comments and additional information are included
@@ -20953,6 +21074,7 @@ A list of unique variable names detected in the content.</p></div>
                                 Default is True.
 
     Returns:
+    ---------
     - str: The generated LAMMPS script.
 
     Method Behavior:
@@ -20964,6 +21086,7 @@ A list of unique variable names detected in the content.</p></div>
     - If &lt;code&gt;verbose&lt;/code&gt; is set to False, comments in the generated script are removed.
     - The script is then printed if &lt;code&gt;printflag&lt;/code&gt; is True.
     - Finally, the formatted script is returned as a string.
+
 
     Example Usage:
     --------------
@@ -20984,6 +21107,17 @@ boundary f f f</p>
     - Comments are indicated in the script with '%' or '#'.
     - The [position {self.position}:{self.userid}] marker is inserted for tracking
       script sections or modifications.
+
+
+    Known Issues for indexed variables
+    ----------------------------------
+    List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+    each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+    full, such as ${varlist}. Then it is preferable to define varlist as a string:
+        "![v1,v2,...]" where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+         evaluation).
+    The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+    at later stages during the evaluation so that its content can be indexed.
 </code></pre></div>
 <details class="source">
 <summary>
@@ -20998,6 +21132,7 @@ boundary f f f</p>
     and optionally include comments for debugging or clarity.
 
     Parameters:
+    -----------
     - printflag (bool, optional): If True, the generated script is printed to the console.
                                   Default is True.
     - verbose (bool, optional): If True, comments and additional information are included
@@ -21005,6 +21140,7 @@ boundary f f f</p>
                                 Default is True.
 
     Returns:
+    ---------
     - str: The generated LAMMPS script.
 
     Method Behavior:
@@ -21016,6 +21152,7 @@ boundary f f f</p>
     - If `verbose` is set to False, comments in the generated script are removed.
     - The script is then printed if `printflag` is True.
     - Finally, the formatted script is returned as a string.
+
 
     Example Usage:
     --------------
@@ -21033,15 +21170,31 @@ boundary f f f</p>
     - Comments are indicated in the script with &#39;%&#39; or &#39;#&#39;.
     - The [position {self.position}:{self.userid}] marker is inserted for tracking
       script sections or modifications.
+
+
+    Known Issues for indexed variables
+    ----------------------------------
+    List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+    each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+    full, such as ${varlist}. Then it is preferable to define varlist as a string:
+        &#34;![v1,v2,...]&#34; where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+         evaluation).
+    The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+    at later stages during the evaluation so that its content can be indexed.
+
     &#34;&#34;&#34;
     printflag = self.printflag if printflag is None else printflag
     verbose = self.verbose if verbose is None else verbose
     inputs = self.DEFINITIONS + self.USER
+    usedvariables = self.detect_variables(with_index=False,only_indexed=False)
+    variables_used_with_index = self.detect_variables(with_index=False,only_indexed=True)
+    usedvariables_withoutindex = [ var for var in usedvariables if var not in variables_used_with_index ]
     for k in inputs.keys():
-        if isinstance(inputs.getattr(k),list):
-            inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
-        elif isinstance(inputs.getattr(k),tuple):
-            inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
+        if k in usedvariables_withoutindex:
+            if isinstance(inputs.getattr(k),list):
+                inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k)))
+            elif isinstance(inputs.getattr(k),tuple):
+                inputs.setattr(k,&#34;% &#34;+span(inputs.getattr(k),sep=&#34;,&#34;))
     cmd = inputs.formateval(self.TEMPLATE)
     cmd = cmd.replace(&#34;[comment]&#34;,f&#34;[position {self.position}:{self.userid}]&#34;)
     if not verbose: cmd=remove_comments(cmd)

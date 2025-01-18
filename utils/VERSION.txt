@@ -25,4 +25,4 @@
 # Author: INRAE\Olivier Vitrac
 # Revision: 2025-01-09
 #
-version="1.001"
+version="1.002"

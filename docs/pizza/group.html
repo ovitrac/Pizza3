@@ -4240,9 +4240,37 @@ script, especially when managing multiple scripts.</p>
         repr_str += f&#34;Descr: {self.description}\n&#34; if self.description else &#34;&#34;
         repr_str += f&#34;Role: {self.role} (v. {self.version})\n&#34;
         repr_str += f&#39;SECTIONS {span(self.SECTIONS,&#34;,&#34;,&#34;[&#34;,&#34;]&#34;)} | index: {self.section} | position: {self.position}\n&#39;
-        repr_str += f&#34;\n\n\twith {len(self.TEMPLATE)} TEMPLATE&#34;
-        repr_str += &#34;s&#34; if len(self.TEMPLATE)&gt;1 else &#34;&#34;
-        repr_str += f&#34; (with {len(self.DEFINITIONS)} DEFINITIONS)\n\n&#34;
+        repr_str += &#39;\n&#39;
+
+        # Add GLOBAL DEFINITIONS information
+        gvars = self.DEFINITIONS.keys()
+        ngvars = len(gvars)
+        repr_str += &#34;-&#34; * 50 + &#34;\n&#34;
+        if ngvars&gt;0:
+            flag = &#39;[G]&#39; # with G for GLOBAL
+            head = f&#34;with {ngvars} GLOBAL DEFINITION{&#39;S&#39; if ngvars&gt;1 else &#39;&#39;}  &#34;
+            dashes = (50 - len(head)) // 2
+            repr_str += f&#34;{&#39; &#39; * dashes}{head}{&#39; &#39; * dashes}\n&#34;
+            repr_str += &#34;-&#34; * 50 + &#34;\n&#34;
+            for i in range(0, len(gvars), 3):
+                var_set = gvars[i:i+3]
+                line = &#34;&#34;
+                for var in var_set:
+                    var_name = (var[:10] + &#39; &#39;) if len(var) &gt; 10 else var.ljust(11)
+                    line += f&#34;{flag} {var_name}  &#34;
+                repr_str += f&#34;{line}\n&#34;
+        else:
+            head = &#34;  NO GLOBAL DEFINITION  &#34;
+            dashes = (50 - len(head)) // 2
+            repr_str += f&#34;{&#39;!&#39; * dashes}{head}{&#39;!&#39; * dashes}\n&#34;
+            repr_str += &#34;-&#34; * 50 + &#34;\n&#34;
+
+        # Add TEMPLATE header
+        ntemplates = len(self.TEMPLATE)
+        head = f&#34;and with {ntemplates} TEMPLATE{&#39;S&#39; if ntemplates&gt;1 else &#39;&#39;} &#34;
+        dashes = (50 - len(head)) // 2
+        repr_str += f&#34;\n\n{&#39; &#39; * dashes}{head}{&#39; &#39; * dashes}\n\n&#34;
+
         # Add TEMPLATE information
         c = 0
         for k, s in self.TEMPLATE.items():
@@ -6645,21 +6673,32 @@ script, especially when managing multiple scripts.</p>
         # Remove braces from the content
         content = content.strip().strip(&#34;{}&#34;)
 
-        # Split the content into lines by commas
-        lines = re.split(r&#39;,(?![^(){}\[\]]*[\)\}\]])&#39;, content.strip())
+        # Old method to split the content into lines by commas
+        # lines = re.split(r&#39;,(?![^(){}\[\]]*[\)\}\]])&#39;, content.strip())
+        # old parser
+        # for line in lines:
+        #     line = line.strip()
+        #     # Match key-value pairs
+        #     match = re.match(r&#39;([\w_]+)\s*=\s*(.+)&#39;, line)
+        #     if match:
+        #         key, value = match.groups()
+        #         key = key.strip()
+        #         value = value.strip()
+        #         # Convert the value to the appropriate Python type and store it
+        #         global_params[key] = cls._convert_value(value)
+        #     else:
+        #         raise ValueError(f&#34;Invalid parameter line: &#39;{line}&#39;&#34;)
 
-        for line in lines:
-            line = line.strip()
-            # Match key-value pairs
-            match = re.match(r&#39;([\w_]+)\s*=\s*(.+)&#39;, line)
-            if match:
-                key, value = match.groups()
-                key = key.strip()
-                value = value.strip()
-                # Convert the value to the appropriate Python type and store it
-                global_params[key] = cls._convert_value(value)
-            else:
-                raise ValueError(f&#34;Invalid parameter line: &#39;{line}&#39;&#34;)
+        # Pattern to match key-value pairs, allowing for quoted strings and nested brackets
+        pattern = r&#39;([\w_]+)\s*=\s*(&#34;.*?&#34;|\&#39;.*?\&#39;|[^\s,]+|{.*?}|\[.*?\]|\(.*?\))&#39;
+        # Find all matches of key-value pairs
+        matches = re.findall(pattern, content)
+        for match in matches:
+            key, value = match
+            key = key.strip()
+            value = value.strip()
+            # Convert the value to the appropriate Python type and store it
+            global_params[key] = cls._convert_value(value)
 
 
     @classmethod
