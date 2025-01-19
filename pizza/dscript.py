@@ -770,7 +770,7 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.002"
+__version__ = "1.003"
 
 
 

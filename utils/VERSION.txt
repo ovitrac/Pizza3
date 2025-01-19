@@ -19,10 +19,13 @@
 #
 #   List of versions:
 #       - from 0.2 to 0.99: not reported (alpha and beta versions)
-#       - 1.00: released on 2025-01-08 (major release) 
+#       - 1.00: released on 2025-01-08 (major release)
+#       - 1.001: fixes for dscript and script classes
+#       - 1.002: add scripting features for vectorial calculus
+#       - 1.003: add complex mathematical expressions
 #
 #
 # Author: INRAE\Olivier Vitrac
-# Revision: 2025-01-09
+# Revision: 2025-01-19
 #
-version="1.002"
+version="1.003"

@@ -102,11 +102,11 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.0"
+__version__ = "1.003"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2025-01-02 (community)
+# INRAE\Olivier Vitrac - rev. 2025-01-17 (community)
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -158,6 +158,7 @@ __version__ = "1.0"
 # 2025-01-04 add VariableOccurrences, pipescript.list_values(), pipescript.list_multiple_values(), pipescript.plot_value_distribution()
 # 2025-01-06 script.dscript() forces autorefresh=False to prevent automatic assignement of variables not definet yet (see dscript.ScriptTemplate constructor)
 # 2025-01-07 add VariableOccurrences.export() in Markdown and HTML, pipescript.generate_report() (version 1.0)
+# 2025-01-18 consistent implementation of do() between dscript and script for indexed variables
 
 # %% Dependencies
 import os, sys, datetime, socket, getpass, tempfile, types, re, inspect
@@ -2261,6 +2262,7 @@ class script:
         and optionally include comments for debugging or clarity.
 
         Parameters:
+        -----------
         - printflag (bool, optional): If True, the generated script is printed to the console.
                                       Default is True.
         - verbose (bool, optional): If True, comments and additional information are included
@@ -2268,6 +2270,7 @@ class script:
                                     Default is True.
 
         Returns:
+        ---------
         - str: The generated LAMMPS script.
 
         Method Behavior:
@@ -2279,6 +2282,7 @@ class script:
         - If `verbose` is set to False, comments in the generated script are removed.
         - The script is then printed if `printflag` is True.
         - Finally, the formatted script is returned as a string.
+
 
         Example Usage:
         --------------
@@ -2296,15 +2300,31 @@ class script:
         - Comments are indicated in the script with '%' or '#'.
         - The [position {self.position}:{self.userid}] marker is inserted for tracking
           script sections or modifications.
+
+
+        Known Issues for indexed variables
+        ----------------------------------
+        List and tupples used indexed in templates, such as varlist[1], are not converted into strings so that
+        each element can be considered as a variable and accessed as ${varlist[1]}. If varlist is also used in
+        full, such as ${varlist}. Then it is preferable to define varlist as a string:
+            "![v1,v2,...]" where v1,v2,v3 can be int, float, static str or evaluable str (i.e., subjected to nested
+             evaluation).
+        The control character ! in lists, such as in var=![v1,v2,v3] preserves the Pythonic definition by do()
+        at later stages during the evaluation so that its content can be indexed.
+
         """
         printflag = self.printflag if printflag is None else printflag
         verbose = self.verbose if verbose is None else verbose
         inputs = self.DEFINITIONS + self.USER
+        usedvariables = self.detect_variables(with_index=False,only_indexed=False)
+        variables_used_with_index = self.detect_variables(with_index=False,only_indexed=True)
+        usedvariables_withoutindex = [ var for var in usedvariables if var not in variables_used_with_index ]
         for k in inputs.keys():
-            if isinstance(inputs.getattr(k),list):
-                inputs.setattr(k,"% "+span(inputs.getattr(k)))
-            elif isinstance(inputs.getattr(k),tuple):
-                inputs.setattr(k,"% "+span(inputs.getattr(k),sep=","))
+            if k in usedvariables_withoutindex:
+                if isinstance(inputs.getattr(k),list):
+                    inputs.setattr(k,"% "+span(inputs.getattr(k)))
+                elif isinstance(inputs.getattr(k),tuple):
+                    inputs.setattr(k,"% "+span(inputs.getattr(k),sep=","))
         cmd = inputs.formateval(self.TEMPLATE)
         cmd = cmd.replace("[comment]",f"[position {self.position}:{self.userid}]")
         if not verbose: cmd=remove_comments(cmd)
@@ -2610,17 +2630,26 @@ class script:
             setattr(copie, k, deepduplicate(v, memo))
         return copie
 
-    def detect_variables(self):
+
+    def detect_variables(self, with_index=False, only_indexed=False):
         """
-        Detects variables in the content of the template using the pattern r'\$\{(\w+)\}'.
+        Detects variables in the content of the template using an extended pattern
+        to include indexed variables (e.g., ${var[i]}) if `with_index` is True.
+
+        Parameters:
+        -----------
+        with_index : bool, optional
+            If True, include indexed variables with their indices (e.g., ${var[i]}). Default is False.
+        only_indexed : bool, optional
+            If True, target only variables that are used with an index (e.g., ${var[i]}). Default is False.
 
         Returns:
         --------
         list
-            A list of unique variable names detected in the content.
+            A list of unique variable names detected in the content based on the flags.
         """
-        # Regular expression to match variables in the format ${varname}
-        variable_pattern = re.compile(r'\$\{(\w+)\}')
+        # Regular expression to match variables with optional indexing
+        variable_pattern = re.compile(r'\$\{(\w+)(\[\w+\])?\}')
         # Ensure TEMPLATE is iterable (split string into lines if needed)
         if isinstance(self.TEMPLATE, str):
             lines = self.TEMPLATE.splitlines()  # Split string into lines
@@ -2629,9 +2658,22 @@ class script:
         else:
             raise TypeError("TEMPLATE must be a string or a list of strings.")
         # Detect variables from all lines
-        detected_vars = {variable for line in lines for variable in variable_pattern.findall(line)}
+        detected_vars = set()
+        for line in lines:
+            matches = variable_pattern.findall(line)
+            for match in matches:
+                variable_name = match[0]  # Base variable name
+                index = match[1]          # Optional index (e.g., '[i]')
+                if only_indexed and not index:
+                    continue  # Skip non-indexed variables if targeting only indexed ones
+                if with_index and index:
+                    detected_vars.add(f"{variable_name}{index}")  # Include the full indexed variable
+                elif not with_index:
+                    detected_vars.add(variable_name)  # Include only the base variable
+
         # Return the list of unique variables
         return list(detected_vars)
+
 
 # %% pipe script
 class pipescript:

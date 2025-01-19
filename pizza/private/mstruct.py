@@ -1,72 +1,86 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__project__ = "Pizza3"
-__author__ = "Olivier Vitrac"
-__copyright__ = "Copyright 2022"
-__credits__ = ["Olivier Vitrac"]
-__license__ = "GPLv3"
-__maintainer__ = "Olivier Vitrac"
-__email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.002"
-
-
 """
-Module: struct.py
-==================
-Matlab-like structure class with extensions for parameter evaluation, file paths,
-and automatic management of dependencies in parameter definitions. This module
-provides the following key classes:
+# Module: `struct.py`
+Matlab-like structure class with extensions for parameter evaluation, file paths, and automatic management of dependencies in parameter definitions. This module provides the following key classes:
 
-- `struct`: A flexible base class that mimics Matlab structures, offering dynamic
-  field creation, indexing, concatenation, and field-level evaluation.
-- `param`: Derived from `struct`, this class enables dynamic evaluation of fields
-  based on interdependent definitions.
-- `paramauto`: A further extension of `param` with automatic sorting and resolution
-  of parameter dependencies during operations.
-- `pstr`: A string subclass specialized for handling file paths and POSIX compatibility.
+- **`struct`**: A flexible base class that mimics Matlab structures, offering dynamic field creation, indexing, concatenation, and field-level evaluation.
+- **`param`**: Derived from `struct`, this class enables dynamic evaluation of fields based on interdependent definitions.
+- **`paramauto`**: A further extension of `param` with automatic sorting and resolution of parameter dependencies during operations.
+- **`pstr`**: A string subclass specialized for handling file paths and POSIX compatibility.
 
-Purpose
--------
-This module aims to streamline the creation and manipulation of structures for
-scientific computation, data management, and dynamic scripting, particularly in
-complex workflows.
+---
 
-Key Features
-------------
-- Flexible dynamic structure (`struct`) with field creation, deletion, and manipulation.
-- Parameter evaluation and dependency resolution (`param`).
-- Path and string management with POSIX compliance (`pstr`).
-- Automatic dependency handling and evaluation (`paramauto`).
+## Purpose
+This module aims to streamline the creation and manipulation of structures for scientific computation, data management, and dynamic scripting, particularly in complex workflows.
 
-Examples
---------
+---
+
+## Key Features
+- **Flexible Dynamic Structure**: Provides `struct` with field creation, deletion, and manipulation.
+- **Parameter Evaluation**: Supports interdependent parameter evaluation with `param`.
+- **Path and String Management**: Handles file paths and POSIX compliance with `pstr`.
+- **Automatic Dependency Resolution**: Manages parameter dependencies automatically with `paramauto`.
+
+---
+
+## Evaluation Features (Updated for Pizza 1.0)
+- **Dynamic Expressions**: Evaluate expressions within `${...}` placeholders or as standalone scalar expressions.
+- **Matrix and Array Support**: Perform advanced operations such as matrix multiplication (`@`), transposition (`.T`), and slicing within `${...}`.
+- **Safe Evaluation**: Eliminates the use of `eval`, using `safe_fstring()` and `SafeEvaluator` for secure computation.
+- **Comprehensive Function Set**:
+  - **Trigonometric Functions**: `sin`, `cos`, `tan`, etc.
+  - **Exponential and Logarithmic**: `exp`, `log`, `sqrt`, etc.
+  - **Random Functions**: `gauss`, `uniform`, `randint`, etc.
+- **Error Handling**: Robust detection of undefined variables, invalid operations, and unsupported expressions.
+- **Type Preservation**: Retains original data types (e.g., `float`, `numpy.ndarray`) for accuracy and further computation.
+- **Custom Formatting**: Formats arrays and matrices for display with clear distinction between row/column vectors and higher-dimensional arrays.
+
+The implementation in Pizza 1.0 ensures both flexibility and security, making it ideal for scenarios requiring dynamic parameter management and safe expression evaluation.
+
+---
+
+## Examples
+
 ### Basic Struct Usage
 ```python
+from struct import struct
+
 s = struct(a=1, b=2, c='${a} + ${b}')
 s.a = 10
 s["b"] = 5
 delattr(s, "c")  # Delete a field
+```
 
+---
 
 ### Parameter Evaluation with `param`
+```python
 from struct import param
 
 # Define parameters with dependencies
 p = param(a=1, b='${a}*2', c='${b}+5')
 evaluated = p.eval()  # Evaluate all fields dynamically
 print(evaluated.c)  # Output: 7
+```
 
+---
 
 ### Path Management with `pstr`
+```python
 from struct import pstr
 
 # Create and manipulate POSIX-compliant paths
 path = pstr("/this/is/a/path/")
 combined = path / "file.txt"
 print(combined)  # Output: "/this/is/a/path/file.txt"
+```
+
+---
 
 ### Automatic Dependency Handling with `paramauto`
+```python
 from struct import paramauto
 
 # Automatically resolve dependencies in parameters
@@ -80,12 +94,28 @@ pa.disp()
 #       c: ${b}*2
 #        = 4
 # -----------
+```
 
+---
+
+### Evaluation Usage
+```python
+from pizza.private.mstruct import param
+import numpy as np
+
+p = param()
+p.a = [1.0, 0.2, 0.03, 0.004]
+p.b = np.array([p.a])
+p.f = p.b.T @ p.b  # Matrix multiplication
+p.g = "${a[1]}"    # Expression referencing `a`
+p.h = "${b.T @ b}" # Matrix operation
+print(p.eval())
+```
+
+---
 
 Created on Sun Jan 23 14:19:03 2022
-
-@author: olivier.vitrac@agroparistech.fr
-
+**Author**: Olivier Vitrac, AgroParisTech
 """
 
 # revision history
@@ -110,7 +140,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2022-03-31 add dispmax()
 # 2022-04-05 add check(), such that a.check(b) is similar to b+a
 # 2022-04-09 manage None and [] values in check()
-# 2022-05-14 s[:4], s[(3,5,2)] indexing a structure with a slice, list, turple generates a substructure
+# 2022-05-14 s[:4], s[(3,5,2)] indexing a structure with a slice, list, tuple generates a substructure
 # 2022-05-14 isempty (property) is TRUE for an empty structure
 # 2022-05-15 __getitem__ and __set__item are now vectorized, add clear()
 # 2022-05-16 add sortdefinitions(), isexpression, isdefined(), isstrdefined()
@@ -133,20 +163,166 @@ Created on Sun Jan 23 14:19:03 2022
 # 2024-10-26 force silentmode to + and += operators
 # 2024-12-08 fix help
 # 2025-01-17 enable evaluation with ! and first recursion for lists (v1.002)
+# 2025-01-18 fixes and explicit imports, better management of NumpPy arrays
+# 2025-01-19 consolidation of slice handling, implicit evaluation and error handling (v1.003)
+
+
+__project__ = "Pizza3"
+__author__ = "Olivier Vitrac"
+__copyright__ = "Copyright 2022"
+__credits__ = ["Olivier Vitrac"]
+__license__ = "GPLv3"
+__maintainer__ = "Olivier Vitrac"
+__email__ = "olivier.vitrac@agroparistech.fr"
+__version__ = "1.003"
 
 
 # %% Dependencies
-from math import * # import math to authorize all math expressions in parameters
-import types       # to check types
+# import types     # to check types (not required anymore since only builtin types are used)
+import ast         # for safe evaluation (ast.literal_eval is used to evaluate strings starting with !)
+import operator    # operators
 import re          # regular expression
-from pathlib import Path # for write
-import numpy as np
-from ast import literal_eval # used to evaluate strings starting with !
+from pathlib import Path # for path managment (note that pstr uses its own logic)
+from pathlib import PurePosixPath as PurePath
 from copy import copy as duplicate # to duplicate objects
 from copy import deepcopy as duplicatedeep # used by __deepcopy__()
-from pathlib import PurePosixPath as PurePath
+# Import math functions
+import math
+import random
+import numpy as np
 
-__all__ = ['param', 'paramauto', 'pstr', 'struct']
+__all__ = ['AttrErrorDict', 'SafeEvaluator', 'param', 'paramauto', 'pstr', 'struct']
+
+
+# %% Private classes, variables
+
+_list_types = (list,tuple,np.ndarray) # list types recognized as such
+_numeric_types = (int,float,str,list,tuple,np.ndarray, np.generic) # numeric types recognized as such
+
+# Safe f"" to evaluate ${var}, ${expression} and some expressions ${v1}+${v2}
+class SafeEvaluator(ast.NodeVisitor):
+    """A safe evaluator class for expressions involving math, NumPy, random, and basic operators."""
+
+    def __init__(self, context):
+        self.context = {**context}
+        self.context.update({
+            name: getattr(math, name)
+            for name in [
+                "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "radians", "degrees",
+                "exp", "log", "log10", "pow", "sqrt",
+                "ceil", "floor", "fmod", "modf",
+                "fabs", "hypot", "pi", "e"
+            ]
+        })
+        self.context.update({
+            "gauss": random.gauss,
+            "uniform": random.uniform,
+            "randint": random.randint,
+            "choice": random.choice
+        })
+        self.context["np"] = np  # Allow 'np.sin', 'np.cos', etc.
+
+        # Define allowed operators
+        self.operators = {
+            ast.Add: operator.add,
+            ast.Sub: operator.sub,
+            ast.Mult: operator.mul,
+            ast.Div: operator.truediv,
+            ast.FloorDiv: operator.floordiv,
+            ast.Mod: operator.mod,
+            ast.Pow: operator.pow,
+            ast.USub: operator.neg,  # Unary subtraction
+        }
+
+    def visit_Name(self, node):
+        if node.id in self.context:
+            return self.context[node.id]
+        raise ValueError(f"Variable or function '{node.id}' is not defined")
+
+    def visit_Constant(self, node):
+        return node.value
+
+    def visit_BinOp(self, node):
+        left = self.visit(node.left)
+        right = self.visit(node.right)
+        op_type = type(node.op)
+        if isinstance(left, np.ndarray) and isinstance(right, np.ndarray) and isinstance(node.op, ast.MatMult):
+            return np.matmul(left, right)
+        if op_type in self.operators:
+            return self.operators[op_type](left, right)
+        raise ValueError(f"Unsupported operator: {op_type}")
+
+    def visit_UnaryOp(self, node):
+        operand = self.visit(node.operand)
+        op_type = type(node.op)
+        if op_type in self.operators:
+            return self.operators[op_type](operand)
+        raise ValueError(f"Unsupported unary operator: {op_type}")
+
+    def visit_Call(self, node):
+        func = self.visit(node.func)
+        if callable(func):
+            args = [self.visit(arg) for arg in node.args]
+            kwargs = {kw.arg: self.visit(kw.value) for kw in node.keywords}
+            return func(*args, **kwargs)
+        raise ValueError(f"Function '{ast.dump(node.func)}' is not callable")
+
+    def visit_Attribute(self, node):
+        value = self.visit(node.value)
+        attr = node.attr
+        if hasattr(value, attr):
+            # If the attribute is "T", return the transpose of the array
+            if attr == "T" and isinstance(value, np.ndarray):
+                return value.T
+            # Check if the attribute is the '@' matrix multiplication operator
+            if attr == "@" and isinstance(value, np.ndarray):
+                return value @ value  # or handle accordingly with another operand
+            return getattr(value, attr)
+        raise ValueError(f"Object '{value}' has no attribute '{attr}'")
+
+    def visit_Subscript(self, node):
+        value = self.visit(node.value)
+        slice_obj = self.visit(node.slice)
+        try:
+            return value[slice_obj]
+        except Exception as e:
+            raise ValueError(f"Invalid index {slice_obj} for object of type {type(value).__name__}: {e}")
+
+    def visit_Index(self, node):
+        return self.visit(node.value)
+
+    def visit_Slice(self, node):
+        lower = self.visit(node.lower) if node.lower else None
+        upper = self.visit(node.upper) if node.upper else None
+        step = self.visit(node.step) if node.step else None
+        return slice(lower, upper, step)
+
+    def visit_ExtSlice(self, node):
+        dims = tuple(self.visit(dim) for dim in node.dims)
+        return dims
+
+    def visit_Tuple(self, node):
+        return tuple(self.visit(elt) for elt in node.elts)
+
+    def visit_List(self, node):
+        return [self.visit(elt) for elt in node.elts]
+
+    def generic_visit(self, node):
+        raise ValueError(f"Unsupported expression: {ast.dump(node)}")
+
+    def evaluate(self, expression):
+        tree = ast.parse(expression, mode='eval')
+        return self.visit(tree.body)
+
+
+# Class to handle expressions containing operators correctly without being misinterpreted as attribute accesses.
+class AttrErrorDict(dict):
+    """Custom dictionary that raises AttributeError instead of KeyError for missing keys."""
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            raise AttributeError(f"Attribute '{key}' not found")
 
 
 # %% core struct class
@@ -439,8 +615,8 @@ class struct():
             use makeparam = True to create a param instead of struct
         """
         if keys is None: raise AttributeError("the keys must not empty")
-        if not isinstance(keys,(list,tuple,np.ndarray,np.generic)): keys = [keys]
-        if not isinstance(values,(list,tuple,np.ndarray,np.generic)): values = [values]
+        if not isinstance(keys,_list_types): keys = [keys]
+        if not isinstance(values,_list_types): values = [values]
         nk,nv = len(keys), len(values)
         s = param() if makeparam else struct()
         if nk>0 and nv>0:
@@ -595,11 +771,16 @@ class struct():
             print(line)
             for key,value in self.__dict__.items():
                 if key not in self._excludedattr:
-                    if isinstance(value,(int,float,str,list,tuple,np.ndarray,np.generic)):
-                        if isinstance(value,pstr):
-                            print(fmt % key,'p"'+self.dispmax(value)+'"')
-                        if isinstance(value,str) and value=="":
-                            print(fmt % key,'""')
+                    if isinstance(value,_numeric_types):
+                        # old code (removed on 2025-01-18)
+                        # if isinstance(value,pstr):
+                        #     print(fmt % key,'p"'+self.dispmax(value)+'"')
+                        # if isinstance(value,str) and value=="":
+                        #     print(fmt % key,'""')
+                        # else:
+                        #     print(fmt % key,self.dispmax(value))
+                        if isinstance(value,np.ndarray):
+                            print(fmt % key, struct.format_array(value))
                         else:
                             print(fmt % key,self.dispmax(value))
                     elif isinstance(value,struct):
@@ -628,7 +809,11 @@ class struct():
                                 if value == "":
                                     print(fmteval % "",self.dispmax("<empty string>"))
                                 else:
-                                    print(fmteval % "",self.dispmax(tmp.getattr(key)))
+                                    calcvalue =tmp.getattr(key)
+                                    if isinstance(calcvalue, str) and "error" in calcvalue.lower():
+                                        print(fmteval % "",calcvalue)
+                                    else:
+                                        print(fmteval % "",self.dispmax(calcvalue))
             print(line)
             return f"{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s"
 
@@ -648,7 +833,40 @@ class struct():
         """ clear() delete all fields while preserving the original class """
         for k in self.keys(): delattr(self,k)
 
-    def format(self,s,escape=False,raiseerror=True):
+    def format(self, s, escape=False, raiseerror=True):
+        """
+            Format a string with fields using {field} as placeholders.
+            Handles expressions like ${variable1}.
+
+            Args:
+                s (str): The input string to format.
+                escape (bool): If True, prevents replacing '${' with '{'.
+                raiseerror (bool): If True, raises errors for missing fields.
+
+            Returns:
+                str: The formatted string.
+        """
+        if raiseerror:
+            try:
+                if escape:
+                    return s.format_map(AttrErrorDict(self.__dict__))
+                else:
+                    return s.replace("${", "{").format_map(AttrErrorDict(self.__dict__))
+            except AttributeError as attr_err:
+                # Handle AttributeError for expressions with operators
+                s_ = s.replace("{", "${")
+                print(f"WARNING: the {self._ftype} {attr_err} is undefined in '{s_}'")
+                return s_  # Revert to using '${' for unresolved expressions
+            except Exception as other_err:
+                s_ = s.replace("{", "${")
+                raise RuntimeError from other_err
+        else:
+            if escape:
+                return s.format_map(AttrErrorDict(self.__dict__))
+            else:
+                return s.replace("${", "{").format_map(AttrErrorDict(self.__dict__))
+
+    def format_legacy(self,s,escape=False,raiseerror=True):
         """
             format a string with field (use {field} as placeholders)
                 s.replace(string), s.replace(string,escape=True)
@@ -1009,6 +1227,50 @@ class struct():
             raise AttributeError(f"{self._type} has no attribute '{key}'")
 
 
+    # A la Matlab display method of vectors, matrices and ND-arrays
+    @staticmethod
+    def format_array(value):
+        """Format NumPy array for display with distinctions for row and column vectors."""
+        dtype_str = {
+            np.float64: "double",
+            np.float32: "single",
+            np.int32: "int32",
+            np.int64: "int64",
+            np.complex64: "complex single",
+            np.complex128: "complex double",
+        }.get(value.dtype.type, str(value.dtype))  # Default to dtype name if not in the map
+        max_display = 10  # Maximum number of elements to display
+
+        # Check if the value is a 1D array (could be a row or column vector)
+        if value.ndim == 1:
+            if len(value) <= max_display:
+                formatted = "[" + " ".join(f"{v:.4g}" for v in value) + f"] ({dtype_str})"
+            else:
+                formatted = f"[{len(value)}×1 {dtype_str}]"
+        # 2D array check
+        elif value.ndim == 2:
+            rows, cols = value.shape
+            # If it's a single column (column vector), handle it as a transpose
+            if cols == 1:  # Column vector (1 x n)
+                if rows <= max_display:
+                    formatted = "[" + " ".join(f"{v[0]:.4g}" for v in value) + f"]T ({dtype_str})"
+                else:
+                    formatted = f"[{rows}×1 {dtype_str}]"
+            # If it's a single row (row vector), handle it as a row vector
+            elif rows == 1:  # Row vector (1 x n)
+                if cols <= max_display:
+                    formatted = "[" + " ".join(f"{v:.4g}" for v in value[0]) + f"] ({dtype_str})"
+                else:
+                    formatted = f"[1×{cols} {dtype_str}]"
+            else:  # General 2D matrix
+                formatted = f"[{rows}×{cols} {dtype_str}]"
+        # For higher-dimensional arrays
+        else:
+            shape_str = "×".join(map(str, value.shape))
+            formatted = f"[{shape_str} array ({dtype_str})]"
+        return formatted
+
+
 # %% param class with scripting and evaluation capabilities
 class param(struct):
     """
@@ -1155,13 +1417,14 @@ class param(struct):
     ---
 
     ### Utility Methods
-    | Method                | Description                                             |
-    |-----------------------|---------------------------------------------------------|
-    | `eval()`              | Evaluate all field expressions.                         |
-    | `formateval(string)`  | Format and evaluate a string with field placeholders.   |
-    | `protect(string)`     | Escape variable placeholders in a string.               |
-    | `sortdefinitions()`   | Sort definitions to resolve dependencies.               |
-    | `escape(string)`      | Protect escaped variables in a string.                  |
+    | Method                 | Description                                             |
+    |------------------------|---------------------------------------------------------|
+    | `eval()`               | Evaluate all field expressions.                         |
+    | `formateval(string)`   | Format and evaluate a string with field placeholders.   |
+    | `protect(string)`      | Escape variable placeholders in a string.               |
+    | `sortdefinitions()`    | Sort definitions to resolve dependencies.               |
+    | `escape(string)`       | Protect escaped variables in a string.                  |
+    | `safe_fstring(string)` | evaluate safely complex mathemical expressions.         |
 
     ---
 
@@ -1277,6 +1540,8 @@ class param(struct):
                     valuesafe, escape0 = self.protect(valuesafe)
                 else:
                     escape0 = False
+                # replace ${var} by {var}
+                valuesafe_priorescape = valuesafe
                 valuesafe, escape = param.escape(valuesafe)
                 escape = escape or escape0
                 # replace "^" (Matlab, Lammps exponent) by "**" (Python syntax)
@@ -1290,7 +1555,7 @@ class param(struct):
                     tmp.setattr(key, pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr))
                 elif valuesafe.startswith("!"):
                     try:
-                        vtmp = literal_eval(valuesafe[1:])
+                        vtmp = ast.literal_eval(valuesafe[1:])
                         if isinstance(vtmp,list):
                             for i,item in enumerate(vtmp):
                                 if isinstance(item,str) and not item.strip().startswith("$"):
@@ -1299,7 +1564,7 @@ class param(struct):
                                     except Exception as ve:
                                         vtmp[i] = f"Error in <{item}>: {ve.__class__.__name__} - {str(ve)}"
                         tmp.setattr(key,vtmp)
-                    except (SyntaxError, ValueError):
+                    except (SyntaxError, ValueError) as e:
                         tmp.setattr(key, f"Error: {e.__class__.__name__} - {str(e)}")
                 elif valuesafe.startswith("$") and not escape:
                     tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard $
@@ -1313,7 +1578,7 @@ class param(struct):
                             tmp.setattr(key, pstr.topath(tmp.format(valuesafe,escape=escape)))
                         elif escape:  # partial evaluation
                             tmp.setattr(key, tmp.format(valuesafe,escape=True))
-                        else: # full evaluation
+                        else: # full evaluation (if it fails the last string content is returned)
                             try:
                                 resstr = tmp.format(valuesafe,raiseerror=False)
                             except (KeyError,NameError) as nameerr:
@@ -1325,16 +1590,36 @@ class param(struct):
                                     tmp.setattr(key,value) #we keep the original value
                             except (SyntaxError,TypeError,ValueError) as commonerr:
                                 tmp.setattr(key,"ERROR < %s >" % commonerr)
+                            except (IndexError,AttributeError):
+                                try:
+                                    resstr = param.safe_fstring(valuesafe_priorescape,tmp)
+                                except Exception as fstrerr:
+                                    tmp.setattr(key,"Index Error < %s >" % fstrerr)
+                                else:
+                                    try:
+                                        # reseval = eval(resstr)
+                                        # reseval = ast.literal_eval(resstr)
+                                        # Use SafeEvaluator to evaluate the final expression
+                                        evaluator = SafeEvaluator(tmp)
+                                        reseval = evaluator.evaluate(resstr)
+                                    except Exception as othererr:
+                                        #tmp.setattr(key,"Mathematical Error around/in ${}: < %s >" % othererr)
+                                        tmp.setattr(key,resstr)
+                                    else:
+                                        tmp.setattr(key,reseval)
                             except Exception as othererr:
-                                tmp.setattr(key,"Unknown Error < %s >" % othererr)
+                                tmp.setattr(key,"Error in ${}: < %s >" % othererr)
                             else:
                                 try:
-                                    reseval = eval(resstr)
+                                    # reseval = eval(resstr)
+                                    evaluator = SafeEvaluator(tmp)
+                                    reseval = evaluator.evaluate(resstr)
                                 except Exception as othererr:
-                                    tmp.setattr(key,"Eval Error < %s >" % othererr)
+                                    tmp.setattr(key,resstr.replace("\n",",")) # \n replaced by ,
+                                    #tmp.setattr(key,"Eval Error < %s >" % othererr)
                                 else:
                                     tmp.setattr(key,reseval)
-            elif isinstance(value,(int,float,list,tuple)): # already a number
+            elif isinstance(value,_numeric_types): # already a number
                 tmp.setattr(key, value) # store the value with the key
             else: # unsupported types
                 if s.find("{"+key+"}")>=0:
@@ -1406,6 +1691,69 @@ class param(struct):
             note: tostatic().struct2param() makes it reversible
         """
         return struct.fromkeysvalues(self.keys(),self.values(),makeparam=False)
+
+
+    # Safe fstring
+    @staticmethod
+    def safe_fstring(template, context):
+        """Safely evaluate expressions in ${} using SafeEvaluator."""
+        evaluator = SafeEvaluator(context)
+        # Process template string in combination with safe_fstring()
+        # it is required to have an output compatible with eval()
+        def process_template(valuesafe):
+            """
+            Processes the input string by:
+            1. Stripping leading and trailing whitespace.
+            2. Removing comments (any text after '#' unless '#' is the first character).
+            3. Replacing '^' with '**'.
+            4. Replacing '{' with '${' if '{' is not preceded by '$'. <-- not applied anymore (brings confusion)
+
+            Args:
+                valuesafe (str): The input string to process.
+
+            Returns:
+                str: The processed string.
+            """
+            # Step 1: Strip leading and trailing whitespace
+            valuesafe = valuesafe.strip()
+            # Step 2: Remove comments
+            # This regex removes '#' and everything after it if '#' is not the first character
+            # (?<!^) is a negative lookbehind that ensures '#' is not at the start of the string
+            valuesafe = re.sub(r'(?<!^)\#.*', '', valuesafe)
+            # Step 3: Replace '^' with '**'
+            valuesafe = re.sub(r'\^', '**', valuesafe)
+            # Step 4: Replace '{' with '${' if '{' is not preceded by '$'
+            # (?<!\$)\{ matches '{' not preceded by '$'
+            # valuesafe = re.sub(r'(?<!\$)\{', '${', valuesafe)
+            # Optional: Strip again to remove any trailing whitespace left after removing comments
+            valuesafe = valuesafe.strip()
+            return valuesafe
+        # Adjusted display for NumPy arrays
+        def serialize_result(result):
+            """
+            Serialize the result into a string that can be evaluated in Python.
+            Handles NumPy arrays by converting them to lists with commas.
+            Handles other iterable types appropriately.
+            """
+            if isinstance(result, np.ndarray):
+                return str(result.tolist())
+            elif isinstance(result, (list, tuple, dict)):
+                return str(result)
+            else:
+                return str(result)
+        # Regular expression to find ${expr} patterns
+        pattern = re.compile(r'\$\{([^{}]+)\}')
+        def replacer(match):
+            expr = match.group(1)
+            try:
+                result = evaluator.evaluate(expr)
+                serialized = serialize_result(result)
+                return serialized
+            except Exception as e:
+                return f"<Error: {e}>"
+        return pattern.sub(replacer, process_template(template))
+
+
 
 # %% str class for file and paths
 # this class guarantees that paths are POSIX at any time
@@ -1853,3 +2201,90 @@ if __name__ == '__main__':
     p.a = [0,1,2]
     p.b = '![1,2,"test","${a[1]}"]'
     p
+
+# Mathematical expressions
+    # Example: param.safe_fstring()
+    # Sample context with a NumPy array
+    context = param(
+        f = np.array([
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
+            [13, 14, 15, 16]
+        ])
+    )
+    # Example expressions
+    expressions = [
+        "${a[1]}",                # Should return 0.2 (assuming 'a' is defined in context)
+        "${b[0,1]} + ${a[0]}",    # Should return 1.2 (assuming 'b' and 'a' are defined)
+        "${f[0:2,1]}"               # Should return the second column of 'f'
+    ]
+    # Assuming 'a' and 'b' are defined in the context
+    context.update(
+        a =[1.0, 0.2, 0.03, 0.004],
+        b = np.array([[1, 0.2, 0.03, 0.004]])
+    )
+    for expr in expressions:
+        result = param.safe_fstring(expr, context)
+        print(f"Expression: {expr} => Result: {result}")
+
+    # OUTPUT
+    #   -------------:----------------------------------------
+    # Expression: ${a[1]} => Result: 0.2
+    # Expression: ${b[0,1]} + ${a[0]} => Result: 0.2 + 1.0
+    # Expression: ${f[0:2,1]} => Result: [2, 6]
+    #   -------------:----------------------------------------
+
+    # Example with matrix operations
+    p=param()
+    p.a = [1.0, .2, .03, .004]
+    p.b = np.array([p.a])
+    p.c = p.a*2
+    p.d = p.b*2
+    p.e = p.b.T
+    p.f = p.b.T@p.b # Matrix multiplication for (3x1) @ (1x3)
+    p.g = "${a[1]}"
+    p.h = "${b[0,1]} + ${a[0]}"
+    p.i = "${f[0,1]}"
+    p.j = "${f[:,1]}"
+    p.k = "${j}+1"
+    p.l = "${b.T}"
+    p.m = "${b.T @ b}"    # evaluate fully the matrix operation
+    p.n = "${b.T} @ ${b}" # concatenate two string-results separated by @
+    p.o ="the result is: ${b[0,1]} + ${a[0]}"
+    p.p = "the value of a[0] is ${a[0]}"
+    p.q = "1+1"
+    print(repr(p))
+
+    # OUTPUT
+    #   -------------:----------------------------------------
+    #               a: [1.0, 0.2, 0.03, 0.004]
+    #               b: [1 0.2 0.03 0.004] (double)
+    #               c: [1.0, 0.2, 0.03, 0.0 [...] 0, 0.2, 0.03, 0.004]
+    #               d: [2 0.4 0.06 0.008] (double)
+    #               e: [1 0.2 0.03 0.004]T (double)
+    #               f: [4×4 double]
+    #               g: ${a[1]}
+    #                = 0.2
+    #               h: ${b[0,1]} + ${a[0]}
+    #                = 1.2
+    #               i: ${f[0,1]}
+    #                = 0.2
+    #               j: ${f[:,1]}
+    #                = [0.2, 0.040000000000 [...] 0001, 0.006, 0.0008]
+    #               k: ${j}+1
+    #                = [0.2, 0.040000000000 [...] 01, 0.006, 0.0008]+1
+    #               l: ${b.T}
+    #                = [[1.   ], [0.2  ], [0.03 ], [0.004]]
+    #               m: ${b.T @ b}
+    #                = [[1.0, 0.2, 0.03, 0. [...] , 0.00012, 1.6e-05]]
+    #               n: ${b.T} @ ${b}
+    #                = [[1.   ], [0.2  ], [ [...]  0.2   0.03  0.004]]
+    #               o: the result is: ${b[0,1]} + ${a[0]}
+    #                = the result is: 0.2 + 1.0
+    #               p: the value of a[0] is ${a[0]}
+    #                = the value of a[0] is 1.0
+    #               q: 1+1
+    #                = 2
+    #   -------------:----------------------------------------
+    # parameter list (param object) with 17 definitions

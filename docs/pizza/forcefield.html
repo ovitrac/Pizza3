@@ -3153,8 +3153,8 @@ s.sortdefinitions()
             use makeparam = True to create a param instead of struct
         &#34;&#34;&#34;
         if keys is None: raise AttributeError(&#34;the keys must not empty&#34;)
-        if not isinstance(keys,(list,tuple,np.ndarray,np.generic)): keys = [keys]
-        if not isinstance(values,(list,tuple,np.ndarray,np.generic)): values = [values]
+        if not isinstance(keys,_list_types): keys = [keys]
+        if not isinstance(values,_list_types): values = [values]
         nk,nv = len(keys), len(values)
         s = param() if makeparam else struct()
         if nk&gt;0 and nv&gt;0:
@@ -3309,11 +3309,16 @@ s.sortdefinitions()
             print(line)
             for key,value in self.__dict__.items():
                 if key not in self._excludedattr:
-                    if isinstance(value,(int,float,str,list,tuple,np.ndarray,np.generic)):
-                        if isinstance(value,pstr):
-                            print(fmt % key,&#39;p&#34;&#39;+self.dispmax(value)+&#39;&#34;&#39;)
-                        if isinstance(value,str) and value==&#34;&#34;:
-                            print(fmt % key,&#39;&#34;&#34;&#39;)
+                    if isinstance(value,_numeric_types):
+                        # old code (removed on 2025-01-18)
+                        # if isinstance(value,pstr):
+                        #     print(fmt % key,&#39;p&#34;&#39;+self.dispmax(value)+&#39;&#34;&#39;)
+                        # if isinstance(value,str) and value==&#34;&#34;:
+                        #     print(fmt % key,&#39;&#34;&#34;&#39;)
+                        # else:
+                        #     print(fmt % key,self.dispmax(value))
+                        if isinstance(value,np.ndarray):
+                            print(fmt % key, struct.format_array(value))
                         else:
                             print(fmt % key,self.dispmax(value))
                     elif isinstance(value,struct):
@@ -3342,7 +3347,11 @@ s.sortdefinitions()
                                 if value == &#34;&#34;:
                                     print(fmteval % &#34;&#34;,self.dispmax(&#34;&lt;empty string&gt;&#34;))
                                 else:
-                                    print(fmteval % &#34;&#34;,self.dispmax(tmp.getattr(key)))
+                                    calcvalue =tmp.getattr(key)
+                                    if isinstance(calcvalue, str) and &#34;error&#34; in calcvalue.lower():
+                                        print(fmteval % &#34;&#34;,calcvalue)
+                                    else:
+                                        print(fmteval % &#34;&#34;,self.dispmax(calcvalue))
             print(line)
             return f&#34;{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s&#34;
 
@@ -3362,7 +3371,40 @@ s.sortdefinitions()
         &#34;&#34;&#34; clear() delete all fields while preserving the original class &#34;&#34;&#34;
         for k in self.keys(): delattr(self,k)
 
-    def format(self,s,escape=False,raiseerror=True):
+    def format(self, s, escape=False, raiseerror=True):
+        &#34;&#34;&#34;
+            Format a string with fields using {field} as placeholders.
+            Handles expressions like ${variable1}.
+
+            Args:
+                s (str): The input string to format.
+                escape (bool): If True, prevents replacing &#39;${&#39; with &#39;{&#39;.
+                raiseerror (bool): If True, raises errors for missing fields.
+
+            Returns:
+                str: The formatted string.
+        &#34;&#34;&#34;
+        if raiseerror:
+            try:
+                if escape:
+                    return s.format_map(AttrErrorDict(self.__dict__))
+                else:
+                    return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))
+            except AttributeError as attr_err:
+                # Handle AttributeError for expressions with operators
+                s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
+                print(f&#34;WARNING: the {self._ftype} {attr_err} is undefined in &#39;{s_}&#39;&#34;)
+                return s_  # Revert to using &#39;${&#39; for unresolved expressions
+            except Exception as other_err:
+                s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
+                raise RuntimeError from other_err
+        else:
+            if escape:
+                return s.format_map(AttrErrorDict(self.__dict__))
+            else:
+                return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))
+
+    def format_legacy(self,s,escape=False,raiseerror=True):
         &#34;&#34;&#34;
             format a string with field (use {field} as placeholders)
                 s.replace(string), s.replace(string,escape=True)
@@ -3720,7 +3762,51 @@ s.sortdefinitions()
         elif key in self.__dict__:  # Delete only if in instance&#39;s __dict__
             del self.__dict__[key]
         else:
-            raise AttributeError(f&#34;{self._type} has no attribute &#39;{key}&#39;&#34;)</code></pre>
+            raise AttributeError(f&#34;{self._type} has no attribute &#39;{key}&#39;&#34;)
+
+
+    # A la Matlab display method of vectors, matrices and ND-arrays
+    @staticmethod
+    def format_array(value):
+        &#34;&#34;&#34;Format NumPy array for display with distinctions for row and column vectors.&#34;&#34;&#34;
+        dtype_str = {
+            np.float64: &#34;double&#34;,
+            np.float32: &#34;single&#34;,
+            np.int32: &#34;int32&#34;,
+            np.int64: &#34;int64&#34;,
+            np.complex64: &#34;complex single&#34;,
+            np.complex128: &#34;complex double&#34;,
+        }.get(value.dtype.type, str(value.dtype))  # Default to dtype name if not in the map
+        max_display = 10  # Maximum number of elements to display
+
+        # Check if the value is a 1D array (could be a row or column vector)
+        if value.ndim == 1:
+            if len(value) &lt;= max_display:
+                formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
+            else:
+                formatted = f&#34;[{len(value)}×1 {dtype_str}]&#34;
+        # 2D array check
+        elif value.ndim == 2:
+            rows, cols = value.shape
+            # If it&#39;s a single column (column vector), handle it as a transpose
+            if cols == 1:  # Column vector (1 x n)
+                if rows &lt;= max_display:
+                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+                else:
+                    formatted = f&#34;[{rows}×1 {dtype_str}]&#34;
+            # If it&#39;s a single row (row vector), handle it as a row vector
+            elif rows == 1:  # Row vector (1 x n)
+                if cols &lt;= max_display:
+                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
+                else:
+                    formatted = f&#34;[1×{cols} {dtype_str}]&#34;
+            else:  # General 2D matrix
+                formatted = f&#34;[{rows}×{cols} {dtype_str}]&#34;
+        # For higher-dimensional arrays
+        else:
+            shape_str = &#34;×&#34;.join(map(str, value.shape))
+            formatted = f&#34;[{shape_str} array ({dtype_str})]&#34;
+        return formatted</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -3751,6 +3837,58 @@ def dict2struct(dico,makeparam=False):
     raise TypeError(&#34;the argument must be a dictionary&#34;)</code></pre>
 </details>
 </dd>
+<dt id="forcefield.struct.format_array"><code class="name flex">
+<span>def <span class="ident">format_array</span></span>(<span>value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Format NumPy array for display with distinctions for row and column vectors.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def format_array(value):
+    &#34;&#34;&#34;Format NumPy array for display with distinctions for row and column vectors.&#34;&#34;&#34;
+    dtype_str = {
+        np.float64: &#34;double&#34;,
+        np.float32: &#34;single&#34;,
+        np.int32: &#34;int32&#34;,
+        np.int64: &#34;int64&#34;,
+        np.complex64: &#34;complex single&#34;,
+        np.complex128: &#34;complex double&#34;,
+    }.get(value.dtype.type, str(value.dtype))  # Default to dtype name if not in the map
+    max_display = 10  # Maximum number of elements to display
+
+    # Check if the value is a 1D array (could be a row or column vector)
+    if value.ndim == 1:
+        if len(value) &lt;= max_display:
+            formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
+        else:
+            formatted = f&#34;[{len(value)}×1 {dtype_str}]&#34;
+    # 2D array check
+    elif value.ndim == 2:
+        rows, cols = value.shape
+        # If it&#39;s a single column (column vector), handle it as a transpose
+        if cols == 1:  # Column vector (1 x n)
+            if rows &lt;= max_display:
+                formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+            else:
+                formatted = f&#34;[{rows}×1 {dtype_str}]&#34;
+        # If it&#39;s a single row (row vector), handle it as a row vector
+        elif rows == 1:  # Row vector (1 x n)
+            if cols &lt;= max_display:
+                formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
+            else:
+                formatted = f&#34;[1×{cols} {dtype_str}]&#34;
+        else:  # General 2D matrix
+            formatted = f&#34;[{rows}×{cols} {dtype_str}]&#34;
+    # For higher-dimensional arrays
+    else:
+        shape_str = &#34;×&#34;.join(map(str, value.shape))
+        formatted = f&#34;[{shape_str} array ({dtype_str})]&#34;
+    return formatted</code></pre>
+</details>
+</dd>
 <dt id="forcefield.struct.fromkeysvalues"><code class="name flex">
 <span>def <span class="ident">fromkeysvalues</span></span>(<span>keys, values, makeparam=False)</span>
 </code></dt>
@@ -3767,8 +3905,8 @@ def fromkeysvalues(keys,values,makeparam=False):
         use makeparam = True to create a param instead of struct
     &#34;&#34;&#34;
     if keys is None: raise AttributeError(&#34;the keys must not empty&#34;)
-    if not isinstance(keys,(list,tuple,np.ndarray,np.generic)): keys = [keys]
-    if not isinstance(values,(list,tuple,np.ndarray,np.generic)): values = [values]
+    if not isinstance(keys,_list_types): keys = [keys]
+    if not isinstance(values,_list_types): values = [values]
     nk,nv = len(keys), len(values)
     s = param() if makeparam else struct()
     if nk&gt;0 and nv&gt;0:
@@ -4016,6 +4154,64 @@ missing field, None and [] values are replaced by default ones</p>
 <span>def <span class="ident">format</span></span>(<span>self, s, escape=False, raiseerror=True)</span>
 </code></dt>
 <dd>
+<div class="desc"><p>Format a string with fields using {field} as placeholders.
+Handles expressions like ${variable1}.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>s</code></strong> :&ensp;<code>str</code></dt>
+<dd>The input string to format.</dd>
+<dt><strong><code>escape</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, prevents replacing '${' with '{'.</dd>
+<dt><strong><code>raiseerror</code></strong> :&ensp;<code>bool</code></dt>
+<dd>If True, raises errors for missing fields.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>The formatted string.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def format(self, s, escape=False, raiseerror=True):
+    &#34;&#34;&#34;
+        Format a string with fields using {field} as placeholders.
+        Handles expressions like ${variable1}.
+
+        Args:
+            s (str): The input string to format.
+            escape (bool): If True, prevents replacing &#39;${&#39; with &#39;{&#39;.
+            raiseerror (bool): If True, raises errors for missing fields.
+
+        Returns:
+            str: The formatted string.
+    &#34;&#34;&#34;
+    if raiseerror:
+        try:
+            if escape:
+                return s.format_map(AttrErrorDict(self.__dict__))
+            else:
+                return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))
+        except AttributeError as attr_err:
+            # Handle AttributeError for expressions with operators
+            s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
+            print(f&#34;WARNING: the {self._ftype} {attr_err} is undefined in &#39;{s_}&#39;&#34;)
+            return s_  # Revert to using &#39;${&#39; for unresolved expressions
+        except Exception as other_err:
+            s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
+            raise RuntimeError from other_err
+    else:
+        if escape:
+            return s.format_map(AttrErrorDict(self.__dict__))
+        else:
+            return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))</code></pre>
+</details>
+</dd>
+<dt id="forcefield.struct.format_legacy"><code class="name flex">
+<span>def <span class="ident">format_legacy</span></span>(<span>self, s, escape=False, raiseerror=True)</span>
+</code></dt>
+<dd>
 <div class="desc"><p>format a string with field (use {field} as placeholders)
 s.replace(string), s.replace(string,escape=True)
 where:
@@ -4026,7 +4222,7 @@ escape is a flag to prevent ${} replaced by {}</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def format(self,s,escape=False,raiseerror=True):
+<pre><code class="python">def format_legacy(self,s,escape=False,raiseerror=True):
     &#34;&#34;&#34;
         format a string with field (use {field} as placeholders)
             s.replace(string), s.replace(string,escape=True)
@@ -4791,6 +4987,8 @@ water(beadtype=index, userid="myfluid")</p></div>
 <li><code><a title="forcefield.struct.disp" href="#forcefield.struct.disp">disp</a></code></li>
 <li><code><a title="forcefield.struct.dispmax" href="#forcefield.struct.dispmax">dispmax</a></code></li>
 <li><code><a title="forcefield.struct.format" href="#forcefield.struct.format">format</a></code></li>
+<li><code><a title="forcefield.struct.format_array" href="#forcefield.struct.format_array">format_array</a></code></li>
+<li><code><a title="forcefield.struct.format_legacy" href="#forcefield.struct.format_legacy">format_legacy</a></code></li>
 <li><code><a title="forcefield.struct.fromkeys" href="#forcefield.struct.fromkeys">fromkeys</a></code></li>
 <li><code><a title="forcefield.struct.fromkeysvalues" href="#forcefield.struct.fromkeysvalues">fromkeysvalues</a></code></li>
 <li><code><a title="forcefield.struct.generator" href="#forcefield.struct.generator">generator</a></code></li>
