@@ -1805,7 +1805,7 @@ If <code>USER</code> is provided but is not of type <code><a title="forcefield.s
 </dd>
 <dt id="forcefield.paramauto"><code class="flex name class">
 <span>class <span class="ident">paramauto</span></span>
-<span>(</span><span>sortdefinitions=False, **kwargs)</span>
+<span>(</span><span>sortdefinitions=False, debug=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><h1 id="class-paramauto">Class: <code><a title="forcefield.paramauto" href="#forcefield.paramauto">paramauto</a></code></h1>
@@ -2655,7 +2655,7 @@ solidfood(beadtype=index, userid="myfood")</p></div>
 </dd>
 <dt id="forcefield.struct"><code class="flex name class">
 <span>class <span class="ident">struct</span></span>
-<span>(</span><span>**kwargs)</span>
+<span>(</span><span>debug=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><h1 id="class-struct">Class: <code><a title="forcefield.struct" href="#forcefield.struct">struct</a></code></h1>
@@ -2859,7 +2859,7 @@ s.sortdefinitions()
 </tbody>
 </table>
 <hr>
-<p>constructor</p></div>
+<p>constructor, use debug=True to report eval errors</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3044,14 +3044,15 @@ s.sortdefinitions()
     _iter_ = 0
 
     # excluded attributes (keep the , in the Tupple if it is singleton)
-    _excludedattr = {&#39;_iter_&#39;,&#39;__class__&#39;,&#39;_protection&#39;,&#39;_evaluation&#39;,&#39;_returnerror&#39;} # used by keys() and len()
+    _excludedattr = {&#39;_iter_&#39;,&#39;__class__&#39;,&#39;_protection&#39;,&#39;_evaluation&#39;,&#39;_returnerror&#39;,&#39;_debug&#39;} # used by keys() and len()
 
 
     # Methods
-    def __init__(self,**kwargs):
-        &#34;&#34;&#34; constructor &#34;&#34;&#34;
+    def __init__(self,debug=False,**kwargs):
+        &#34;&#34;&#34; constructor, use debug=True to report eval errors&#34;&#34;&#34;
         # Optionally extend _excludedattr here
         self._excludedattr = self._excludedattr | {&#39;_excludedattr&#39;, &#39;_type&#39;, &#39;_fulltype&#39;,&#39;_ftype&#39;} # addition 2024-10-11
+        self._debug = debug
         self.set(**kwargs)
 
     def zip(self):
@@ -3351,7 +3352,10 @@ s.sortdefinitions()
                                     if isinstance(calcvalue, str) and &#34;error&#34; in calcvalue.lower():
                                         print(fmteval % &#34;&#34;,calcvalue)
                                     else:
-                                        print(fmteval % &#34;&#34;,self.dispmax(calcvalue))
+                                        if isinstance(calcvalue,np.ndarray):
+                                            print(fmteval % &#34;&#34;, struct.format_array(calcvalue))
+                                        else:
+                                            print(fmteval % &#34;&#34;,self.dispmax(calcvalue))
             print(line)
             return f&#34;{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s&#34;
 
@@ -3381,28 +3385,50 @@ s.sortdefinitions()
                 escape (bool): If True, prevents replacing &#39;${&#39; with &#39;{&#39;.
                 raiseerror (bool): If True, raises errors for missing fields.
 
+            Note:
+                NumPy vectors and matrices are converted into their text representation (default behavior)
+                If expressions such ${var[1,2]} are used an error is expected, the original content will be used instead
+
             Returns:
                 str: The formatted string.
         &#34;&#34;&#34;
+        tmp = self.np2str()
         if raiseerror:
             try:
                 if escape:
-                    return s.format_map(AttrErrorDict(self.__dict__))
+                    try: # we try to evaluate with all np objects converted in to strings (default)
+                        return s.format_map(AttrErrorDict(tmp.__dict__))
+                    except: # if an error occurs, we use the orginal content
+                        return s.format_map(AttrErrorDict(self.__dict__))
                 else:
-                    return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))
+                    try: # we try to evaluate with all np objects converted in to strings (default)
+                        return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(tmp.__dict__))
+                    except: # if an error occurs, we use the orginal content
+                        return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))
             except AttributeError as attr_err:
                 # Handle AttributeError for expressions with operators
                 s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
                 print(f&#34;WARNING: the {self._ftype} {attr_err} is undefined in &#39;{s_}&#39;&#34;)
                 return s_  # Revert to using &#39;${&#39; for unresolved expressions
+            except IndexError as idx_err:
+                s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
+                if self._debug:
+                    print(f&#34;Index Error {idx_err} in &#39;{s_}&#39;&#34;)
+                raise IndexError from idx_err
             except Exception as other_err:
                 s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
                 raise RuntimeError from other_err
         else:
             if escape:
-                return s.format_map(AttrErrorDict(self.__dict__))
+                try: # we try to evaluate with all np objects converted in to strings (default)
+                    return s.format_map(AttrErrorDict(tmp.__dict__))
+                except: # if an error occurs, we use the orginal content
+                    return s.format_map(AttrErrorDict(self.__dict__))
             else:
-                return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))
+                try: # we try to evaluate with all np objects converted in to strings (default)
+                    return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(tmp.__dict__))
+                except:  # if an error occurs, we use the orginal content
+                    return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))
 
     def format_legacy(self,s,escape=False,raiseerror=True):
         &#34;&#34;&#34;
@@ -3768,7 +3794,13 @@ s.sortdefinitions()
     # A la Matlab display method of vectors, matrices and ND-arrays
     @staticmethod
     def format_array(value):
-        &#34;&#34;&#34;Format NumPy array for display with distinctions for row and column vectors.&#34;&#34;&#34;
+        &#34;&#34;&#34;
+        Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
+        Args:
+            value (np.ndarray): The NumPy array to format.
+        Returns:
+            str: A formatted string representation of the array.
+        &#34;&#34;&#34;
         dtype_str = {
             np.float64: &#34;double&#34;,
             np.float32: &#34;single&#34;,
@@ -3777,36 +3809,91 @@ s.sortdefinitions()
             np.complex64: &#34;complex single&#34;,
             np.complex128: &#34;complex double&#34;,
         }.get(value.dtype.type, str(value.dtype))  # Default to dtype name if not in the map
+
         max_display = 10  # Maximum number of elements to display
 
-        # Check if the value is a 1D array (could be a row or column vector)
+        # Handle scalar values (0D arrays)
+        if value.ndim == 0 or value.size == 1:
+            return f&#34;{value.item()} ({dtype_str})&#34;
+
+        # Handle 1D arrays (row or column vectors)
         if value.ndim == 1:
             if len(value) &lt;= max_display:
-                formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
+                return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
             else:
-                formatted = f&#34;[{len(value)}×1 {dtype_str}]&#34;
-        # 2D array check
-        elif value.ndim == 2:
+                return f&#34;[{len(value)}×1 {dtype_str}]&#34;
+
+        # Handle 2D arrays (matrices)
+        if value.ndim == 2:
             rows, cols = value.shape
-            # If it&#39;s a single column (column vector), handle it as a transpose
-            if cols == 1:  # Column vector (1 x n)
+            if cols == 1:  # Column vector
                 if rows &lt;= max_display:
-                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
                 else:
-                    formatted = f&#34;[{rows}×1 {dtype_str}]&#34;
-            # If it&#39;s a single row (row vector), handle it as a row vector
-            elif rows == 1:  # Row vector (1 x n)
+                    return f&#34;[{rows}×1 {dtype_str}]&#34;
+            elif rows == 1:  # Row vector
                 if cols &lt;= max_display:
-                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
+                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
                 else:
-                    formatted = f&#34;[1×{cols} {dtype_str}]&#34;
-            else:  # General 2D matrix
-                formatted = f&#34;[{rows}×{cols} {dtype_str}]&#34;
-        # For higher-dimensional arrays
+                    return f&#34;[1×{cols} {dtype_str}]&#34;
+            else:  # General matrix
+                return f&#34;[{rows}×{cols} {dtype_str}]&#34;
+
+        # Handle higher-dimensional arrays
+        shape_str = &#34;×&#34;.join(map(str, value.shape))
+        if value.size &lt;= max_display:  # Show full content for small arrays
+            flattened = value.flatten()
+            formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in flattened) + f&#34;] ({shape_str} {dtype_str})&#34;
         else:
-            shape_str = &#34;×&#34;.join(map(str, value.shape))
             formatted = f&#34;[{shape_str} array ({dtype_str})]&#34;
-        return formatted</code></pre>
+
+        return formatted
+
+
+    # convert all NumPy entries to &#34;nestable&#34; expressions
+    def np2str(self):
+        &#34;&#34;&#34; Convert all np entries of s into their string representations  &#34;&#34;&#34;
+        out = struct()
+        def format_numpy_result(value):
+            &#34;&#34;&#34;
+            Converts a NumPy array or scalar into a string representation:
+            - Scalars and single-element arrays (any number of dimensions) are returned as scalars without brackets.
+            - Arrays with more than one element are formatted with proper nesting and commas to make them valid `np.array()` inputs.
+            - Non-ndarray inputs are returned without modification.
+
+            Args:
+                value (np.ndarray, scalar, or other): The value to format.
+
+            Returns:
+                str or original type: A properly formatted string for NumPy arrays/scalars or the original value.
+            &#34;&#34;&#34;
+            if np.isscalar(value):
+                # If the value is a scalar, return it directly
+                return repr(value)
+            elif isinstance(value, np.ndarray):
+                # Check if the array has exactly one element
+                if value.size == 1:
+                    # Extract the scalar value
+                    return repr(value.item())
+                # Convert the array to a nested list
+                nested_list = value.tolist()
+                # Recursively format the nested list into a valid string
+                def list_to_string(lst):
+                    if isinstance(lst, list):
+                        # Format lists with proper commas
+                        return &#34;[&#34; + &#34;, &#34;.join(list_to_string(item) for item in lst) + &#34;]&#34;
+                    else:
+                        # Format scalars in the list
+                        return repr(lst)
+
+                return list_to_string(nested_list)
+            else:
+                # Return the input unmodified if not a NumPy array or scalar
+                return value
+        # process all entries in s
+        for key,value in self.items():
+            out.setattr(key,format_numpy_result(value))
+        return out</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -3841,14 +3928,30 @@ def dict2struct(dico,makeparam=False):
 <span>def <span class="ident">format_array</span></span>(<span>value)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Format NumPy array for display with distinctions for row and column vectors.</p></div>
+<div class="desc"><p>Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>value</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>The NumPy array to format.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>A formatted string representation of the array.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
 def format_array(value):
-    &#34;&#34;&#34;Format NumPy array for display with distinctions for row and column vectors.&#34;&#34;&#34;
+    &#34;&#34;&#34;
+    Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
+    Args:
+        value (np.ndarray): The NumPy array to format.
+    Returns:
+        str: A formatted string representation of the array.
+    &#34;&#34;&#34;
     dtype_str = {
         np.float64: &#34;double&#34;,
         np.float32: &#34;single&#34;,
@@ -3857,35 +3960,44 @@ def format_array(value):
         np.complex64: &#34;complex single&#34;,
         np.complex128: &#34;complex double&#34;,
     }.get(value.dtype.type, str(value.dtype))  # Default to dtype name if not in the map
+
     max_display = 10  # Maximum number of elements to display
 
-    # Check if the value is a 1D array (could be a row or column vector)
+    # Handle scalar values (0D arrays)
+    if value.ndim == 0 or value.size == 1:
+        return f&#34;{value.item()} ({dtype_str})&#34;
+
+    # Handle 1D arrays (row or column vectors)
     if value.ndim == 1:
         if len(value) &lt;= max_display:
-            formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
+            return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
         else:
-            formatted = f&#34;[{len(value)}×1 {dtype_str}]&#34;
-    # 2D array check
-    elif value.ndim == 2:
+            return f&#34;[{len(value)}×1 {dtype_str}]&#34;
+
+    # Handle 2D arrays (matrices)
+    if value.ndim == 2:
         rows, cols = value.shape
-        # If it&#39;s a single column (column vector), handle it as a transpose
-        if cols == 1:  # Column vector (1 x n)
+        if cols == 1:  # Column vector
             if rows &lt;= max_display:
-                formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+                return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
             else:
-                formatted = f&#34;[{rows}×1 {dtype_str}]&#34;
-        # If it&#39;s a single row (row vector), handle it as a row vector
-        elif rows == 1:  # Row vector (1 x n)
+                return f&#34;[{rows}×1 {dtype_str}]&#34;
+        elif rows == 1:  # Row vector
             if cols &lt;= max_display:
-                formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
+                return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
             else:
-                formatted = f&#34;[1×{cols} {dtype_str}]&#34;
-        else:  # General 2D matrix
-            formatted = f&#34;[{rows}×{cols} {dtype_str}]&#34;
-    # For higher-dimensional arrays
+                return f&#34;[1×{cols} {dtype_str}]&#34;
+        else:  # General matrix
+            return f&#34;[{rows}×{cols} {dtype_str}]&#34;
+
+    # Handle higher-dimensional arrays
+    shape_str = &#34;×&#34;.join(map(str, value.shape))
+    if value.size &lt;= max_display:  # Show full content for small arrays
+        flattened = value.flatten()
+        formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in flattened) + f&#34;] ({shape_str} {dtype_str})&#34;
     else:
-        shape_str = &#34;×&#34;.join(map(str, value.shape))
         formatted = f&#34;[{shape_str} array ({dtype_str})]&#34;
+
     return formatted</code></pre>
 </details>
 </dd>
@@ -4165,6 +4277,9 @@ Handles expressions like ${variable1}.</p>
 <dt><strong><code>raiseerror</code></strong> :&ensp;<code>bool</code></dt>
 <dd>If True, raises errors for missing fields.</dd>
 </dl>
+<h2 id="note">Note</h2>
+<p>NumPy vectors and matrices are converted into their text representation (default behavior)
+If expressions such ${var[1,2]} are used an error is expected, the original content will be used instead</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>str</code></dt>
@@ -4184,28 +4299,50 @@ Handles expressions like ${variable1}.</p>
             escape (bool): If True, prevents replacing &#39;${&#39; with &#39;{&#39;.
             raiseerror (bool): If True, raises errors for missing fields.
 
+        Note:
+            NumPy vectors and matrices are converted into their text representation (default behavior)
+            If expressions such ${var[1,2]} are used an error is expected, the original content will be used instead
+
         Returns:
             str: The formatted string.
     &#34;&#34;&#34;
+    tmp = self.np2str()
     if raiseerror:
         try:
             if escape:
-                return s.format_map(AttrErrorDict(self.__dict__))
+                try: # we try to evaluate with all np objects converted in to strings (default)
+                    return s.format_map(AttrErrorDict(tmp.__dict__))
+                except: # if an error occurs, we use the orginal content
+                    return s.format_map(AttrErrorDict(self.__dict__))
             else:
-                return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))
+                try: # we try to evaluate with all np objects converted in to strings (default)
+                    return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(tmp.__dict__))
+                except: # if an error occurs, we use the orginal content
+                    return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))
         except AttributeError as attr_err:
             # Handle AttributeError for expressions with operators
             s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
             print(f&#34;WARNING: the {self._ftype} {attr_err} is undefined in &#39;{s_}&#39;&#34;)
             return s_  # Revert to using &#39;${&#39; for unresolved expressions
+        except IndexError as idx_err:
+            s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
+            if self._debug:
+                print(f&#34;Index Error {idx_err} in &#39;{s_}&#39;&#34;)
+            raise IndexError from idx_err
         except Exception as other_err:
             s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
             raise RuntimeError from other_err
     else:
         if escape:
-            return s.format_map(AttrErrorDict(self.__dict__))
+            try: # we try to evaluate with all np objects converted in to strings (default)
+                return s.format_map(AttrErrorDict(tmp.__dict__))
+            except: # if an error occurs, we use the orginal content
+                return s.format_map(AttrErrorDict(self.__dict__))
         else:
-            return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))</code></pre>
+            try: # we try to evaluate with all np objects converted in to strings (default)
+                return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(tmp.__dict__))
+            except:  # if an error occurs, we use the orginal content
+                return s.replace(&#34;${&#34;, &#34;{&#34;).format_map(AttrErrorDict(self.__dict__))</code></pre>
 </details>
 </dd>
 <dt id="forcefield.struct.format_legacy"><code class="name flex">
@@ -4410,6 +4547,60 @@ escape is a flag to prevent ${} replaced by {}</p></div>
     klist = self.keys()
     l = [len(k) for k in klist]
     return [k for _,k in sorted(zip(l,klist),reverse=reverse)]</code></pre>
+</details>
+</dd>
+<dt id="forcefield.struct.np2str"><code class="name flex">
+<span>def <span class="ident">np2str</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert all np entries of s into their string representations</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def np2str(self):
+    &#34;&#34;&#34; Convert all np entries of s into their string representations  &#34;&#34;&#34;
+    out = struct()
+    def format_numpy_result(value):
+        &#34;&#34;&#34;
+        Converts a NumPy array or scalar into a string representation:
+        - Scalars and single-element arrays (any number of dimensions) are returned as scalars without brackets.
+        - Arrays with more than one element are formatted with proper nesting and commas to make them valid `np.array()` inputs.
+        - Non-ndarray inputs are returned without modification.
+
+        Args:
+            value (np.ndarray, scalar, or other): The value to format.
+
+        Returns:
+            str or original type: A properly formatted string for NumPy arrays/scalars or the original value.
+        &#34;&#34;&#34;
+        if np.isscalar(value):
+            # If the value is a scalar, return it directly
+            return repr(value)
+        elif isinstance(value, np.ndarray):
+            # Check if the array has exactly one element
+            if value.size == 1:
+                # Extract the scalar value
+                return repr(value.item())
+            # Convert the array to a nested list
+            nested_list = value.tolist()
+            # Recursively format the nested list into a valid string
+            def list_to_string(lst):
+                if isinstance(lst, list):
+                    # Format lists with proper commas
+                    return &#34;[&#34; + &#34;, &#34;.join(list_to_string(item) for item in lst) + &#34;]&#34;
+                else:
+                    # Format scalars in the list
+                    return repr(lst)
+
+            return list_to_string(nested_list)
+        else:
+            # Return the input unmodified if not a NumPy array or scalar
+            return value
+    # process all entries in s
+    for key,value in self.items():
+        out.setattr(key,format_numpy_result(value))
+    return out</code></pre>
 </details>
 </dd>
 <dt id="forcefield.struct.set"><code class="name flex">
@@ -5002,6 +5193,7 @@ water(beadtype=index, userid="myfluid")</p></div>
 <li><code><a title="forcefield.struct.items" href="#forcefield.struct.items">items</a></code></li>
 <li><code><a title="forcefield.struct.keys" href="#forcefield.struct.keys">keys</a></code></li>
 <li><code><a title="forcefield.struct.keyssorted" href="#forcefield.struct.keyssorted">keyssorted</a></code></li>
+<li><code><a title="forcefield.struct.np2str" href="#forcefield.struct.np2str">np2str</a></code></li>
 <li><code><a title="forcefield.struct.read" href="#forcefield.struct.read">read</a></code></li>
 <li><code><a title="forcefield.struct.scan" href="#forcefield.struct.scan">scan</a></code></li>
 <li><code><a title="forcefield.struct.set" href="#forcefield.struct.set">set</a></code></li>

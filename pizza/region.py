@@ -264,7 +264,7 @@ from pizza.script import pipescript, script, scriptdata, scriptobject, span
 from pizza.forcefield import *
 
 
-__all__ = ['Block', 'Collection', 'Cone', 'Cylinder', 'Ellipsoid', 'Evalgeometry', 'Intersect', 'LammpsCollectionGroup', 'LammpsCreate', 'LammpsFooter', 'LammpsFooterPreview', 'LammpsGeneric', 'LammpsGroup', 'LammpsHeader', 'LammpsHeaderBox', 'LammpsHeaderInit', 'LammpsHeaderLattice', 'LammpsHeaderMass', 'LammpsMove', 'LammpsRegion', 'LammpsSetGroup', 'LammpsSpacefilling', 'LammpsVariables', 'Plane', 'Prism', 'Sphere', 'Union', 'cleanname', 'coregeometry', 'emulsion', 'forcefield', 'headersRegiondata', 'none', 'param', 'paramauto', 'parameterforcefield', 'pipescript', 'pstr', 'region', 'regioncollection', 'regiondata', 'rigidwall', 'saltTLSPH', 'scatter', 'script', 'scriptdata', 'scriptobject', 'smd', 'solidfood', 'span', 'struct', 'tlsph', 'ulsph', 'water', 'wrap']
+__all__ = ['AttrErrorDict', 'Block', 'Collection', 'Cone', 'Cylinder', 'Ellipsoid', 'Evalgeometry', 'Intersect', 'LammpsCollectionGroup', 'LammpsCreate', 'LammpsFooter', 'LammpsFooterPreview', 'LammpsGeneric', 'LammpsGroup', 'LammpsHeader', 'LammpsHeaderBox', 'LammpsHeaderInit', 'LammpsHeaderLattice', 'LammpsHeaderMass', 'LammpsMove', 'LammpsRegion', 'LammpsSetGroup', 'LammpsSpacefilling', 'LammpsVariables', 'Plane', 'Prism', 'SafeEvaluator', 'Sphere', 'Union', 'cleanname', 'coregeometry', 'emulsion', 'forcefield', 'headersRegiondata', 'none', 'param', 'paramauto', 'parameterforcefield', 'pipescript', 'pstr', 'region', 'regioncollection', 'regiondata', 'rigidwall', 'saltTLSPH', 'scatter', 'script', 'scriptdata', 'scriptobject', 'smd', 'solidfood', 'span', 'struct', 'tlsph', 'ulsph', 'water', 'wrap']
 
 
 # protected properties in region

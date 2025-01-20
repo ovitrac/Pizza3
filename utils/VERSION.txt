@@ -23,9 +23,10 @@
 #       - 1.001: fixes for dscript and script classes
 #       - 1.002: add scripting features for vectorial calculus
 #       - 1.003: add complex mathematical expressions
+#	- 1.004: major release and update, many extensions and fixes to pizza.private.mstruct
 #
 #
 # Author: INRAE\Olivier Vitrac
-# Revision: 2025-01-19
+# Revision: 2025-01-20
 #
-version="1.003"
+version="1.004"

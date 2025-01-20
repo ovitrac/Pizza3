@@ -165,6 +165,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-01-17 enable evaluation with ! and first recursion for lists (v1.002)
 # 2025-01-18 fixes and explicit imports, better management of NumpPy arrays
 # 2025-01-19 consolidation of slice handling, implicit evaluation and error handling (v1.003)
+# 2025-01-20 full implementation and documentation of NumPy shorthands (v.1.004), use debug=True to show evaluation errors
 
 
 __project__ = "Pizza3"
@@ -174,7 +175,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.003"
+__version__ = "1.004"
 
 
 # %% Dependencies
@@ -317,13 +318,19 @@ class SafeEvaluator(ast.NodeVisitor):
 
 # Class to handle expressions containing operators correctly without being misinterpreted as attribute accesses.
 class AttrErrorDict(dict):
-    """Custom dictionary that raises AttributeError instead of KeyError for missing keys."""
+    """Custom dictionary that raises AttributeError (as required for the logic of struct)
+       instead of KeyError for missing keys and strips quotes from strings."""
     def __getitem__(self, key):
         try:
-            return super().__getitem__(key)
+            value = super().__getitem__(key)
+            if isinstance(value, str):
+                # Strip surrounding single or double quotes if present
+                if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+                    return value[1:-1]
+                return value
+            return value
         except KeyError:
             raise AttributeError(f"Attribute '{key}' not found")
-
 
 # %% core struct class
 class struct():
@@ -506,14 +513,15 @@ class struct():
     _iter_ = 0
 
     # excluded attributes (keep the , in the Tupple if it is singleton)
-    _excludedattr = {'_iter_','__class__','_protection','_evaluation','_returnerror'} # used by keys() and len()
+    _excludedattr = {'_iter_','__class__','_protection','_evaluation','_returnerror','_debug'} # used by keys() and len()
 
 
     # Methods
-    def __init__(self,**kwargs):
-        """ constructor """
+    def __init__(self,debug=False,**kwargs):
+        """ constructor, use debug=True to report eval errors"""
         # Optionally extend _excludedattr here
         self._excludedattr = self._excludedattr | {'_excludedattr', '_type', '_fulltype','_ftype'} # addition 2024-10-11
+        self._debug = debug
         self.set(**kwargs)
 
     def zip(self):
@@ -813,7 +821,10 @@ class struct():
                                     if isinstance(calcvalue, str) and "error" in calcvalue.lower():
                                         print(fmteval % "",calcvalue)
                                     else:
-                                        print(fmteval % "",self.dispmax(calcvalue))
+                                        if isinstance(calcvalue,np.ndarray):
+                                            print(fmteval % "", struct.format_array(calcvalue))
+                                        else:
+                                            print(fmteval % "",self.dispmax(calcvalue))
             print(line)
             return f"{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s"
 
@@ -843,28 +854,50 @@ class struct():
                 escape (bool): If True, prevents replacing '${' with '{'.
                 raiseerror (bool): If True, raises errors for missing fields.
 
+            Note:
+                NumPy vectors and matrices are converted into their text representation (default behavior)
+                If expressions such ${var[1,2]} are used an error is expected, the original content will be used instead
+
             Returns:
                 str: The formatted string.
         """
+        tmp = self.np2str()
         if raiseerror:
             try:
                 if escape:
-                    return s.format_map(AttrErrorDict(self.__dict__))
+                    try: # we try to evaluate with all np objects converted in to strings (default)
+                        return s.format_map(AttrErrorDict(tmp.__dict__))
+                    except: # if an error occurs, we use the orginal content
+                        return s.format_map(AttrErrorDict(self.__dict__))
                 else:
-                    return s.replace("${", "{").format_map(AttrErrorDict(self.__dict__))
+                    try: # we try to evaluate with all np objects converted in to strings (default)
+                        return s.replace("${", "{").format_map(AttrErrorDict(tmp.__dict__))
+                    except: # if an error occurs, we use the orginal content
+                        return s.replace("${", "{").format_map(AttrErrorDict(self.__dict__))
             except AttributeError as attr_err:
                 # Handle AttributeError for expressions with operators
                 s_ = s.replace("{", "${")
                 print(f"WARNING: the {self._ftype} {attr_err} is undefined in '{s_}'")
                 return s_  # Revert to using '${' for unresolved expressions
+            except IndexError as idx_err:
+                s_ = s.replace("{", "${")
+                if self._debug:
+                    print(f"Index Error {idx_err} in '{s_}'")
+                raise IndexError from idx_err
             except Exception as other_err:
                 s_ = s.replace("{", "${")
                 raise RuntimeError from other_err
         else:
             if escape:
-                return s.format_map(AttrErrorDict(self.__dict__))
+                try: # we try to evaluate with all np objects converted in to strings (default)
+                    return s.format_map(AttrErrorDict(tmp.__dict__))
+                except: # if an error occurs, we use the orginal content
+                    return s.format_map(AttrErrorDict(self.__dict__))
             else:
-                return s.replace("${", "{").format_map(AttrErrorDict(self.__dict__))
+                try: # we try to evaluate with all np objects converted in to strings (default)
+                    return s.replace("${", "{").format_map(AttrErrorDict(tmp.__dict__))
+                except:  # if an error occurs, we use the orginal content
+                    return s.replace("${", "{").format_map(AttrErrorDict(self.__dict__))
 
     def format_legacy(self,s,escape=False,raiseerror=True):
         """
@@ -1230,7 +1263,13 @@ class struct():
     # A la Matlab display method of vectors, matrices and ND-arrays
     @staticmethod
     def format_array(value):
-        """Format NumPy array for display with distinctions for row and column vectors."""
+        """
+        Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
+        Args:
+            value (np.ndarray): The NumPy array to format.
+        Returns:
+            str: A formatted string representation of the array.
+        """
         dtype_str = {
             np.float64: "double",
             np.float32: "single",
@@ -1239,37 +1278,91 @@ class struct():
             np.complex64: "complex single",
             np.complex128: "complex double",
         }.get(value.dtype.type, str(value.dtype))  # Default to dtype name if not in the map
+
         max_display = 10  # Maximum number of elements to display
 
-        # Check if the value is a 1D array (could be a row or column vector)
+        # Handle scalar values (0D arrays)
+        if value.ndim == 0 or value.size == 1:
+            return f"{value.item()} ({dtype_str})"
+
+        # Handle 1D arrays (row or column vectors)
         if value.ndim == 1:
             if len(value) <= max_display:
-                formatted = "[" + " ".join(f"{v:.4g}" for v in value) + f"] ({dtype_str})"
+                return "[" + " ".join(f"{v:.4g}" for v in value) + f"] ({dtype_str})"
             else:
-                formatted = f"[{len(value)}×1 {dtype_str}]"
-        # 2D array check
-        elif value.ndim == 2:
+                return f"[{len(value)}×1 {dtype_str}]"
+
+        # Handle 2D arrays (matrices)
+        if value.ndim == 2:
             rows, cols = value.shape
-            # If it's a single column (column vector), handle it as a transpose
-            if cols == 1:  # Column vector (1 x n)
+            if cols == 1:  # Column vector
                 if rows <= max_display:
-                    formatted = "[" + " ".join(f"{v[0]:.4g}" for v in value) + f"]T ({dtype_str})"
+                    return "[" + " ".join(f"{v[0]:.4g}" for v in value) + f"]T ({dtype_str})"
                 else:
-                    formatted = f"[{rows}×1 {dtype_str}]"
-            # If it's a single row (row vector), handle it as a row vector
-            elif rows == 1:  # Row vector (1 x n)
+                    return f"[{rows}×1 {dtype_str}]"
+            elif rows == 1:  # Row vector
                 if cols <= max_display:
-                    formatted = "[" + " ".join(f"{v:.4g}" for v in value[0]) + f"] ({dtype_str})"
+                    return "[" + " ".join(f"{v:.4g}" for v in value[0]) + f"] ({dtype_str})"
                 else:
-                    formatted = f"[1×{cols} {dtype_str}]"
-            else:  # General 2D matrix
-                formatted = f"[{rows}×{cols} {dtype_str}]"
-        # For higher-dimensional arrays
+                    return f"[1×{cols} {dtype_str}]"
+            else:  # General matrix
+                return f"[{rows}×{cols} {dtype_str}]"
+
+        # Handle higher-dimensional arrays
+        shape_str = "×".join(map(str, value.shape))
+        if value.size <= max_display:  # Show full content for small arrays
+            flattened = value.flatten()
+            formatted = "[" + " ".join(f"{v:.4g}" for v in flattened) + f"] ({shape_str} {dtype_str})"
         else:
-            shape_str = "×".join(map(str, value.shape))
             formatted = f"[{shape_str} array ({dtype_str})]"
+
         return formatted
 
+
+    # convert all NumPy entries to "nestable" expressions
+    def np2str(self):
+        """ Convert all np entries of s into their string representations  """
+        out = struct()
+        def format_numpy_result(value):
+            """
+            Converts a NumPy array or scalar into a string representation:
+            - Scalars and single-element arrays (any number of dimensions) are returned as scalars without brackets.
+            - Arrays with more than one element are formatted with proper nesting and commas to make them valid `np.array()` inputs.
+            - Non-ndarray inputs are returned without modification.
+
+            Args:
+                value (np.ndarray, scalar, or other): The value to format.
+
+            Returns:
+                str or original type: A properly formatted string for NumPy arrays/scalars or the original value.
+            """
+            if np.isscalar(value):
+                # If the value is a scalar, return it directly
+                return repr(value)
+            elif isinstance(value, np.ndarray):
+                # Check if the array has exactly one element
+                if value.size == 1:
+                    # Extract the scalar value
+                    return repr(value.item())
+                # Convert the array to a nested list
+                nested_list = value.tolist()
+                # Recursively format the nested list into a valid string
+                def list_to_string(lst):
+                    if isinstance(lst, list):
+                        # Format lists with proper commas
+                        return "[" + ", ".join(list_to_string(item) for item in lst) + "]"
+                    else:
+                        # Format scalars in the list
+                        return repr(lst)
+
+                return list_to_string(nested_list)
+            else:
+                # Return the input unmodified if not a NumPy array or scalar
+                return value
+        # process all entries in s
+        for key,value in self.items():
+            out.setattr(key,format_numpy_result(value))
+        return out
 
 # %% param class with scripting and evaluation capabilities
 class param(struct):
@@ -1451,9 +1544,9 @@ class param(struct):
 
     # magic constructor
     def __init__(self,_protection=False,_evaluation=True,
-                 sortdefinitions=False,**kwargs):
+                 sortdefinitions=False,debug=False,**kwargs):
         """ constructor """
-        super().__init__(**kwargs)
+        super().__init__(debug=debug,**kwargs)
         self._protection = _protection
         self._evaluation = _evaluation
         if sortdefinitions: self.sortdefinitions()
@@ -1536,6 +1629,8 @@ class param(struct):
                 # Protect variables if required
                 ispstr = isinstance(value,pstr)
                 valuesafe = pstr.eval(value,ispstr=ispstr) # value.strip()
+                if valuesafe=="${"+key+"}": # circular reference (it cannot be evaluated)
+                    continue
                 if protection or self._protection:
                     valuesafe, escape0 = self.protect(valuesafe)
                 else:
@@ -1550,6 +1645,9 @@ class param(struct):
                 # if the first character is '#', it is not comment (e.g. MarkDown titles)
                 poscomment = valuesafe.find("#")
                 if poscomment>0: valuesafe = valuesafe[0:poscomment].strip()
+                # Matrix shorthand replacement
+                # $[[1,2,${a}]]+$[[10,20,30]] --> np.array([[1,2,${a}]])+np.array([[10,20,30]])
+                valuesafe = param.replace_matrix_shorthand(valuesafe)
                 # Literal string starts with $ (no interpretation), ! (evaluation)
                 if not self._evaluation:
                     tmp.setattr(key, pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr))
@@ -1604,6 +1702,8 @@ class param(struct):
                                         reseval = evaluator.evaluate(resstr)
                                     except Exception as othererr:
                                         #tmp.setattr(key,"Mathematical Error around/in ${}: < %s >" % othererr)
+                                        if self._debug:
+                                            print(f"DEBUG {key}: Error in Evaluating: {resstr}\n< {othererr} >")
                                         tmp.setattr(key,resstr)
                                     else:
                                         tmp.setattr(key,reseval)
@@ -1615,8 +1715,10 @@ class param(struct):
                                     evaluator = SafeEvaluator(tmp)
                                     reseval = evaluator.evaluate(resstr)
                                 except Exception as othererr:
-                                    tmp.setattr(key,resstr.replace("\n",",")) # \n replaced by ,
                                     #tmp.setattr(key,"Eval Error < %s >" % othererr)
+                                    if self._debug:
+                                        print(f"DEBUG {key}: Error in Evaluating: {resstr}\n< {othererr} >")
+                                    tmp.setattr(key,resstr.replace("\n",",")) # \n replaced by ,
                                 else:
                                     tmp.setattr(key,reseval)
             elif isinstance(value,_numeric_types): # already a number
@@ -1630,7 +1732,7 @@ class param(struct):
 
     # formateval obeys to following rules
     # lines starting with # (hash) are interpreted as comments
-    def formateval(self,s,protection=False):
+    def formateval(self,s,protection=False,fullevaluation=True):
         """
             format method with evaluation feature
 
@@ -1646,6 +1748,7 @@ class param(struct):
 
         """
         tmp = self.eval(s,protection=protection)
+        evaluator = SafeEvaluator(tmp) # used when fullevaluation=True
         # Do all replacements in s (keep comments)
         if len(tmp)==0:
             return s
@@ -1669,7 +1772,18 @@ class param(struct):
                 if ispstr:
                     slines[i] = pstr.eval(tmp.format(slines[i],escape=escape),ispstr=ispstr)
                 else:
-                    slines[i] = tmp.format(slines[i],escape=escape)+comment
+                    if fullevaluation:
+                        try:
+                            resstr =tmp.format(slines[i],escape=escape)
+                        except:
+                            resstr = param.safe_fstring(slines[i],tmp,varprefix="")
+                        try:
+                            reseval = evaluator.evaluate(resstr)
+                            slines[i] = str(reseval)+" "+comment if comment else str(reseval)
+                        except:
+                            slines[i] = resstr + comment
+                    else:
+                        slines[i] = tmp.format(slines[i],escape=escape)+comment
                 # convert starting % into # to authorize replacement in comments
                 if len(slines[i])>0:
                     if slines[i][0] == "%": slines[i]="#"+slines[i][1:]
@@ -1693,13 +1807,54 @@ class param(struct):
         return struct.fromkeysvalues(self.keys(),self.values(),makeparam=False)
 
 
+    # Implement shorthands for NumPy vectors and matrices
+    @staticmethod
+    def replace_matrix_shorthand(valuesafe):
+        """
+        Replaces shorthand:
+        - $[[...]] -> np.array([[...]]) (nested matrix).
+        - $[...] -> np.atleast_2d(np.array([...])) (enforces at least 2D).
+        - @{var} -> np.atleast_2d(np.array(${var})) (forces `var` to be at least 2D).
+
+        Args:
+            valuesafe (str): The input string containing expressions.
+
+        Returns:
+            str: The string with shorthand replaced by NumPy-compatible array syntax.
+        """
+        # Step 1: Replace $[[...]] (nested matrix)
+        pattern_nested = r'\$\[\[(.*?)\]\]'
+        def replacer_nested(match):
+            content = match.group(1).strip()
+            # Replace spaces only when not preceded by a comma or another space
+            content = re.sub(r'(?<![,\s])\s+(?=\d|\$)', ',', content)
+            return f'np.array([[{content}]])'
+        valuesafe = re.sub(pattern_nested, replacer_nested, valuesafe)
+
+        # Step 2: Replace $[...] (vectors/arrays)
+        pattern_vector = r'\$\[(.*?)\]'
+        def replacer_vector(match):
+            content = match.group(1).strip()
+            # Replace spaces only when not preceded by a comma or another space
+            content = re.sub(r'(?<![,\s])\s+(?=\d|\$)', ',', content)
+            return f'np.atleast_2d(np.array([{content}]))'
+        valuesafe = re.sub(pattern_vector, replacer_vector, valuesafe)
+
+        # Step 3: Replace @{var} (force variable to array)
+        pattern_force_array = r'@\{([^\{\}]+)\}'
+        valuesafe = re.sub(pattern_force_array, r'np.atleast_2d(np.array(${\1}))', valuesafe)
+
+        return valuesafe
+
+
     # Safe fstring
     @staticmethod
-    def safe_fstring(template, context):
+    def safe_fstring(template, context,varprefix="$"):
         """Safely evaluate expressions in ${} using SafeEvaluator."""
         evaluator = SafeEvaluator(context)
         # Process template string in combination with safe_fstring()
         # it is required to have an output compatible with eval()
+
         def process_template(valuesafe):
             """
             Processes the input string by:
@@ -1728,6 +1883,7 @@ class param(struct):
             # Optional: Strip again to remove any trailing whitespace left after removing comments
             valuesafe = valuesafe.strip()
             return valuesafe
+
         # Adjusted display for NumPy arrays
         def serialize_result(result):
             """
@@ -1742,7 +1898,8 @@ class param(struct):
             else:
                 return str(result)
         # Regular expression to find ${expr} patterns
-        pattern = re.compile(r'\$\{([^{}]+)\}')
+        escaped_varprefix = re.escape(varprefix)
+        pattern = re.compile(escaped_varprefix+r'\{([^{}]+)\}')
         def replacer(match):
             expr = match.group(1)
             try:
@@ -1752,8 +1909,6 @@ class param(struct):
             except Exception as e:
                 return f"<Error: {e}>"
         return pattern.sub(replacer, process_template(template))
-
-
 
 # %% str class for file and paths
 # this class guarantees that paths are POSIX at any time
@@ -2288,3 +2443,117 @@ if __name__ == '__main__':
     #                = 2
     #   -------------:----------------------------------------
     # parameter list (param object) with 17 definitions
+
+
+# Example with new NumPy shorthands
+    p = param(debug=True);
+    p.a = 1.0
+    p.b = "10.0"
+    p.c = "$[${a},2,3]*${b}" # Create a Numpy vector from an operation
+    p.n = "$[0,0,1]"         # another one
+    p.o1 = "@{n}"          # create a copy
+    p.o2 = "$[${a},2,3]" # create a Numpy vector
+    p.o3 = "@{o1} @ @{o2}.T" # multiplication between two vectots
+    p.d = "@{n}.T @ $[[${a},2,3]]" # another one
+    p.f = "($[${a},2,3]*${b}) @ np.array([[0,0,1]]).T" # another one using explicitly NumPy
+    p.nT = "@{n}.T" # transpose of a vector/matrix
+    p.m = "${n.T}*2" # this operation is illegal and will be kept as a string
+    p.o = "@{n}.T*2" # this one is the correct one
+    p.p = "$[[1,2],[3,4]]" # Create a 2D Numpy array
+    p.q = "${p[1,1]}"   # index a 2D NumPy array
+    p.r = "${p[:,1]}"   # this is a valid syntax to get the slice as a list
+    p.s = "@{p}[:,1]+1" # use this syntax if you need apply an operation to the slice
+    # more advanced
+    p.V1 = "$[1.0,0.2,0.03]"
+    p.V2 = "@{V1}+1"
+    p.V3 = "@{V1}.T @ @{V2}"
+    p.V4 = "np.diag(@{V3})"
+    p.V5 = "np.linalg.eig(@{V3})"
+    p.out = "the first eigenvalue is: ${V5.eigenvalues[0]}"
+    print(repr(p))
+
+
+    # OUTPUT with DEBUG MESSAGES
+    # DEBUG m: Error in Evaluating: [[0]
+    #  [0]
+    #  [1]]*2
+    # < Invalid index 1 for object of type int: 'int' object is not subscriptable >
+    # DEBUG out: Error in Evaluating: the first eigenvalue is: 2.0
+    # < invalid syntax (<unknown>, line 1) >
+    #   -------------:----------------------------------------
+    #               a: 1.0
+    #               b: 10.0
+    #                = 10.0
+    #               c: $[${a},2,3]*${b}
+    #                = [10 20 30] (double)
+    #               n: $[0,0,1]
+    #                = [0 0 1] (int64)
+    #              o1: @{n}
+    #                = [0 0 1] (int64)
+    #              o2: $[${a},2,3]
+    #                = [1 2 3] (double)
+    #              o3: @{o1} @ @{o2}.T
+    #                = 3.0 (double)
+    #               d: @{n}.T @ $[[${a},2,3]]
+    #                = [3×3 double]
+    #               f: ($[${a},2,3]*${b}) @ [...] p.array([[0,0,1]]).T
+    #                = 30.0 (double)
+    #              nT: @{n}.T
+    #                = [0 0 1]T (int64)
+    #               m: ${n.T}*2
+    #                = [[0], [0], [1]]*2
+    #               o: @{n}.T*2
+    #                = [0 0 2]T (int64)
+    #               p: $[[1,2],[3,4]]
+    #                = [2×2 int64]
+    #               q: ${p[1,1]}
+    #                = 4
+    #               r: ${p[:,1]}
+    #                = [2, 4]
+    #               s: @{p}[:,1]+1
+    #                = [3 5] (int64)
+    #              V1: $[1.0,0.2,0.03]
+    #                = [1 0.2 0.03] (double)
+    #              V2: @{V1}+1
+    #                = [2 1.2 1.03] (double)
+    #              V3: @{V1}.T @ @{V2}
+    #                = [3×3 double]
+    #              V4: np.diag(@{V3})
+    #                = [2 0.24 0.0309] (double)
+    #              V5: np.linalg.eig(@{V3})
+    #                = EigResult(eigenvalue [...] 332, -0.06057363]]))
+    #             out: the first eigenvalue is: ${V3[0,0]}
+    #                = the first eigenvalue is: 2.0
+    #   -------------:----------------------------------------
+    # parameter list (param object) with 22 definitions
+
+# Advanced NumPy example
+
+    p = param(debug=True)
+    p.p = "$[[1, 2], [3, 4]]"      # Create a 2D NumPy array
+    p.q = "${p[1, 1]}"             # Indexing: retrieves 4
+    p.r = "@{p}[:,1] + 1"          # Add 1 to the second column
+    p.s = "@{p}[:, 1].reshape(-1, 1) @ @{r}" # perform p(:,1)'*s in Matlab sense
+    p.t = "np.linalg.eig(@{s})"
+    p.w = "${t.eigenvalues[0]} + ${t.eigenvalues[1]}" # sum of eigen values
+    p.x = "$[[0,${t.eigenvalues[0]}+${t.eigenvalues[1]}]]" # horizontal concat à la Matlab
+    print(repr(p))
+
+    #Output
+  #   -------------:----------------------------------------
+  #               p: $[[1, 2], [3, 4]]
+  #                = [2×2 int64]
+  #               q: ${p[1, 1]}
+  #                = 4
+  #               r: @{p}[:,1] + 1
+  #                = [3 5] (int64)
+  #               s: @{p}[:, 1].reshape(-1, 1) @ @{r}
+  #                = [2×2 int64]
+  #               t: np.linalg.eig(@{s})
+  #                = EigResult(eigenvalue [...] 576, -0.89442719]]))
+  #               w: ${t.eigenvalues[0]}  [...]  ${t.eigenvalues[1]}
+  #                = 26.0
+  #               x: $[[0,${t.eigenvalues [...] {t.eigenvalues[1]}]]
+  #                = [0 26] (double)
+  #   -------------:----------------------------------------
+  # parameter list (param object) with 7 definitions
