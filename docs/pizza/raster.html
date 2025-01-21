@@ -8906,8 +8906,11 @@ s.sortdefinitions()
     def format_array(value):
         &#34;&#34;&#34;
         Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
+        Recursively formats multi-dimensional arrays without introducing unwanted commas.
+
         Args:
             value (np.ndarray): The NumPy array to format.
+
         Returns:
             str: A formatted string representation of the array.
         &#34;&#34;&#34;
@@ -8922,39 +8925,85 @@ s.sortdefinitions()
 
         max_display = 10  # Maximum number of elements to display
 
-        # Handle scalar values (0D arrays)
+        def format_recursive(arr):
+            &#34;&#34;&#34;
+            Recursively formats the array based on its dimensions.
+
+            Args:
+                arr (np.ndarray): The array or sub-array to format.
+
+            Returns:
+                str: Formatted string of the array.
+            &#34;&#34;&#34;
+            if arr.ndim == 0:
+                return f&#34;{arr.item()}&#34;
+
+            if arr.ndim == 1:
+                if len(arr) &lt;= max_display:
+                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in arr) + &#34;]&#34;
+                else:
+                    return f&#34;[{len(arr)} elements]&#34;
+
+            if arr.ndim == 2:
+                if arr.shape[1] == 1:
+                    # Column vector
+                    if arr.shape[0] &lt;= max_display:
+                        return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in arr) + &#34;]T&#34;
+                    else:
+                        return f&#34;[{arr.shape[0]}×1 vector]&#34;
+                elif arr.shape[0] == 1:
+                    # Row vector
+                    if arr.shape[1] &lt;= max_display:
+                        return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in arr[0]) + &#34;]&#34;
+                    else:
+                        return f&#34;[1×{arr.shape[1]} vector]&#34;
+                else:
+                    # General matrix
+                    return f&#34;[{arr.shape[0]}×{arr.shape[1]} matrix]&#34;
+
+            # For higher dimensions
+            shape_str = &#34;×&#34;.join(map(str, arr.shape))
+            if arr.size &lt;= max_display:
+                # Show full content
+                if arr.ndim &gt; 2:
+                    # Represent multi-dimensional arrays with nested brackets
+                    return &#34;[&#34; + &#34; &#34;.join(format_recursive(subarr) for subarr in arr) + f&#34;] ({shape_str} {dtype_str})&#34;
+            return f&#34;[{shape_str} array ({dtype_str})]&#34;
+
+        if value.size == 0:
+            return &#34;[]&#34;
+
         if value.ndim == 0 or value.size == 1:
             return f&#34;{value.item()} ({dtype_str})&#34;
 
-        # Handle 1D arrays (row or column vectors)
-        if value.ndim == 1:
-            if len(value) &lt;= max_display:
-                return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
-            else:
-                return f&#34;[{len(value)}×1 {dtype_str}]&#34;
-
-        # Handle 2D arrays (matrices)
-        if value.ndim == 2:
-            rows, cols = value.shape
-            if cols == 1:  # Column vector
-                if rows &lt;= max_display:
-                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+        if value.ndim == 1 or value.ndim == 2:
+            # Use existing logic for vectors and matrices
+            if value.ndim == 1:
+                if len(value) &lt;= max_display:
+                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
                 else:
-                    return f&#34;[{rows}×1 {dtype_str}]&#34;
-            elif rows == 1:  # Row vector
-                if cols &lt;= max_display:
-                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
-                else:
-                    return f&#34;[1×{cols} {dtype_str}]&#34;
-            else:  # General matrix
-                return f&#34;[{rows}×{cols} {dtype_str}]&#34;
+                    formatted = f&#34;[{len(value)}×1 {dtype_str}]&#34;
+            elif value.ndim == 2:
+                rows, cols = value.shape
+                if cols == 1:  # Column vector
+                    if rows &lt;= max_display:
+                        formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+                    else:
+                        formatted = f&#34;[{rows}×1 {dtype_str}]&#34;
+                elif rows == 1:  # Row vector
+                    if cols &lt;= max_display:
+                        formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
+                    else:
+                        formatted = f&#34;[1×{cols} {dtype_str}]&#34;
+                else:  # General matrix
+                    formatted = f&#34;[{rows}×{cols} {dtype_str}]&#34;
+            return formatted
 
-        # Handle higher-dimensional arrays
-        shape_str = &#34;×&#34;.join(map(str, value.shape))
-        if value.size &lt;= max_display:  # Show full content for small arrays
-            flattened = value.flatten()
-            formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in flattened) + f&#34;] ({shape_str} {dtype_str})&#34;
+        # For higher-dimensional arrays
+        if value.size &lt;= max_display:
+            formatted = format_recursive(value)
         else:
+            shape_str = &#34;×&#34;.join(map(str, value.shape))
             formatted = f&#34;[{shape_str} array ({dtype_str})]&#34;
 
         return formatted
@@ -9039,7 +9088,8 @@ def dict2struct(dico,makeparam=False):
 <span>def <span class="ident">format_array</span></span>(<span>value)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.</p>
+<div class="desc"><p>Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
+Recursively formats multi-dimensional arrays without introducing unwanted commas.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>value</code></strong> :&ensp;<code>np.ndarray</code></dt>
@@ -9058,8 +9108,11 @@ def dict2struct(dico,makeparam=False):
 def format_array(value):
     &#34;&#34;&#34;
     Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
+    Recursively formats multi-dimensional arrays without introducing unwanted commas.
+
     Args:
         value (np.ndarray): The NumPy array to format.
+
     Returns:
         str: A formatted string representation of the array.
     &#34;&#34;&#34;
@@ -9074,39 +9127,85 @@ def format_array(value):
 
     max_display = 10  # Maximum number of elements to display
 
-    # Handle scalar values (0D arrays)
+    def format_recursive(arr):
+        &#34;&#34;&#34;
+        Recursively formats the array based on its dimensions.
+
+        Args:
+            arr (np.ndarray): The array or sub-array to format.
+
+        Returns:
+            str: Formatted string of the array.
+        &#34;&#34;&#34;
+        if arr.ndim == 0:
+            return f&#34;{arr.item()}&#34;
+
+        if arr.ndim == 1:
+            if len(arr) &lt;= max_display:
+                return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in arr) + &#34;]&#34;
+            else:
+                return f&#34;[{len(arr)} elements]&#34;
+
+        if arr.ndim == 2:
+            if arr.shape[1] == 1:
+                # Column vector
+                if arr.shape[0] &lt;= max_display:
+                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in arr) + &#34;]T&#34;
+                else:
+                    return f&#34;[{arr.shape[0]}×1 vector]&#34;
+            elif arr.shape[0] == 1:
+                # Row vector
+                if arr.shape[1] &lt;= max_display:
+                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in arr[0]) + &#34;]&#34;
+                else:
+                    return f&#34;[1×{arr.shape[1]} vector]&#34;
+            else:
+                # General matrix
+                return f&#34;[{arr.shape[0]}×{arr.shape[1]} matrix]&#34;
+
+        # For higher dimensions
+        shape_str = &#34;×&#34;.join(map(str, arr.shape))
+        if arr.size &lt;= max_display:
+            # Show full content
+            if arr.ndim &gt; 2:
+                # Represent multi-dimensional arrays with nested brackets
+                return &#34;[&#34; + &#34; &#34;.join(format_recursive(subarr) for subarr in arr) + f&#34;] ({shape_str} {dtype_str})&#34;
+        return f&#34;[{shape_str} array ({dtype_str})]&#34;
+
+    if value.size == 0:
+        return &#34;[]&#34;
+
     if value.ndim == 0 or value.size == 1:
         return f&#34;{value.item()} ({dtype_str})&#34;
 
-    # Handle 1D arrays (row or column vectors)
-    if value.ndim == 1:
-        if len(value) &lt;= max_display:
-            return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
-        else:
-            return f&#34;[{len(value)}×1 {dtype_str}]&#34;
-
-    # Handle 2D arrays (matrices)
-    if value.ndim == 2:
-        rows, cols = value.shape
-        if cols == 1:  # Column vector
-            if rows &lt;= max_display:
-                return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+    if value.ndim == 1 or value.ndim == 2:
+        # Use existing logic for vectors and matrices
+        if value.ndim == 1:
+            if len(value) &lt;= max_display:
+                formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
             else:
-                return f&#34;[{rows}×1 {dtype_str}]&#34;
-        elif rows == 1:  # Row vector
-            if cols &lt;= max_display:
-                return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
-            else:
-                return f&#34;[1×{cols} {dtype_str}]&#34;
-        else:  # General matrix
-            return f&#34;[{rows}×{cols} {dtype_str}]&#34;
+                formatted = f&#34;[{len(value)}×1 {dtype_str}]&#34;
+        elif value.ndim == 2:
+            rows, cols = value.shape
+            if cols == 1:  # Column vector
+                if rows &lt;= max_display:
+                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+                else:
+                    formatted = f&#34;[{rows}×1 {dtype_str}]&#34;
+            elif rows == 1:  # Row vector
+                if cols &lt;= max_display:
+                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
+                else:
+                    formatted = f&#34;[1×{cols} {dtype_str}]&#34;
+            else:  # General matrix
+                formatted = f&#34;[{rows}×{cols} {dtype_str}]&#34;
+        return formatted
 
-    # Handle higher-dimensional arrays
-    shape_str = &#34;×&#34;.join(map(str, value.shape))
-    if value.size &lt;= max_display:  # Show full content for small arrays
-        flattened = value.flatten()
-        formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in flattened) + f&#34;] ({shape_str} {dtype_str})&#34;
+    # For higher-dimensional arrays
+    if value.size &lt;= max_display:
+        formatted = format_recursive(value)
     else:
+        shape_str = &#34;×&#34;.join(map(str, value.shape))
         formatted = f&#34;[{shape_str} array ({dtype_str})]&#34;
 
     return formatted</code></pre>

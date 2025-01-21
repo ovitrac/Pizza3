@@ -24,9 +24,10 @@
 #       - 1.002: add scripting features for vectorial calculus
 #       - 1.003: add complex mathematical expressions
 #	- 1.004: major release and update, many extensions and fixes to pizza.private.mstruct
+	- 1.005: 3D, 4D NumPy arrays are fully implemented and operational
 #
 #
 # Author: INRAE\Olivier Vitrac
-# Revision: 2025-01-20
+# Revision: 2025-01-21
 #
-version="1.004"
+version="1.005"

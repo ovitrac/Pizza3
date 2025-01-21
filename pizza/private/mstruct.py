@@ -166,7 +166,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-01-18 fixes and explicit imports, better management of NumpPy arrays
 # 2025-01-19 consolidation of slice handling, implicit evaluation and error handling (v1.003)
 # 2025-01-20 full implementation and documentation of NumPy shorthands (v.1.004), use debug=True to show evaluation errors
-
+# 2025-01-21 full implementation of 3D and 4D NumPy arrays (v.1.005): better parser (replace_matrix_shorthand) and display (format_array), see example
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
@@ -175,7 +175,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.004"
+__version__ = "1.005"
 
 
 # %% Dependencies
@@ -1265,8 +1265,11 @@ class struct():
     def format_array(value):
         """
         Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
+        Recursively formats multi-dimensional arrays without introducing unwanted commas.
+
         Args:
             value (np.ndarray): The NumPy array to format.
+
         Returns:
             str: A formatted string representation of the array.
         """
@@ -1281,39 +1284,85 @@ class struct():
 
         max_display = 10  # Maximum number of elements to display
 
-        # Handle scalar values (0D arrays)
+        def format_recursive(arr):
+            """
+            Recursively formats the array based on its dimensions.
+
+            Args:
+                arr (np.ndarray): The array or sub-array to format.
+
+            Returns:
+                str: Formatted string of the array.
+            """
+            if arr.ndim == 0:
+                return f"{arr.item()}"
+
+            if arr.ndim == 1:
+                if len(arr) <= max_display:
+                    return "[" + " ".join(f"{v:.4g}" for v in arr) + "]"
+                else:
+                    return f"[{len(arr)} elements]"
+
+            if arr.ndim == 2:
+                if arr.shape[1] == 1:
+                    # Column vector
+                    if arr.shape[0] <= max_display:
+                        return "[" + " ".join(f"{v[0]:.4g}" for v in arr) + "]T"
+                    else:
+                        return f"[{arr.shape[0]}×1 vector]"
+                elif arr.shape[0] == 1:
+                    # Row vector
+                    if arr.shape[1] <= max_display:
+                        return "[" + " ".join(f"{v:.4g}" for v in arr[0]) + "]"
+                    else:
+                        return f"[1×{arr.shape[1]} vector]"
+                else:
+                    # General matrix
+                    return f"[{arr.shape[0]}×{arr.shape[1]} matrix]"
+
+            # For higher dimensions
+            shape_str = "×".join(map(str, arr.shape))
+            if arr.size <= max_display:
+                # Show full content
+                if arr.ndim > 2:
+                    # Represent multi-dimensional arrays with nested brackets
+                    return "[" + " ".join(format_recursive(subarr) for subarr in arr) + f"] ({shape_str} {dtype_str})"
+            return f"[{shape_str} array ({dtype_str})]"
+
+        if value.size == 0:
+            return "[]"
+
         if value.ndim == 0 or value.size == 1:
             return f"{value.item()} ({dtype_str})"
 
-        # Handle 1D arrays (row or column vectors)
-        if value.ndim == 1:
-            if len(value) <= max_display:
-                return "[" + " ".join(f"{v:.4g}" for v in value) + f"] ({dtype_str})"
-            else:
-                return f"[{len(value)}×1 {dtype_str}]"
-
-        # Handle 2D arrays (matrices)
-        if value.ndim == 2:
-            rows, cols = value.shape
-            if cols == 1:  # Column vector
-                if rows <= max_display:
-                    return "[" + " ".join(f"{v[0]:.4g}" for v in value) + f"]T ({dtype_str})"
+        if value.ndim == 1 or value.ndim == 2:
+            # Use existing logic for vectors and matrices
+            if value.ndim == 1:
+                if len(value) <= max_display:
+                    formatted = "[" + " ".join(f"{v:.4g}" for v in value) + f"] ({dtype_str})"
                 else:
-                    return f"[{rows}×1 {dtype_str}]"
-            elif rows == 1:  # Row vector
-                if cols <= max_display:
-                    return "[" + " ".join(f"{v:.4g}" for v in value[0]) + f"] ({dtype_str})"
-                else:
-                    return f"[1×{cols} {dtype_str}]"
-            else:  # General matrix
-                return f"[{rows}×{cols} {dtype_str}]"
+                    formatted = f"[{len(value)}×1 {dtype_str}]"
+            elif value.ndim == 2:
+                rows, cols = value.shape
+                if cols == 1:  # Column vector
+                    if rows <= max_display:
+                        formatted = "[" + " ".join(f"{v[0]:.4g}" for v in value) + f"]T ({dtype_str})"
+                    else:
+                        formatted = f"[{rows}×1 {dtype_str}]"
+                elif rows == 1:  # Row vector
+                    if cols <= max_display:
+                        formatted = "[" + " ".join(f"{v:.4g}" for v in value[0]) + f"] ({dtype_str})"
+                    else:
+                        formatted = f"[1×{cols} {dtype_str}]"
+                else:  # General matrix
+                    formatted = f"[{rows}×{cols} {dtype_str}]"
+            return formatted
 
-        # Handle higher-dimensional arrays
-        shape_str = "×".join(map(str, value.shape))
-        if value.size <= max_display:  # Show full content for small arrays
-            flattened = value.flatten()
-            formatted = "[" + " ".join(f"{v:.4g}" for v in flattened) + f"] ({shape_str} {dtype_str})"
+        # For higher-dimensional arrays
+        if value.size <= max_display:
+            formatted = format_recursive(value)
         else:
+            shape_str = "×".join(map(str, value.shape))
             formatted = f"[{shape_str} array ({dtype_str})]"
 
         return formatted
@@ -1636,7 +1685,7 @@ class param(struct):
                 else:
                     escape0 = False
                 # replace ${var} by {var}
-                valuesafe_priorescape = valuesafe
+                valuesafe_priorescape = param.replace_matrix_shorthand(valuesafe)
                 valuesafe, escape = param.escape(valuesafe)
                 escape = escape or escape0
                 # replace "^" (Matlab, Lammps exponent) by "**" (Python syntax)
@@ -1807,44 +1856,153 @@ class param(struct):
         return struct.fromkeysvalues(self.keys(),self.values(),makeparam=False)
 
 
-    # Implement shorthands for NumPy vectors and matrices
     @staticmethod
     def replace_matrix_shorthand(valuesafe):
         """
-        Replaces shorthand:
-        - $[[...]] -> np.array([[...]]) (nested matrix).
-        - $[...] -> np.atleast_2d(np.array([...])) (enforces at least 2D).
-        - @{var} -> np.atleast_2d(np.array(${var})) (forces `var` to be at least 2D).
+        Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors.
+        Supports up to 4-dimensional arrays and handles variable references.
 
-        Args:
-            valuesafe (str): The input string containing expressions.
+        **Shorthand Patterns:**
+        - **1D**: `$[1 2 3]` → `np.atleast_2d(np.array([1,2,3]))`
+        - **2D**: `$[[1 2],[3 4]]` → `np.array([[1,2],[3,4]])`
+        - **3D**: `$[[[1 2],[3 4]],[[5 6],[7 8]]]` → `np.array([[[1,2],[3,4]],[[5,6],[7,8]]])`
+        - **4D**: `$[[[[1 2]]]]` → `np.array([[[[1,2]]]])`
+        - **Variable References**: `@{var}` → `np.atleast_2d(np.array(${var}))`
 
-        Returns:
-            str: The string with shorthand replaced by NumPy-compatible array syntax.
+        **Parameters:**
+        ----------
+        valuesafe : str
+            The input string containing shorthand notations for NumPy arrays and variable references.
+
+        **Returns:**
+        -------
+        str
+            The transformed string with shorthands replaced by valid NumPy array constructors.
+
+        **Raises:**
+        -------
+        ValueError
+            If there are unmatched brackets in any shorthand.
+
+        **Examples:**
+        --------
+        >>> # 1D shorthand
+        >>> s = "$[1 2 3]"
+        >>> param.replace_matrix_shorthand(s)
+        'np.atleast_2d(np.array([1,2,3]))'
+
+        >>> # 2D shorthand with mixed spacing
+        >>> s = "$[[1, 2], [3 4]]"
+        >>> param.replace_matrix_shorthand(s)
+        'np.array([[1,2],[3,4]])'
+
+        >>> # 3D array with partial spacing
+        >>> s = "$[[[1  2], [3 4]], [[5 6], [7 8]]]"
+        >>> param.replace_matrix_shorthand(s)
+        'np.array([[[1,2],[3,4]],[[5,6],[7,8]]])'
+
+        >>> # 4D array
+        >>> s = "$[[[[1 2]]]]"
+        >>> param.replace_matrix_shorthand(s)
+        'np.array([[[[1,2]]]])'
+
+        >>> # Combined with variable references
+        >>> s = "@{a} + $[[${b}, 2],[ 3  4]]"
+        >>> param.replace_matrix_shorthand(s)
+        'np.atleast_2d(np.array(${a})) + np.array([[${b},2],[3,4]])'
+
+        >>> # Complex ND array with scaling
+        >>> s = '$[[[-0.5, -0.5],[-0.5, -0.5]],[[ 0.5,  0.5],[ 0.5,  0.5]]]*0.001'
+        >>> param.replace_matrix_shorthand(s)
+        'np.array([[[-0.5,-0.5],[-0.5,-0.5]],[[0.5,0.5],[0.5,0.5]]])*0.001'
         """
-        # Step 1: Replace $[[...]] (nested matrix)
-        pattern_nested = r'\$\[\[(.*?)\]\]'
-        def replacer_nested(match):
-            content = match.group(1).strip()
-            # Replace spaces only when not preceded by a comma or another space
-            content = re.sub(r'(?<![,\s])\s+(?=\d|\$)', ',', content)
-            return f'np.array([[{content}]])'
-        valuesafe = re.sub(pattern_nested, replacer_nested, valuesafe)
+        def replace_spaces_with_commas(txt):
+            """
+            Replaces spaces with commas only when they're not preceded by a comma, opening bracket, or whitespace,
+            and are followed by a digit or '$'. Also collapses multiple commas into one and strips leading/trailing commas.
 
-        # Step 2: Replace $[...] (vectors/arrays)
-        pattern_vector = r'\$\[(.*?)\]'
-        def replacer_vector(match):
-            content = match.group(1).strip()
-            # Replace spaces only when not preceded by a comma or another space
-            content = re.sub(r'(?<![,\s])\s+(?=\d|\$)', ',', content)
-            return f'np.atleast_2d(np.array([{content}]))'
-        valuesafe = re.sub(pattern_vector, replacer_vector, valuesafe)
+            Parameters:
+            ----------
+            txt : str
+                The text to process.
 
-        # Step 3: Replace @{var} (force variable to array)
-        pattern_force_array = r'@\{([^\{\}]+)\}'
-        valuesafe = re.sub(pattern_force_array, r'np.atleast_2d(np.array(${\1}))', valuesafe)
+            Returns:
+            -------
+            str
+                The processed text with appropriate commas.
+            """
+            # Replace spaces not preceded by ',', '[', or whitespace and followed by digit or '$' with commas
+            txt = re.sub(r'(?<![,\[\s])\s+(?=[\d\$])', ',', txt)
+            # Remove multiple consecutive commas
+            txt = re.sub(r',+', ',', txt)
+            return txt.strip(',')
+
+        def build_pass_list(string):
+            """
+            Determines which dimensions (1D..4D) appear in the string by searching for:
+             - 4D: $[[[[
+             - 3D: $[[[
+             - 2D: $[[
+             - 1D: $[
+
+            Returns a sorted list in descending order, e.g., [4, 3, 2, 1].
+
+            Parameters:
+            ----------
+            string : str
+                The input string to scan.
+
+            Returns:
+            -------
+            list
+                A list of integers representing the dimensions found, sorted descending.
+            """
+            dims_found = set()
+            if re.search(r'\$\[\[\[\[', string):
+                dims_found.add(4)
+            if re.search(r'\$\[\[\[', string):
+                dims_found.add(3)
+            if re.search(r'\$\[\[', string):
+                dims_found.add(2)
+            if re.search(r'\$\[', string):
+                dims_found.add(1)
+            return sorted(dims_found, reverse=True)
+
+        # Step 1: Handle @{var} -> np.atleast_2d(np.array(${var}))
+        valuesafe = re.sub(r'@\{([^\{\}]+)\}', r'np.atleast_2d(np.array(${\1}))', valuesafe)
+
+        # Step 2: Build pass list from largest dimension to smallest
+        pass_list = build_pass_list(valuesafe)
+
+        # Step 3: Define patterns and replacements for each dimension
+        dimension_patterns = {
+            4: (r'\$\[\[\[\[(.*?)\]\]\]\]', 'np.array([[[[{content}]]]])'),   # 4D
+            3: (r'\$\[\[\[(.*?)\]\]\]', 'np.array([[[{content}]]])'),         # 3D
+            2: (r'\$\[\[(.*?)\]\]', 'np.array([[{content}]])'),               # 2D
+            1: (r'\$\[(.*?)\]', 'np.atleast_2d(np.array([{content}]))')       # 1D
+        }
+
+        # Step 4: Iterate over each dimension and perform replacements
+        for dim in pass_list:
+            pattern, replacement_fmt = dimension_patterns[dim]
+            # Find all non-overlapping matches for the current dimension
+            matches = list(re.finditer(pattern, valuesafe))
+            for match in matches:
+                full_match = match.group(0)       # Entire matched shorthand
+                inner_content = match.group(1)    # Content inside the brackets
+                # Replace spaces with commas as per rules
+                processed_content = replace_spaces_with_commas(inner_content.strip())
+                # Create the replacement string
+                replacement = replacement_fmt.format(content=processed_content)
+                # Replace the shorthand in the string
+                valuesafe = valuesafe.replace(full_match, replacement)
+
+        # Step 5: Verify that all shorthands have been replaced by checking for remaining '$['
+        if re.search(r'\$\[', valuesafe):
+            raise ValueError("Unmatched or improperly formatted brackets detected in the input string.")
 
         return valuesafe
+
 
 
     # Safe fstring
@@ -2539,7 +2697,7 @@ if __name__ == '__main__':
     p.x = "$[[0,${t.eigenvalues[0]}+${t.eigenvalues[1]}]]" # horizontal concat à la Matlab
     print(repr(p))
 
-    #Output
+    # Output
   #   -------------:----------------------------------------
   #               p: $[[1, 2], [3, 4]]
   #                = [2×2 int64]
@@ -2557,3 +2715,37 @@ if __name__ == '__main__':
   #                = [0 26] (double)
   #   -------------:----------------------------------------
   # parameter list (param object) with 7 definitions
+
+
+#%% Math example with DSCRIPT (pending) - v 1.005
+    from pizza.dscript import dscript
+    from pizza.private.mstruct import param
+
+    D = dscript(name="math example")
+    D.DEFINITIONS.l = [1e-3, 2e-3, 3e-3]
+    D.DEFINITIONS.scale = "@{l}*2"
+    D.DEFINITIONS.x0 = "$[[[-0.5, -0.5],[-0.5, -0.5]],[[ 0.5,  0.5],[ 0.5,  0.5]]]*${scale[0,0]}"
+    D.DEFINITIONS.y0 = "$[[[-0.5, -0.5],[0.5, 0.5]],[[ -0.5,  -0.5],[ 0.5,  0.5]]]*${scale[0,1]}"
+    D.DEFINITIONS.z0 = "$[[[-0.5, 0.5],[-0.5, 0.5]],[[ -0.5,  0.5],[ -0.5,  0.5]]]*${l[2]}"
+    D.DEFINITIONS.X0 = "@{x0}.flatten()"
+    D.DEFINITIONS.Y0 = "@{y0}.flatten()"
+    D.DEFINITIONS.Z0 = "@{z0}.flatten()"
+    T = D.DEFINITIONS.eval()
+    D.DEFINITIONS.x0
+    T.x0
+    print(repr(D.DEFINITIONS))
+
+    # Output
+    # -------------:----------------------------------------
+    #             l: [0.001, 0.002, 0.003]
+    #         scale: @{l}*2
+    #              = [0.002 0.004 0.006] (double)
+    #            x0: $[[[-0.5, -0.5],[-0. [...] 0.5]]]*${scale[0,0]}
+    #              = [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
+    #            y0: $[[[-0.5, -0.5],[0.5 [...] 0.5]]]*${scale[0,1]}
+    #              = [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
+    #            z0: $[[[-0.5, 0.5],[-0.5 [...] 0.5,  0.5]]]*${l[2]}
+    #              = [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
+    #            X0: @{x0}.flatten()
+    #              = [-0.001 -0.001 -0.001 -0.001 0.001 0.001 0.001 0.001] (double)
+    # -------------:----------------------------------------
