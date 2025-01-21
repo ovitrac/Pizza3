@@ -10,6 +10,8 @@
 - 📚 **[Online Documentation - 📊Matlab/Octave](https://ovitrac.github.io/Pizza3/index_matlab.html)** *(advanced 📈📉 post-treatment)*
 - 📐[POST Examples and Analysis Workflow](https://ovitrac.github.io/Pizza3/post/index_post.html) *(examples of 🌊 fluid-structure interactions)*
 - 🔖 **[Releases](https://github.com/ovitrac/Pizza3/releases)** *(✨ new capabilities are detailed there, ⬇️ download page)*
+- 🧵[Wiki Pages](https://github.com/ovitrac/Pizza3/wiki) *(🤺 technical discussions)*
+- 📰[Publication](https://doi.org/10.1016/j.foodres.2024.114908)
 
 
 
