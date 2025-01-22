@@ -289,7 +289,8 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-01-18 fixes and explicit imports, better management of NumpPy arrays
 # 2025-01-19 consolidation of slice handling, implicit evaluation and error handling (v1.003)
 # 2025-01-20 full implementation and documentation of NumPy shorthands (v.1.004), use debug=True to show evaluation errors
-# 2025-01-21 full implementation of 3D and 4D NumPy arrays (v.1.005): better parser (replace_matrix_shorthand) and display (format_array), see example
+# 2025-01-21 full implementation of 3D and 4D NumPy arrays (v.1.005): better parser (replace_matrix_shorthand) and display (format_array), see final example
+# 2025-01-22 implement Matlab syntaxes for row and column vector, and matrices
 
 __project__ = &#34;Pizza3&#34;
 __author__ = &#34;Olivier Vitrac&#34;
@@ -1808,7 +1809,7 @@ class param(struct):
                 else:
                     escape0 = False
                 # replace ${var} by {var}
-                valuesafe_priorescape = param.replace_matrix_shorthand(valuesafe)
+                valuesafe_priorescape = valuesafe
                 valuesafe, escape = param.escape(valuesafe)
                 escape = escape or escape0
                 # replace &#34;^&#34; (Matlab, Lammps exponent) by &#34;**&#34; (Python syntax)
@@ -1862,7 +1863,8 @@ class param(struct):
                                 tmp.setattr(key,&#34;ERROR &lt; %s &gt;&#34; % commonerr)
                             except (IndexError,AttributeError):
                                 try:
-                                    resstr = param.safe_fstring(valuesafe_priorescape,tmp)
+                                    resstr = param.safe_fstring(
+                                        param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
                                 except Exception as fstrerr:
                                     tmp.setattr(key,&#34;Index Error &lt; %s &gt;&#34; % fstrerr)
                                 else:
@@ -1978,6 +1980,59 @@ class param(struct):
         &#34;&#34;&#34;
         return struct.fromkeysvalues(self.keys(),self.values(),makeparam=False)
 
+    # Matlab syntax conversion
+    @staticmethod
+    def matlab_to_numpy(matlab_str):
+        &#34;&#34;&#34;
+        Convert Matlab 1D and 2D array syntax to NumPy syntax.
+
+        Args:
+            matlab_str (str): The string containing Matlab array syntax.
+
+        Returns:
+            str: The converted NumPy array syntax.
+
+        Example:
+            # Example Usage
+            examples = [
+                &#34;[1, 2  ${var1}          ; 4, 5     ${var2}]&#34;,
+                &#34;[1,2,3]&#34;,
+                &#34;[1 2 ,  3]&#34;,
+                &#34;[1;2; 3]&#34;,
+                &#34;[[Already, in, Python]]&#34;,  # Should remain unchanged
+                &#34;Not an array&#34;
+            ]
+
+            for ex in examples:
+                converted = param.matlab_to_numpy(ex)
+                print(f&#34;Matlab: {ex}\nNumPy : {converted}\n&#34;)
+        &#34;&#34;&#34;
+        # Check if the string starts with &#39;[&#39; and does not already contain nested &#39;[&#39;
+        if not re.match(r&#39;^\s*\[&#39;, matlab_str):
+            return matlab_str  # Not a Matlab array
+        # Avoid processing if it&#39;s already a NumPy-like list
+        if re.search(r&#39;\[\s*\[&#39;, matlab_str):
+            return matlab_str
+        # Function to replace expressions separated by spaces or commas into lists
+        def replace_matlab(match):
+            inner = match.group(1)
+            # Split the string into rows based on &#39;;&#39;
+            rows = [row.strip() for row in inner.split(&#39;;&#39;)]
+            numpy_rows = []
+            for row in rows:
+                # Split each row into elements based on space or comma
+                elements = re.split(r&#39;[,\s]+&#39;, row)
+                # Remove empty strings resulting from multiple spaces
+                elements = [el for el in elements if el]
+                numpy_rows.append(f&#34;[{&#39;, &#39;.join(elements)}]&#34;)
+            return f&#34;[{&#39;, &#39;.join(numpy_rows)}]&#34;
+        # Regex pattern to find Matlab array brackets and capture the content
+        pattern = r&#39;^\s*\[(.*?)\]\s*$&#39;
+        # Perform the replacement
+        numpy_str = re.sub(pattern, replace_matlab, matlab_str, flags=re.DOTALL)
+        return numpy_str
+
+
 
     @staticmethod
     def replace_matrix_shorthand(valuesafe):
@@ -2090,6 +2145,9 @@ class param(struct):
             if re.search(r&#39;\$\[&#39;, string):
                 dims_found.add(1)
             return sorted(dims_found, reverse=True)
+
+        # Step 0: convert eventual Matlab syntax for row and column vectors into NumPy syntax
+        valuesafe = param.matlab_to_numpy(valuesafe)
 
         # Step 1: Handle @{var} -&gt; np.atleast_2d(np.array(${var}))
         valuesafe = re.sub(r&#39;@\{([^\{\}]+)\}&#39;, r&#39;np.atleast_2d(np.array(${\1}))&#39;, valuesafe)
@@ -2845,11 +2903,13 @@ if __name__ == &#39;__main__&#39;:
     from pizza.private.mstruct import param
 
     D = dscript(name=&#34;math example&#34;)
-    D.DEFINITIONS.l = [1e-3, 2e-3, 3e-3]
-    D.DEFINITIONS.scale = &#34;@{l}*2&#34;
-    D.DEFINITIONS.x0 = &#34;$[[[-0.5, -0.5],[-0.5, -0.5]],[[ 0.5,  0.5],[ 0.5,  0.5]]]*${scale[0,0]}&#34;
-    D.DEFINITIONS.y0 = &#34;$[[[-0.5, -0.5],[0.5, 0.5]],[[ -0.5,  -0.5],[ 0.5,  0.5]]]*${scale[0,1]}&#34;
-    D.DEFINITIONS.z0 = &#34;$[[[-0.5, 0.5],[-0.5, 0.5]],[[ -0.5,  0.5],[ -0.5,  0.5]]]*${l[2]}&#34;
+
+    D.DEFINITIONS.l = [1e-3, 2e-3, 3e-3]    # l is defined as a list
+    D.DEFINITIONS.a = &#34;$[1 2 3]&#34;            # a is defined with  Matlab notations
+    D.DEFINITIONS.scale = &#34;@{l}*2*@{a}&#34;     # l is rescaled
+    D.DEFINITIONS.x0 = &#34;$[[[-0.5, -0.5],[-0.5, -0.5]],[[ 0.5,  0.5],[ 0.5,  0.5]]]*${scale[0,0]}*${a[0,0]}&#34;
+    D.DEFINITIONS.y0 = &#34;$[[[-0.5, -0.5],[0.5, 0.5]],[[ -0.5,  -0.5],[ 0.5,  0.5]]]*${scale[0,1]}*${a[0,1]}&#34;
+    D.DEFINITIONS.z0 = &#34;$[[[-0.5, 0.5],[-0.5, 0.5]],[[ -0.5,  0.5],[ -0.5,  0.5]]]*${l[2]}*${a[0,2]}&#34;
     D.DEFINITIONS.X0 = &#34;@{x0}.flatten()&#34;
     D.DEFINITIONS.Y0 = &#34;@{y0}.flatten()&#34;
     D.DEFINITIONS.Z0 = &#34;@{z0}.flatten()&#34;
@@ -2861,16 +2921,14 @@ if __name__ == &#39;__main__&#39;:
     # Output
     # -------------:----------------------------------------
     #             l: [0.001, 0.002, 0.003]
-    #         scale: @{l}*2
-    #              = [0.002 0.004 0.006] (double)
-    #            x0: $[[[-0.5, -0.5],[-0. [...] 0.5]]]*${scale[0,0]}
-    #              = [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
-    #            y0: $[[[-0.5, -0.5],[0.5 [...] 0.5]]]*${scale[0,1]}
-    #              = [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
-    #            z0: $[[[-0.5, 0.5],[-0.5 [...] 0.5,  0.5]]]*${l[2]}
-    #              = [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
-    #            X0: @{x0}.flatten()
-    #              = [-0.001 -0.001 -0.001 -0.001 0.001 0.001 0.001 0.001] (double)
+    #             a: [1 2 3] (int64)
+    #         scale: [0.002 0.008 0.018] (double)
+    #            x0: [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
+    #            y0: [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
+    #            z0: [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
+    #            X0: [-0.001 -0.001 -0.001 -0.001 0.001 0.001 0.001 0.001] (double)
+    #            Y0: [-0.008 -0.008 0.008 0.008 -0.008 -0.008 0.008 0.008] (double)
+    #            Z0: [-0.0045 0.0045 -0.0045 0.0045 -0.0045 0.0045 -0.0045 0.0045] (double)
     # -------------:----------------------------------------</code></pre>
 </details>
 </section>
@@ -3713,7 +3771,7 @@ p.disp()
                 else:
                     escape0 = False
                 # replace ${var} by {var}
-                valuesafe_priorescape = param.replace_matrix_shorthand(valuesafe)
+                valuesafe_priorescape = valuesafe
                 valuesafe, escape = param.escape(valuesafe)
                 escape = escape or escape0
                 # replace &#34;^&#34; (Matlab, Lammps exponent) by &#34;**&#34; (Python syntax)
@@ -3767,7 +3825,8 @@ p.disp()
                                 tmp.setattr(key,&#34;ERROR &lt; %s &gt;&#34; % commonerr)
                             except (IndexError,AttributeError):
                                 try:
-                                    resstr = param.safe_fstring(valuesafe_priorescape,tmp)
+                                    resstr = param.safe_fstring(
+                                        param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
                                 except Exception as fstrerr:
                                     tmp.setattr(key,&#34;Index Error &lt; %s &gt;&#34; % fstrerr)
                                 else:
@@ -3883,6 +3942,59 @@ p.disp()
         &#34;&#34;&#34;
         return struct.fromkeysvalues(self.keys(),self.values(),makeparam=False)
 
+    # Matlab syntax conversion
+    @staticmethod
+    def matlab_to_numpy(matlab_str):
+        &#34;&#34;&#34;
+        Convert Matlab 1D and 2D array syntax to NumPy syntax.
+
+        Args:
+            matlab_str (str): The string containing Matlab array syntax.
+
+        Returns:
+            str: The converted NumPy array syntax.
+
+        Example:
+            # Example Usage
+            examples = [
+                &#34;[1, 2  ${var1}          ; 4, 5     ${var2}]&#34;,
+                &#34;[1,2,3]&#34;,
+                &#34;[1 2 ,  3]&#34;,
+                &#34;[1;2; 3]&#34;,
+                &#34;[[Already, in, Python]]&#34;,  # Should remain unchanged
+                &#34;Not an array&#34;
+            ]
+
+            for ex in examples:
+                converted = param.matlab_to_numpy(ex)
+                print(f&#34;Matlab: {ex}\nNumPy : {converted}\n&#34;)
+        &#34;&#34;&#34;
+        # Check if the string starts with &#39;[&#39; and does not already contain nested &#39;[&#39;
+        if not re.match(r&#39;^\s*\[&#39;, matlab_str):
+            return matlab_str  # Not a Matlab array
+        # Avoid processing if it&#39;s already a NumPy-like list
+        if re.search(r&#39;\[\s*\[&#39;, matlab_str):
+            return matlab_str
+        # Function to replace expressions separated by spaces or commas into lists
+        def replace_matlab(match):
+            inner = match.group(1)
+            # Split the string into rows based on &#39;;&#39;
+            rows = [row.strip() for row in inner.split(&#39;;&#39;)]
+            numpy_rows = []
+            for row in rows:
+                # Split each row into elements based on space or comma
+                elements = re.split(r&#39;[,\s]+&#39;, row)
+                # Remove empty strings resulting from multiple spaces
+                elements = [el for el in elements if el]
+                numpy_rows.append(f&#34;[{&#39;, &#39;.join(elements)}]&#34;)
+            return f&#34;[{&#39;, &#39;.join(numpy_rows)}]&#34;
+        # Regex pattern to find Matlab array brackets and capture the content
+        pattern = r&#39;^\s*\[(.*?)\]\s*$&#39;
+        # Perform the replacement
+        numpy_str = re.sub(pattern, replace_matlab, matlab_str, flags=re.DOTALL)
+        return numpy_str
+
+
 
     @staticmethod
     def replace_matrix_shorthand(valuesafe):
@@ -3995,6 +4107,9 @@ p.disp()
             if re.search(r&#39;\$\[&#39;, string):
                 dims_found.add(1)
             return sorted(dims_found, reverse=True)
+
+        # Step 0: convert eventual Matlab syntax for row and column vectors into NumPy syntax
+        valuesafe = param.matlab_to_numpy(valuesafe)
 
         # Step 1: Handle @{var} -&gt; np.atleast_2d(np.array(${var}))
         valuesafe = re.sub(r&#39;@\{([^\{\}]+)\}&#39;, r&#39;np.atleast_2d(np.array(${\1}))&#39;, valuesafe)
@@ -4162,6 +4277,90 @@ def escape(s):
     result = se+s[start:].replace(&#34;${&#34;,&#34;{&#34;)
     if isinstance(s,pstr): result = pstr(result)
     return result,start&gt;0</code></pre>
+</details>
+</dd>
+<dt id="mstruct.param.matlab_to_numpy"><code class="name flex">
+<span>def <span class="ident">matlab_to_numpy</span></span>(<span>matlab_str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert Matlab 1D and 2D array syntax to NumPy syntax.</p>
+<pre><code>    Args:
+        matlab_str (str): The string containing Matlab array syntax.
+
+    Returns:
+        str: The converted NumPy array syntax.
+
+    Example:
+        # Example Usage
+        examples = [
+            "[1, 2  ${var1}          ; 4, 5     ${var2}]",
+            "[1,2,3]",
+            "[1 2 ,  3]",
+            "[1;2; 3]",
+            "[[Already, in, Python]]",  # Should remain unchanged
+            "Not an array"
+        ]
+
+        for ex in examples:
+            converted = param.matlab_to_numpy(ex)
+            print(f"Matlab: {ex}
+</code></pre>
+<p>NumPy : {converted}
+")</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def matlab_to_numpy(matlab_str):
+    &#34;&#34;&#34;
+    Convert Matlab 1D and 2D array syntax to NumPy syntax.
+
+    Args:
+        matlab_str (str): The string containing Matlab array syntax.
+
+    Returns:
+        str: The converted NumPy array syntax.
+
+    Example:
+        # Example Usage
+        examples = [
+            &#34;[1, 2  ${var1}          ; 4, 5     ${var2}]&#34;,
+            &#34;[1,2,3]&#34;,
+            &#34;[1 2 ,  3]&#34;,
+            &#34;[1;2; 3]&#34;,
+            &#34;[[Already, in, Python]]&#34;,  # Should remain unchanged
+            &#34;Not an array&#34;
+        ]
+
+        for ex in examples:
+            converted = param.matlab_to_numpy(ex)
+            print(f&#34;Matlab: {ex}\nNumPy : {converted}\n&#34;)
+    &#34;&#34;&#34;
+    # Check if the string starts with &#39;[&#39; and does not already contain nested &#39;[&#39;
+    if not re.match(r&#39;^\s*\[&#39;, matlab_str):
+        return matlab_str  # Not a Matlab array
+    # Avoid processing if it&#39;s already a NumPy-like list
+    if re.search(r&#39;\[\s*\[&#39;, matlab_str):
+        return matlab_str
+    # Function to replace expressions separated by spaces or commas into lists
+    def replace_matlab(match):
+        inner = match.group(1)
+        # Split the string into rows based on &#39;;&#39;
+        rows = [row.strip() for row in inner.split(&#39;;&#39;)]
+        numpy_rows = []
+        for row in rows:
+            # Split each row into elements based on space or comma
+            elements = re.split(r&#39;[,\s]+&#39;, row)
+            # Remove empty strings resulting from multiple spaces
+            elements = [el for el in elements if el]
+            numpy_rows.append(f&#34;[{&#39;, &#39;.join(elements)}]&#34;)
+        return f&#34;[{&#39;, &#39;.join(numpy_rows)}]&#34;
+    # Regex pattern to find Matlab array brackets and capture the content
+    pattern = r&#39;^\s*\[(.*?)\]\s*$&#39;
+    # Perform the replacement
+    numpy_str = re.sub(pattern, replace_matlab, matlab_str, flags=re.DOTALL)
+    return numpy_str</code></pre>
 </details>
 </dd>
 <dt id="mstruct.param.replace_matrix_shorthand"><code class="name flex">
@@ -4332,6 +4531,9 @@ def replace_matrix_shorthand(valuesafe):
             dims_found.add(1)
         return sorted(dims_found, reverse=True)
 
+    # Step 0: convert eventual Matlab syntax for row and column vectors into NumPy syntax
+    valuesafe = param.matlab_to_numpy(valuesafe)
+
     # Step 1: Handle @{var} -&gt; np.atleast_2d(np.array(${var}))
     valuesafe = re.sub(r&#39;@\{([^\{\}]+)\}&#39;, r&#39;np.atleast_2d(np.array(${\1}))&#39;, valuesafe)
 
@@ -4489,7 +4691,7 @@ where :
             else:
                 escape0 = False
             # replace ${var} by {var}
-            valuesafe_priorescape = param.replace_matrix_shorthand(valuesafe)
+            valuesafe_priorescape = valuesafe
             valuesafe, escape = param.escape(valuesafe)
             escape = escape or escape0
             # replace &#34;^&#34; (Matlab, Lammps exponent) by &#34;**&#34; (Python syntax)
@@ -4543,7 +4745,8 @@ where :
                             tmp.setattr(key,&#34;ERROR &lt; %s &gt;&#34; % commonerr)
                         except (IndexError,AttributeError):
                             try:
-                                resstr = param.safe_fstring(valuesafe_priorescape,tmp)
+                                resstr = param.safe_fstring(
+                                    param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
                             except Exception as fstrerr:
                                 tmp.setattr(key,&#34;Index Error &lt; %s &gt;&#34; % fstrerr)
                             else:
@@ -5226,6 +5429,7 @@ p.disp()
 <li><code><a title="mstruct.param.items" href="#mstruct.struct.items">items</a></code></li>
 <li><code><a title="mstruct.param.keys" href="#mstruct.struct.keys">keys</a></code></li>
 <li><code><a title="mstruct.param.keyssorted" href="#mstruct.struct.keyssorted">keyssorted</a></code></li>
+<li><code><a title="mstruct.param.matlab_to_numpy" href="#mstruct.param.matlab_to_numpy">matlab_to_numpy</a></code></li>
 <li><code><a title="mstruct.param.np2str" href="#mstruct.struct.np2str">np2str</a></code></li>
 <li><code><a title="mstruct.param.protect" href="#mstruct.param.protect">protect</a></code></li>
 <li><code><a title="mstruct.param.read" href="#mstruct.struct.read">read</a></code></li>
@@ -7879,6 +8083,7 @@ write(filename, overwrite=True, mkdir=False)</p>
 <li><code><a title="mstruct.param.escape" href="#mstruct.param.escape">escape</a></code></li>
 <li><code><a title="mstruct.param.eval" href="#mstruct.param.eval">eval</a></code></li>
 <li><code><a title="mstruct.param.formateval" href="#mstruct.param.formateval">formateval</a></code></li>
+<li><code><a title="mstruct.param.matlab_to_numpy" href="#mstruct.param.matlab_to_numpy">matlab_to_numpy</a></code></li>
 <li><code><a title="mstruct.param.protect" href="#mstruct.param.protect">protect</a></code></li>
 <li><code><a title="mstruct.param.replace_matrix_shorthand" href="#mstruct.param.replace_matrix_shorthand">replace_matrix_shorthand</a></code></li>
 <li><code><a title="mstruct.param.safe_fstring" href="#mstruct.param.safe_fstring">safe_fstring</a></code></li>

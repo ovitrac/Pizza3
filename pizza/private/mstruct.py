@@ -166,7 +166,8 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-01-18 fixes and explicit imports, better management of NumpPy arrays
 # 2025-01-19 consolidation of slice handling, implicit evaluation and error handling (v1.003)
 # 2025-01-20 full implementation and documentation of NumPy shorthands (v.1.004), use debug=True to show evaluation errors
-# 2025-01-21 full implementation of 3D and 4D NumPy arrays (v.1.005): better parser (replace_matrix_shorthand) and display (format_array), see example
+# 2025-01-21 full implementation of 3D and 4D NumPy arrays (v.1.005): better parser (replace_matrix_shorthand) and display (format_array), see final example
+# 2025-01-22 implement Matlab syntaxes for row and column vector, and matrices
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
@@ -1685,7 +1686,7 @@ class param(struct):
                 else:
                     escape0 = False
                 # replace ${var} by {var}
-                valuesafe_priorescape = param.replace_matrix_shorthand(valuesafe)
+                valuesafe_priorescape = valuesafe
                 valuesafe, escape = param.escape(valuesafe)
                 escape = escape or escape0
                 # replace "^" (Matlab, Lammps exponent) by "**" (Python syntax)
@@ -1739,7 +1740,8 @@ class param(struct):
                                 tmp.setattr(key,"ERROR < %s >" % commonerr)
                             except (IndexError,AttributeError):
                                 try:
-                                    resstr = param.safe_fstring(valuesafe_priorescape,tmp)
+                                    resstr = param.safe_fstring(
+                                        param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
                                 except Exception as fstrerr:
                                     tmp.setattr(key,"Index Error < %s >" % fstrerr)
                                 else:
@@ -1855,6 +1857,59 @@ class param(struct):
         """
         return struct.fromkeysvalues(self.keys(),self.values(),makeparam=False)
 
+    # Matlab syntax conversion
+    @staticmethod
+    def matlab_to_numpy(matlab_str):
+        """
+        Convert Matlab 1D and 2D array syntax to NumPy syntax.
+
+        Args:
+            matlab_str (str): The string containing Matlab array syntax.
+
+        Returns:
+            str: The converted NumPy array syntax.
+
+        Example:
+            # Example Usage
+            examples = [
+                "[1, 2  ${var1}          ; 4, 5     ${var2}]",
+                "[1,2,3]",
+                "[1 2 ,  3]",
+                "[1;2; 3]",
+                "[[Already, in, Python]]",  # Should remain unchanged
+                "Not an array"
+            ]
+
+            for ex in examples:
+                converted = param.matlab_to_numpy(ex)
+                print(f"Matlab: {ex}\nNumPy : {converted}\n")
+        """
+        # Check if the string starts with '[' and does not already contain nested '['
+        if not re.match(r'^\s*\[', matlab_str):
+            return matlab_str  # Not a Matlab array
+        # Avoid processing if it's already a NumPy-like list
+        if re.search(r'\[\s*\[', matlab_str):
+            return matlab_str
+        # Function to replace expressions separated by spaces or commas into lists
+        def replace_matlab(match):
+            inner = match.group(1)
+            # Split the string into rows based on ';'
+            rows = [row.strip() for row in inner.split(';')]
+            numpy_rows = []
+            for row in rows:
+                # Split each row into elements based on space or comma
+                elements = re.split(r'[,\s]+', row)
+                # Remove empty strings resulting from multiple spaces
+                elements = [el for el in elements if el]
+                numpy_rows.append(f"[{', '.join(elements)}]")
+            return f"[{', '.join(numpy_rows)}]"
+        # Regex pattern to find Matlab array brackets and capture the content
+        pattern = r'^\s*\[(.*?)\]\s*$'
+        # Perform the replacement
+        numpy_str = re.sub(pattern, replace_matlab, matlab_str, flags=re.DOTALL)
+        return numpy_str
+
+
 
     @staticmethod
     def replace_matrix_shorthand(valuesafe):
@@ -1967,6 +2022,9 @@ class param(struct):
             if re.search(r'\$\[', string):
                 dims_found.add(1)
             return sorted(dims_found, reverse=True)
+
+        # Step 0: convert eventual Matlab syntax for row and column vectors into NumPy syntax
+        valuesafe = param.matlab_to_numpy(valuesafe)
 
         # Step 1: Handle @{var} -> np.atleast_2d(np.array(${var}))
         valuesafe = re.sub(r'@\{([^\{\}]+)\}', r'np.atleast_2d(np.array(${\1}))', valuesafe)
@@ -2722,11 +2780,13 @@ if __name__ == '__main__':
     from pizza.private.mstruct import param
 
     D = dscript(name="math example")
-    D.DEFINITIONS.l = [1e-3, 2e-3, 3e-3]
-    D.DEFINITIONS.scale = "@{l}*2"
-    D.DEFINITIONS.x0 = "$[[[-0.5, -0.5],[-0.5, -0.5]],[[ 0.5,  0.5],[ 0.5,  0.5]]]*${scale[0,0]}"
-    D.DEFINITIONS.y0 = "$[[[-0.5, -0.5],[0.5, 0.5]],[[ -0.5,  -0.5],[ 0.5,  0.5]]]*${scale[0,1]}"
-    D.DEFINITIONS.z0 = "$[[[-0.5, 0.5],[-0.5, 0.5]],[[ -0.5,  0.5],[ -0.5,  0.5]]]*${l[2]}"
+
+    D.DEFINITIONS.l = [1e-3, 2e-3, 3e-3]    # l is defined as a list
+    D.DEFINITIONS.a = "$[1 2 3]"            # a is defined with  Matlab notations
+    D.DEFINITIONS.scale = "@{l}*2*@{a}"     # l is rescaled
+    D.DEFINITIONS.x0 = "$[[[-0.5, -0.5],[-0.5, -0.5]],[[ 0.5,  0.5],[ 0.5,  0.5]]]*${scale[0,0]}*${a[0,0]}"
+    D.DEFINITIONS.y0 = "$[[[-0.5, -0.5],[0.5, 0.5]],[[ -0.5,  -0.5],[ 0.5,  0.5]]]*${scale[0,1]}*${a[0,1]}"
+    D.DEFINITIONS.z0 = "$[[[-0.5, 0.5],[-0.5, 0.5]],[[ -0.5,  0.5],[ -0.5,  0.5]]]*${l[2]}*${a[0,2]}"
     D.DEFINITIONS.X0 = "@{x0}.flatten()"
     D.DEFINITIONS.Y0 = "@{y0}.flatten()"
     D.DEFINITIONS.Z0 = "@{z0}.flatten()"
@@ -2738,14 +2798,12 @@ if __name__ == '__main__':
     # Output
     # -------------:----------------------------------------
     #             l: [0.001, 0.002, 0.003]
-    #         scale: @{l}*2
-    #              = [0.002 0.004 0.006] (double)
-    #            x0: $[[[-0.5, -0.5],[-0. [...] 0.5]]]*${scale[0,0]}
-    #              = [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
-    #            y0: $[[[-0.5, -0.5],[0.5 [...] 0.5]]]*${scale[0,1]}
-    #              = [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
-    #            z0: $[[[-0.5, 0.5],[-0.5 [...] 0.5,  0.5]]]*${l[2]}
-    #              = [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
-    #            X0: @{x0}.flatten()
-    #              = [-0.001 -0.001 -0.001 -0.001 0.001 0.001 0.001 0.001] (double)
+    #             a: [1 2 3] (int64)
+    #         scale: [0.002 0.008 0.018] (double)
+    #            x0: [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
+    #            y0: [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
+    #            z0: [[2×2 matrix] [2×2 matrix]] (2×2×2 double)
+    #            X0: [-0.001 -0.001 -0.001 -0.001 0.001 0.001 0.001 0.001] (double)
+    #            Y0: [-0.008 -0.008 0.008 0.008 -0.008 -0.008 0.008 0.008] (double)
+    #            Z0: [-0.0045 0.0045 -0.0045 0.0045 -0.0045 0.0045 -0.0045 0.0045] (double)
     # -------------:----------------------------------------

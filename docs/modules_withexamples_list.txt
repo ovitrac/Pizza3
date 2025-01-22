@@ -13,7 +13,6 @@ pizza/forcefield.py
 pizza/generic.py
 pizza/group.py
 pizza/__init__.py
-pizza/private/dscript_math.py
 pizza/private/mstruct.py
 pizza/private/utils.py
 pizza/raster.py

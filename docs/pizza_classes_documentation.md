@@ -1,6 +1,6 @@
 # Pizza Modules Documentation
 
-Generated on: **2025-01-22 00:44:24**
+Generated on: **2025-01-23 00:06:34**
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
 
@@ -139,33 +139,28 @@ You can now generate your first LAMMPS code from Python and run it with [LAMMPS-
 </a>
 </div>
 <div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
-<a href="#pizza_private_dscript_math" style="text-decoration: none; font-weight: bold;">
-16. pizza.private.dscript_math
-</a>
-</div>
-<div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
 <a href="#pizza_private_mstruct" style="text-decoration: none; font-weight: bold;">
-17. pizza.private.mstruct
+16. pizza.private.mstruct
 </a>
 </div>
 <div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
 <a href="#pizza_private_utils" style="text-decoration: none; font-weight: bold;">
-18. pizza.private.utils
+17. pizza.private.utils
 </a>
 </div>
 <div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
 <a href="#pizza_raster" style="text-decoration: none; font-weight: bold;">
-19. pizza.raster
+18. pizza.raster
 </a>
 </div>
 <div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
 <a href="#pizza_region" style="text-decoration: none; font-weight: bold;">
-20. pizza.region
+19. pizza.region
 </a>
 </div>
 <div style="flex: 1 1 calc(33.33% - 20px); min-width: 200px;">
 <a href="#pizza_script" style="text-decoration: none; font-weight: bold;">
-21. pizza.script
+20. pizza.script
 </a>
 </div>
 </div>
@@ -1261,7 +1256,7 @@ ulsph --> water
 <a id="pizza_group" name="pizza_group"></a>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_generic" title="Go to Previous Module: pizza.generic" style="text-decoration: none;">⬅️ Previous</a>
 <a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
-<a href="#pizza_private_dscript_math" title="Go to Next Module: pizza.private.dscript_math" style="text-decoration: none;">➡️ Next</a>
+<a href="#pizza_private_mstruct" title="Go to Next Module: pizza.private.mstruct" style="text-decoration: none;">➡️ Next</a>
 </div>
 
 ## Module `pizza.group`
@@ -1371,22 +1366,8 @@ object --> pipescript
 | `groupobject` | `__repr__` | Returns an unambiguous string representation of the groupobject. | 8 | 0.9999 |
 | `groupobject` | `__str__` | Returns a readable string representation of the groupobject. | 5 | 0.9999 |
 
-<a id="pizza_private_dscript_math" name="pizza_private_dscript_math"></a>
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_group" title="Go to Previous Module: pizza.group" style="text-decoration: none;">⬅️ Previous</a>
-<a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
-<a href="#pizza_private_mstruct" title="Go to Next Module: pizza.private.mstruct" style="text-decoration: none;">➡️ Next</a>
-</div>
-
-## Module `pizza.private.dscript_math`
-
-*No classes found in this module.*
-
-**Class Examples:** Not available.
-
-*No methods found in this module.*
-
 <a id="pizza_private_mstruct" name="pizza_private_mstruct"></a>
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_private_dscript_math" title="Go to Previous Module: pizza.private.dscript_math" style="text-decoration: none;">⬅️ Previous</a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_group" title="Go to Previous Module: pizza.group" style="text-decoration: none;">⬅️ Previous</a>
 <a href="#table_of_contents" title="Back to Table of Contents" style="text-decoration: none;">⬆️ TOC</a>
 <a href="#pizza_private_utils" title="Go to Next Module: pizza.private.utils" style="text-decoration: none;">➡️ Next</a>
 </div>
@@ -1459,7 +1440,7 @@ struct --> param
 | `param` | `disp` | display method | 3 | 1.005 |
 | `param` | `dispmax` | optimize display | 8 | 1.005 |
 | `param` | `escape` | escape \${} as ${{}} --> keep variable names convert ${} as {} --> prepare Python replacement | 35 | 1.005 |
-| `param` | `eval` | Eval method for structure such as MS.alias | 123 | 1.005 |
+| `param` | `eval` | Eval method for structure such as MS.alias | 124 | 1.005 |
 | `param` | `format` | Format a string with fields using {field} as placeholders. Handles expressions like ${variable1}. | 54 | 1.005 |
 | `param` | `format_array` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.005 |
 | `param` | `format_legacy` | format a string with field (use {field} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly ${variable1} escape is a flag to prevent ${} replaced by {} | 27 | 1.005 |
@@ -1475,10 +1456,11 @@ struct --> param
 | `param` | `items` | return all elements as iterable key, value | 3 | 1.005 |
 | `param` | `keys` | return the fields | 4 | 1.005 |
 | `param` | `keyssorted` | sort keys by length() | 5 | 1.005 |
+| `param` | `matlab_to_numpy` | Convert Matlab 1D and 2D array syntax to NumPy syntax. | 50 | 1.005 |
 | `param` | `np2str` | Convert all np entries of s into their string representations | 43 | 1.005 |
 | `param` | `protect` | protect $variable as ${variable} | 11 | 1.005 |
 | `param` | `read` | read the equivalent structure read(filename) | 35 | 1.005 |
-| `param` | `replace_matrix_shorthand` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 146 | 1.005 |
+| `param` | `replace_matrix_shorthand` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 149 | 1.005 |
 | `param` | `safe_fstring` | Safely evaluate expressions in ${} using SafeEvaluator. | 61 | 1.005 |
 | `param` | `scan` | scan(string) scan a string for variables | 11 | 1.005 |
 | `param` | `set` | initialization | 3 | 1.005 |
@@ -1519,7 +1501,7 @@ struct --> param
 | `paramauto` | `disp` | display method | 3 | 1.005 |
 | `paramauto` | `dispmax` | optimize display | 8 | 1.005 |
 | `paramauto` | `escape` | escape \${} as ${{}} --> keep variable names convert ${} as {} --> prepare Python replacement | 35 | 1.005 |
-| `paramauto` | `eval` | Eval method for structure such as MS.alias | 123 | 1.005 |
+| `paramauto` | `eval` | Eval method for structure such as MS.alias | 124 | 1.005 |
 | `paramauto` | `format` | Format a string with fields using {field} as placeholders. Handles expressions like ${variable1}. | 54 | 1.005 |
 | `paramauto` | `format_array` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.005 |
 | `paramauto` | `format_legacy` | format a string with field (use {field} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly ${variable1} escape is a flag to prevent ${} replaced by {} | 27 | 1.005 |
@@ -1535,10 +1517,11 @@ struct --> param
 | `paramauto` | `items` | return all elements as iterable key, value | 3 | 1.005 |
 | `paramauto` | `keys` | return the fields | 4 | 1.005 |
 | `paramauto` | `keyssorted` | sort keys by length() | 5 | 1.005 |
+| `paramauto` | `matlab_to_numpy` | Convert Matlab 1D and 2D array syntax to NumPy syntax. | 50 | 1.005 |
 | `paramauto` | `np2str` | Convert all np entries of s into their string representations | 43 | 1.005 |
 | `paramauto` | `protect` | protect $variable as ${variable} | 11 | 1.005 |
 | `paramauto` | `read` | read the equivalent structure read(filename) | 35 | 1.005 |
-| `paramauto` | `replace_matrix_shorthand` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 146 | 1.005 |
+| `paramauto` | `replace_matrix_shorthand` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 149 | 1.005 |
 | `paramauto` | `safe_fstring` | Safely evaluate expressions in ${} using SafeEvaluator. | 61 | 1.005 |
 | `paramauto` | `scan` | scan(string) scan a string for variables | 11 | 1.005 |
 | `paramauto` | `set` | initialization | 3 | 1.005 |
