@@ -440,7 +440,7 @@
                 const markdownContent = `
 # Pizza Modules Documentation
 
-Generated on: **2025-01-23 00:06:34**
+Generated on: **2025-01-23 14:34:17**
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
 
@@ -1831,7 +1831,7 @@ str --> pstr
 struct --> param
 </div>
 
-**[Class Examples for \`pizza/private/mstruct.py\` (19)](class_examples.html#pizza_private_mstruct)**
+**[Class Examples for \`pizza/private/mstruct.py\` (20)](class_examples.html#pizza_private_mstruct)**
 
 ### Methods Table
 
@@ -1876,11 +1876,13 @@ struct --> param
 | \`param\` | \`__sub__\` | sub a structure | 10 | 1.005 |
 | \`param\` | \`check\` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.005 |
 | \`param\` | \`clear\` | clear() delete all fields while preserving the original class | 3 | 1.005 |
+| \`param\` | \`convert_matlab_like_arrays\` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 139 | 1.005 |
 | \`param\` | \`dict2struct\` | create a structure from a dictionary | 8 | 1.005 |
 | \`param\` | \`disp\` | display method | 3 | 1.005 |
 | \`param\` | \`dispmax\` | optimize display | 8 | 1.005 |
 | \`param\` | \`escape\` | escape \$\{\} as $\{\{\}\} --> keep variable names convert $\{\} as \{\} --> prepare Python replacement | 35 | 1.005 |
 | \`param\` | \`eval\` | Eval method for structure such as MS.alias | 124 | 1.005 |
+| \`param\` | \`expand_ranges\` | Expands MATLAB-style ranges in a string. | 42 | 1.005 |
 | \`param\` | \`format\` | Format a string with fields using \{field\} as placeholders. Handles expressions like $\{variable1\}. | 54 | 1.005 |
 | \`param\` | \`format_array\` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.005 |
 | \`param\` | \`format_legacy\` | format a string with field (use \{field\} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly $\{variable1\} escape is a flag to prevent $\{\} replaced by \{\} | 27 | 1.005 |
@@ -1896,11 +1898,10 @@ struct --> param
 | \`param\` | \`items\` | return all elements as iterable key, value | 3 | 1.005 |
 | \`param\` | \`keys\` | return the fields | 4 | 1.005 |
 | \`param\` | \`keyssorted\` | sort keys by length() | 5 | 1.005 |
-| \`param\` | \`matlab_to_numpy\` | Convert Matlab 1D and 2D array syntax to NumPy syntax. | 50 | 1.005 |
 | \`param\` | \`np2str\` | Convert all np entries of s into their string representations | 43 | 1.005 |
 | \`param\` | \`protect\` | protect $variable as $\{variable\} | 11 | 1.005 |
 | \`param\` | \`read\` | read the equivalent structure read(filename) | 35 | 1.005 |
-| \`param\` | \`replace_matrix_shorthand\` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 149 | 1.005 |
+| \`param\` | \`replace_matrix_shorthand\` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 144 | 1.005 |
 | \`param\` | \`safe_fstring\` | Safely evaluate expressions in $\{\} using SafeEvaluator. | 61 | 1.005 |
 | \`param\` | \`scan\` | scan(string) scan a string for variables | 11 | 1.005 |
 | \`param\` | \`set\` | initialization | 3 | 1.005 |
@@ -1937,11 +1938,13 @@ struct --> param
 | \`paramauto\` | \`__sub__\` | sub a structure | 10 | 1.005 |
 | \`paramauto\` | \`check\` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.005 |
 | \`paramauto\` | \`clear\` | clear() delete all fields while preserving the original class | 3 | 1.005 |
+| \`paramauto\` | \`convert_matlab_like_arrays\` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 139 | 1.005 |
 | \`paramauto\` | \`dict2struct\` | create a structure from a dictionary | 8 | 1.005 |
 | \`paramauto\` | \`disp\` | display method | 3 | 1.005 |
 | \`paramauto\` | \`dispmax\` | optimize display | 8 | 1.005 |
 | \`paramauto\` | \`escape\` | escape \$\{\} as $\{\{\}\} --> keep variable names convert $\{\} as \{\} --> prepare Python replacement | 35 | 1.005 |
 | \`paramauto\` | \`eval\` | Eval method for structure such as MS.alias | 124 | 1.005 |
+| \`paramauto\` | \`expand_ranges\` | Expands MATLAB-style ranges in a string. | 42 | 1.005 |
 | \`paramauto\` | \`format\` | Format a string with fields using \{field\} as placeholders. Handles expressions like $\{variable1\}. | 54 | 1.005 |
 | \`paramauto\` | \`format_array\` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.005 |
 | \`paramauto\` | \`format_legacy\` | format a string with field (use \{field\} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly $\{variable1\} escape is a flag to prevent $\{\} replaced by \{\} | 27 | 1.005 |
@@ -1957,11 +1960,10 @@ struct --> param
 | \`paramauto\` | \`items\` | return all elements as iterable key, value | 3 | 1.005 |
 | \`paramauto\` | \`keys\` | return the fields | 4 | 1.005 |
 | \`paramauto\` | \`keyssorted\` | sort keys by length() | 5 | 1.005 |
-| \`paramauto\` | \`matlab_to_numpy\` | Convert Matlab 1D and 2D array syntax to NumPy syntax. | 50 | 1.005 |
 | \`paramauto\` | \`np2str\` | Convert all np entries of s into their string representations | 43 | 1.005 |
 | \`paramauto\` | \`protect\` | protect $variable as $\{variable\} | 11 | 1.005 |
 | \`paramauto\` | \`read\` | read the equivalent structure read(filename) | 35 | 1.005 |
-| \`paramauto\` | \`replace_matrix_shorthand\` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 149 | 1.005 |
+| \`paramauto\` | \`replace_matrix_shorthand\` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 144 | 1.005 |
 | \`paramauto\` | \`safe_fstring\` | Safely evaluate expressions in $\{\} using SafeEvaluator. | 61 | 1.005 |
 | \`paramauto\` | \`scan\` | scan(string) scan a string for variables | 11 | 1.005 |
 | \`paramauto\` | \`set\` | initialization | 3 | 1.005 |
