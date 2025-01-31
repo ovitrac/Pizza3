@@ -326,6 +326,7 @@
 <ul class="folder-content">
 <li class="file"><a href="assembly.html" target="_blankpy">assembly</a></li>
 <li class="file"><a href="datatemplate3.html" target="_blankpy">datatemplate3</a></li>
+<li class="file"><a href="debug_mstruct.html" target="_blankpy">debug_mstruct</a></li>
 <li class="file"><a href="dscript_math_example.html" target="_blankpy">dscript_math_example</a></li>
 <li class="file"><a href="dump_case4.html" target="_blankpy">dump_case4</a></li>
 <li class="file"><a href="dumpreduce.html" target="_blankpy">dumpreduce</a></li>
@@ -346,6 +347,12 @@
 <li class="file"><a href="workshop0.html" target="_blankpy">workshop0</a></li>
 <li class="file"><a href="workshop1.html" target="_blankpy">workshop1</a></li>
 <li class="file"><a href="workshop2.html" target="_blankpy">workshop2</a></li>
+</ul>
+</li>
+<li class="folder">
+<div class="folder-title" onclick="toggleFolder(this)">.ipynb_checkpoints</div>
+<ul class="folder-content">
+<li class="file"><a href=".ipynb_checkpoints/assembly-checkpoint.html" target="_blankpy">assembly-checkpoint</a></li>
 </ul>
 </li>
 <li class="folder">
@@ -440,7 +447,7 @@
                 const markdownContent = `
 # Pizza Modules Documentation
 
-Generated on: **2025-01-23 14:34:17**
+Generated on: **2025-01-31 15:12:38**
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
 
@@ -1837,204 +1844,206 @@ struct --> param
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| \`AttrErrorDict\` | \`__getitem__\` | x.__getitem__(y) <==> x[y] | 11 | 1.005 |
-| \`SafeEvaluator\` | \`__init__\` | Initialize self.  See help(type(self)) for accurate signature. | 30 | 1.005 |
-| \`SafeEvaluator\` | \`evaluate\` |  | 3 | 1.005 |
-| \`SafeEvaluator\` | \`generic_visit\` | Called if no explicit visitor function exists for a node. | 2 | 1.005 |
-| \`SafeEvaluator\` | \`visit_Attribute\` |  | 12 | 1.005 |
-| \`SafeEvaluator\` | \`visit_BinOp\` |  | 9 | 1.005 |
-| \`SafeEvaluator\` | \`visit_Call\` |  | 7 | 1.005 |
-| \`SafeEvaluator\` | \`visit_Constant\` |  | 2 | 1.005 |
-| \`SafeEvaluator\` | \`visit_ExtSlice\` |  | 3 | 1.005 |
-| \`SafeEvaluator\` | \`visit_Index\` |  | 2 | 1.005 |
-| \`SafeEvaluator\` | \`visit_List\` |  | 2 | 1.005 |
-| \`SafeEvaluator\` | \`visit_Name\` |  | 4 | 1.005 |
-| \`SafeEvaluator\` | \`visit_Slice\` |  | 5 | 1.005 |
-| \`SafeEvaluator\` | \`visit_Subscript\` |  | 7 | 1.005 |
-| \`SafeEvaluator\` | \`visit_Tuple\` |  | 2 | 1.005 |
-| \`SafeEvaluator\` | \`visit_UnaryOp\` |  | 6 | 1.005 |
-| \`param\` | \`__add__\` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 10 | 1.005 |
-| \`param\` | \`__call__\` | Extract a sub-structure based on the specified keys, keeping the same class type. | 35 | 1.005 |
-| \`param\` | \`__contains__\` | in override | 3 | 1.005 |
-| \`param\` | \`__copy__\` | copy method | 6 | 1.005 |
-| \`param\` | \`__deepcopy__\` | deep copy method | 8 | 1.005 |
-| \`param\` | \`__delattr__\` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.005 |
-| \`param\` | \`__getattr__\` | get attribute override | 3 | 1.005 |
-| \`param\` | \`__getitem__\` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 26 | 1.005 |
-| \`param\` | \`__getstate__\` | getstate for cooperative inheritance / duplication | 3 | 1.005 |
-| \`param\` | \`__iadd__\` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 9 | 1.005 |
-| \`param\` | \`__init__\` | constructor | 7 | 1.005 |
-| \`param\` | \`__isub__\` | isub a structure | 9 | 1.005 |
-| \`param\` | \`__iter__\` | struct iterator | 6 | 1.005 |
-| \`param\` | \`__len__\` | return the number of fields | 4 | 1.005 |
-| \`param\` | \`__next__\` | increment iterator | 7 | 1.005 |
-| \`param\` | \`__repr__\` | display method | 64 | 1.005 |
-| \`param\` | \`__setattr__\` | set attribute override | 3 | 1.005 |
-| \`param\` | \`__setitem__\` | set the ith element of the structure | 24 | 1.005 |
-| \`param\` | \`__setstate__\` | setstate for cooperative inheritance / duplication | 3 | 1.005 |
-| \`param\` | \`__str__\` | Return str(self). | 2 | 1.005 |
-| \`param\` | \`__sub__\` | sub a structure | 10 | 1.005 |
-| \`param\` | \`check\` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.005 |
-| \`param\` | \`clear\` | clear() delete all fields while preserving the original class | 3 | 1.005 |
-| \`param\` | \`convert_matlab_like_arrays\` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 139 | 1.005 |
-| \`param\` | \`dict2struct\` | create a structure from a dictionary | 8 | 1.005 |
-| \`param\` | \`disp\` | display method | 3 | 1.005 |
-| \`param\` | \`dispmax\` | optimize display | 8 | 1.005 |
-| \`param\` | \`escape\` | escape \$\{\} as $\{\{\}\} --> keep variable names convert $\{\} as \{\} --> prepare Python replacement | 35 | 1.005 |
-| \`param\` | \`eval\` | Eval method for structure such as MS.alias | 124 | 1.005 |
-| \`param\` | \`expand_ranges\` | Expands MATLAB-style ranges in a string. | 42 | 1.005 |
-| \`param\` | \`format\` | Format a string with fields using \{field\} as placeholders. Handles expressions like $\{variable1\}. | 54 | 1.005 |
-| \`param\` | \`format_array\` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.005 |
-| \`param\` | \`format_legacy\` | format a string with field (use \{field\} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly $\{variable1\} escape is a flag to prevent $\{\} replaced by \{\} | 27 | 1.005 |
-| \`param\` | \`formateval\` | format method with evaluation feature | 56 | 1.005 |
-| \`param\` | \`fromkeys\` | returns a structure from keys | 3 | 1.005 |
-| \`param\` | \`fromkeysvalues\` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.005 |
-| \`param\` | \`generator\` | generate Python code of the equivalent structure | 21 | 1.005 |
-| \`param\` | \`getattr\` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.005 |
-| \`param\` | \`hasattr\` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.005 |
-| \`param\` | \`isdefined\` | isdefined(ref) returns true if it is defined in ref | 19 | 1.005 |
-| \`param\` | \`isstrdefined\` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.005 |
-| \`param\` | \`isstrexpression\` | isstrexpression(string) returns true if s contains an expression | 5 | 1.005 |
-| \`param\` | \`items\` | return all elements as iterable key, value | 3 | 1.005 |
-| \`param\` | \`keys\` | return the fields | 4 | 1.005 |
-| \`param\` | \`keyssorted\` | sort keys by length() | 5 | 1.005 |
-| \`param\` | \`np2str\` | Convert all np entries of s into their string representations | 43 | 1.005 |
-| \`param\` | \`protect\` | protect $variable as $\{variable\} | 11 | 1.005 |
-| \`param\` | \`read\` | read the equivalent structure read(filename) | 35 | 1.005 |
-| \`param\` | \`replace_matrix_shorthand\` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 144 | 1.005 |
-| \`param\` | \`safe_fstring\` | Safely evaluate expressions in $\{\} using SafeEvaluator. | 61 | 1.005 |
-| \`param\` | \`scan\` | scan(string) scan a string for variables | 11 | 1.005 |
-| \`param\` | \`set\` | initialization | 3 | 1.005 |
-| \`param\` | \`setattr\` | set field and value | 6 | 1.005 |
-| \`param\` | \`sortdefinitions\` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.005 |
-| \`param\` | \`struct2dict\` | create a dictionary from the current structure | 3 | 1.005 |
-| \`param\` | \`struct2param\` | convert an object struct() to param() | 8 | 1.005 |
-| \`param\` | \`tostatic\` | convert dynamic a param() object to a static struct() object. note: no interpretation note: use tostruct() to interpret them and convert it to struct note: tostatic().struct2param() makes it reversible | 7 | 1.005 |
-| \`param\` | \`tostruct\` | generate the evaluated structure tostruct(protection=False) | 6 | 1.005 |
-| \`param\` | \`update\` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.005 |
-| \`param\` | \`values\` | return the values | 4 | 1.005 |
-| \`param\` | \`write\` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 33 | 1.005 |
-| \`param\` | \`zip\` | zip keys and values | 3 | 1.005 |
-| \`paramauto\` | \`__add__\` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 2 | 1.005 |
-| \`paramauto\` | \`__call__\` | Extract a sub-structure based on the specified keys, keeping the same class type. | 35 | 1.005 |
-| \`paramauto\` | \`__contains__\` | in override | 3 | 1.005 |
-| \`paramauto\` | \`__copy__\` | copy method | 6 | 1.005 |
-| \`paramauto\` | \`__deepcopy__\` | deep copy method | 8 | 1.005 |
-| \`paramauto\` | \`__delattr__\` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.005 |
-| \`paramauto\` | \`__getattr__\` | get attribute override | 3 | 1.005 |
-| \`paramauto\` | \`__getitem__\` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 26 | 1.005 |
-| \`paramauto\` | \`__getstate__\` | getstate for cooperative inheritance / duplication | 3 | 1.005 |
-| \`paramauto\` | \`__iadd__\` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 2 | 1.005 |
-| \`paramauto\` | \`__init__\` | constructor | 7 | 1.005 |
-| \`paramauto\` | \`__isub__\` | isub a structure | 9 | 1.005 |
-| \`paramauto\` | \`__iter__\` | struct iterator | 6 | 1.005 |
-| \`paramauto\` | \`__len__\` | return the number of fields | 4 | 1.005 |
-| \`paramauto\` | \`__next__\` | increment iterator | 7 | 1.005 |
-| \`paramauto\` | \`__repr__\` | display method | 5 | 1.005 |
-| \`paramauto\` | \`__setattr__\` | set attribute override | 3 | 1.005 |
-| \`paramauto\` | \`__setitem__\` | set the ith element of the structure | 24 | 1.005 |
-| \`paramauto\` | \`__setstate__\` | setstate for cooperative inheritance / duplication | 3 | 1.005 |
-| \`paramauto\` | \`__str__\` | Return str(self). | 2 | 1.005 |
-| \`paramauto\` | \`__sub__\` | sub a structure | 10 | 1.005 |
-| \`paramauto\` | \`check\` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.005 |
-| \`paramauto\` | \`clear\` | clear() delete all fields while preserving the original class | 3 | 1.005 |
-| \`paramauto\` | \`convert_matlab_like_arrays\` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 139 | 1.005 |
-| \`paramauto\` | \`dict2struct\` | create a structure from a dictionary | 8 | 1.005 |
-| \`paramauto\` | \`disp\` | display method | 3 | 1.005 |
-| \`paramauto\` | \`dispmax\` | optimize display | 8 | 1.005 |
-| \`paramauto\` | \`escape\` | escape \$\{\} as $\{\{\}\} --> keep variable names convert $\{\} as \{\} --> prepare Python replacement | 35 | 1.005 |
-| \`paramauto\` | \`eval\` | Eval method for structure such as MS.alias | 124 | 1.005 |
-| \`paramauto\` | \`expand_ranges\` | Expands MATLAB-style ranges in a string. | 42 | 1.005 |
-| \`paramauto\` | \`format\` | Format a string with fields using \{field\} as placeholders. Handles expressions like $\{variable1\}. | 54 | 1.005 |
-| \`paramauto\` | \`format_array\` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.005 |
-| \`paramauto\` | \`format_legacy\` | format a string with field (use \{field\} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly $\{variable1\} escape is a flag to prevent $\{\} replaced by \{\} | 27 | 1.005 |
-| \`paramauto\` | \`formateval\` | format method with evaluation feature | 56 | 1.005 |
-| \`paramauto\` | \`fromkeys\` | returns a structure from keys | 3 | 1.005 |
-| \`paramauto\` | \`fromkeysvalues\` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.005 |
-| \`paramauto\` | \`generator\` | generate Python code of the equivalent structure | 21 | 1.005 |
-| \`paramauto\` | \`getattr\` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.005 |
-| \`paramauto\` | \`hasattr\` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.005 |
-| \`paramauto\` | \`isdefined\` | isdefined(ref) returns true if it is defined in ref | 19 | 1.005 |
-| \`paramauto\` | \`isstrdefined\` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.005 |
-| \`paramauto\` | \`isstrexpression\` | isstrexpression(string) returns true if s contains an expression | 5 | 1.005 |
-| \`paramauto\` | \`items\` | return all elements as iterable key, value | 3 | 1.005 |
-| \`paramauto\` | \`keys\` | return the fields | 4 | 1.005 |
-| \`paramauto\` | \`keyssorted\` | sort keys by length() | 5 | 1.005 |
-| \`paramauto\` | \`np2str\` | Convert all np entries of s into their string representations | 43 | 1.005 |
-| \`paramauto\` | \`protect\` | protect $variable as $\{variable\} | 11 | 1.005 |
-| \`paramauto\` | \`read\` | read the equivalent structure read(filename) | 35 | 1.005 |
-| \`paramauto\` | \`replace_matrix_shorthand\` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 144 | 1.005 |
-| \`paramauto\` | \`safe_fstring\` | Safely evaluate expressions in $\{\} using SafeEvaluator. | 61 | 1.005 |
-| \`paramauto\` | \`scan\` | scan(string) scan a string for variables | 11 | 1.005 |
-| \`paramauto\` | \`set\` | initialization | 3 | 1.005 |
-| \`paramauto\` | \`setattr\` | set field and value | 6 | 1.005 |
-| \`paramauto\` | \`sortdefinitions\` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.005 |
-| \`paramauto\` | \`struct2dict\` | create a dictionary from the current structure | 3 | 1.005 |
-| \`paramauto\` | \`struct2param\` | convert an object struct() to param() | 8 | 1.005 |
-| \`paramauto\` | \`tostatic\` | convert dynamic a param() object to a static struct() object. note: no interpretation note: use tostruct() to interpret them and convert it to struct note: tostatic().struct2param() makes it reversible | 7 | 1.005 |
-| \`paramauto\` | \`tostruct\` | generate the evaluated structure tostruct(protection=False) | 6 | 1.005 |
-| \`paramauto\` | \`update\` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.005 |
-| \`paramauto\` | \`values\` | return the values | 4 | 1.005 |
-| \`paramauto\` | \`write\` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 33 | 1.005 |
-| \`paramauto\` | \`zip\` | zip keys and values | 3 | 1.005 |
-| \`pstr\` | \`__add__\` | Return self+value. | 2 | 1.005 |
-| \`pstr\` | \`__iadd__\` |  | 2 | 1.005 |
-| \`pstr\` | \`__repr__\` | Return repr(self). | 5 | 1.005 |
-| \`pstr\` | \`__truediv__\` | overload / | 7 | 1.005 |
-| \`pstr\` | \`eval\` | evaluate the path of it os a path | 9 | 1.005 |
-| \`pstr\` | \`topath\` | return a validated path | 6 | 1.005 |
-| \`struct\` | \`__add__\` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 10 | 1.005 |
-| \`struct\` | \`__call__\` | Extract a sub-structure based on the specified keys, keeping the same class type. | 35 | 1.005 |
-| \`struct\` | \`__contains__\` | in override | 3 | 1.005 |
-| \`struct\` | \`__copy__\` | copy method | 6 | 1.005 |
-| \`struct\` | \`__deepcopy__\` | deep copy method | 8 | 1.005 |
-| \`struct\` | \`__delattr__\` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.005 |
-| \`struct\` | \`__getattr__\` | get attribute override | 3 | 1.005 |
-| \`struct\` | \`__getitem__\` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 26 | 1.005 |
-| \`struct\` | \`__getstate__\` | getstate for cooperative inheritance / duplication | 3 | 1.005 |
-| \`struct\` | \`__iadd__\` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 9 | 1.005 |
-| \`struct\` | \`__init__\` | constructor, use debug=True to report eval errors | 6 | 1.005 |
-| \`struct\` | \`__isub__\` | isub a structure | 9 | 1.005 |
-| \`struct\` | \`__iter__\` | struct iterator | 6 | 1.005 |
-| \`struct\` | \`__len__\` | return the number of fields | 4 | 1.005 |
-| \`struct\` | \`__next__\` | increment iterator | 7 | 1.005 |
-| \`struct\` | \`__repr__\` | display method | 64 | 1.005 |
-| \`struct\` | \`__setattr__\` | set attribute override | 3 | 1.005 |
-| \`struct\` | \`__setitem__\` | set the ith element of the structure | 24 | 1.005 |
-| \`struct\` | \`__setstate__\` | setstate for cooperative inheritance / duplication | 3 | 1.005 |
-| \`struct\` | \`__str__\` | Return str(self). | 2 | 1.005 |
-| \`struct\` | \`__sub__\` | sub a structure | 10 | 1.005 |
-| \`struct\` | \`check\` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.005 |
-| \`struct\` | \`clear\` | clear() delete all fields while preserving the original class | 3 | 1.005 |
-| \`struct\` | \`dict2struct\` | create a structure from a dictionary | 8 | 1.005 |
-| \`struct\` | \`disp\` | display method | 3 | 1.005 |
-| \`struct\` | \`dispmax\` | optimize display | 8 | 1.005 |
-| \`struct\` | \`format\` | Format a string with fields using \{field\} as placeholders. Handles expressions like $\{variable1\}. | 54 | 1.005 |
-| \`struct\` | \`format_array\` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.005 |
-| \`struct\` | \`format_legacy\` | format a string with field (use \{field\} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly $\{variable1\} escape is a flag to prevent $\{\} replaced by \{\} | 27 | 1.005 |
-| \`struct\` | \`fromkeys\` | returns a structure from keys | 3 | 1.005 |
-| \`struct\` | \`fromkeysvalues\` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.005 |
-| \`struct\` | \`generator\` | generate Python code of the equivalent structure | 21 | 1.005 |
-| \`struct\` | \`getattr\` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.005 |
-| \`struct\` | \`hasattr\` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.005 |
-| \`struct\` | \`isdefined\` | isdefined(ref) returns true if it is defined in ref | 19 | 1.005 |
-| \`struct\` | \`isstrdefined\` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.005 |
-| \`struct\` | \`isstrexpression\` | isstrexpression(string) returns true if s contains an expression | 5 | 1.005 |
-| \`struct\` | \`items\` | return all elements as iterable key, value | 3 | 1.005 |
-| \`struct\` | \`keys\` | return the fields | 4 | 1.005 |
-| \`struct\` | \`keyssorted\` | sort keys by length() | 5 | 1.005 |
-| \`struct\` | \`np2str\` | Convert all np entries of s into their string representations | 43 | 1.005 |
-| \`struct\` | \`read\` | read the equivalent structure read(filename) | 35 | 1.005 |
-| \`struct\` | \`scan\` | scan(string) scan a string for variables | 11 | 1.005 |
-| \`struct\` | \`set\` | initialization | 3 | 1.005 |
-| \`struct\` | \`setattr\` | set field and value | 6 | 1.005 |
-| \`struct\` | \`sortdefinitions\` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.005 |
-| \`struct\` | \`struct2dict\` | create a dictionary from the current structure | 3 | 1.005 |
-| \`struct\` | \`struct2param\` | convert an object struct() to param() | 8 | 1.005 |
-| \`struct\` | \`update\` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.005 |
-| \`struct\` | \`values\` | return the values | 4 | 1.005 |
-| \`struct\` | \`write\` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 33 | 1.005 |
-| \`struct\` | \`zip\` | zip keys and values | 3 | 1.005 |
+| \`AttrErrorDict\` | \`__getitem__\` | x.__getitem__(y) <==> x[y] | 11 | 1.0051 |
+| \`SafeEvaluator\` | \`__init__\` | Initialize self.  See help(type(self)) for accurate signature. | 30 | 1.0051 |
+| \`SafeEvaluator\` | \`evaluate\` |  | 3 | 1.0051 |
+| \`SafeEvaluator\` | \`generic_visit\` | Called if no explicit visitor function exists for a node. | 2 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_Attribute\` |  | 12 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_BinOp\` |  | 9 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_Call\` |  | 7 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_Constant\` |  | 2 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_ExtSlice\` |  | 3 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_Index\` |  | 2 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_List\` |  | 2 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_Name\` |  | 4 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_Slice\` |  | 5 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_Subscript\` |  | 7 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_Tuple\` |  | 2 | 1.0051 |
+| \`SafeEvaluator\` | \`visit_UnaryOp\` |  | 6 | 1.0051 |
+| \`param\` | \`__add__\` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 10 | 1.0051 |
+| \`param\` | \`__call__\` | Extract an evaluated sub-structure based on the specified keys, keeping the same class type. | 25 | 1.0051 |
+| \`param\` | \`__contains__\` | in override | 3 | 1.0051 |
+| \`param\` | \`__copy__\` | copy method | 6 | 1.0051 |
+| \`param\` | \`__deepcopy__\` | deep copy method | 8 | 1.0051 |
+| \`param\` | \`__delattr__\` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.0051 |
+| \`param\` | \`__getattr__\` | get attribute override | 3 | 1.0051 |
+| \`param\` | \`__getitem__\` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 26 | 1.0051 |
+| \`param\` | \`__getstate__\` | getstate for cooperative inheritance / duplication | 3 | 1.0051 |
+| \`param\` | \`__iadd__\` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 9 | 1.0051 |
+| \`param\` | \`__init__\` | constructor | 7 | 1.0051 |
+| \`param\` | \`__isub__\` | isub a structure | 9 | 1.0051 |
+| \`param\` | \`__iter__\` | struct iterator | 6 | 1.0051 |
+| \`param\` | \`__len__\` | return the number of fields | 4 | 1.0051 |
+| \`param\` | \`__next__\` | increment iterator | 7 | 1.0051 |
+| \`param\` | \`__repr__\` | display method | 67 | 1.0051 |
+| \`param\` | \`__setattr__\` | set attribute override | 3 | 1.0051 |
+| \`param\` | \`__setitem__\` | set the ith element of the structure | 24 | 1.0051 |
+| \`param\` | \`__setstate__\` | setstate for cooperative inheritance / duplication | 3 | 1.0051 |
+| \`param\` | \`__str__\` | Return str(self). | 2 | 1.0051 |
+| \`param\` | \`__sub__\` | sub a structure | 10 | 1.0051 |
+| \`param\` | \`check\` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.0051 |
+| \`param\` | \`clear\` | clear() delete all fields while preserving the original class | 3 | 1.0051 |
+| \`param\` | \`convert_matlab_like_arrays\` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 166 | 1.0051 |
+| \`param\` | \`dict2struct\` | create a structure from a dictionary | 8 | 1.0051 |
+| \`param\` | \`disp\` | display method | 3 | 1.0051 |
+| \`param\` | \`dispmax\` | optimize display | 8 | 1.0051 |
+| \`param\` | \`escape\` | escape \$\{\} as $\{\{\}\} --> keep variable names convert $\{\} as \{\} --> prepare Python replacement | 35 | 1.0051 |
+| \`param\` | \`eval\` | Eval method for structure such as MS.alias | 150 | 1.0051 |
+| \`param\` | \`expand_ranges\` | Expands MATLAB-style ranges in a string. | 42 | 1.0051 |
+| \`param\` | \`format\` | Format a string with fields using \{field\} as placeholders. Handles expressions like $\{variable1\}. | 54 | 1.0051 |
+| \`param\` | \`format_array\` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.0051 |
+| \`param\` | \`format_legacy\` | format a string with field (use \{field\} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly $\{variable1\} escape is a flag to prevent $\{\} replaced by \{\} | 27 | 1.0051 |
+| \`param\` | \`formateval\` | format method with evaluation feature | 56 | 1.0051 |
+| \`param\` | \`fromkeys\` | returns a structure from keys | 3 | 1.0051 |
+| \`param\` | \`fromkeysvalues\` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.0051 |
+| \`param\` | \`generator\` | generate Python code of the equivalent structure | 21 | 1.0051 |
+| \`param\` | \`getattr\` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.0051 |
+| \`param\` | \`getval\` | returns the evaluated value | 4 | 1.0051 |
+| \`param\` | \`hasattr\` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.0051 |
+| \`param\` | \`isdefined\` | isdefined(ref) returns true if it is defined in ref | 19 | 1.0051 |
+| \`param\` | \`isstrdefined\` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.0051 |
+| \`param\` | \`isstrexpression\` | isstrexpression(string) returns true if s contains an expression | 5 | 1.0051 |
+| \`param\` | \`items\` | return all elements as iterable key, value | 3 | 1.0051 |
+| \`param\` | \`keys\` | return the fields | 4 | 1.0051 |
+| \`param\` | \`keyssorted\` | sort keys by length() | 5 | 1.0051 |
+| \`param\` | \`np2str\` | Convert all np entries of s into their string representations | 43 | 1.0051 |
+| \`param\` | \`protect\` | protect $variable as $\{variable\} | 11 | 1.0051 |
+| \`param\` | \`read\` | read the equivalent structure read(filename) | 35 | 1.0051 |
+| \`param\` | \`replace_matrix_shorthand\` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 144 | 1.0051 |
+| \`param\` | \`safe_fstring\` | Safely evaluate expressions in $\{\} using SafeEvaluator. | 61 | 1.0051 |
+| \`param\` | \`scan\` | scan(string) scan a string for variables | 11 | 1.0051 |
+| \`param\` | \`set\` | initialization | 3 | 1.0051 |
+| \`param\` | \`setattr\` | set field and value | 6 | 1.0051 |
+| \`param\` | \`sortdefinitions\` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.0051 |
+| \`param\` | \`struct2dict\` | create a dictionary from the current structure | 3 | 1.0051 |
+| \`param\` | \`struct2param\` | convert an object struct() to param() | 8 | 1.0051 |
+| \`param\` | \`tostatic\` | convert dynamic a param() object to a static struct() object. note: no interpretation note: use tostruct() to interpret them and convert it to struct note: tostatic().struct2param() makes it reversible | 7 | 1.0051 |
+| \`param\` | \`tostruct\` | generate the evaluated structure tostruct(protection=False) | 6 | 1.0051 |
+| \`param\` | \`update\` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.0051 |
+| \`param\` | \`values\` | return the values | 4 | 1.0051 |
+| \`param\` | \`write\` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 33 | 1.0051 |
+| \`param\` | \`zip\` | zip keys and values | 3 | 1.0051 |
+| \`paramauto\` | \`__add__\` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 2 | 1.0051 |
+| \`paramauto\` | \`__call__\` | Extract an evaluated sub-structure based on the specified keys, keeping the same class type. | 25 | 1.0051 |
+| \`paramauto\` | \`__contains__\` | in override | 3 | 1.0051 |
+| \`paramauto\` | \`__copy__\` | copy method | 6 | 1.0051 |
+| \`paramauto\` | \`__deepcopy__\` | deep copy method | 8 | 1.0051 |
+| \`paramauto\` | \`__delattr__\` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.0051 |
+| \`paramauto\` | \`__getattr__\` | get attribute override | 3 | 1.0051 |
+| \`paramauto\` | \`__getitem__\` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 26 | 1.0051 |
+| \`paramauto\` | \`__getstate__\` | getstate for cooperative inheritance / duplication | 3 | 1.0051 |
+| \`paramauto\` | \`__iadd__\` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 2 | 1.0051 |
+| \`paramauto\` | \`__init__\` | constructor | 7 | 1.0051 |
+| \`paramauto\` | \`__isub__\` | isub a structure | 9 | 1.0051 |
+| \`paramauto\` | \`__iter__\` | struct iterator | 6 | 1.0051 |
+| \`paramauto\` | \`__len__\` | return the number of fields | 4 | 1.0051 |
+| \`paramauto\` | \`__next__\` | increment iterator | 7 | 1.0051 |
+| \`paramauto\` | \`__repr__\` | display method | 5 | 1.0051 |
+| \`paramauto\` | \`__setattr__\` | set attribute override | 3 | 1.0051 |
+| \`paramauto\` | \`__setitem__\` | set the ith element of the structure | 24 | 1.0051 |
+| \`paramauto\` | \`__setstate__\` | setstate for cooperative inheritance / duplication | 3 | 1.0051 |
+| \`paramauto\` | \`__str__\` | Return str(self). | 2 | 1.0051 |
+| \`paramauto\` | \`__sub__\` | sub a structure | 10 | 1.0051 |
+| \`paramauto\` | \`check\` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.0051 |
+| \`paramauto\` | \`clear\` | clear() delete all fields while preserving the original class | 3 | 1.0051 |
+| \`paramauto\` | \`convert_matlab_like_arrays\` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 166 | 1.0051 |
+| \`paramauto\` | \`dict2struct\` | create a structure from a dictionary | 8 | 1.0051 |
+| \`paramauto\` | \`disp\` | display method | 3 | 1.0051 |
+| \`paramauto\` | \`dispmax\` | optimize display | 8 | 1.0051 |
+| \`paramauto\` | \`escape\` | escape \$\{\} as $\{\{\}\} --> keep variable names convert $\{\} as \{\} --> prepare Python replacement | 35 | 1.0051 |
+| \`paramauto\` | \`eval\` | Eval method for structure such as MS.alias | 150 | 1.0051 |
+| \`paramauto\` | \`expand_ranges\` | Expands MATLAB-style ranges in a string. | 42 | 1.0051 |
+| \`paramauto\` | \`format\` | Format a string with fields using \{field\} as placeholders. Handles expressions like $\{variable1\}. | 54 | 1.0051 |
+| \`paramauto\` | \`format_array\` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.0051 |
+| \`paramauto\` | \`format_legacy\` | format a string with field (use \{field\} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly $\{variable1\} escape is a flag to prevent $\{\} replaced by \{\} | 27 | 1.0051 |
+| \`paramauto\` | \`formateval\` | format method with evaluation feature | 56 | 1.0051 |
+| \`paramauto\` | \`fromkeys\` | returns a structure from keys | 3 | 1.0051 |
+| \`paramauto\` | \`fromkeysvalues\` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.0051 |
+| \`paramauto\` | \`generator\` | generate Python code of the equivalent structure | 21 | 1.0051 |
+| \`paramauto\` | \`getattr\` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.0051 |
+| \`paramauto\` | \`getval\` | returns the evaluated value | 4 | 1.0051 |
+| \`paramauto\` | \`hasattr\` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.0051 |
+| \`paramauto\` | \`isdefined\` | isdefined(ref) returns true if it is defined in ref | 19 | 1.0051 |
+| \`paramauto\` | \`isstrdefined\` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.0051 |
+| \`paramauto\` | \`isstrexpression\` | isstrexpression(string) returns true if s contains an expression | 5 | 1.0051 |
+| \`paramauto\` | \`items\` | return all elements as iterable key, value | 3 | 1.0051 |
+| \`paramauto\` | \`keys\` | return the fields | 4 | 1.0051 |
+| \`paramauto\` | \`keyssorted\` | sort keys by length() | 5 | 1.0051 |
+| \`paramauto\` | \`np2str\` | Convert all np entries of s into their string representations | 43 | 1.0051 |
+| \`paramauto\` | \`protect\` | protect $variable as $\{variable\} | 11 | 1.0051 |
+| \`paramauto\` | \`read\` | read the equivalent structure read(filename) | 35 | 1.0051 |
+| \`paramauto\` | \`replace_matrix_shorthand\` | Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors. Supports up to 4-dimensional arrays and handles variable references. | 144 | 1.0051 |
+| \`paramauto\` | \`safe_fstring\` | Safely evaluate expressions in $\{\} using SafeEvaluator. | 61 | 1.0051 |
+| \`paramauto\` | \`scan\` | scan(string) scan a string for variables | 11 | 1.0051 |
+| \`paramauto\` | \`set\` | initialization | 3 | 1.0051 |
+| \`paramauto\` | \`setattr\` | set field and value | 6 | 1.0051 |
+| \`paramauto\` | \`sortdefinitions\` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.0051 |
+| \`paramauto\` | \`struct2dict\` | create a dictionary from the current structure | 3 | 1.0051 |
+| \`paramauto\` | \`struct2param\` | convert an object struct() to param() | 8 | 1.0051 |
+| \`paramauto\` | \`tostatic\` | convert dynamic a param() object to a static struct() object. note: no interpretation note: use tostruct() to interpret them and convert it to struct note: tostatic().struct2param() makes it reversible | 7 | 1.0051 |
+| \`paramauto\` | \`tostruct\` | generate the evaluated structure tostruct(protection=False) | 6 | 1.0051 |
+| \`paramauto\` | \`update\` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.0051 |
+| \`paramauto\` | \`values\` | return the values | 4 | 1.0051 |
+| \`paramauto\` | \`write\` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 33 | 1.0051 |
+| \`paramauto\` | \`zip\` | zip keys and values | 3 | 1.0051 |
+| \`pstr\` | \`__add__\` | Return self+value. | 2 | 1.0051 |
+| \`pstr\` | \`__iadd__\` |  | 2 | 1.0051 |
+| \`pstr\` | \`__repr__\` | Return repr(self). | 5 | 1.0051 |
+| \`pstr\` | \`__truediv__\` | overload / | 7 | 1.0051 |
+| \`pstr\` | \`eval\` | evaluate the path of it os a path | 9 | 1.0051 |
+| \`pstr\` | \`topath\` | return a validated path | 6 | 1.0051 |
+| \`struct\` | \`__add__\` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 10 | 1.0051 |
+| \`struct\` | \`__call__\` | Extract a sub-structure based on the specified keys, keeping the same class type. | 35 | 1.0051 |
+| \`struct\` | \`__contains__\` | in override | 3 | 1.0051 |
+| \`struct\` | \`__copy__\` | copy method | 6 | 1.0051 |
+| \`struct\` | \`__deepcopy__\` | deep copy method | 8 | 1.0051 |
+| \`struct\` | \`__delattr__\` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.0051 |
+| \`struct\` | \`__getattr__\` | get attribute override | 3 | 1.0051 |
+| \`struct\` | \`__getitem__\` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 26 | 1.0051 |
+| \`struct\` | \`__getstate__\` | getstate for cooperative inheritance / duplication | 3 | 1.0051 |
+| \`struct\` | \`__iadd__\` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 9 | 1.0051 |
+| \`struct\` | \`__init__\` | constructor, use debug=True to report eval errors | 6 | 1.0051 |
+| \`struct\` | \`__isub__\` | isub a structure | 9 | 1.0051 |
+| \`struct\` | \`__iter__\` | struct iterator | 6 | 1.0051 |
+| \`struct\` | \`__len__\` | return the number of fields | 4 | 1.0051 |
+| \`struct\` | \`__next__\` | increment iterator | 7 | 1.0051 |
+| \`struct\` | \`__repr__\` | display method | 67 | 1.0051 |
+| \`struct\` | \`__setattr__\` | set attribute override | 3 | 1.0051 |
+| \`struct\` | \`__setitem__\` | set the ith element of the structure | 24 | 1.0051 |
+| \`struct\` | \`__setstate__\` | setstate for cooperative inheritance / duplication | 3 | 1.0051 |
+| \`struct\` | \`__str__\` | Return str(self). | 2 | 1.0051 |
+| \`struct\` | \`__sub__\` | sub a structure | 10 | 1.0051 |
+| \`struct\` | \`check\` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.0051 |
+| \`struct\` | \`clear\` | clear() delete all fields while preserving the original class | 3 | 1.0051 |
+| \`struct\` | \`dict2struct\` | create a structure from a dictionary | 8 | 1.0051 |
+| \`struct\` | \`disp\` | display method | 3 | 1.0051 |
+| \`struct\` | \`dispmax\` | optimize display | 8 | 1.0051 |
+| \`struct\` | \`format\` | Format a string with fields using \{field\} as placeholders. Handles expressions like $\{variable1\}. | 54 | 1.0051 |
+| \`struct\` | \`format_array\` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 105 | 1.0051 |
+| \`struct\` | \`format_legacy\` | format a string with field (use \{field\} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly $\{variable1\} escape is a flag to prevent $\{\} replaced by \{\} | 27 | 1.0051 |
+| \`struct\` | \`fromkeys\` | returns a structure from keys | 3 | 1.0051 |
+| \`struct\` | \`fromkeysvalues\` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.0051 |
+| \`struct\` | \`generator\` | generate Python code of the equivalent structure | 21 | 1.0051 |
+| \`struct\` | \`getattr\` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.0051 |
+| \`struct\` | \`hasattr\` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.0051 |
+| \`struct\` | \`isdefined\` | isdefined(ref) returns true if it is defined in ref | 19 | 1.0051 |
+| \`struct\` | \`isstrdefined\` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.0051 |
+| \`struct\` | \`isstrexpression\` | isstrexpression(string) returns true if s contains an expression | 5 | 1.0051 |
+| \`struct\` | \`items\` | return all elements as iterable key, value | 3 | 1.0051 |
+| \`struct\` | \`keys\` | return the fields | 4 | 1.0051 |
+| \`struct\` | \`keyssorted\` | sort keys by length() | 5 | 1.0051 |
+| \`struct\` | \`np2str\` | Convert all np entries of s into their string representations | 43 | 1.0051 |
+| \`struct\` | \`read\` | read the equivalent structure read(filename) | 35 | 1.0051 |
+| \`struct\` | \`scan\` | scan(string) scan a string for variables | 11 | 1.0051 |
+| \`struct\` | \`set\` | initialization | 3 | 1.0051 |
+| \`struct\` | \`setattr\` | set field and value | 6 | 1.0051 |
+| \`struct\` | \`sortdefinitions\` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.0051 |
+| \`struct\` | \`struct2dict\` | create a dictionary from the current structure | 3 | 1.0051 |
+| \`struct\` | \`struct2param\` | convert an object struct() to param() | 8 | 1.0051 |
+| \`struct\` | \`update\` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.0051 |
+| \`struct\` | \`values\` | return the values | 4 | 1.0051 |
+| \`struct\` | \`write\` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 33 | 1.0051 |
+| \`struct\` | \`zip\` | zip keys and values | 3 | 1.0051 |
 
 <a id="pizza_private_utils" name="pizza_private_utils"></a>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_private_mstruct" title="Go to Previous Module: pizza.private.mstruct" style="text-decoration: none;">⬅️ Previous</a>

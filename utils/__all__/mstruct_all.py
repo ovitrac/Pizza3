@@ -1,2 +1,2 @@
 # __all__ for pizza.private.mstruct
-__all__ = ['param', 'paramauto', 'pstr', 'struct']
+__all__ = ['AttrErrorDict', 'SafeEvaluator', 'param', 'paramauto', 'pstr', 'struct']

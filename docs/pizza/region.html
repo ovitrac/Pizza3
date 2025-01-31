@@ -11307,6 +11307,13 @@ and text formatting.</p>
 <li>Automatically resolves dependencies between fields.</li>
 <li>Includes utility methods for text formatting and evaluation.</li>
 </ul>
+<h3 id="shorthands-for-pparam">Shorthands for <code>p=param(...)</code></h3>
+<ul>
+<li><code>s = p.eval()</code> returns the full evaluated structure</li>
+<li><code>p.getval("field")</code> returns the evaluation for the field "field"</li>
+<li><code>s = p()</code> returns the full evaluated structure as <code>p.eval()</code></li>
+<li><code>s = p("field1","field2"...)</code> returns the evaluated substructure for fields "field1", "field2"</li>
+</ul>
 <hr>
 <h3 id="examples">Examples</h3>
 <h4 id="basic-usage-with-evaluation">Basic Usage with Evaluation</h4>
@@ -11482,6 +11489,12 @@ p.disp()
     - Supports dynamic evaluation of field expressions.
     - Automatically resolves dependencies between fields.
     - Includes utility methods for text formatting and evaluation.
+
+    ### Shorthands for `p=param(...)`
+    - `s = p.eval()` returns the full evaluated structure
+    - `p.getval(&#34;field&#34;)` returns the evaluation for the field &#34;field&#34;
+    - `s = p()` returns the full evaluated structure as `p.eval()`
+    - `s = p(&#34;field1&#34;,&#34;field2&#34;...)` returns the evaluated substructure for fields &#34;field1&#34;, &#34;field2&#34;
 
     ---
 
@@ -11718,112 +11731,138 @@ p.disp()
                     string is only used to determine whether definitions have been forgotten
 
         &#34;&#34;&#34;
-        # Evaluate all DEFINITIONS
         # the argument s is only used by formateval() for error management
         tmp = struct()
-        for key,value in self.items():
-            # strings are assumed to be expressions on one single line
-            if isinstance(value,str):
-                # replace ${variable} (Bash, Lammps syntax) by {variable} (Python syntax)
-                # use \${variable} to prevent replacement (espace with \)
-                # Protect variables if required
-                ispstr = isinstance(value,pstr)
-                valuesafe = pstr.eval(value,ispstr=ispstr) # value.strip()
-                if valuesafe==&#34;${&#34;+key+&#34;}&#34;: # circular reference (it cannot be evaluated)
-                    continue
-                if protection or self._protection:
-                    valuesafe, escape0 = self.protect(valuesafe)
-                else:
-                    escape0 = False
-                # replace ${var} by {var}
-                valuesafe_priorescape = valuesafe
-                valuesafe, escape = param.escape(valuesafe)
-                escape = escape or escape0
-                # replace &#34;^&#34; (Matlab, Lammps exponent) by &#34;**&#34; (Python syntax)
-                valuesafe = pstr.eval(valuesafe.replace(&#34;^&#34;,&#34;**&#34;),ispstr=ispstr)
-                # Remove all content after #
-                # if the first character is &#39;#&#39;, it is not comment (e.g. MarkDown titles)
-                poscomment = valuesafe.find(&#34;#&#34;)
-                if poscomment&gt;0: valuesafe = valuesafe[0:poscomment].strip()
-                # Matrix shorthand replacement
-                # $[[1,2,${a}]]+$[[10,20,30]] --&gt; np.array([[1,2,${a}]])+np.array([[10,20,30]])
-                valuesafe = param.replace_matrix_shorthand(valuesafe)
-                # Literal string starts with $ (no interpretation), ! (evaluation)
-                if not self._evaluation:
-                    tmp.setattr(key, pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr))
-                elif valuesafe.startswith(&#34;!&#34;):
-                    try:
-                        vtmp = ast.literal_eval(valuesafe[1:])
-                        if isinstance(vtmp,list):
-                            for i,item in enumerate(vtmp):
-                                if isinstance(item,str) and not item.strip().startswith(&#34;$&#34;):
-                                    try:
-                                        vtmp[i] = tmp.format(item, raiseerror=False)
-                                    except Exception as ve:
-                                        vtmp[i] = f&#34;Error in &lt;{item}&gt;: {ve.__class__.__name__} - {str(ve)}&#34;
-                        tmp.setattr(key,vtmp)
-                    except (SyntaxError, ValueError) as e:
-                        tmp.setattr(key, f&#34;Error: {e.__class__.__name__} - {str(e)}&#34;)
-                elif valuesafe.startswith(&#34;$&#34;) and not escape:
-                    tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard $
-                elif valuesafe.startswith(&#34;%&#34;):
-                    tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard %
-                else: # string empty or which can be evaluated
-                    if valuesafe==&#34;&#34;:
-                        tmp.setattr(key,valuesafe) # empty content
-                    else:
-                        if isinstance(value,pstr): # keep path
-                            tmp.setattr(key, pstr.topath(tmp.format(valuesafe,escape=escape)))
-                        elif escape:  # partial evaluation
-                            tmp.setattr(key, tmp.format(valuesafe,escape=True))
-                        else: # full evaluation (if it fails the last string content is returned)
-                            try:
-                                resstr = tmp.format(valuesafe,raiseerror=False)
-                            except (KeyError,NameError) as nameerr:
-                                if self._returnerror: # added on 2024-09-06
-                                    strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
-                                    tmp.setattr(key,&#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % \
-                                            (self._ftype,strnameerr))
-                                else:
-                                    tmp.setattr(key,value) #we keep the original value
-                            except (SyntaxError,TypeError,ValueError) as commonerr:
-                                tmp.setattr(key,&#34;ERROR &lt; %s &gt;&#34; % commonerr)
-                            except (IndexError,AttributeError):
+        # main string evaluator
+        def evalstr(value,key=&#34;&#34;):
+            # replace ${variable} (Bash, Lammps syntax) by {variable} (Python syntax)
+            # use \${variable} to prevent replacement (espace with \)
+            # Protect variables if required
+            ispstr = isinstance(value,pstr)
+            valuesafe = pstr.eval(value,ispstr=ispstr) # value.strip()
+            if valuesafe==&#34;${&#34;+key+&#34;}&#34;: # circular reference (it cannot be evaluated)
+                return valuesafe
+            if protection or self._protection:
+                valuesafe, escape0 = self.protect(valuesafe)
+            else:
+                escape0 = False
+            # replace ${var} by {var}
+            valuesafe_priorescape = valuesafe
+            valuesafe, escape = param.escape(valuesafe)
+            escape = escape or escape0
+            # replace &#34;^&#34; (Matlab, Lammps exponent) by &#34;**&#34; (Python syntax)
+            valuesafe = pstr.eval(valuesafe.replace(&#34;^&#34;,&#34;**&#34;),ispstr=ispstr)
+            # Remove all content after #
+            # if the first character is &#39;#&#39;, it is not comment (e.g. MarkDown titles)
+            poscomment = valuesafe.find(&#34;#&#34;)
+            if poscomment&gt;0: valuesafe = valuesafe[0:poscomment].strip()
+            # Matrix shorthand replacement
+            # $[[1,2,${a}]]+$[[10,20,30]] --&gt; np.array([[1,2,${a}]])+np.array([[10,20,30]])
+            valuesafe = param.replace_matrix_shorthand(valuesafe)
+            # Literal string starts with $ (no interpretation), ! (evaluation)
+            if not self._evaluation:
+                return pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr)
+            elif valuesafe.startswith(&#34;!&#34;):
+                try:
+                    vtmp = ast.literal_eval(valuesafe[1:])
+                    if isinstance(vtmp,list):
+                        evaluator = SafeEvaluator(tmp)
+                        for i,item in enumerate(vtmp):
+                            if isinstance(item,str) and not item.strip().startswith(&#34;$&#34;):
                                 try:
-                                    resstr = param.safe_fstring(
-                                        param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
-                                except Exception as fstrerr:
-                                    tmp.setattr(key,&#34;Index Error &lt; %s &gt;&#34; % fstrerr)
-                                else:
+                                    vtmp[i] = tmp.format(item, raiseerror=False)
                                     try:
-                                        # reseval = eval(resstr)
-                                        # reseval = ast.literal_eval(resstr)
-                                        # Use SafeEvaluator to evaluate the final expression
-                                        evaluator = SafeEvaluator(tmp)
-                                        reseval = evaluator.evaluate(resstr)
+                                        vtmp[i] = evaluator.evaluate(vtmp[i])
                                     except Exception as othererr:
-                                        #tmp.setattr(key,&#34;Mathematical Error around/in ${}: &lt; %s &gt;&#34; % othererr)
                                         if self._debug:
-                                            print(f&#34;DEBUG {key}: Error in Evaluating: {resstr}\n&lt; {othererr} &gt;&#34;)
-                                        tmp.setattr(key,resstr)
-                                    else:
-                                        tmp.setattr(key,reseval)
-                            except Exception as othererr:
-                                tmp.setattr(key,&#34;Error in ${}: &lt; %s &gt;&#34; % othererr)
+                                            print(f&#34;DEBUG {key}: Error evaluating: {vtmp[i]}\n&lt; {othererr} &gt;&#34;)
+                                except Exception as ve:
+                                    vtmp[i] = f&#34;Error in &lt;{item}&gt;: {ve.__class__.__name__} - {str(ve)}&#34;
+                    return vtmp
+                except (SyntaxError, ValueError) as e:
+                    return f&#34;Error: {e.__class__.__name__} - {str(e)}&#34;
+            elif valuesafe.startswith(&#34;$&#34;) and not escape:
+                return tmp.format(valuesafe[1:].lstrip()) # discard $
+            elif valuesafe.startswith(&#34;%&#34;):
+                return tmp.format(valuesafe[1:].lstrip()) # discard %
+            else: # string empty or which can be evaluated
+                if valuesafe==&#34;&#34;:
+                    return valuesafe # empty content
+                else:
+                    if isinstance(value,pstr): # keep path
+                        return pstr.topath(tmp.format(valuesafe,escape=escape))
+                    elif escape:  # partial evaluation
+                        return tmp.format(valuesafe,escape=True)
+                    else: # full evaluation (if it fails the last string content is returned)
+                        try:
+                            resstr = tmp.format(valuesafe,raiseerror=False)
+                        except (KeyError,NameError) as nameerr:
+                            if self._returnerror: # added on 2024-09-06
+                                strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
+                                return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
+                            else:
+                                return value #we keep the original value
+                        except (SyntaxError,TypeError,ValueError) as commonerr:
+                            return &#34;ERROR &lt; %s &gt;&#34; % commonerr
+                        except (IndexError,AttributeError):
+                            try:
+                                resstr = param.safe_fstring(
+                                    param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
+                            except Exception as fstrerr:
+                                return &#34;Index Error &lt; %s &gt;&#34; % fstrerr
                             else:
                                 try:
                                     # reseval = eval(resstr)
+                                    # reseval = ast.literal_eval(resstr)
+                                    # Use SafeEvaluator to evaluate the final expression
                                     evaluator = SafeEvaluator(tmp)
                                     reseval = evaluator.evaluate(resstr)
                                 except Exception as othererr:
-                                    #tmp.setattr(key,&#34;Eval Error &lt; %s &gt;&#34; % othererr)
+                                    #tmp.setattr(key,&#34;Mathematical Error around/in ${}: &lt; %s &gt;&#34; % othererr)
                                     if self._debug:
-                                        print(f&#34;DEBUG {key}: Error in Evaluating: {resstr}\n&lt; {othererr} &gt;&#34;)
-                                    tmp.setattr(key,resstr.replace(&#34;\n&#34;,&#34;,&#34;)) # \n replaced by ,
+                                        print(f&#34;DEBUG {key}: Error evaluating: {resstr}\n&lt; {othererr} &gt;&#34;)
+                                    return resstr
                                 else:
-                                    tmp.setattr(key,reseval)
+                                    return reseval
+                        except Exception as othererr:
+                            return &#34;Error in ${}: &lt; %s &gt;&#34; % othererr
+                        else:
+                            try:
+                                # reseval = eval(resstr)
+                                evaluator = SafeEvaluator(tmp)
+                                reseval = evaluator.evaluate(resstr)
+                            except Exception as othererr:
+                                #tmp.setattr(key,&#34;Eval Error &lt; %s &gt;&#34; % othererr)
+                                if self._debug:
+                                    print(f&#34;DEBUG {key}: Error evaluating: {resstr}\n&lt; {othererr} &gt;&#34;)
+                                return resstr.replace(&#34;\n&#34;,&#34;,&#34;) # \n replaced by ,
+                            else:
+                                return reseval
+        # evalstr() refactored for error management
+        def safe_evalstr(x,key=&#34;&#34;):
+            xeval = evalstr(x,key)
+            if isinstance(xeval,str):
+                try:
+                    evaluator = SafeEvaluator(tmp)
+                    return evaluator.evaluate(xeval)
+                except Exception as e:
+                    if self._debug:
+                        print(f&#34;DEBUG {key}: Error evaluating &#39;{x}&#39;: {e}&#34;)
+                    return xeval  # default fallback value
+            else:
+                return xeval
+
+        # Evaluate all DEFINITIONS
+        for key,value in self.items():
+            # strings are assumed to be expressions on one single line
+            if isinstance(value,str):
+                tmp.setattr(key,evalstr(value,key))
             elif isinstance(value,_numeric_types): # already a number
-                tmp.setattr(key, value) # store the value with the key
+                if isinstance(value,list):
+                    valuelist = [safe_evalstr(x,key) if isinstance(x,str) else x for x in value]
+                    tmp.setattr(key,valuelist)
+                else:
+                    tmp.setattr(key, value) # store the value with the key
             else: # unsupported types
                 if s.find(&#34;{&#34;+key+&#34;}&#34;)&gt;=0:
                     print(f&#39;*** WARNING ***\n\tIn the {self._ftype}:&#34;\n{s}\n&#34;&#39;)
@@ -11889,6 +11928,40 @@ p.disp()
                 if len(slines[i])&gt;0:
                     if slines[i][0] == &#34;%&#34;: slines[i]=&#34;#&#34;+slines[i][1:]
             return &#34;\n&#34;.join(slines)
+
+
+    # return the value instead of formula
+    def getval(self,key):
+        &#34;&#34;&#34; returns the evaluated value &#34;&#34;&#34;
+        s = self.eval()
+        return getattr(s,key)
+
+    # override () for subindexing structure with key names
+    def __call__(self, *keys):
+        &#34;&#34;&#34;
+        Extract an evaluated sub-structure based on the specified keys,
+        keeping the same class type.
+
+        Parameters:
+        -----------
+        *keys : str
+            The keys for the fields to include in the sub-structure.
+
+        Returns:
+        --------
+        struct
+            An evaluated instance of class struct, containing
+            only the specified keys with evaluated values.
+
+        Usage:
+        ------
+        sub_struct = p(&#39;key1&#39;, &#39;key2&#39;, ...)
+        &#34;&#34;&#34;
+        s = self.eval()
+        if keys:
+            return s(*keys)
+        else:
+            return s
 
     # returns the equivalent structure evaluated
     def tostruct(self,protection=False):
@@ -12078,19 +12151,46 @@ p.disp()
             # 3) Remove trailing commas before closing brackets
             txt = re.sub(r&#39;,+\]&#39;, &#39;]&#39;, txt)
             return txt
+
+        def replace_spaces_with_commas(txt):
+            &#34;&#34;&#34;
+            Replaces spaces with commas only when they&#39;re within array shorthands and not preceded by a comma, opening bracket, or whitespace,
+            and are followed by a digit or &#39;$&#39;. Also collapses multiple commas into one and strips leading/trailing commas.
+
+            Parameters:
+            ----------
+            txt : str
+                The text to process.
+
+            Returns:
+            -------
+            str
+                The processed text with appropriate commas.
+            &#34;&#34;&#34;
+            # Replace spaces not preceded by &#39;,&#39;, &#39;[&#39;, or whitespace and followed by digit or &#39;$&#39; with commas
+            txt = re.sub(r&#39;(?&lt;![,\[\s])\s+(?=[\d\$])&#39;, &#39;,&#39;, txt)
+            # Remove multiple consecutive commas
+            txt = re.sub(r&#39;,+&#39;, &#39;,&#39;, txt)
+            # Strip leading and trailing commas
+            txt = txt.strip(&#39;,&#39;)
+            # Replace residual multiple consecutive spaces with a single space
+            return re.sub(r&#39;\s+&#39;, &#39; &#39;, txt)
+
         # --------------------------------------------------------------------------
         # Apply Step 1: Convert matrices with semicolons
         # --------------------------------------------------------------------------
-        text = convert_matrices_with_semicolons(text)
+        text_cv = convert_matrices_with_semicolons(text)
         # --------------------------------------------------------------------------
         # Apply Step 2: Convert row vectors (no semicolons/nested brackets)
         # --------------------------------------------------------------------------
-        text = convert_row_vectors(text)
+        text_cv = convert_row_vectors(text_cv)
         # --------------------------------------------------------------------------
         # Apply Step 3: Replace spaces with commas and clean up
         # --------------------------------------------------------------------------
-        text = replace_spaces_safely(text)
-        return text
+        if text_cv != text:
+            return replace_spaces_with_commas(text_cv) # old method: replace_spaces_safely(text_cv)
+        else:
+            return text
 
 
 
@@ -12482,19 +12582,46 @@ def convert_matlab_like_arrays(text):
         # 3) Remove trailing commas before closing brackets
         txt = re.sub(r&#39;,+\]&#39;, &#39;]&#39;, txt)
         return txt
+
+    def replace_spaces_with_commas(txt):
+        &#34;&#34;&#34;
+        Replaces spaces with commas only when they&#39;re within array shorthands and not preceded by a comma, opening bracket, or whitespace,
+        and are followed by a digit or &#39;$&#39;. Also collapses multiple commas into one and strips leading/trailing commas.
+
+        Parameters:
+        ----------
+        txt : str
+            The text to process.
+
+        Returns:
+        -------
+        str
+            The processed text with appropriate commas.
+        &#34;&#34;&#34;
+        # Replace spaces not preceded by &#39;,&#39;, &#39;[&#39;, or whitespace and followed by digit or &#39;$&#39; with commas
+        txt = re.sub(r&#39;(?&lt;![,\[\s])\s+(?=[\d\$])&#39;, &#39;,&#39;, txt)
+        # Remove multiple consecutive commas
+        txt = re.sub(r&#39;,+&#39;, &#39;,&#39;, txt)
+        # Strip leading and trailing commas
+        txt = txt.strip(&#39;,&#39;)
+        # Replace residual multiple consecutive spaces with a single space
+        return re.sub(r&#39;\s+&#39;, &#39; &#39;, txt)
+
     # --------------------------------------------------------------------------
     # Apply Step 1: Convert matrices with semicolons
     # --------------------------------------------------------------------------
-    text = convert_matrices_with_semicolons(text)
+    text_cv = convert_matrices_with_semicolons(text)
     # --------------------------------------------------------------------------
     # Apply Step 2: Convert row vectors (no semicolons/nested brackets)
     # --------------------------------------------------------------------------
-    text = convert_row_vectors(text)
+    text_cv = convert_row_vectors(text_cv)
     # --------------------------------------------------------------------------
     # Apply Step 3: Replace spaces with commas and clean up
     # --------------------------------------------------------------------------
-    text = replace_spaces_safely(text)
-    return text</code></pre>
+    if text_cv != text:
+        return replace_spaces_with_commas(text_cv) # old method: replace_spaces_safely(text_cv)
+    else:
+        return text</code></pre>
 </details>
 </dd>
 <dt id="region.param.escape"><code class="name flex">
@@ -12860,112 +12987,138 @@ where :
                 string is only used to determine whether definitions have been forgotten
 
     &#34;&#34;&#34;
-    # Evaluate all DEFINITIONS
     # the argument s is only used by formateval() for error management
     tmp = struct()
-    for key,value in self.items():
-        # strings are assumed to be expressions on one single line
-        if isinstance(value,str):
-            # replace ${variable} (Bash, Lammps syntax) by {variable} (Python syntax)
-            # use \${variable} to prevent replacement (espace with \)
-            # Protect variables if required
-            ispstr = isinstance(value,pstr)
-            valuesafe = pstr.eval(value,ispstr=ispstr) # value.strip()
-            if valuesafe==&#34;${&#34;+key+&#34;}&#34;: # circular reference (it cannot be evaluated)
-                continue
-            if protection or self._protection:
-                valuesafe, escape0 = self.protect(valuesafe)
-            else:
-                escape0 = False
-            # replace ${var} by {var}
-            valuesafe_priorescape = valuesafe
-            valuesafe, escape = param.escape(valuesafe)
-            escape = escape or escape0
-            # replace &#34;^&#34; (Matlab, Lammps exponent) by &#34;**&#34; (Python syntax)
-            valuesafe = pstr.eval(valuesafe.replace(&#34;^&#34;,&#34;**&#34;),ispstr=ispstr)
-            # Remove all content after #
-            # if the first character is &#39;#&#39;, it is not comment (e.g. MarkDown titles)
-            poscomment = valuesafe.find(&#34;#&#34;)
-            if poscomment&gt;0: valuesafe = valuesafe[0:poscomment].strip()
-            # Matrix shorthand replacement
-            # $[[1,2,${a}]]+$[[10,20,30]] --&gt; np.array([[1,2,${a}]])+np.array([[10,20,30]])
-            valuesafe = param.replace_matrix_shorthand(valuesafe)
-            # Literal string starts with $ (no interpretation), ! (evaluation)
-            if not self._evaluation:
-                tmp.setattr(key, pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr))
-            elif valuesafe.startswith(&#34;!&#34;):
-                try:
-                    vtmp = ast.literal_eval(valuesafe[1:])
-                    if isinstance(vtmp,list):
-                        for i,item in enumerate(vtmp):
-                            if isinstance(item,str) and not item.strip().startswith(&#34;$&#34;):
-                                try:
-                                    vtmp[i] = tmp.format(item, raiseerror=False)
-                                except Exception as ve:
-                                    vtmp[i] = f&#34;Error in &lt;{item}&gt;: {ve.__class__.__name__} - {str(ve)}&#34;
-                    tmp.setattr(key,vtmp)
-                except (SyntaxError, ValueError) as e:
-                    tmp.setattr(key, f&#34;Error: {e.__class__.__name__} - {str(e)}&#34;)
-            elif valuesafe.startswith(&#34;$&#34;) and not escape:
-                tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard $
-            elif valuesafe.startswith(&#34;%&#34;):
-                tmp.setattr(key,tmp.format(valuesafe[1:].lstrip())) # discard %
-            else: # string empty or which can be evaluated
-                if valuesafe==&#34;&#34;:
-                    tmp.setattr(key,valuesafe) # empty content
-                else:
-                    if isinstance(value,pstr): # keep path
-                        tmp.setattr(key, pstr.topath(tmp.format(valuesafe,escape=escape)))
-                    elif escape:  # partial evaluation
-                        tmp.setattr(key, tmp.format(valuesafe,escape=True))
-                    else: # full evaluation (if it fails the last string content is returned)
-                        try:
-                            resstr = tmp.format(valuesafe,raiseerror=False)
-                        except (KeyError,NameError) as nameerr:
-                            if self._returnerror: # added on 2024-09-06
-                                strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
-                                tmp.setattr(key,&#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % \
-                                        (self._ftype,strnameerr))
-                            else:
-                                tmp.setattr(key,value) #we keep the original value
-                        except (SyntaxError,TypeError,ValueError) as commonerr:
-                            tmp.setattr(key,&#34;ERROR &lt; %s &gt;&#34; % commonerr)
-                        except (IndexError,AttributeError):
+    # main string evaluator
+    def evalstr(value,key=&#34;&#34;):
+        # replace ${variable} (Bash, Lammps syntax) by {variable} (Python syntax)
+        # use \${variable} to prevent replacement (espace with \)
+        # Protect variables if required
+        ispstr = isinstance(value,pstr)
+        valuesafe = pstr.eval(value,ispstr=ispstr) # value.strip()
+        if valuesafe==&#34;${&#34;+key+&#34;}&#34;: # circular reference (it cannot be evaluated)
+            return valuesafe
+        if protection or self._protection:
+            valuesafe, escape0 = self.protect(valuesafe)
+        else:
+            escape0 = False
+        # replace ${var} by {var}
+        valuesafe_priorescape = valuesafe
+        valuesafe, escape = param.escape(valuesafe)
+        escape = escape or escape0
+        # replace &#34;^&#34; (Matlab, Lammps exponent) by &#34;**&#34; (Python syntax)
+        valuesafe = pstr.eval(valuesafe.replace(&#34;^&#34;,&#34;**&#34;),ispstr=ispstr)
+        # Remove all content after #
+        # if the first character is &#39;#&#39;, it is not comment (e.g. MarkDown titles)
+        poscomment = valuesafe.find(&#34;#&#34;)
+        if poscomment&gt;0: valuesafe = valuesafe[0:poscomment].strip()
+        # Matrix shorthand replacement
+        # $[[1,2,${a}]]+$[[10,20,30]] --&gt; np.array([[1,2,${a}]])+np.array([[10,20,30]])
+        valuesafe = param.replace_matrix_shorthand(valuesafe)
+        # Literal string starts with $ (no interpretation), ! (evaluation)
+        if not self._evaluation:
+            return pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr)
+        elif valuesafe.startswith(&#34;!&#34;):
+            try:
+                vtmp = ast.literal_eval(valuesafe[1:])
+                if isinstance(vtmp,list):
+                    evaluator = SafeEvaluator(tmp)
+                    for i,item in enumerate(vtmp):
+                        if isinstance(item,str) and not item.strip().startswith(&#34;$&#34;):
                             try:
-                                resstr = param.safe_fstring(
-                                    param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
-                            except Exception as fstrerr:
-                                tmp.setattr(key,&#34;Index Error &lt; %s &gt;&#34; % fstrerr)
-                            else:
+                                vtmp[i] = tmp.format(item, raiseerror=False)
                                 try:
-                                    # reseval = eval(resstr)
-                                    # reseval = ast.literal_eval(resstr)
-                                    # Use SafeEvaluator to evaluate the final expression
-                                    evaluator = SafeEvaluator(tmp)
-                                    reseval = evaluator.evaluate(resstr)
+                                    vtmp[i] = evaluator.evaluate(vtmp[i])
                                 except Exception as othererr:
-                                    #tmp.setattr(key,&#34;Mathematical Error around/in ${}: &lt; %s &gt;&#34; % othererr)
                                     if self._debug:
-                                        print(f&#34;DEBUG {key}: Error in Evaluating: {resstr}\n&lt; {othererr} &gt;&#34;)
-                                    tmp.setattr(key,resstr)
-                                else:
-                                    tmp.setattr(key,reseval)
-                        except Exception as othererr:
-                            tmp.setattr(key,&#34;Error in ${}: &lt; %s &gt;&#34; % othererr)
+                                        print(f&#34;DEBUG {key}: Error evaluating: {vtmp[i]}\n&lt; {othererr} &gt;&#34;)
+                            except Exception as ve:
+                                vtmp[i] = f&#34;Error in &lt;{item}&gt;: {ve.__class__.__name__} - {str(ve)}&#34;
+                return vtmp
+            except (SyntaxError, ValueError) as e:
+                return f&#34;Error: {e.__class__.__name__} - {str(e)}&#34;
+        elif valuesafe.startswith(&#34;$&#34;) and not escape:
+            return tmp.format(valuesafe[1:].lstrip()) # discard $
+        elif valuesafe.startswith(&#34;%&#34;):
+            return tmp.format(valuesafe[1:].lstrip()) # discard %
+        else: # string empty or which can be evaluated
+            if valuesafe==&#34;&#34;:
+                return valuesafe # empty content
+            else:
+                if isinstance(value,pstr): # keep path
+                    return pstr.topath(tmp.format(valuesafe,escape=escape))
+                elif escape:  # partial evaluation
+                    return tmp.format(valuesafe,escape=True)
+                else: # full evaluation (if it fails the last string content is returned)
+                    try:
+                        resstr = tmp.format(valuesafe,raiseerror=False)
+                    except (KeyError,NameError) as nameerr:
+                        if self._returnerror: # added on 2024-09-06
+                            strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
+                            return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
+                        else:
+                            return value #we keep the original value
+                    except (SyntaxError,TypeError,ValueError) as commonerr:
+                        return &#34;ERROR &lt; %s &gt;&#34; % commonerr
+                    except (IndexError,AttributeError):
+                        try:
+                            resstr = param.safe_fstring(
+                                param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
+                        except Exception as fstrerr:
+                            return &#34;Index Error &lt; %s &gt;&#34; % fstrerr
                         else:
                             try:
                                 # reseval = eval(resstr)
+                                # reseval = ast.literal_eval(resstr)
+                                # Use SafeEvaluator to evaluate the final expression
                                 evaluator = SafeEvaluator(tmp)
                                 reseval = evaluator.evaluate(resstr)
                             except Exception as othererr:
-                                #tmp.setattr(key,&#34;Eval Error &lt; %s &gt;&#34; % othererr)
+                                #tmp.setattr(key,&#34;Mathematical Error around/in ${}: &lt; %s &gt;&#34; % othererr)
                                 if self._debug:
-                                    print(f&#34;DEBUG {key}: Error in Evaluating: {resstr}\n&lt; {othererr} &gt;&#34;)
-                                tmp.setattr(key,resstr.replace(&#34;\n&#34;,&#34;,&#34;)) # \n replaced by ,
+                                    print(f&#34;DEBUG {key}: Error evaluating: {resstr}\n&lt; {othererr} &gt;&#34;)
+                                return resstr
                             else:
-                                tmp.setattr(key,reseval)
+                                return reseval
+                    except Exception as othererr:
+                        return &#34;Error in ${}: &lt; %s &gt;&#34; % othererr
+                    else:
+                        try:
+                            # reseval = eval(resstr)
+                            evaluator = SafeEvaluator(tmp)
+                            reseval = evaluator.evaluate(resstr)
+                        except Exception as othererr:
+                            #tmp.setattr(key,&#34;Eval Error &lt; %s &gt;&#34; % othererr)
+                            if self._debug:
+                                print(f&#34;DEBUG {key}: Error evaluating: {resstr}\n&lt; {othererr} &gt;&#34;)
+                            return resstr.replace(&#34;\n&#34;,&#34;,&#34;) # \n replaced by ,
+                        else:
+                            return reseval
+    # evalstr() refactored for error management
+    def safe_evalstr(x,key=&#34;&#34;):
+        xeval = evalstr(x,key)
+        if isinstance(xeval,str):
+            try:
+                evaluator = SafeEvaluator(tmp)
+                return evaluator.evaluate(xeval)
+            except Exception as e:
+                if self._debug:
+                    print(f&#34;DEBUG {key}: Error evaluating &#39;{x}&#39;: {e}&#34;)
+                return xeval  # default fallback value
+        else:
+            return xeval
+
+    # Evaluate all DEFINITIONS
+    for key,value in self.items():
+        # strings are assumed to be expressions on one single line
+        if isinstance(value,str):
+            tmp.setattr(key,evalstr(value,key))
         elif isinstance(value,_numeric_types): # already a number
-            tmp.setattr(key, value) # store the value with the key
+            if isinstance(value,list):
+                valuelist = [safe_evalstr(x,key) if isinstance(x,str) else x for x in value]
+                tmp.setattr(key,valuelist)
+            else:
+                tmp.setattr(key, value) # store the value with the key
         else: # unsupported types
             if s.find(&#34;{&#34;+key+&#34;}&#34;)&gt;=0:
                 print(f&#39;*** WARNING ***\n\tIn the {self._ftype}:&#34;\n{s}\n&#34;&#39;)
@@ -13111,6 +13264,21 @@ Example:
             if len(slines[i])&gt;0:
                 if slines[i][0] == &#34;%&#34;: slines[i]=&#34;#&#34;+slines[i][1:]
         return &#34;\n&#34;.join(slines)</code></pre>
+</details>
+</dd>
+<dt id="region.param.getval"><code class="name flex">
+<span>def <span class="ident">getval</span></span>(<span>self, key)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>returns the evaluated value</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getval(self,key):
+    &#34;&#34;&#34; returns the evaluated value &#34;&#34;&#34;
+    s = self.eval()
+    return getattr(s,key)</code></pre>
 </details>
 </dd>
 <dt id="region.param.protect"><code class="name flex">
@@ -24147,6 +24315,9 @@ s.sortdefinitions()
                                             print(fmteval % &#34;&#34;, struct.format_array(calcvalue))
                                         else:
                                             print(fmteval % &#34;&#34;,self.dispmax(calcvalue))
+                            elif isinstance(value,list):
+                                calcvalue =tmp.getattr(key)
+                                print(fmteval % &#34;&#34;,self.dispmax(str(calcvalue)))
             print(line)
             return f&#34;{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s&#34;
 
@@ -26380,6 +26551,7 @@ water(beadtype=index, userid="myfluid")</p></div>
 <li><code><a title="region.param.eval" href="#region.param.eval">eval</a></code></li>
 <li><code><a title="region.param.expand_ranges" href="#region.param.expand_ranges">expand_ranges</a></code></li>
 <li><code><a title="region.param.formateval" href="#region.param.formateval">formateval</a></code></li>
+<li><code><a title="region.param.getval" href="#region.param.getval">getval</a></code></li>
 <li><code><a title="region.param.protect" href="#region.param.protect">protect</a></code></li>
 <li><code><a title="region.param.replace_matrix_shorthand" href="#region.param.replace_matrix_shorthand">replace_matrix_shorthand</a></code></li>
 <li><code><a title="region.param.safe_fstring" href="#region.param.safe_fstring">safe_fstring</a></code></li>

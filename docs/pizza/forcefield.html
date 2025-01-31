@@ -3356,6 +3356,9 @@ s.sortdefinitions()
                                             print(fmteval % &#34;&#34;, struct.format_array(calcvalue))
                                         else:
                                             print(fmteval % &#34;&#34;,self.dispmax(calcvalue))
+                            elif isinstance(value,list):
+                                calcvalue =tmp.getattr(key)
+                                print(fmteval % &#34;&#34;,self.dispmax(str(calcvalue)))
             print(line)
             return f&#34;{self._fulltype} ({self._type} object) with {len(self)} {self._ftype}s&#34;
 
