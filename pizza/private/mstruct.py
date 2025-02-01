@@ -173,6 +173,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-01-30 substitutions and calulations applied in lists (not expressions) [1, 2, 'test', '${a[1]}'] yields [1, 2, 'test', 1]
 # 2025-01-31 better parsing rules for converting spaces into , (Matlab-like) (version 1.0051)
 # 2025-01-31 p=param(a=..,b=..), p("a","b") returns the values of a and b as a struct, p.getval("a") returns the value of a
+# 2025-02-01 better separation of param interpolation and global evaluation, consolidation of local evaluation: "the sum p is ${sum(p)}", [${n},${o}]" (version 1.0052)
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
@@ -181,7 +182,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.0051"
+__version__ = "1.0052"
 
 
 # %% Dependencies
@@ -194,41 +195,141 @@ from pathlib import PurePosixPath as PurePath
 from copy import copy as duplicate # to duplicate objects
 from copy import deepcopy as duplicatedeep # used by __deepcopy__()
 # Import math functions
-import math
+import builtins, math
 import random
 import numpy as np
 
 __all__ = ['AttrErrorDict', 'SafeEvaluator', 'param', 'paramauto', 'pstr', 'struct']
 
 
-# %% Private classes, variables
+# %% Private classes, functions, variables
 
 _list_types = (list,tuple,np.ndarray) # list types recognized as such
 _numeric_types = (int,float,str,list,tuple,np.ndarray, np.generic) # numeric types recognized as such
+
+
+# List of functions recognized by SafeEvaluator()
+# some functions might be unavailable with Python versions older than 3.10
+_number_theoretic_funcs = [ # --- Number-Theoretic Functions
+    "comb",      # Number of ways to choose k items from n items without repetition and without order
+    "factorial", # n factorial
+    "gcd",       # Greatest common divisor of the integer arguments
+    "isqrt",     # Integer square root of a nonnegative integer n
+    "lcm",       # Least common multiple of the integer arguments
+    "perm"       # Number of ways to choose k items from n items without repetition and with order
+]
+_floating_arithmetic_funcs = [ # --- Floating Point Arithmetic
+    "ceil",      # Ceiling of x, the smallest integer greater than or equal to x
+    "fabs",      # Absolute value of x
+    "floor",     # Floor of x, the largest integer less than or equal to x
+#    "fma",       # Fused multiply-add operation: (x * y) + z (Python 3.13 required)
+    "fmod",      # Remainder of division x / y
+    "modf",      # Fractional and integer parts of x
+    "remainder", # Remainder of x with respect to y
+    "trunc"      # Integer part of x
+]
+_floating_manipulation_funcs = [ # --- Floating Point Manipulation Functions
+    "copysign",  # Magnitude (absolute value) of x with the sign of y
+    "frexp",     # Mantissa and exponent of x
+    "isclose",   # Check if the values a and b are close to each other
+    "isfinite",  # Check if x is neither an infinity nor a NaN
+    "isinf",     # Check if x is a positive or negative infinity
+    "isnan",     # Check if x is a NaN (not a number)
+    "ldexp",     # x * (2**i), inverse of function frexp()
+    "nextafter", # Floating-point value steps steps after x towards y
+    "ulp"        # Value of the least significant bit of x
+]
+_power_exp_log_funcs = [ # --- Power, Exponential, and Logarithmic Functions
+    "cbrt",      # Cube root of x
+    "exp",       # e raised to the power x
+    "exp2",      # 2 raised to the power x
+    "expm1",     # e raised to the power x, minus 1
+    "log",       # Logarithm of x to the given base (e by default)
+    "log1p",     # Natural logarithm of 1+x (base e)
+    "log2",      # Base-2 logarithm of x
+    "log10",     # Base-10 logarithm of x
+    "pow",       # x raised to the power y
+    "sqrt"       # Square root of x
+]
+_summation_product_funcs = [ # --- Summation and Product Functions
+    "dist",      # Euclidean distance between two points p and q given as an iterable of coordinates
+    "fsum",      # Sum of values in the input iterable
+    "hypot",     # Euclidean norm of an iterable of coordinates
+    "prod",      # Product of elements in the input iterable with a start value
+    "sumprod"    # Sum of products from two iterables p and q
+]
+_angular_conversion_funcs = [ # --- Angular Conversion Functions
+    "degrees",   # Convert angle x from radians to degrees
+    "radians"    # Convert angle x from degrees to radians
+]
+_trigonometric_funcs = [ # --- Trigonometric Functions
+    "acos",      # Arc cosine of x
+    "asin",      # Arc sine of x
+    "atan",      # Arc tangent of x
+    "atan2",     # Arc tangent of y/x
+    "cos",       # Cosine of x
+    "sin",       # Sine of x
+    "tan"        # Tangent of x
+]
+_hyperbolic_funcs = [ # --- Hyperbolic Functions
+    "acosh",     # Inverse hyperbolic cosine of x
+    "asinh",     # Inverse hyperbolic sine of x
+    "atanh",     # Inverse hyperbolic tangent of x
+    "cosh",      # Hyperbolic cosine of x
+    "sinh",      # Hyperbolic sine of x
+    "tanh"       # Hyperbolic tangent of x
+]
+_special_funcs = [ # --- Special Functions
+    "erf",       # Error function at x
+    "erfc",      # Complementary error function at x
+    "gamma",     # Gamma function at x
+    "lgamma"     # Natural logarithm of the absolute value of the Gamma function at x
+]
+_constants = [ # --- Constants
+    "pi",        # π = 3.141592…
+    "e",         # e = 2.718281…
+    "tau",       # τ = 2π = 6.283185…
+    "inf",       # Positive infinity
+    "nan"        # “Not a number” (NaN)
+]
+# Combine all functions and constants into one list:
+_all_math_names = (
+    _number_theoretic_funcs +
+    _floating_arithmetic_funcs +
+    _floating_manipulation_funcs +
+    _power_exp_log_funcs +
+    _summation_product_funcs +
+    _angular_conversion_funcs +
+    _trigonometric_funcs +
+    _hyperbolic_funcs +
+    _special_funcs +
+    _constants
+)
+
 
 # Safe f"" to evaluate ${var}, ${expression} and some expressions ${v1}+${v2}
 class SafeEvaluator(ast.NodeVisitor):
     """A safe evaluator class for expressions involving math, NumPy, random, and basic operators."""
 
-    def __init__(self, context):
+    def __init__(self, context={}):
         self.context = {**context}
+        # Update context with math functions/constants from _all_math_names that exist in math module.
         self.context.update({
             name: getattr(math, name)
-            for name in [
-                "sin", "cos", "tan", "asin", "acos", "atan", "atan2", "radians", "degrees",
-                "exp", "log", "log10", "pow", "sqrt",
-                "ceil", "floor", "fmod", "modf",
-                "fabs", "hypot", "pi", "e"
-            ]
+            for name in _all_math_names if hasattr(math, name)
         })
+        # Add built-in functions relevant for math that are not part of the math module.
+        for name in ("abs", "round", "min", "max", "sum", "divmod"):
+            self.context[name] = getattr(builtins, name)
+
         self.context.update({
             "gauss": random.gauss,
             "uniform": random.uniform,
             "randint": random.randint,
             "choice": random.choice
         })
+        # Add NumPy as np
         self.context["np"] = np  # Allow 'np.sin', 'np.cos', etc.
-
         # Define allowed operators
         self.operators = {
             ast.Add: operator.add,
@@ -321,6 +422,78 @@ class SafeEvaluator(ast.NodeVisitor):
         tree = ast.parse(expression, mode='eval')
         return self.visit(tree.body)
 
+# Use SafeEvaluator only to unescaped variables ${var} and expressions ${var1+var2}
+# This methodology separates string interpolation from expression evaluation
+def evaluate_with_placeholders(text, evaluator, evaluator_nocontext=SafeEvaluator(),raiseerror=False):
+    """
+    Evaluates only unescaped placeholders of the form ${...} in the input text.
+    Escaped placeholders (\\${...}) are left as literal text (after removing the escape).
+    
+    Note1 : ${ ... } can be ${var} or an expressions such as ${var1+var2}
+    Note2 : a full evaluation is attempted only after the full evaluation using the same
+    evaluator without context
+    
+    Example:
+            
+        context = {'a': 10, 'b': 5}
+        evaluator = SafeEvaluator(context)
+        evaluator_nocontext = SafeEvaluator()
+        
+        text = "Evaluated variable: ${a} and literal: \\${a} and sum: ${a + b}, leave intact a+b, ${a}+${b}"
+        processed_text = evaluate_with_placeholders(text, evaluator)
+        print(processed_text)
+        
+    """
+    # Pattern explanation:
+    #   (?<!\\)   : Negative lookbehind to ensure the '${' is not preceded by a backslash.
+    #   (\$\{([^}]+)\}) : Captures the full placeholder in group 1 and the inner expression in group 2.
+    pattern = r'(?<!\\)(\$\{([^}]+)\})'
+
+    def replace_placeholder(match):
+        # Extract the inner expression from the placeholder.
+        expr = match.group(2)
+        # Evaluate the expression using your SafeEvaluator instance.
+        try:
+            value = evaluator.evaluate(expr)
+        except Exception as e:
+            raise ValueError(f"Error evaluating expression '{expr}': {e}")
+        return str(value)
+
+    # String Interpolation: Replace unescaped placeholders with their evaluated results.
+    result = re.sub(pattern, replace_placeholder, text)
+    # Finally, unescape the escaped placeholders: replace "\${" with "${".
+    result = result.replace(r'\${', '${')
+    # Full evaluation if possible
+    if raiseerror:
+        return evaluator_nocontext.evaluate(result)
+    else:
+        try:
+            return evaluator_nocontext.evaluate(result)
+        except Exception:
+            return result
+
+
+# returns True for literal string starting with "$"
+def is_literal_string(s):
+    """
+    Returns True if the first non-blank character in the string is '$'
+    and it is not immediately followed by '{' or '['.
+    
+    Parameters:
+        s (str): The string to check.
+        
+    Returns:
+        bool: True if the condition is met, otherwise False.
+    """
+    stripped = s.lstrip()  # Remove leading whitespace
+    if not stripped:
+        return False
+    if stripped[0] != '$':
+        return False
+    # If there is a character following '$', ensure it's not '{' or '['.
+    if len(stripped) > 1 and stripped[1] in ('{', '['):
+        return False
+    return True
 
 # Class to handle expressions containing operators correctly without being misinterpreted as attribute accesses.
 class AttrErrorDict(dict):
@@ -1506,9 +1679,9 @@ class param(struct):
 
     #### Prevent Evaluation
     ```python
-    definitions = param(a=1, b="${a}*10+${a}", c="\${a}+10", d='\${myparam}')
-    text = definitions.formateval("this is my text ${a}, ${b}, \${myvar}=${c}+${d}")
-    print(text)  # "this is my text 1, 11, \${myvar}=\${a}+10+${myparam}"
+    definitions = param(a=1, b="${a}*10+${a}", c="\\${a}+10", d='\\${myparam}')
+    text = definitions.formateval("this is my text ${a}, ${b}, \\${myvar}=${c}+${d}")
+    print(text)  # "this is my text 1, 11, \\${myvar}=\\${a}+10+${myparam}"
     ```
 
     ---
@@ -1619,14 +1792,14 @@ class param(struct):
     @staticmethod
     def escape(s):
         """
-            escape \${} as ${{}} --> keep variable names
+            escape \\${} as ${{}} --> keep variable names
             convert ${} as {} --> prepare Python replacement
 
             Examples:
-                escape("\${a}")
+                escape("\\${a}")
                 returns ('${{a}}', True)
 
-                escape("  \${abc} ${a} \${bc}")
+                escape("  \\${abc} ${a} \\${bc}")
                 returns ('  ${{abc}} {a} ${{bc}}', True)
 
                 escape("${a}")
@@ -1640,7 +1813,7 @@ class param(struct):
             raise TypeError(f'the argument must be string not {type(s)}')
         se, start, found = "", 0, True
         while found:
-            pos0 = s.find("\${",start)
+            pos0 = s.find(r"\${",start)
             found = pos0>=0
             if found:
                 pos1 = s.find("}",pos0)
@@ -1656,11 +1829,11 @@ class param(struct):
     def protect(self,s=""):
         """ protect $variable as ${variable} """
         if isinstance(s,str):
-            t = s.replace("\$","££") # && is a placeholder
+            t = s.replace(r"\$","££") # && is a placeholder
             escape = t!=s
             for k in self.keyssorted():
                 t = t.replace("$"+k,"${"+k+"}")
-            if escape: t = t.replace("££","\$")
+            if escape: t = t.replace("££",r"\$")
             if isinstance(s,pstr): t = pstr(t)
             return t, escape
         raise TypeError(f'the argument must be string not {type(s)}')
@@ -1684,6 +1857,9 @@ class param(struct):
         """
         # the argument s is only used by formateval() for error management
         tmp = struct()
+        # evaluator without context
+        evaluator_nocontext = SafeEvaluator() # for global evaluation without context
+        
         # main string evaluator
         def evalstr(value,key=""):
             # replace ${variable} (Bash, Lammps syntax) by {variable} (Python syntax)
@@ -1713,17 +1889,18 @@ class param(struct):
             # Literal string starts with $ (no interpretation), ! (evaluation)
             if not self._evaluation:
                 return pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr)
-            elif valuesafe.startswith("!"):
+            elif valuesafe.startswith("!"): # <---------- FORECED LITERAL EVALUATION (error messages are returned)
                 try:
-                    vtmp = ast.literal_eval(valuesafe[1:])
+                    #vtmp = ast.literal_eval(valuesafe[1:])
+                    evaluator = SafeEvaluator(tmp)
+                    vtmp = evaluate_with_placeholders(valuesafe[1:],evaluator,evaluator_nocontext)
                     if isinstance(vtmp,list):
-                        evaluator = SafeEvaluator(tmp)
                         for i,item in enumerate(vtmp):
-                            if isinstance(item,str) and not item.strip().startswith("$"):
+                            if isinstance(item,str) and not is_literal_string(item):
                                 try:
-                                    vtmp[i] = tmp.format(item, raiseerror=False)
+                                    vtmp[i] = tmp.format(item, raiseerror=False) # in case substitions/interpolations are needed
                                     try:
-                                        vtmp[i] = evaluator.evaluate(vtmp[i])
+                                        vtmp[i] = evaluator_nocontext.evaluate(vtmp[i]) # full evaluation without context
                                     except Exception as othererr:
                                         if self._debug:
                                             print(f"DEBUG {key}: Error evaluating: {vtmp[i]}\n< {othererr} >")
@@ -1744,7 +1921,7 @@ class param(struct):
                         return pstr.topath(tmp.format(valuesafe,escape=escape))
                     elif escape:  # partial evaluation
                         return tmp.format(valuesafe,escape=True)
-                    else: # full evaluation (if it fails the last string content is returned)
+                    else: # full evaluation (if it fails the last string content is returned) <---------- FULL EVALUTION will be tried
                         try:
                             resstr = tmp.format(valuesafe,raiseerror=False)
                         except (KeyError,NameError) as nameerr:
@@ -1753,7 +1930,7 @@ class param(struct):
                                 return '< undef %s "${%s}" >' % (self._ftype,strnameerr)
                             else:
                                 return value #we keep the original value
-                        except (SyntaxError,TypeError,ValueError) as commonerr:
+                        except (SyntaxError,TypeError) as commonerr:
                             return "ERROR < %s >" % commonerr
                         except (IndexError,AttributeError):
                             try:
@@ -1775,13 +1952,28 @@ class param(struct):
                                     return resstr
                                 else:
                                     return reseval
+                        except ValueError as valerr: # forced evaluation within ${}
+                            try:
+                                evaluator = SafeEvaluator(tmp)
+                                reseval = evaluate_with_placeholders(valuesafe_priorescape,evaluator,evaluator_nocontext,raiseerror=True)
+                            except SyntaxError as synerror:
+                                if self._debug:
+                                    print(f"DEBUG {key}: Error evaluating: {valuesafe_priorescape}\n< {synerror} >")
+                                return evaluate_with_placeholders(valuesafe_priorescape,evaluator,evaluator_nocontext,raiseerror=False)
+                            except Exception as othererr:
+                                if self._debug:
+                                    print(f"DEBUG {key}: Error evaluating: {valuesafe_priorescape}\n< {othererr} >")
+                                return "Error in ${}: < %s >" % valerr
+                            else:
+                                return reseval
+                            
                         except Exception as othererr:
                             return "Error in ${}: < %s >" % othererr
                         else:
                             try:
                                 # reseval = eval(resstr)
                                 evaluator = SafeEvaluator(tmp)
-                                reseval = evaluator.evaluate(resstr)
+                                reseval = evaluate_with_placeholders(resstr,evaluator,evaluator_nocontext)
                             except Exception as othererr:
                                 #tmp.setattr(key,"Eval Error < %s >" % othererr)
                                 if self._debug:
@@ -1789,13 +1981,14 @@ class param(struct):
                                 return resstr.replace("\n",",") # \n replaced by ,
                             else:
                                 return reseval
+                            
         # evalstr() refactored for error management
         def safe_evalstr(x,key=""):
             xeval = evalstr(x,key)
             if isinstance(xeval,str):
                 try:
                     evaluator = SafeEvaluator(tmp)
-                    return evaluator.evaluate(xeval)
+                    return evaluate_with_placeholders(xeval,evaluator,evaluator_nocontext)
                 except Exception as e:
                     if self._debug:
                         print(f"DEBUG {key}: Error evaluating '{x}': {e}")
@@ -1833,7 +2026,7 @@ class param(struct):
                     p is a param object
 
                 Example:
-                    definitions = param(a=1,b="${a}",c="\${a}")
+                    definitions = param(a=1,b="${a}",c="\\${a}")
                     text = definitions.formateval("this my text ${a}, ${b}, ${c}")
                     print(text)
 
@@ -2747,12 +2940,12 @@ if __name__ == '__main__':
     str(pstr.topath(f"{s.a}/{s.b}"))
     s.eval()
     # escape example
-    definitions = param(a=1,b="${a}*10+${a}",c="\${a}+10",d='\${myparam}')
-    text = definitions.formateval("this my text ${a}, ${b}, \${myvar}=${c}+${d}")
+    definitions = param(a=1,b="${a}*10+${a}",c=r"\${a}+10",d=r'\${myparam}')
+    text = definitions.formateval(r"this my text ${a}, ${b}, \${myvar}=${c}+${d}")
     print(text)
 
-    definitions = param(a=1,b="$a*10+$a",c="\$a+10",d='\$myparam')
-    text = definitions.formateval("this my text $a, $b, \$myvar=$c+$d",protection=True)
+    definitions = param(a=1,b="$a*10+$a",c=r"\$a+10",d=r'\$myparam')
+    text = definitions.formateval(r"this my text $a, $b, \$myvar=$c+$d",protection=True)
     print(text)
     # assignment
     s = struct(a=1,b=2)
