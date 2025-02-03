@@ -22,7 +22,7 @@ Configuration:
 Author:
     INRAE\\Olivier Vitrac
     Email: olivier.vitrac@agroparistech.fr
-    Last Revised: 2024-12-12
+    Last Revised: 2025-02-03
 """
 
 import os
@@ -42,6 +42,8 @@ def main():
     ]
     
     ignore_dirs = [
+        ".env",
+        ".venv",
         ".git",
         "fork",
         "history",
@@ -63,7 +65,9 @@ def main():
         "release",
         "first_doc",
         "old-doc",
-        "FIles_moved_to_Post"
+        "FIles_moved_to_Post",
+        ".ipynb_checkpoints",
+        ".virtual_documents"
     ]
 
     # Determine the current working directory

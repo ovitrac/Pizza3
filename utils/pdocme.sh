@@ -153,6 +153,7 @@ REVISION HISTORY
 - **2022-12-06:** Initial version created.
 - **2024-12-11:** Updated with sidebar functionality and notification banner adjustments.
 - **2024-12-23:** Final revisions and bug fixes to ensure complete functionality.
+- **2025-02-03:** Remove Jupyter folders.
 
 
 EXAMPLE DIRECTORY STRUCTURE
@@ -254,6 +255,8 @@ excluded_dirs=(
     "restore"
     "__all__"
     "windowsONLY"
+    ".ipynb_checkpoints"
+    ".virtual_documents"
 )
 
 excluded_files=(
