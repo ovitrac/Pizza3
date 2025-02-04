@@ -174,6 +174,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-01-31 better parsing rules for converting spaces into , (Matlab-like) (version 1.0051)
 # 2025-01-31 p=param(a=..,b=..), p("a","b") returns the values of a and b as a struct, p.getval("a") returns the value of a
 # 2025-02-01 better separation of param interpolation and global evaluation, consolidation of local evaluation: "the sum p is ${sum(p)}", [${n},${o}]" (version 1.0052)
+# 2025-02-03 add _precision
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
@@ -686,13 +687,14 @@ class struct():
     _evalfeature = False    # true if eval() is available
     _maxdisplay = 40        # maximum number of characters to display (should be even)
     _propertyasattribute = False
+    _precision = 4
 
     # attributes for the iterator method
     # Please keep it static, duplicate the object before changing _iter_
     _iter_ = 0
 
     # excluded attributes (keep the , in the Tupple if it is singleton)
-    _excludedattr = {'_iter_','__class__','_protection','_evaluation','_returnerror','_debug'} # used by keys() and len()
+    _excludedattr = {'_iter_','__class__','_protection','_evaluation','_returnerror','_debug','_precision'} # used by keys() and len()
 
 
     # Methods
@@ -948,6 +950,7 @@ class struct():
             print(f"empty {self._fulltype} ({self._type} object) with no {self._type}s")
             return f"empty {self._fulltype}"
         else:
+            numfmt = f".{self._precision}g"
             tmp = self.eval() if self._evalfeature else []
             keylengths = [len(key) for key in self.__dict__]
             width = max(10,max(keylengths)+2)
@@ -967,7 +970,7 @@ class struct():
                         # else:
                         #     print(fmt % key,self.dispmax(value))
                         if isinstance(value,np.ndarray):
-                            print(fmt % key, struct.format_array(value))
+                            print(fmt % key, struct.format_array(value,numfmt=numfmt))
                         else:
                             print(fmt % key,self.dispmax(value))
                     elif isinstance(value,struct):
@@ -1001,7 +1004,7 @@ class struct():
                                         print(fmteval % "",calcvalue)
                                     else:
                                         if isinstance(calcvalue,np.ndarray):
-                                            print(fmteval % "", struct.format_array(calcvalue))
+                                            print(fmteval % "", struct.format_array(calcvalue,numfmt=numfmt))
                                         else:
                                             print(fmteval % "",self.dispmax(calcvalue))
                             elif isinstance(value,list):
@@ -1444,13 +1447,14 @@ class struct():
 
     # A la Matlab display method of vectors, matrices and ND-arrays
     @staticmethod
-    def format_array(value):
+    def format_array(value,numfmt=".4g"):
         """
         Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
         Recursively formats multi-dimensional arrays without introducing unwanted commas.
 
         Args:
             value (np.ndarray): The NumPy array to format.
+            numfmt: numeric format to be used for the string conversion (default=".4g")
 
         Returns:
             str: A formatted string representation of the array.
@@ -1481,7 +1485,7 @@ class struct():
 
             if arr.ndim == 1:
                 if len(arr) <= max_display:
-                    return "[" + " ".join(f"{v:.4g}" for v in arr) + "]"
+                    return "[" + " ".join(f"{v:{numfmt}}" for v in arr) + "]"
                 else:
                     return f"[{len(arr)} elements]"
 
@@ -1489,13 +1493,13 @@ class struct():
                 if arr.shape[1] == 1:
                     # Column vector
                     if arr.shape[0] <= max_display:
-                        return "[" + " ".join(f"{v[0]:.4g}" for v in arr) + "]T"
+                        return "[" + " ".join(f"{v[0]:{numfmt}}" for v in arr) + "]T"
                     else:
                         return f"[{arr.shape[0]}×1 vector]"
                 elif arr.shape[0] == 1:
                     # Row vector
                     if arr.shape[1] <= max_display:
-                        return "[" + " ".join(f"{v:.4g}" for v in arr[0]) + "]"
+                        return "[" + " ".join(f"{v:{numfmt}}" for v in arr[0]) + "]"
                     else:
                         return f"[1×{arr.shape[1]} vector]"
                 else:
@@ -1521,19 +1525,19 @@ class struct():
             # Use existing logic for vectors and matrices
             if value.ndim == 1:
                 if len(value) <= max_display:
-                    formatted = "[" + " ".join(f"{v:.4g}" for v in value) + f"] ({dtype_str})"
+                    formatted = "[" + " ".join(f"{v:{numfmt}}" for v in value) + f"] ({dtype_str})"
                 else:
                     formatted = f"[{len(value)}×1 {dtype_str}]"
             elif value.ndim == 2:
                 rows, cols = value.shape
                 if cols == 1:  # Column vector
                     if rows <= max_display:
-                        formatted = "[" + " ".join(f"{v[0]:.4g}" for v in value) + f"]T ({dtype_str})"
+                        formatted = "[" + " ".join(f"{v[0]:{numfmt}}" for v in value) + f"]T ({dtype_str})"
                     else:
                         formatted = f"[{rows}×1 {dtype_str}]"
                 elif rows == 1:  # Row vector
                     if cols <= max_display:
-                        formatted = "[" + " ".join(f"{v:.4g}" for v in value[0]) + f"] ({dtype_str})"
+                        formatted = "[" + " ".join(f"{v:{numfmt}}" for v in value[0]) + f"] ({dtype_str})"
                     else:
                         formatted = f"[1×{cols} {dtype_str}]"
                 else:  # General matrix
@@ -1778,7 +1782,8 @@ class param(struct):
     _ftype = "definition"
     _evalfeature = True    # This class can be evaluated with .eval()
     _returnerror = True    # This class returns an error in the evaluation string (added on 2024-09-06)
-
+    
+    
     # magic constructor
     def __init__(self,_protection=False,_evaluation=True,
                  sortdefinitions=False,debug=False,**kwargs):
@@ -2125,12 +2130,14 @@ class param(struct):
         return struct.fromkeysvalues(self.keys(),self.values(),makeparam=False)
 
     # Matlab vector/list conversion
-    def expand_ranges(text):
+    @staticmethod
+    def expand_ranges(text,numfmt=".4g"):
         """
         Expands MATLAB-style ranges in a string.
 
         Args:
             text: The input string containing ranges.
+            numfmt: numeric format to be used for the string conversion (default=".4g")
 
         Returns:
             The string with ranges expanded, or the original string if no valid ranges are found
@@ -2158,7 +2165,7 @@ class param(struct):
                 if num_elements > 100:
                     return match.group(0)  # Return original if too many elements
                 expanded_range = np.arange(start, stop + np.sign(step)*1e-9, step) #adding a small number to include the stop in case of integer steps
-                return '[' + ','.join(f'{x:.4g}' for x in expanded_range) + ']'
+                return '[' + ','.join(f'{x:{numfmt}}' for x in expanded_range) + ']'
             except ValueError:
                 return "Error: <Invalid range format.>"
         pattern = r'(\b(?:-?\d+(?:\.\d*)?|-?\.\d+)(?::(?:-?\d+(?:\.\d*)?|-?\.\d+)){1,2})\b'
@@ -2338,8 +2345,8 @@ class param(struct):
 
 
 
-    @staticmethod
-    def replace_matrix_shorthand(valuesafe):
+    @classmethod
+    def replace_matrix_shorthand(cls,valuesafe):
         """
         Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors.
         Supports up to 4-dimensional arrays and handles variable references.
@@ -2398,6 +2405,9 @@ class param(struct):
         >>> param.replace_matrix_shorthand(s)
         'np.array([[[-0.5,-0.5],[-0.5,-0.5]],[[0.5,0.5],[0.5,0.5]]])*0.001'
         """
+        
+        numfmt = f".{cls._precision}g"
+        
         def replace_spaces_with_commas(txt):
             """
             Replaces spaces with commas only when they're not preceded by a comma, opening bracket, or whitespace,
@@ -2451,7 +2461,7 @@ class param(struct):
             return sorted(dims_found, reverse=True)
 
         # Step 0: convert eventual Matlab syntax for row and column vectors into NumPy syntax
-        valuesafe = param.expand_ranges(valuesafe)  # expands start:stop and start:step:stop syntax
+        valuesafe = param.expand_ranges(valuesafe,numfmt)  # expands start:stop and start:step:stop syntax
         valuesafe = param.convert_matlab_like_arrays(valuesafe) # vectors and matrices conversion
         # Step 1: Handle @{var} -> np.atleast_2d(np.array(${var}))
         valuesafe = re.sub(r'@\{([^\{\}]+)\}', r'np.atleast_2d(np.array(${\1}))', valuesafe)
@@ -3040,7 +3050,7 @@ if __name__ == '__main__':
     p.h = "${b[0,1]} + ${a[0]}"
     p.i = "${f[0,1]}"
     p.j = "${f[:,1]}"
-    p.k = "${j}+1"
+    p.k = "@{j}+1"  # note that "@{j}+1" and "${j}+1" do not have the same meaning
     p.l = "${b.T}"
     p.m = "${b.T @ b}"    # evaluate fully the matrix operation
     p.n = "${b.T} @ ${b}" # concatenate two string-results separated by @
