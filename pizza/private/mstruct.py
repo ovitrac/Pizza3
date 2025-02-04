@@ -174,7 +174,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-01-31 better parsing rules for converting spaces into , (Matlab-like) (version 1.0051)
 # 2025-01-31 p=param(a=..,b=..), p("a","b") returns the values of a and b as a struct, p.getval("a") returns the value of a
 # 2025-02-01 better separation of param interpolation and global evaluation, consolidation of local evaluation: "the sum p is ${sum(p)}", [${n},${o}]" (version 1.0052)
-# 2025-02-03 add _precision
+# 2025-02-03 add _precision, fix generator for NumPy
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
@@ -415,6 +415,13 @@ class SafeEvaluator(ast.NodeVisitor):
 
     def visit_List(self, node):
         return [self.visit(elt) for elt in node.elts]
+    
+    def visit_Dict(self, node):
+        """
+        Evaluate a dictionary expression by safely evaluating each key and value.
+        This allows expressions like: {"a": ${v1}+${v2}, "b": ${var}}.
+        """
+        return {self.visit(key): self.visit(value) for key, value in zip(node.keys, node.values)}
 
     def generic_visit(self, node):
         raise ValueError(f"Unsupported expression: {ast.dump(node)}")
@@ -975,7 +982,7 @@ class struct():
                             print(fmt % key,self.dispmax(value))
                     elif isinstance(value,struct):
                         print(fmt % key,self.dispmax(value.__str__()))
-                    elif isinstance(value,type):
+                    elif isinstance(value,(type,dict)):
                         print(fmt % key,self.dispmax(str(value)))
                     else:
                         print(fmt % key,type(value))
@@ -1062,7 +1069,8 @@ class struct():
             except AttributeError as attr_err:
                 # Handle AttributeError for expressions with operators
                 s_ = s.replace("{", "${")
-                print(f"WARNING: the {self._ftype} {attr_err} is undefined in '{s_}'")
+                if self._debug:
+                    print(f"WARNING: the {self._ftype} {attr_err} is undefined in '{s_}'")
                 return s_  # Revert to using '${' for unresolved expressions
             except IndexError as idx_err:
                 s_ = s.replace("{", "${")
@@ -1235,27 +1243,81 @@ class struct():
             for i in range(len(k)):
                 self.setattr(k[i],v[i])
 
-    def generator(self):
-        """ generate Python code of the equivalent structure """
+
+    def generator(self, printout=False):
+        """
+        Generate Python code of the equivalent structure.
+
+        This method converts the current structure (an instance of `param`, `paramauto`, or `struct`)
+        into Python code that, when executed, recreates an equivalent structure. The generated code is
+        formatted with one field per line.
+
+        By default (when `printout` is False), the generated code is returned as a raw string that starts
+        directly with, for example, `param(` (or `paramauto(` or `struct(`), with no "X = " prefix or leading
+        newline. When `printout` is True, the generated code is printed to standard output and includes a prefix
+        "X = " to indicate the variable name.
+
+        Parameters:
+            printout (bool): If True, the generated code is printed to standard output with the "X = " prefix.
+                             If False (default), the code is returned as a raw string starting with, e.g.,
+                             `param(`.
+
+        Returns:
+            str: The generated Python code representing the structure (regardless of whether it was printed).
+        """
         nk = len(self)
-        if nk==0:
-            print("X = struct()")
+        tmp = self.np2str()
+        # Compute the field format based on the maximum key length (with a minimum width of 10)
+        fmt = "%%%ss =" % max(10, max([len(k) for k in self.keys()]) + 2)
+        # Determine the appropriate class string for the current instance.
+        if isinstance(self, param):
+            classstr = "param"
+        elif 'paramauto' in globals() and isinstance(self, paramauto):
+            classstr = "paramauto"
         else:
-            ik = 0
-            fmt = "%%%ss=" % max(10,max([len(k) for k in self.keys()])+2)
-            print("\nX = struct(")
-            for k in self.keys():
-                ik += 1
-                end = ",\n" if ik<nk else "\n"+(fmt[:-1] % ")")+"\n"
-                v = getattr(self,k)
-                if isinstance(v,(int,float)) or v == None:
-                    print(fmt % k,v,end=end)
-                elif isinstance(v,str):
-                    print(fmt % k,f'"{v}"',end=end)
-                elif isinstance(v,(list,tuple)):
-                    print(fmt % k,v,end=end)
+            classstr = "struct"
+
+        lines = []
+        if nk == 0:
+            # For an empty structure.
+            if printout:
+                lines.append(f"X = {classstr}()")
+            else:
+                lines.append(f"{classstr}()")
+        else:
+            # Header: include "X = " only if printing.
+            if printout:
+                header = f"X = {classstr}("
+            else:
+                header = f"{classstr}("
+            lines.append(header)
+            # Iterate over keys to generate each field line.
+            for i, k in enumerate(self.keys()):
+                v = getattr(self, k)
+                if isinstance(v, np.ndarray):
+                    vtmp = getattr(tmp, k)
+                    field = fmt % k + " " + vtmp
+                elif isinstance(v, (int, float)) or v is None:
+                    field = fmt % k + " " + str(v)
+                elif isinstance(v, str):
+                    field = fmt % k + " " + f'"{v}"'
+                elif isinstance(v, (list, tuple, dict)):
+                    field = fmt % k + " " + str(v)
                 else:
-                    print(fmt % k,"/* unsupported type */",end=end)
+                    field = fmt % k + " " + "/* unsupported type */"
+                # Append a comma after each field except the last one.
+                if i < nk - 1:
+                    field += ","
+                lines.append(field)
+            # Create a closing line that aligns the closing parenthesis.
+            closing_line = fmt[:-1] % ")"
+            lines.append(closing_line)
+        result = "\n".join(lines)
+        if printout:
+            print(result)
+            return None
+        return result
+
 
     # copy and deep copy methpds for the class
     def __copy__(self):
@@ -1297,6 +1359,8 @@ class struct():
         # If overwrite is False and the file already exists, raise an exception
         if not overwrite and file_path.exists():
             raise FileExistsError(f"The file {file_path} already exists, and overwrite is set to False.")
+        # Convert NumPy entries
+        tmp = self.np2str()
         # Open and write to the file using the resolved path
         with file_path.open(mode="w", encoding='utf-8') as f:
             print(f"# {self._fulltype} with {len(self)} {self._ftype}s\n", file=f)
@@ -1556,47 +1620,58 @@ class struct():
 
     # convert all NumPy entries to "nestable" expressions
     def np2str(self):
-        """ Convert all np entries of s into their string representations  """
+        """ Convert all NumPy entries of s into their string representations, handling both lists and dictionaries. """
         out = struct()
         def format_numpy_result(value):
             """
             Converts a NumPy array or scalar into a string representation:
             - Scalars and single-element arrays (any number of dimensions) are returned as scalars without brackets.
             - Arrays with more than one element are formatted with proper nesting and commas to make them valid `np.array()` inputs.
-            - Non-ndarray inputs are returned without modification.
+            - If the value is a list or dict, the conversion is applied recursively.
+            - Non-ndarray inputs that are not list/dict are returned without modification.
 
             Args:
-                value (np.ndarray, scalar, or other): The value to format.
+                value (np.ndarray, scalar, list, dict, or other): The value to format.
 
             Returns:
-                str or original type: A properly formatted string for NumPy arrays/scalars or the original value.
+                str, list, dict, or original type: A properly formatted string for NumPy arrays/scalars,
+                a recursively converted list/dict, or the original value.
             """
-            if np.isscalar(value):
-                # If the value is a scalar, return it directly
-                return repr(value)
+            if isinstance(value, dict):
+                # Recursively process each key in the dictionary.
+                new_dict = {}
+                for k, v in value.items():
+                    new_dict[k] = format_numpy_result(v)
+                return new_dict
+            elif isinstance(value, list):
+                # Recursively process each element in the list.
+                return [format_numpy_result(x) for x in value]
+            elif np.isscalar(value):
+                # For scalars: if numeric, use str() to avoid extra quotes.
+                if isinstance(value, (int, float, complex)):
+                    return value
+                else:
+                    return repr(value)
             elif isinstance(value, np.ndarray):
-                # Check if the array has exactly one element
+                # Check if the array has exactly one element.
                 if value.size == 1:
-                    # Extract the scalar value
+                    # Extract the scalar value.
                     return repr(value.item())
-                # Convert the array to a nested list
+                # Convert the array to a nested list.
                 nested_list = value.tolist()
-                # Recursively format the nested list into a valid string
+                # Recursively format the nested list into a valid string.
                 def list_to_string(lst):
                     if isinstance(lst, list):
-                        # Format lists with proper commas
-                        return "[" + ", ".join(list_to_string(item) for item in lst) + "]"
+                        return "[" + ",".join(list_to_string(item) for item in lst) + "]"
                     else:
-                        # Format scalars in the list
                         return repr(lst)
-
                 return list_to_string(nested_list)
             else:
-                # Return the input unmodified if not a NumPy array or scalar
+                # Return the input unmodified if not a NumPy array, list, dict, or scalar.
                 return value
-        # process all entries in s
-        for key,value in self.items():
-            out.setattr(key,format_numpy_result(value))
+        # Process all entries in self.
+        for key, value in self.items():
+            out.setattr(key, format_numpy_result(value))
         return out
 
 # %% param class with scripting and evaluation capabilities
@@ -1861,7 +1936,7 @@ class param(struct):
 
         """
         # the argument s is only used by formateval() for error management
-        tmp = struct()
+        tmp = struct(debug=self._debug)
         # evaluator without context
         evaluator_nocontext = SafeEvaluator() # for global evaluation without context
         
@@ -1935,8 +2010,10 @@ class param(struct):
                                 return '< undef %s "${%s}" >' % (self._ftype,strnameerr)
                             else:
                                 return value #we keep the original value
-                        except (SyntaxError,TypeError) as commonerr:
-                            return "ERROR < %s >" % commonerr
+                        except SyntaxError as commonerr:
+                            return "SYNTAX ERROR < %s >" % commonerr
+                        except TypeError  as commonerr:
+                            return "TYPE ERROR < %s >" % commonerr
                         except (IndexError,AttributeError):
                             try:
                                 resstr = param.safe_fstring(
@@ -2012,6 +2089,19 @@ class param(struct):
                     tmp.setattr(key,valuelist)
                 else:
                     tmp.setattr(key, value) # store the value with the key
+            elif isinstance(value, dict):
+                # For dictionaries, evaluate each entry using its own key (sub_key)
+                new_dict = {}
+                for sub_key, sub_value in value.items():
+                    if isinstance(sub_value, str):
+                        new_dict[sub_key] = safe_evalstr(sub_value,key)
+                    elif isinstance(sub_value, list):
+                        # If an entry is a list, apply safe_evalstr to each string element within it
+                        new_dict[sub_key] = [safe_evalstr(x, sub_key) if isinstance(x, str) else x
+                                             for x in sub_value]
+                    else:
+                        new_dict[sub_key] = sub_value
+                tmp.setattr(key, new_dict)
             else: # unsupported types
                 if s.find("{"+key+"}")>=0:
                     print(f'*** WARNING ***\n\tIn the {self._ftype}:"\n{s}\n"')
@@ -2038,6 +2128,7 @@ class param(struct):
         """
         tmp = self.eval(s,protection=protection)
         evaluator = SafeEvaluator(tmp) # used when fullevaluation=True
+        evaluator_nocontext = SafeEvaluator() # for global evaluation without context
         # Do all replacements in s (keep comments)
         if len(tmp)==0:
             return s
@@ -2045,6 +2136,7 @@ class param(struct):
             ispstr = isinstance(s,pstr)
             ssafe, escape = param.escape(s)
             slines = ssafe.split("\n")
+            slines_priorescape = s.split("\n")
             for i in range(len(slines)):
                 poscomment = slines[i].find("#")
                 if poscomment>=0:
@@ -2067,7 +2159,8 @@ class param(struct):
                         except:
                             resstr = param.safe_fstring(slines[i],tmp,varprefix="")
                         try:
-                            reseval = evaluator.evaluate(resstr)
+                            #reseval = evaluator.evaluate(resstr)
+                            reseval = evaluate_with_placeholders(slines_priorescape[i],evaluator,evaluator_nocontext,raiseerror=True)
                             slines[i] = str(reseval)+" "+comment if comment else str(reseval)
                         except:
                             slines[i] = resstr + comment
