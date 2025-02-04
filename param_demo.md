@@ -1,8 +1,12 @@
 ## **Mathematical Notations and Capabilities in `param()`**
 
-The `param()` class extends the `struct` class and allows **dynamic evaluation** of expressions, **implicit calculations**, and **NumPy-style operations**. Instances of this class are iterable and can be managed using a Matlab-like syntax.
+The `param()` class, located in `pizza.private.mstruct` is an essential low-level class for Pizza³. It used as parent class for data containers used by `script`, `pipescript`, `dscript`, `scriptobject`, `forcefield`, `dforcefield`. Its methods offer scripting capabilities between Pythonic and LAMMPS syntaxes.
 
-*Note: Matlab inputs are also enabled as shorthands.*
+The `param` class extends the `struct` class (located in the same module) and allows **dynamic evaluation** of expressions, **implicit calculations**, and **NumPy-style operations**. Instances of this class are iterable and can be managed using a Matlab-like syntax(*).
+
+The syntax evolved between versions towards more flexibility and robustness. The capacity to perform calculations matrix/nd-operations is vital for building LAMMPS codelets/blocks with complex displacements and boundary conditions.
+
+<small>*Note: Matlab inputs are also enabled as shorthands.*</small>
 
 ### Manage dependencies
 It is mandatory to import NumPy as `np` (internal convention) if NumPy arrays are defined in strings.
@@ -27,38 +31,38 @@ def prettyprint(var, value):
 ```
 
 ### **1. Overview**
-The `param()` class uses fields/attributes to store values and expressions. Fields define variables, which can be
-accessed with the syntax `${var}`. For instance, if you create an instance as `p = param(var=value, ...)`, then:
+The `param()` class uses fields/attributes to store values and expressions. Fields define variables, which can be accessed with the syntax `${var}`. For instance, if you create an instance as `p = param(var=value, ...)`, then:
 
 - `p.var` returns the value of `${var}`.
 - `p.var = value` assigns or changes the value.
 - `p("var")` returns the evaluated value of `${var}` considering the current context.
 
-Expressions are defined as strings. An expression can represent either a valid mathematical expression or an abstract
-string used for templating. Unlike Python's built-in `eval()` function, the context determines whether the result is
-numeric or remains a string. Vectorial calculus is enabled by using the shorthand `@{matrix}` instead of `${matrix}`.
+➗ Expressions are defined as strings. An expression can represent either a valid mathematical expression or an abstract string used for templating. Unlike Python's built-in `eval()` function, the context determines whether the result is numeric or remains a string. Vectorial calculus is enabled by using the shorthand `@{matrix}` instead of `${matrix}`.
 
-Interpolation (substitution) and evaluation are performed in the following order:
+🧮 Interpolation (substitution) and evaluation are performed in the following order:
 - **Direct interpolation/substitution:** e.g., `"the content of var is ${var}"`.
 - **Local evaluation with a text result:** e.g., `"the sum of variables ${var1+var2}"`, `"the third value is ${var[2]}"`,
   or `"the sum is ${sum(var)}"`.
 - **Full evaluation with a numeric result:** e.g., `"${var}"`, `"@{vector}.T"`, or `"@{matrix1} @ @{matrix2}"`.
 - **Mixed evaluation in a list:** e.g., `["var=${myvar}"`, `"sum=${mylist}"`, `"@{matrix1} @ @{matrix2}"]`.
 
-If a complete evaluation is not possible, the final result is stored with 4 significant digits by default (the precision can be increased if needed).
+🤔 If a complete evaluation is not possible, the final result is stored with 4 significant digits by default (the precision can be increased if needed).
 
 Expressions must combine only operators (`+`, `*`, `**`, etc.), built-in functions (`sum`, `prod`, etc.), mathematical functions (`sin`, `pi`, etc.), and NumPy functions (prefixed with `np.`) and operators (`@`, `.T`). Some statistics functions are also available.
 
-Variables can be defined as strings (e.g., `"1.0"`) or as numbers (`1.0` for float or int), and they can be scalar or complex. When using text expressions, it is possible to define matrices and n-dimensional arrays using Matlab (`$[1 2 3; 4 5 6]`), NumPy (`$[[1,2,3];[4,5,6]]`), or hybrid notations (`$[[1 2 3; 4 5 6],[7 8 9; 10 11 12]]`).
+🔢 Variables can be defined as strings (e.g., `"1.0"`) or as numbers (`1.0` for float or int), and they can be scalar or complex. When using text expressions, it is possible to define matrices and n-dimensional arrays using Matlab (`$[1 2 3; 4 5 6]`), NumPy (`$[[1,2,3];[4,5,6]]`), or hybrid notations (`$[[1 2 3; 4 5 6],[7 8 9; 10 11 12]]`).
 Theoretically, variables can be any Matlab type (including class instances), though in practice lists or NumPy nd-arrays are recommended. Matlab and hybrid shorthands have been implemented for 1D vectors (row or column) up to 4D arrays, including expansions (e.g., `"$[1:10]"` or `"$[1:0.5:10]"`).
 
 ⚠️ **Warning:** Variables are evaluated in the order they are defined; use the `paramauto()` class instead if the order needs to be guessed or resolved. In contrast to Python f-strings, where expressions are dynamically re-evaluated, changing one field/variable in a `param` instance affects all others. Use the method `s = p.eval()` (or equivalently `s = p()`) to convert a dynamic `param` instance into a static structure `s`.
 
-If an error occurs during evaluation, the evaluated value is replaced by an error message.
+❌ If an **error** occurs during evaluation, the evaluated value is replaced by an error message.
 
-Instances of `param` are iterable and can be managed as lists or collections (e.g., using `p[5]`, `p[1:10:2]`, `p[[0,3,8]]`).
+🤝 Instances of `param` are iterable and can be managed as lists or collections:
+- `p[5]` returns the 6^th^ element of `p`
+- `p[[5]]` returns the sub-structure with only the 6^th^ element
+- `p[1:10:2]'`and `p[[0,3,8]]`return substructure with the field indices between `[]` (Python notations)
 
-Multiple `param` instances can be merged together using the `+` operator:
+🔗 Multiple `param` instances can be merged together using the `+` operator:
     
     pmerged = poriginal + pupdate
 
@@ -124,7 +128,7 @@ s
               line2: ['a', 'b']
                    = ['a', 'b']
               line3: The first letter in  [...] e2} is "${line2[0]}"
-                   = The first letter in ['a', 'b'] is "a"
+                   = The first letter in  [...] a'", "'b'"] is "'a'"
                  ab: AB
                    = AB
               line4: $ab
@@ -142,7 +146,7 @@ s
       -------------:----------------------------------------
               line1: ${a}+1
               line2: ['a', 'b']
-              line3: The first letter in ['a', 'b'] is "a"
+              line3: The first letter in  [...] a'", "'b'"] is "'a'"
                  ab: AB
               line4: ab
               line5: ab
@@ -183,11 +187,12 @@ This section demonstrates the interpolation and local evaluation capabilities:
 - **Simple interpolation/substitution:** `${var}` is replaced by its content.
 - **Mathematical expressions:** Expressions within `${}` are evaluated in place.
 - **Local evaluation:** Supports scalars, lists, NumPy arrays, and expressions.
-- **Indexing:** Use `${var[i]}` or `${var[I,j]}` to index into arrays or matrices.
+- **Indexing:** Use `${var[i]}` or `${var[i,j]}` to index into arrays or matrices.
+- **Indexing:** Use `${var[key]}` to index dictionaries (do not quote `key`).
 - **Escaping:** Use `\${...}` to prevent execution of the interpolation.
 
 ✅ **Supported Operations**
-- Indexing of lists and arrays.
+- Indexing of lists, dicts, and arrays.
 - Mathematical operations using operators like `+`, `-`, `*`, `/`.`**`
 
 ✅ **Supported Mathematical Functions**
@@ -232,7 +237,7 @@ p # alternatively use repr(p)
                   i: ${d}[1]+${b}
                    = 10.2
                   j: ${f}[0,1] + ${d}[0]
-                   = [[1.0, 0.2, 0.03, 0. [...] 0.2, 0.03, 0.004][0]
+                   = [[1.0,0.2,0.03,0.004 [...] 0.2, 0.03, 0.004][0]
       -------------:----------------------------------------
     
 
@@ -280,11 +285,11 @@ print('avoid using outer indexing and keep it within "{}"')
      Inner and outer indexing are not similar for NumPy arrays
       -------------:----------------------------------------
                   h: 1.2
-                  j: [[1.0, 0.2, 0.03, 0. [...] 0.2, 0.03, 0.004][0]
+                  j: [[1.0,0.2,0.03,0.004 [...] 0.2, 0.03, 0.004][0]
       -------------:----------------------------------------
     only the first value (h) is numeric
     h = 1.2 (type: float)
-    j = [[1.0, 0.2, 0.03, 0.004]][0,1] + [1.0, 0.2, 0.03, 0.004][0] (type: str)
+    j = [[1.0,0.2,0.03,0.004]][0,1] + [1.0, 0.2, 0.03, 0.004][0] (type: str)
     avoid using outer indexing and keep it within "{}"
     
 
@@ -319,7 +324,7 @@ q
                   b: ['units', '${units}']
                    = ['units', 'si']
                   c: the ${a[0]} are ${un [...] fined with \${units}
-                   = the units are si as  [...] efined with ${units}
+                   = the 'units' are si a [...] efined with ${units}
       -------------:----------------------------------------
     
 
@@ -358,7 +363,7 @@ r
                   c: ![1,2,"test","${a[1]}"]
                    = [1, 2, 'test', 1]
                   d: ${b[3]}*10
-                   = 10
+                   = 1111111111
                   e: ${c[3]}*10
                    = 10
                   f: ['${a[1]+a[2]}*3', 1 [...] 2]}', '${1+2}', 'b']
@@ -398,6 +403,57 @@ t
                    = the sum of a is 110
                   c: the maximum surface  [...] a is ${pi*max(a)**2}
                    = the maximum surface  [...] s 31415.926535897932
+      -------------:----------------------------------------
+    
+
+
+
+
+    parameter list (param object) with 5 definitions
+
+
+
+**Support of dictionnaries**
+
+By design, instances of `struct` (and, by extension, `param()`) are intended to serve as flexible containers that can
+hold any type of data—including class instances. However, evaluating advanced types, such as nested lists or dictionaries,
+is more challenging. At this stage, only minimal support is provided for these advanced types in `param()`.
+
+Dictionary fields can be defined either as native Python dictionaries or as strings representing dictionaries. One
+limitation is that nesting strings for key names (i.e., defining keys as strings within string representations) remains an
+open issue. This is because, according to PEP 3101 (the guidelines for Python's advanced string formatting),
+quoted keys are not accepted in formatted strings. Consequently, a compromise approach is currently implemented, and
+this behavior may evolve in future versions.
+
+**Example Demonstrating Dictionary Support in `param()`**
+
+- `d.a` is directly assigned a dictionary.
+- `d.b` is assigned a string that represents a dictionary.
+- `d.c` is assigned an expression referencing `b`.
+- `d.d` is assigned an expression that uses dictionary indexing.
+- `d.e` is assigned an expression that indexes a dictionary and performs an arithmetic operation.
+
+
+```python
+d = param()
+d.a = {'a': 'a', 'b': 2}
+d.b = "{'a': 'a', 'b': 2}"
+d.c = "${b}"
+d.d = "${a[a]}"
+d.e = "${b[b]}+1"
+d
+```
+
+      -------------:----------------------------------------
+                  a: {'a': 'a', 'b': 2}
+                  b: {'a': 'a', 'b': 2}
+                   = {'a': 'a', 'b': 2}
+                  c: ${b}
+                   = {'a': "'a'", 'b': 2}
+                  d: ${a[a]}
+                   = a
+                  e: ${b[b]}+1
+                   = 3
       -------------:----------------------------------------
     
 

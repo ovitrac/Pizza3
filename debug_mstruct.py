@@ -23,6 +23,9 @@ p.d = "${b[0,1]} + ${a[0]}"    # Evaluates as `0.2 + 1.0` (bug)
 p.c = "${a[1]}+10"             # Retrieves `a[1]` = 0.2 and add 10 `0.2 + 10`
 p.e = "${a}[1]+10"             # This notation works also (equivalent to c for the part `${a}[1]`) `0.2 + 10`
 p.f = "${b}[0,1] + ${a}[0]"
+p.g = "{'a': 'a', 'b': 2}"
+p.h = "${g}"
+p.i = "${g[a]}"
 
 s = p() # equivalent to s = p.eval()
 prettyprint = lambda var,value: print(f"{var} = {value} (type: {type(value).__name__})")
@@ -33,7 +36,12 @@ prettyprint("e",s.e)
 prettyprint("d",s.d)
 prettyprint("f",s.f)
 
+# generator
+p.generator(printout=True)
 
+# eval
+p.formateval("this is d=${d} with b=${b}")
+p.formateval("${1+2}*${a[1]}")
 # %% others
 p = param()
 p.a = [0,1,2]                   # this list is numeric and is already in Python
@@ -58,3 +66,20 @@ p.r = "the sum of q is ${sum(q)}"
 p.s = "${max(q)}"
 s = p()
 p
+
+# %% last bug
+v = param()
+v.l = [1e-3, 2e-3, 3e-3]    # l is defined as a list
+v.a = "$[1 2 3]"            # a is defined with  Matlab notations
+v.b = "$[1:3]"              # b is defined with  Matlab notations
+v.c = "$[0.1:0.1:0.9]"      # c is defined with  Matlab notations
+v.test = "@{l}"
+v.scale = "@{l}*2*@{a}"     # l is rescaled
+v.x0 = "$[[[-0.5, -0.5],[-0.5, -0.5]],[[ 0.5,  0.5],[ 0.5,  0.5]]]*${scale[0,0]}*${a[0,0]}"
+v.y0 = "$[[[-0.5, -0.5],[0.5, 0.5]],[[ -0.5,  -0.5],[ 0.5,  0.5]]]*${scale[0,1]}*${a[0,1]}"
+v.z0 = "$[[-0.5 0.5 ;-0.5 0.5],[ -0.5,  0.5;  -0.5,  0.5]]*${l[2]}*${a[0,2]}"
+v.X0 = "@{x0}.flatten()"
+v.Y0 = "@{y0}.flatten()"
+v.Z0 = "@{z0}.flatten()"
+s=v()
+v
