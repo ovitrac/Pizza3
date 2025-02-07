@@ -115,3 +115,17 @@ p.stop = 100
 p.t = "1:10:100"
 p.list = "${start}:${step}:${stop}"
 p()
+
+# %% nested
+i = param(debug=True)
+i.a = [1,2,3,4]
+i.b = 1
+i.c = "${a[${b+1}]}"
+i.d = "${a[${b}+1]}"   # as c with the increment performed outside the expression
+i.f = {"A":1, "B":2, "C":3}
+i.g = "C"
+i.h ="${f['${g}']*100}"
+i.a = "[10,20,30]" # previous values are multiplied by  (without $, it is a list)
+i.b = "2" # index +1
+i.f = '{"A":100, "B":200, "C":300}'  # previous values are multiplied by 100
+i()

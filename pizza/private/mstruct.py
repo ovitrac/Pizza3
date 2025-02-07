@@ -176,7 +176,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-02-01 better separation of param interpolation and global evaluation, consolidation of local evaluation: "the sum p is ${sum(p)}", [${n},${o}]" (version 1.0052)
 # 2025-02-03 add _precision, fix generator for NumPy
 # 2025-02-06 maintnance version (fixes and extensions) in agreement with the revised version of param_demo()
-# 2025-02-07 add struct.numrepl(), major release (version 1.0054)
+# 2025-02-07 add struct.numrepl(), major release (version 1.0054), improve evaluation error messages
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
@@ -202,7 +202,7 @@ import builtins, math
 import random
 import numpy as np
 
-__all__ = ['AttrErrorDict', 'SafeEvaluator', 'param', 'paramauto', 'pstr', 'struct']
+__all__ = ['AttrErrorDict', 'SafeEvaluator', 'evaluate_with_placeholders', 'is_literal_string', 'param', 'paramauto', 'pstr', 'struct']
 
 
 # %% Private classes, functions, variables
@@ -2094,9 +2094,11 @@ class param(struct):
                                 evaluator = SafeEvaluator(tmp)
                                 reseval = evaluate_with_placeholders(resstr,
                                           evaluator,evaluator_nocontext,raiseerror=True)
-                            except:
+                            except Exception as othererr:
                                 if self._returnerror: # added on 2024-09-06
                                     strnameerr = str(nameerr).replace("'","")
+                                    if self._debug:
+                                        print(f'Key Error for "{key}" < {othererr} >')
                                     return '< undef %s "${%s}" >' % (self._ftype,strnameerr)
                                 else:
                                     return value #we keep the original value
@@ -2111,7 +2113,9 @@ class param(struct):
                                 evaluator = SafeEvaluator(tmp)
                                 reseval = evaluate_with_placeholders(resstr,
                                           evaluator,evaluator_nocontext,raiseerror=True)
-                            except:
+                            except Exception as othererr:
+                                if self._debug:
+                                    print(f'Type Error for "{key}" < {othererr} >')
                                 return "Type Error < %s >" % commonerr
                             else:
                                 return reseval

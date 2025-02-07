@@ -8,6 +8,8 @@ The syntax evolved between versions towards more flexibility and robustness. The
 
 (*)<kbd>note:</kbd> *<small>Matlab inputs are also enabled as shorthands.</small>*
 
+<hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
+
 ### Manage dependencies
 <kbd>note:</kbd> *It is mandatory to import NumPy as `np` (internal convention) if NumPy arrays are defined in `param` text expressions.*
 
@@ -33,102 +35,154 @@ def prettyprint(var, value):
 
 <kbd>note:</kbd> *<small>If your notebook is showing an empty figure above, it is normal at at the initialization of Pizza. The code is testing the graphical capabilities.</small>*
 
-
-
----
-
-
+<hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
 ### **1 | Overview**
 
-#### **1.1 | Variable Definition/Assignment**
+#### **1.1 | Variable Definition & Assignment**  
 
-The `param()` class uses fields/attributes to store values and expressions. Fields define variables, which can be accessed with the syntax `${var}`. For instance, if you create an instance as `p = param(var=value, ...)`, then:
+✍️ The `param()` class stores values and expressions as fields/attributes. Variables are referenced using the syntax `${var}`. For example, if an instance is created as `p = param(var=value, ...)`, then:
 
-- `p.var` returns the value of `${var}`.
-- `p.var = value` assigns or changes the value.
-- `p("var")` returns the evaluated value of `${var}` considering the current context.
+- `p.var` retrieves the value of `${var}`.
+- `p.var = value` assigns or updates the value.
+- `p("var")` returns the evaluated value of `${var}` in the current context.
 
-🗑️ A variable can be deleted with the shorthand:
-- `p.var = []` or by using `del(p,"var")`
-
-
-#### **1.2 | `param` expressions**
-
-🟰 `param` expressions are defined as strings. An expression can represent either a valid mathematical expression or an abstract string used for templating. Unlike Python's built-in `eval()` function, the context determines whether the result is numeric or remains a string. Vectorial calculus is enabled using the shorthand `@{matrix}` instead of `${matrix}`.
-
-➗ Expressions must combine only operators (`+`, `*`, `**`, etc.), built-in functions (`sum`, `prod`, etc.), mathematical functions (`sin`, `pi`, etc.), and NumPy functions (prefixed with `np.`) and operators (`@`, `.T`). Some statistics functions are also available.
-
-
-#### **1.3 | Interpolation and Evaluation**
-
-🧮 Interpolation (substitution) and 🚀 evaluation are performed in the following order:
-- **Direct interpolation/substitution:** e.g., `"the content of var is ${var}"`.
-- **Local evaluation with a text result:** e.g., `"the sum of variables ${var1+var2}"`, `"the third value is ${var[2]}"`,
-  or `"the sum is ${sum(var)}"`.
-- **Full evaluation with a numeric result:** e.g., `"${var}"`, `"@{vector}.T"`, or `"@{matrix1} @ @{matrix2}"`.
-- **Mixed evaluation in a list:** e.g., `["var=${myvar}"`, `"sum=${mylist}"`, `"@{matrix1} @ @{matrix2}"]`.
-
-🤔 If a complete evaluation is not feasible, the final result is stored with 4 significant digits by default (the precision can be increased if needed).
-
-❌ If an **error** occurs during evaluation, the evaluated value is replaced by an error message.
-
-🔄 In most cases, simple variable substitutions are possible using the Pythonic syntax `{variable}` instead of `${variable}`, which enables more complex evaluation.
-
-
-#### **1.4 | Native vs. `param` text expressions** 
-
-🔢 Variables can be defined as strings (e.g., `"1.0"`) or as numbers (`1.0` for float or int), and they can be scalar or complex. When using text expressions, it is possible to define matrices and n-dimensional arrays using Matlab (`$[1 2 3; 4 5 6]`), NumPy (`$[[1,2,3];[4,5,6]]`), or hybrid notations (`$[[1 2 3; 4 5 6],[7 8 9; 10 11 12]]`).
-Theoretically, variables can be any Matlab type (including class instances), though in practice lists or NumPy nd-arrays are recommended. Matlab and hybrid shorthands have been implemented for 1D vectors (row or column) up to 4D arrays, including expansions (e.g., `"$[1:10]"` or `"$[1:0.5:10]"`).
-
-⚠️ **Warning:** Variables are evaluated in the order they are defined; use the `paramauto()` class instead if the order needs to be guessed or resolved. In contrast to Python f-strings, where expressions are dynamically re-evaluated, changing one field/variable in a `param` instance affects all others. Use the method `s = p.eval()` (or equivalently `s = p()`) to convert a dynamic `param` instance into a static structure `s`.
-
-
-#### **1.5 | Iterable instances, indexing, and slicing**
-
-🤝 Instances of `param` are iterable and can be managed as lists or collections:
-- `p[5]` returns the 6^th^ element of `p`
-- `p[[5]]` returns the sub-structure with only the 6^th^ element
-- `p[1:10:2]'`and `p[[0,3,8]]`return substructure with the field indices between `[]` (Python notations)
-
-✅ Variables used in expressions as `${var}` and undefined in `param` instance `p` can be automatically assigned to their default value (`p.var="${var}"` with:
-- `p.check()`
-
-
-#### **1.6 | Update, inheritance and merging**
-
-📦 Many variables in `param` instance `p` can be updated with:
-- `p.update(var1=value1, var2="expression2"...)`
-- `p.update(**d)` with `d` dictionary coding for `d["var"]=value or "expression"`
-
-
-🔗 Multiple `param` instances can be merged together using the `+` operator:
-    
-    pmerged = poriginal + pupdate
-
-
-#### **1.7 | Conversions**
-➡️ Expressions stored in `param` instances (e.g., `p`) can be converted to various formats:
-- `param` ➡️ `struct` (non-evaluated) via `s = p.tostatic()`
-- `param` ➡️ `struct` (evaluated) via `se = p.tostruct()` or `se = p()`
-- `param` ➡️ `dict` via `d = p.todict()`
-- `param` ➡️ `paramauto` via `pa = p.paramauto()` or `pa = paramauto(**p)`
-- `struct` ➡️ `param` via `p = s.struct2param()` with `s` the static structure
-- `struct` ➡️ `dict` via `d = s.struct2dict()` with `s` the static structure
-- `dict` ➡️ `struct` via `s = struct(**d)` with `d` a `dict` instance
-- `dict` ➡️ `param` via `p = param(**d)` with `d` a `dict` instance
-- `dict` ➡️ `paramauto` via `pa = paramauto(**d)` with `d` a `dict` instance
-
-#### **1.8 | File Operations**
-💾 Static results or expressions can be read/write to files
-- 📥 saved to disk via `p.write(filename)`
-- 📤 loaded from disk via `p = struct.read(filename).toparam()`
-
-
+🗑️ To delete a variable, use either:
+- `p.var = []`  
+- `del(p, "var")`  
 
 ---
 
+#### **1.2 | `param` Expressions**  
 
+🟰 `param` expressions are stored as strings. They can represent either **mathematical expressions** or **template strings**. Unlike Python’s built-in `eval()`, the evaluation result depends on the context—returning either a numerical value or a processed string.  
+
+📏 **Matrix operations** are supported using `@{matrix}` instead of `${matrix}`.  
+
+➗ **Valid expression components**:
+- Operators: `+`, `-`, `*`, `/`, `**`, `@`, `.T`
+- Built-in functions: `sum`, `prod`, `min`, `max`
+- Mathematical functions: `sin`, `cos`, `log`, `pi`
+- NumPy functions: Prefixed with `np.`
+- Some statistical functions  
+
+---
+
+#### **1.3 | Interpolation & Evaluation**  
+
+🧮 **Interpolation** (substitution) and 🚀 **evaluation** occur in this order:  
+1️⃣ **Direct interpolation/substitution**  
+   - `"The content of var is ${var}"`  
+2️⃣ **Local evaluation with a text result**  
+   - `"The sum of variables ${var1 + var2}"`  
+   - `"The third value is ${var[2]}"`  
+   - `"The sum is ${sum(var)}"`  
+3️⃣ **Full evaluation with a numeric result**  
+   - `"${var}"`, `"@{vector}.T"`, `"@{matrix1} @ @{matrix2}"`  
+4️⃣ **Mixed evaluation in a list**  
+   - `["var=${myvar}", "sum=${mylist}", "@{matrix1} @ @{matrix2}"]`  
+
+🤔 If full evaluation is not feasible, the result is stored with **4 significant digits** by default (configurable).  
+
+❌ **Errors** during evaluation return an error message.  
+
+🚨 Enable debug messages with:  
+```python
+p = param(debug=True)
+```
+
+🔄 **Alternative Syntax**:  
+For simple variable substitutions, Pythonic `{variable}` notation is also supported alongside `${variable}` for more flexible evaluation.  
+
+---
+
+#### **1.4 | Native vs. `param` Text Expressions**  
+
+🔢 Variables can be stored as **strings** (`"1.0"`) or **numbers** (`1.0`). Scalars and complex numbers are supported.  
+
+📐 **Defining matrices & arrays** using different notations:  
+- **Matlab-style**: `$[1 2 3; 4 5 6]`
+- **NumPy-style**: `$[[1,2,3];[4,5,6]]`
+- **Hybrid notation**: `$[[1 2 3; 4 5 6],[7 8 9; 10 11 12]]`  
+- **Range expansions**: `"$[1:10]"` or `"$[1:0.5:10]"`  
+
+⚠️ **Evaluation Order**  
+- Variables are evaluated **sequentially**.  
+- If dependency resolution is required, use `paramauto()` instead.  
+- Unlike **Python f-strings**, modifying one variable updates all dependent expressions.  
+
+🔄 Convert a dynamic `param` instance to a **static structure** with:  
+```python
+s = p.eval()  # or equivalently s = p()
+```
+
+---
+
+#### **1.5 | Iterable Instances, Indexing & Slicing**  
+
+🤝 `param` instances behave like lists or collections:  
+- `p[5]` → Returns the 6th element of `p`.  
+- `p[[5]]` → Returns a substructure with the 6th element.  
+- `p[1:10:2]` or `p[[0,3,8]]` → Returns a substructure for the specified indices.  
+
+✅ **Auto-assigning Undefined Variables**  
+If `${var}` appears in an expression but isn’t defined, assign it automatically as:  
+```python
+p.var = "${var}"  # Placeholder until assigned a real value
+```
+Use `p.check()` to validate all variable assignments.  
+
+---
+
+#### **1.6 | Updating, Inheritance & Merging**  
+
+📦 **Batch updating variables** within a `param` instance:  
+```python
+p.update(var1=value1, var2="expression2", ...)
+```
+or via dictionary:  
+```python
+p.update(**d)  # where d["var"] = value or "expression"
+```
+
+🔗 **Merging multiple `param` instances** using the `+` operator:  
+```python
+pmerged = poriginal + pupdate
+```
+
+---
+
+#### **1.7 | Conversions**  
+
+➡️ Convert `param` instances (`p`) to various formats:  
+
+| Conversion | Method |
+|------------|--------|
+| `param` ➡️ **Static struct (non-evaluated)** | `s = p.tostatic()` |
+| `param` ➡️ **Evaluated struct** | `se = p.tostruct()` or `se = p()` |
+| `param` ➡️ **Dictionary** | `d = p.todict()` |
+| `param` ➡️ **paramauto** | `pa = p.paramauto()` or `pa = paramauto(**p)` |
+| `struct` ➡️ **param** | `p = s.struct2param()` |
+| `struct` ➡️ **Dictionary** | `d = s.struct2dict()` |
+| `dict` ➡️ **struct** | `s = struct(**d)` |
+| `dict` ➡️ **param** | `p = param(**d)` |
+| `dict` ➡️ **paramauto** | `pa = paramauto(**d)` |
+
+---
+
+#### **1.8 | File Operations**  
+
+💾 Save and load `param` instances:  
+📥 **Save to disk**  
+```python
+p.write(filename)
+```
+📤 **Load from disk**  
+```python
+p = struct.read(filename).toparam()
+```
+
+<hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
 ### **2 | Define variables**
 
@@ -147,6 +201,8 @@ Theoretically, variables can be any Matlab type (including class instances), tho
 - Prefix a string with `$` to designate it as a literal (i.e., not an expression).
 - For debugging evaluation issues, use `p = param(debug=True)`.
 - **Avoid** using a variable named `${e}` to prevent confusion with `exp(1)`.
+
+---
 
 #### **2.2 | Literal expressions**
 
@@ -228,6 +284,8 @@ s
     structure (struct object) with 8 fields
 
 
+
+---
 
 #### **2.3 | Inheritance of Missing Variables/Parameters, `paramauto` altenative and variable reordering**
 
@@ -410,6 +468,8 @@ l[["x",-2]]
 
 
 
+---
+
 #### **2.4 | Numeric examples**
 This example demonstrates basic numeric assignments:
 - `p.a` is assigned the float `10.0`.
@@ -426,13 +486,29 @@ p.b = "10"                     # number 10 stored as a string
 p.c = "$10"                    # characters "1" and "0" (not a number)
 p.d  = [1.0, 0.2, 0.03, 0.004] # Python list
 p.f  = np.array([p.d])         # Converts the list d into a row vector
+p
 ```
 
+      -------------:----------------------------------------
+                  a: 10.0
+                  b: 10
+                   = 10
+                  c: $10
+                   = 10
+                  d: [1.0, 0.2, 0.03, 0.004]
+                   = [1.0, 0.2, 0.03, 0.004]
+                  f: [1 0.2 0.03 0.004] (double)
+      -------------:----------------------------------------
 
 
----
 
 
+
+    parameter list (param object) with 5 definitions
+
+
+
+<hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
 ### **3 | Interpolation and Local Evaluation**
 
@@ -457,6 +533,8 @@ This section demonstrates the interpolation and local evaluation capabilities:
 - NumPy functions (with the `np.` prefix) and operators such as `@` and `.T`.
 - Statistics functions: `gauss`, `uniform`, `randint`, `choice`.
 
+
+---
 
 #### **3.2 | Scalar evaluations Example**
 The following examples show scalar evaluations:
@@ -549,6 +627,8 @@ print('avoid using outer indexing and keep it within "{}"')
     avoid using outer indexing and keep it within "{}"
 
 
+---
+
 #### **3.3 | Nested Interpolations**
 
 Nested interpolation enables the use of a variable as an index or key:
@@ -610,21 +690,21 @@ These features are exemplified by replacing Python expressions with text ones.
 
 
 ```python
-i.a = "[10,20,30]" # previous values are multiplied by  (without $, it is a list)
+i.a = "[10,20,30,40]" # previous values are multiplied by  (without $, it is a list)
 i.b = "2" # index +1
 i.f = '{"A":100, "B":200, "C":300}'  # previous values are multiplied by 100
 i
 ```
 
       -------------:----------------------------------------
-                  a: [10,20,30]
-                   = [10, 20, 30]
+                  a: [10,20,30,40]
+                   = [10, 20, 30, 40]
                   b: 2
                    = 2
                   c: ${a[${b+1}]}
-                   = Type Error < list indices must be integers or slices, not str >
+                   = 40
                   d: ${a[${b}+1]}
-                   = Type Error < list indices must be integers or slices, not str >
+                   = 40
                   f: {"A":100, "B":200, "C":300}
                    = {'A': 100, 'B': 200, 'C': 300}
                   g: C
@@ -640,6 +720,8 @@ i
     parameter list (param object) with 7 definitions
 
 
+
+---
 
 #### **3.4 | List and Nested Evaluations**
 This section demonstrates that variables can hold multiple values and that results are stored in lists:
@@ -761,6 +843,8 @@ t
 
 
 
+---
+
 #### **3.5 | Support of `dict` (dictionnaries)**
 
 By design, instances of `struct` (and, by extension, `param()`) are intended to serve as flexible containers that can
@@ -834,11 +918,7 @@ d
 
 
 
-
-
----
-
-
+<hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
 ### **4 | Mathematical shorthands for vectors, matrices, 3D and 4D arrays**
 
@@ -923,6 +1003,8 @@ u
 
 
 
+---
+
 #### **4.2 | Mathematical/NumPy Syntax**
 
 The `param()` class offers several shorthands to seamlessly manipulate NumPy arrays using `param` text expressions:
@@ -956,6 +1038,8 @@ The `param()` class offers several shorthands to seamlessly manipulate NumPy arr
 - `[[-0.5, 0.5;-0.5, 0.5],[ -0.5,  0.5; -0.5,  0.5]]` becomes `$[[[-0.5,0.5],[-0.5,0.5]],[[-0.5,0.5],[-0.5,0.5]]]`
 - `$[[1,2;3,4],[5,6; 7,8]]` becomes `$[[[1,2],[3,4]],[[5,6],[7,8]]]`
 - `$[1, 2, 3; 4, 5, 6]` becomes `$[[1,2,3],[4,5,6]]`
+
+---
 
 #### **4.3 | Simple Definitions Example**
 
@@ -993,6 +1077,8 @@ e
     parameter list (param object) with 4 definitions
 
 
+
+---
 
 #### **4.4 | Matrix Operations Example**
 
@@ -1073,6 +1159,8 @@ m
     parameter list (param object) with 16 definitions
 
 
+
+---
 
 #### **4.5 | Slicing Example**
 
@@ -1159,6 +1247,8 @@ s
 
 
 
+---
+
 #### **4.6 | Advanced Example**
 
 This advanced example demonstrates operations such as:
@@ -1204,11 +1294,7 @@ a
 
 
 
-
-
----
-
-
+<hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
 ### **5 | Global evaluation**
 
@@ -1267,6 +1353,8 @@ u
     parameter list (param object) with 7 definitions
 
 
+
+---
 
 #### **5.2 | Global Evaluation Example with Various Matrix and ND- Operations**
 
@@ -1327,8 +1415,6 @@ v
 
 
 
-
----
-
+<hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 <small>For any question, contact INRAE\olivier.vitrac@agroparistech.fr | last revision $2025-02-07$</small>
 

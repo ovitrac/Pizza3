@@ -8665,9 +8665,11 @@ p.disp()
                                 evaluator = SafeEvaluator(tmp)
                                 reseval = evaluate_with_placeholders(resstr,
                                           evaluator,evaluator_nocontext,raiseerror=True)
-                            except:
+                            except Exception as othererr:
                                 if self._returnerror: # added on 2024-09-06
                                     strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
+                                    if self._debug:
+                                        print(f&#39;Key Error for &#34;{key}&#34; &lt; {othererr} &gt;&#39;)
                                     return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
                                 else:
                                     return value #we keep the original value
@@ -8682,7 +8684,9 @@ p.disp()
                                 evaluator = SafeEvaluator(tmp)
                                 reseval = evaluate_with_placeholders(resstr,
                                           evaluator,evaluator_nocontext,raiseerror=True)
-                            except:
+                            except Exception as othererr:
+                                if self._debug:
+                                    print(f&#39;Type Error for &#34;{key}&#34; &lt; {othererr} &gt;&#39;)
                                 return &#34;Type Error &lt; %s &gt;&#34; % commonerr
                             else:
                                 return reseval
@@ -10060,9 +10064,11 @@ where :
                             evaluator = SafeEvaluator(tmp)
                             reseval = evaluate_with_placeholders(resstr,
                                       evaluator,evaluator_nocontext,raiseerror=True)
-                        except:
+                        except Exception as othererr:
                             if self._returnerror: # added on 2024-09-06
                                 strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
+                                if self._debug:
+                                    print(f&#39;Key Error for &#34;{key}&#34; &lt; {othererr} &gt;&#39;)
                                 return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
                             else:
                                 return value #we keep the original value
@@ -10077,7 +10083,9 @@ where :
                             evaluator = SafeEvaluator(tmp)
                             reseval = evaluate_with_placeholders(resstr,
                                       evaluator,evaluator_nocontext,raiseerror=True)
-                        except:
+                        except Exception as othererr:
+                            if self._debug:
+                                print(f&#39;Type Error for &#34;{key}&#34; &lt; {othererr} &gt;&#39;)
                             return &#34;Type Error &lt; %s &gt;&#34; % commonerr
                         else:
                             return reseval

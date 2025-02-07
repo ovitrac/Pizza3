@@ -477,7 +477,7 @@ from pizza.script import pipescript, script, scriptdata, scriptobject, span
 from pizza.forcefield import *
 
 
-__all__ = [&#39;AttrErrorDict&#39;, &#39;Block&#39;, &#39;Collection&#39;, &#39;Cone&#39;, &#39;Cylinder&#39;, &#39;Ellipsoid&#39;, &#39;Evalgeometry&#39;, &#39;Intersect&#39;, &#39;LammpsCollectionGroup&#39;, &#39;LammpsCreate&#39;, &#39;LammpsFooter&#39;, &#39;LammpsFooterPreview&#39;, &#39;LammpsGeneric&#39;, &#39;LammpsGroup&#39;, &#39;LammpsHeader&#39;, &#39;LammpsHeaderBox&#39;, &#39;LammpsHeaderInit&#39;, &#39;LammpsHeaderLattice&#39;, &#39;LammpsHeaderMass&#39;, &#39;LammpsMove&#39;, &#39;LammpsRegion&#39;, &#39;LammpsSetGroup&#39;, &#39;LammpsSpacefilling&#39;, &#39;LammpsVariables&#39;, &#39;Plane&#39;, &#39;Prism&#39;, &#39;SafeEvaluator&#39;, &#39;Sphere&#39;, &#39;Union&#39;, &#39;cleanname&#39;, &#39;coregeometry&#39;, &#39;emulsion&#39;, &#39;forcefield&#39;, &#39;headersRegiondata&#39;, &#39;none&#39;, &#39;param&#39;, &#39;paramauto&#39;, &#39;parameterforcefield&#39;, &#39;pipescript&#39;, &#39;pstr&#39;, &#39;region&#39;, &#39;regioncollection&#39;, &#39;regiondata&#39;, &#39;rigidwall&#39;, &#39;saltTLSPH&#39;, &#39;scatter&#39;, &#39;script&#39;, &#39;scriptdata&#39;, &#39;scriptobject&#39;, &#39;smd&#39;, &#39;solidfood&#39;, &#39;span&#39;, &#39;struct&#39;, &#39;tlsph&#39;, &#39;ulsph&#39;, &#39;water&#39;, &#39;wrap&#39;]
+__all__ = [&#39;AttrErrorDict&#39;, &#39;Block&#39;, &#39;Collection&#39;, &#39;Cone&#39;, &#39;Cylinder&#39;, &#39;Ellipsoid&#39;, &#39;Evalgeometry&#39;, &#39;Intersect&#39;, &#39;LammpsCollectionGroup&#39;, &#39;LammpsCreate&#39;, &#39;LammpsFooter&#39;, &#39;LammpsFooterPreview&#39;, &#39;LammpsGeneric&#39;, &#39;LammpsGroup&#39;, &#39;LammpsHeader&#39;, &#39;LammpsHeaderBox&#39;, &#39;LammpsHeaderInit&#39;, &#39;LammpsHeaderLattice&#39;, &#39;LammpsHeaderMass&#39;, &#39;LammpsMove&#39;, &#39;LammpsRegion&#39;, &#39;LammpsSetGroup&#39;, &#39;LammpsSpacefilling&#39;, &#39;LammpsVariables&#39;, &#39;Plane&#39;, &#39;Prism&#39;, &#39;SafeEvaluator&#39;, &#39;Sphere&#39;, &#39;Union&#39;, &#39;cleanname&#39;, &#39;coregeometry&#39;, &#39;emulsion&#39;, &#39;evaluate_with_placeholders&#39;, &#39;forcefield&#39;, &#39;headersRegiondata&#39;, &#39;is_literal_string&#39;, &#39;none&#39;, &#39;param&#39;, &#39;paramauto&#39;, &#39;parameterforcefield&#39;, &#39;pipescript&#39;, &#39;pstr&#39;, &#39;region&#39;, &#39;regioncollection&#39;, &#39;regiondata&#39;, &#39;rigidwall&#39;, &#39;saltTLSPH&#39;, &#39;scatter&#39;, &#39;script&#39;, &#39;scriptdata&#39;, &#39;scriptobject&#39;, &#39;smd&#39;, &#39;solidfood&#39;, &#39;span&#39;, &#39;struct&#39;, &#39;tlsph&#39;, &#39;ulsph&#39;, &#39;water&#39;, &#39;wrap&#39;]
 
 
 # protected properties in region
@@ -4845,6 +4845,114 @@ aspects of geometry definition, forcefield application, and scripting for simula
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">cleanname = lambda name: &#34;&#34;.join([x for x in name if x!=&#34;$&#34;])</code></pre>
+</details>
+</dd>
+<dt id="region.evaluate_with_placeholders"><code class="name flex">
+<span>def <span class="ident">evaluate_with_placeholders</span></span>(<span>text, evaluator, evaluator_nocontext=&lt;pizza.private.mstruct.SafeEvaluator object&gt;, raiseerror=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluates only unescaped placeholders of the form ${&hellip;} in the input text.
+Escaped placeholders (\${&hellip;}) are left as literal text (after removing the escape).</p>
+<p>Note1 : ${ &hellip; } can be ${var} or an expressions such as ${var1+var2}
+Note2 : a full evaluation is attempted only after the full evaluation using the same
+evaluator without context</p>
+<h2 id="example">Example</h2>
+<p>context = {'a': 10, 'b': 5}
+evaluator = SafeEvaluator(context)
+evaluator_nocontext = SafeEvaluator()</p>
+<p>text = "Evaluated variable: ${a} and literal: \${a} and sum: ${a + b}, leave intact a+b, ${a}+${b}"
+processed_text = evaluate_with_placeholders(text, evaluator)
+print(processed_text)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def evaluate_with_placeholders(text, evaluator, evaluator_nocontext=SafeEvaluator(),raiseerror=False):
+    &#34;&#34;&#34;
+    Evaluates only unescaped placeholders of the form ${...} in the input text.
+    Escaped placeholders (\\${...}) are left as literal text (after removing the escape).
+
+    Note1 : ${ ... } can be ${var} or an expressions such as ${var1+var2}
+    Note2 : a full evaluation is attempted only after the full evaluation using the same
+    evaluator without context
+
+    Example:
+
+        context = {&#39;a&#39;: 10, &#39;b&#39;: 5}
+        evaluator = SafeEvaluator(context)
+        evaluator_nocontext = SafeEvaluator()
+
+        text = &#34;Evaluated variable: ${a} and literal: \\${a} and sum: ${a + b}, leave intact a+b, ${a}+${b}&#34;
+        processed_text = evaluate_with_placeholders(text, evaluator)
+        print(processed_text)
+
+    &#34;&#34;&#34;
+    # Pattern explanation:
+    #   (?&lt;!\\)   : Negative lookbehind to ensure the &#39;${&#39; is not preceded by a backslash.
+    #   (\$\{([^}]+)\}) : Captures the full placeholder in group 1 and the inner expression in group 2.
+    pattern = r&#39;(?&lt;!\\)(\$\{([^}]+)\})&#39;
+
+    def replace_placeholder(match):
+        # Extract the inner expression from the placeholder.
+        expr = match.group(2)
+        # Evaluate the expression using your SafeEvaluator instance.
+        try:
+            value = evaluator.evaluate(expr)
+        except Exception as e:
+            raise ValueError(f&#34;Error evaluating expression &#39;{expr}&#39;: {e}&#34;)
+        return str(value)
+
+    # String Interpolation: Replace unescaped placeholders with their evaluated results.
+    result = re.sub(pattern, replace_placeholder, text)
+    # Finally, unescape the escaped placeholders: replace &#34;\${&#34; with &#34;${&#34;.
+    result = result.replace(r&#39;\${&#39;, &#39;${&#39;)
+    # Full evaluation if possible
+    if raiseerror:
+        return evaluator_nocontext.evaluate(result)
+    else:
+        try:
+            return evaluator_nocontext.evaluate(result)
+        except Exception:
+            return result</code></pre>
+</details>
+</dd>
+<dt id="region.is_literal_string"><code class="name flex">
+<span>def <span class="ident">is_literal_string</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns True if the first non-blank character in the string is '$'
+and it is not immediately followed by '{' or '['.</p>
+<h2 id="parameters">Parameters</h2>
+<p>s (str): The string to check.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if the condition is met, otherwise False.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_literal_string(s):
+    &#34;&#34;&#34;
+    Returns True if the first non-blank character in the string is &#39;$&#39;
+    and it is not immediately followed by &#39;{&#39; or &#39;[&#39;.
+
+    Parameters:
+        s (str): The string to check.
+
+    Returns:
+        bool: True if the condition is met, otherwise False.
+    &#34;&#34;&#34;
+    stripped = s.lstrip()  # Remove leading whitespace
+    if not stripped:
+        return False
+    if stripped[0] != &#39;$&#39;:
+        return False
+    # If there is a character following &#39;$&#39;, ensure it&#39;s not &#39;{&#39; or &#39;[&#39;.
+    if len(stripped) &gt; 1 and stripped[1] in (&#39;{&#39;, &#39;[&#39;):
+        return False
+    return True</code></pre>
 </details>
 </dd>
 <dt id="region.span"><code class="name flex">
@@ -11833,9 +11941,11 @@ p.disp()
                                 evaluator = SafeEvaluator(tmp)
                                 reseval = evaluate_with_placeholders(resstr,
                                           evaluator,evaluator_nocontext,raiseerror=True)
-                            except:
+                            except Exception as othererr:
                                 if self._returnerror: # added on 2024-09-06
                                     strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
+                                    if self._debug:
+                                        print(f&#39;Key Error for &#34;{key}&#34; &lt; {othererr} &gt;&#39;)
                                     return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
                                 else:
                                     return value #we keep the original value
@@ -11850,7 +11960,9 @@ p.disp()
                                 evaluator = SafeEvaluator(tmp)
                                 reseval = evaluate_with_placeholders(resstr,
                                           evaluator,evaluator_nocontext,raiseerror=True)
-                            except:
+                            except Exception as othererr:
+                                if self._debug:
+                                    print(f&#39;Type Error for &#34;{key}&#34; &lt; {othererr} &gt;&#39;)
                                 return &#34;Type Error &lt; %s &gt;&#34; % commonerr
                             else:
                                 return reseval
@@ -13227,9 +13339,11 @@ where :
                             evaluator = SafeEvaluator(tmp)
                             reseval = evaluate_with_placeholders(resstr,
                                       evaluator,evaluator_nocontext,raiseerror=True)
-                        except:
+                        except Exception as othererr:
                             if self._returnerror: # added on 2024-09-06
                                 strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
+                                if self._debug:
+                                    print(f&#39;Key Error for &#34;{key}&#34; &lt; {othererr} &gt;&#39;)
                                 return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
                             else:
                                 return value #we keep the original value
@@ -13244,7 +13358,9 @@ where :
                             evaluator = SafeEvaluator(tmp)
                             reseval = evaluate_with_placeholders(resstr,
                                       evaluator,evaluator_nocontext,raiseerror=True)
-                        except:
+                        except Exception as othererr:
+                            if self._debug:
+                                print(f&#39;Type Error for &#34;{key}&#34; &lt; {othererr} &gt;&#39;)
                             return &#34;Type Error &lt; %s &gt;&#34; % commonerr
                         else:
                             return reseval
@@ -26644,6 +26760,8 @@ water(beadtype=index, userid="myfluid")</p></div>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="region.cleanname" href="#region.cleanname">cleanname</a></code></li>
+<li><code><a title="region.evaluate_with_placeholders" href="#region.evaluate_with_placeholders">evaluate_with_placeholders</a></code></li>
+<li><code><a title="region.is_literal_string" href="#region.is_literal_string">is_literal_string</a></code></li>
 <li><code><a title="region.span" href="#region.span">span</a></code></li>
 <li><code><a title="region.wrap" href="#region.wrap">wrap</a></code></li>
 </ul>
