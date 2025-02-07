@@ -42,7 +42,7 @@ to the designated main folder with a timestamp.</p>
 <h2 id="author">Author</h2>
 <p>INRAE\Olivier Vitrac
 Email: olivier.vitrac@agroparistech.fr
-Last Revised: 2024-12-12</p>
+Last Revised: 2025-02-03</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -71,7 +71,7 @@ Configuration:
 Author:
     INRAE\\Olivier Vitrac
     Email: olivier.vitrac@agroparistech.fr
-    Last Revised: 2024-12-12
+    Last Revised: 2025-02-03
 &#34;&#34;&#34;
 
 import os
@@ -91,6 +91,8 @@ def main():
     ]
     
     ignore_dirs = [
+        &#34;.env&#34;,
+        &#34;.venv&#34;,
         &#34;.git&#34;,
         &#34;fork&#34;,
         &#34;history&#34;,
@@ -112,7 +114,9 @@ def main():
         &#34;release&#34;,
         &#34;first_doc&#34;,
         &#34;old-doc&#34;,
-        &#34;FIles_moved_to_Post&#34;
+        &#34;FIles_moved_to_Post&#34;,
+        &#34;.ipynb_checkpoints&#34;,
+        &#34;.virtual_documents&#34;
     ]
 
     # Determine the current working directory
@@ -192,6 +196,8 @@ if __name__ == &#34;__main__&#34;:
     ]
     
     ignore_dirs = [
+        &#34;.env&#34;,
+        &#34;.venv&#34;,
         &#34;.git&#34;,
         &#34;fork&#34;,
         &#34;history&#34;,
@@ -213,7 +219,9 @@ if __name__ == &#34;__main__&#34;:
         &#34;release&#34;,
         &#34;first_doc&#34;,
         &#34;old-doc&#34;,
-        &#34;FIles_moved_to_Post&#34;
+        &#34;FIles_moved_to_Post&#34;,
+        &#34;.ipynb_checkpoints&#34;,
+        &#34;.virtual_documents&#34;
     ]
 
     # Determine the current working directory

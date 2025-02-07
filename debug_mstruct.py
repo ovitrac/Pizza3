@@ -83,3 +83,35 @@ v.Y0 = "@{y0}.flatten()"
 v.Z0 = "@{z0}.flatten()"
 s=v()
 v
+
+# %% dict
+d = param()
+d.a = {'a': 'a', 'b': 2}
+d.b = "{'a': 'a', 'b': 2}"
+d.c = "${b}"
+d.d = "${a[a]}"
+d.e = "${c[b]}+1"
+d.f = "${{'eval': ${c[b]*10}}}"
+s=d()
+d
+
+# %% nested
+i = param()
+i.a = "[1,2,3]"
+i.b = "1"
+i.c = "${a[${b+1}]}"
+i.d = "${a[${b}+1]}"
+i.f = {"A":1, "B":2, "C":3}
+i.g = "C"
+i.h ="${f['${g}']*100}"
+s = i()
+i
+
+# %% test
+p = param()
+p.start = 1
+p.step = 10
+p.stop = 100
+p.t = "1:10:100"
+p.list = "${start}:${step}:${stop}"
+p()

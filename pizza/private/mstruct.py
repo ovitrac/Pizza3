@@ -175,6 +175,8 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-01-31 p=param(a=..,b=..), p("a","b") returns the values of a and b as a struct, p.getval("a") returns the value of a
 # 2025-02-01 better separation of param interpolation and global evaluation, consolidation of local evaluation: "the sum p is ${sum(p)}", [${n},${o}]" (version 1.0052)
 # 2025-02-03 add _precision, fix generator for NumPy
+# 2025-02-06 maintnance version (fixes and extensions) in agreement with the revised version of param_demo()
+# 2025-02-07 add struct.numrepl(), major release (version 1.0054)
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
@@ -183,7 +185,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.0052"
+__version__ = "1.0054"
 
 
 # %% Dependencies
@@ -415,7 +417,7 @@ class SafeEvaluator(ast.NodeVisitor):
 
     def visit_List(self, node):
         return [self.visit(elt) for elt in node.elts]
-    
+
     def visit_Dict(self, node):
         """
         Evaluate a dictionary expression by safely evaluating each key and value.
@@ -436,21 +438,21 @@ def evaluate_with_placeholders(text, evaluator, evaluator_nocontext=SafeEvaluato
     """
     Evaluates only unescaped placeholders of the form ${...} in the input text.
     Escaped placeholders (\\${...}) are left as literal text (after removing the escape).
-    
+
     Note1 : ${ ... } can be ${var} or an expressions such as ${var1+var2}
     Note2 : a full evaluation is attempted only after the full evaluation using the same
     evaluator without context
-    
+
     Example:
-            
+
         context = {'a': 10, 'b': 5}
         evaluator = SafeEvaluator(context)
         evaluator_nocontext = SafeEvaluator()
-        
+
         text = "Evaluated variable: ${a} and literal: \\${a} and sum: ${a + b}, leave intact a+b, ${a}+${b}"
         processed_text = evaluate_with_placeholders(text, evaluator)
         print(processed_text)
-        
+
     """
     # Pattern explanation:
     #   (?<!\\)   : Negative lookbehind to ensure the '${' is not preceded by a backslash.
@@ -486,10 +488,10 @@ def is_literal_string(s):
     """
     Returns True if the first non-blank character in the string is '$'
     and it is not immediately followed by '{' or '['.
-    
+
     Parameters:
         s (str): The string to check.
-        
+
     Returns:
         bool: True if the condition is met, otherwise False.
     """
@@ -839,16 +841,31 @@ class struct():
                 return self.getattr(self.keys()[idx])
             raise IndexError(f"the {self._ftype} index should be comprised between 0 and {len(self)-1}")
         elif isinstance(idx,slice):
-            return struct.fromkeysvalues(self.keys()[idx], self.values()[idx])
+            out = struct.fromkeysvalues(self.keys()[idx], self.values()[idx])
+            if isinstance(self,paramauto):
+                return paramauto(**out)
+            elif isinstance(self,param):
+                return param(**out)
+            else:
+                return out
         elif isinstance(idx,(list,tuple)):
             k,v= self.keys(), self.values()
             nk = len(k)
             s = param() if isinstance(self,param) else struct()
             for i in idx:
-                if isinstance(i,int) and i>=0 and i<nk:
-                    s.setattr(k[i],v[i])
+                if isinstance(i,int):
+                    if -nk <= i < nk:  # Allow standard Python negative indexing
+                        i = i % nk  # Convert negative index to positive equivalent
+                        s.setattr(k[i],v[i])
+                    else:
+                        raise IndexError(f"idx must contain integers in range [-{nk}, {nk-1}], not {i}")
+                elif isinstance(i,str):
+                    if i in self:
+                        s.setattr(i, self.getattr(i))
+                    else:
+                        raise KeyError((f'idx "{idx}" is not a valid key'))
                 else:
-                    raise IndexError("idx must contains only integers ranged between 0 and %d" % (nk-1))
+                    TypeError("idx must contain only integers or strings")
             return s
         elif isinstance(idx,str):
             return self.getattr(idx)
@@ -869,7 +886,7 @@ class struct():
             elif len(k) == len(value):
                 for i in range(len(k)): self.setattr(k[i], value[i])
             else:
-                raise IndexError("the number of values (%d) does not match the number of elements in the slive (%d)" \
+                raise IndexError("the number of values (%d) does not match the number of elements in the slice (%d)" \
                        % (len(value),len(idx)))
         elif isinstance(idx,(list,tuple)):
             if len(value)<=1:
@@ -1359,12 +1376,15 @@ class struct():
         # If overwrite is False and the file already exists, raise an exception
         if not overwrite and file_path.exists():
             raise FileExistsError(f"The file {file_path} already exists, and overwrite is set to False.")
-        # Convert NumPy entries
-        tmp = self.np2str()
+        # Convert to static if needed
+        if isinstance(p,(param,paramauto)):
+            tmp = self.tostatic()
+        else:
+            tmp = self
         # Open and write to the file using the resolved path
         with file_path.open(mode="w", encoding='utf-8') as f:
             print(f"# {self._fulltype} with {len(self)} {self._ftype}s\n", file=f)
-            for k, v in self.items():
+            for k, v in tmp.items():
                 if v is None:
                     print(k, "=None", file=f, sep="")
                 elif isinstance(v, (int, float)):
@@ -1646,9 +1666,13 @@ class struct():
             elif isinstance(value, list):
                 # Recursively process each element in the list.
                 return [format_numpy_result(x) for x in value]
+            elif isinstance(value, tuple):
+                return tuple(format_numpy_result(x) for x in value)
+            elif isinstance(value, struct):
+                return value.npstr()
             elif np.isscalar(value):
                 # For scalars: if numeric, use str() to avoid extra quotes.
-                if isinstance(value, (int, float, complex)):
+                if isinstance(value, (int, float, complex, str)) or value is None:
                     return value
                 else:
                     return repr(value)
@@ -1668,11 +1692,70 @@ class struct():
                 return list_to_string(nested_list)
             else:
                 # Return the input unmodified if not a NumPy array, list, dict, or scalar.
-                return value
+                return str(value) # str() preferred over repr() for concision
         # Process all entries in self.
         for key, value in self.items():
             out.setattr(key, format_numpy_result(value))
         return out
+
+    # minimal replacement of placeholders by numbers or their string representations
+    def numrepl(self, text):
+        r"""
+        Replace all placeholders of the form ${key} in the given text by the corresponding
+        numeric value from the instance fields, under the following conditions:
+
+        1. 'key' must be a valid field in self (i.e., if key in self).
+        2. The value corresponding to 'key' is either:
+             - an int,
+             - a float, or
+             - a string that represents a valid number (e.g., "1" or "1.0").
+
+        Only when these conditions are met, the placeholder is substituted.
+        The conversion preserves the original type: if the stored value is int, then the
+        substitution will be done as an integer (e.g., 1 and not 1.0). Otherwise, if it is
+        a float then it will be substituted as a float.
+
+        Any placeholder for which the above conditions are not met remains unchanged.
+
+        Placeholders are recognized by the pattern "${<key>}" where <key> is captured as all
+        text until the next "}" (optionally allowing whitespace inside the braces).
+        """
+        # Pattern: match "${", then optional whitespace, capture all characters until "}",
+        # then optional whitespace, then "}".
+        placeholder_pattern = re.compile(r"\$\{\s*([^}]+?)\s*\}")
+
+        def replace_match(match):
+            key = match.group(1)
+            # Check if the key exists in self.
+            if key in self:
+                value = self[key]
+                # If the value is already numeric, substitute directly.
+                if isinstance(value, (int, float)):
+                    return str(value)
+                # If the value is a string, try to interpret it as a numeric value.
+                elif isinstance(value, str):
+                    s = value.strip()
+                    # Check if s is a valid integer representation.
+                    if re.fullmatch(r"[+-]?\d+", s):
+                        try:
+                            num = int(s)
+                            return str(num)
+                        except ValueError:
+                            # Should not occur because the regex already matched.
+                            return match.group(0)
+                    # Check if s is a valid float representation (including scientific notation).
+                    elif re.fullmatch(r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?", s):
+                        try:
+                            num = float(s)
+                            return str(num)
+                        except ValueError:
+                            return match.group(0)
+            # If key not in self or value is not numeric (or numeric string), leave placeholder intact.
+            return match.group(0)
+
+        # Replace all placeholders in the text using the replacer function.
+        return placeholder_pattern.sub(replace_match, text)
+
 
 # %% param class with scripting and evaluation capabilities
 class param(struct):
@@ -1857,8 +1940,8 @@ class param(struct):
     _ftype = "definition"
     _evalfeature = True    # This class can be evaluated with .eval()
     _returnerror = True    # This class returns an error in the evaluation string (added on 2024-09-06)
-    
-    
+
+
     # magic constructor
     def __init__(self,_protection=False,_evaluation=True,
                  sortdefinitions=False,debug=False,**kwargs):
@@ -1939,7 +2022,7 @@ class param(struct):
         tmp = struct(debug=self._debug)
         # evaluator without context
         evaluator_nocontext = SafeEvaluator() # for global evaluation without context
-        
+
         # main string evaluator
         def evalstr(value,key=""):
             # replace ${variable} (Bash, Lammps syntax) by {variable} (Python syntax)
@@ -1953,9 +2036,9 @@ class param(struct):
                 valuesafe, escape0 = self.protect(valuesafe)
             else:
                 escape0 = False
-            # replace ${var} by {var}
-            valuesafe_priorescape = valuesafe
-            valuesafe, escape = param.escape(valuesafe)
+            # replace ${var} by {var} once basic substitutions have been applied
+            valuesafe_priorescape = tmp.numrepl(valuesafe) # minimal substitution
+            valuesafe, escape = param.escape(valuesafe_priorescape)
             escape = escape or escape0
             # replace "^" (Matlab, Lammps exponent) by "**" (Python syntax)
             valuesafe = pstr.eval(valuesafe.replace("^","**"),ispstr=ispstr)
@@ -2005,15 +2088,33 @@ class param(struct):
                         try:
                             resstr = tmp.format(valuesafe,raiseerror=False)
                         except (KeyError,NameError) as nameerr:
-                            if self._returnerror: # added on 2024-09-06
-                                strnameerr = str(nameerr).replace("'","")
-                                return '< undef %s "${%s}" >' % (self._ftype,strnameerr)
+                            try: # nested indexing (guess)
+                                resstr = param.safe_fstring(
+                                param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
+                                evaluator = SafeEvaluator(tmp)
+                                reseval = evaluate_with_placeholders(resstr,
+                                          evaluator,evaluator_nocontext,raiseerror=True)
+                            except:
+                                if self._returnerror: # added on 2024-09-06
+                                    strnameerr = str(nameerr).replace("'","")
+                                    return '< undef %s "${%s}" >' % (self._ftype,strnameerr)
+                                else:
+                                    return value #we keep the original value
                             else:
-                                return value #we keep the original value
+                                return reseval
                         except SyntaxError as commonerr:
-                            return "SYNTAX ERROR < %s >" % commonerr
+                            return "Syntax Error < %s >" % commonerr
                         except TypeError  as commonerr:
-                            return "TYPE ERROR < %s >" % commonerr
+                            try: # nested indexing (guess)
+                                resstr = param.safe_fstring(
+                                param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
+                                evaluator = SafeEvaluator(tmp)
+                                reseval = evaluate_with_placeholders(resstr,
+                                          evaluator,evaluator_nocontext,raiseerror=True)
+                            except:
+                                return "Type Error < %s >" % commonerr
+                            else:
+                                return reseval
                         except (IndexError,AttributeError):
                             try:
                                 resstr = param.safe_fstring(
@@ -2048,7 +2149,7 @@ class param(struct):
                                 return "Error in ${}: < %s >" % valerr
                             else:
                                 return reseval
-                            
+
                         except Exception as othererr:
                             return "Error in ${}: < %s >" % othererr
                         else:
@@ -2063,7 +2164,7 @@ class param(struct):
                                 return resstr.replace("\n",",") # \n replaced by ,
                             else:
                                 return reseval
-                            
+
         # evalstr() refactored for error management
         def safe_evalstr(x,key=""):
             xeval = evalstr(x,key)
@@ -2212,6 +2313,14 @@ class param(struct):
                 tostruct(protection=False)
         """
         return self.eval(protection=protection)
+
+    # returns the equivalent paramauto instance
+    def toparamauto(self):
+        """
+            convert a param instance into a paramauto instance
+                toparamauto()
+        """
+        return paramauto(**self)
 
     # returns the equivalent structure evaluated
     def tostatic(self):
@@ -2498,9 +2607,9 @@ class param(struct):
         >>> param.replace_matrix_shorthand(s)
         'np.array([[[-0.5,-0.5],[-0.5,-0.5]],[[0.5,0.5],[0.5,0.5]]])*0.001'
         """
-        
+
         numfmt = f".{cls._precision}g"
-        
+
         def replace_spaces_with_commas(txt):
             """
             Replaces spaces with commas only when they're not preceded by a comma, opening bracket, or whitespace,

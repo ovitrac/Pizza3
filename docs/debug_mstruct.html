@@ -53,6 +53,9 @@ p.d = &#34;${b[0,1]} + ${a[0]}&#34;    # Evaluates as `0.2 + 1.0` (bug)
 p.c = &#34;${a[1]}+10&#34;             # Retrieves `a[1]` = 0.2 and add 10 `0.2 + 10`
 p.e = &#34;${a}[1]+10&#34;             # This notation works also (equivalent to c for the part `${a}[1]`) `0.2 + 10`
 p.f = &#34;${b}[0,1] + ${a}[0]&#34;
+p.g = &#34;{&#39;a&#39;: &#39;a&#39;, &#39;b&#39;: 2}&#34;
+p.h = &#34;${g}&#34;
+p.i = &#34;${g[a]}&#34;
 
 s = p() # equivalent to s = p.eval()
 prettyprint = lambda var,value: print(f&#34;{var} = {value} (type: {type(value).__name__})&#34;)
@@ -63,7 +66,12 @@ prettyprint(&#34;e&#34;,s.e)
 prettyprint(&#34;d&#34;,s.d)
 prettyprint(&#34;f&#34;,s.f)
 
+# generator
+p.generator(printout=True)
 
+# eval
+p.formateval(&#34;this is d=${d} with b=${b}&#34;)
+p.formateval(&#34;${1+2}*${a[1]}&#34;)
 # %% others
 p = param()
 p.a = [0,1,2]                   # this list is numeric and is already in Python
@@ -71,9 +79,72 @@ p.b = &#39;[1,2,&#34;test&#34;,&#34;${a[1]}&#34;]&#39;  # this list combines par
 p.c = &#39;![1,2,&#34;test&#34;,&#34;${a[1]}&#34;]&#39; # the `!` to force recursive evaluation of expressions in lists
 p.d = &#34;${b[3]}*10&#34;              # the expressions can be combined together
 p.e = &#34;${c[3]}*10&#34;              # the expressions can be combined together
-p.f = [1,2,&#34;test&#34;,&#34;${a[1]}&#34;]
-s = p.eval()
-p</code></pre>
+p.f = [&#34;${a[1]+a[2]}*3&#34;, 1,2,&#34;test&#34;,&#34;${a[1]}&#34;, &#34;${a[1]+a[2]}&#34;, &#34;${1+2}&#34;, &#34;b&#34;]
+p.g = &#34;${a[1]+a[2]}&#34;
+p.h = &#34;this is a&#34;
+p.i = &#34;${a[1]+100}*${b[1]}&#34;
+p.j = &#34;the result is ${a[1]+100}*${b[1]}&#34;
+p.k = &#34;the result is ${(a[1]+100)*b[1]}&#34;
+p.units = &#34;$si&#34;
+p.l = [&#34;units&#34;,&#34;$lj&#34;]
+p.m = [&#34;units&#34;,&#34;${units}&#34;]
+p.n = &#34;the ${l[0]} are ${units} as defined with \\${units}&#34;
+p.o = 10
+p.p = 100
+p.q = &#34;[${o},${p}]&#34;
+p.r = &#34;the sum of q is ${sum(q)}&#34;
+p.s = &#34;${max(q)}&#34;
+s = p()
+p
+
+# %% last bug
+v = param()
+v.l = [1e-3, 2e-3, 3e-3]    # l is defined as a list
+v.a = &#34;$[1 2 3]&#34;            # a is defined with  Matlab notations
+v.b = &#34;$[1:3]&#34;              # b is defined with  Matlab notations
+v.c = &#34;$[0.1:0.1:0.9]&#34;      # c is defined with  Matlab notations
+v.test = &#34;@{l}&#34;
+v.scale = &#34;@{l}*2*@{a}&#34;     # l is rescaled
+v.x0 = &#34;$[[[-0.5, -0.5],[-0.5, -0.5]],[[ 0.5,  0.5],[ 0.5,  0.5]]]*${scale[0,0]}*${a[0,0]}&#34;
+v.y0 = &#34;$[[[-0.5, -0.5],[0.5, 0.5]],[[ -0.5,  -0.5],[ 0.5,  0.5]]]*${scale[0,1]}*${a[0,1]}&#34;
+v.z0 = &#34;$[[-0.5 0.5 ;-0.5 0.5],[ -0.5,  0.5;  -0.5,  0.5]]*${l[2]}*${a[0,2]}&#34;
+v.X0 = &#34;@{x0}.flatten()&#34;
+v.Y0 = &#34;@{y0}.flatten()&#34;
+v.Z0 = &#34;@{z0}.flatten()&#34;
+s=v()
+v
+
+# %% dict
+d = param()
+d.a = {&#39;a&#39;: &#39;a&#39;, &#39;b&#39;: 2}
+d.b = &#34;{&#39;a&#39;: &#39;a&#39;, &#39;b&#39;: 2}&#34;
+d.c = &#34;${b}&#34;
+d.d = &#34;${a[a]}&#34;
+d.e = &#34;${c[b]}+1&#34;
+d.f = &#34;${{&#39;eval&#39;: ${c[b]*10}}}&#34;
+s=d()
+d
+
+# %% nested
+i = param()
+i.a = &#34;[1,2,3]&#34;
+i.b = &#34;1&#34;
+i.c = &#34;${a[${b+1}]}&#34;
+i.d = &#34;${a[${b}+1]}&#34;
+i.f = {&#34;A&#34;:1, &#34;B&#34;:2, &#34;C&#34;:3}
+i.g = &#34;C&#34;
+i.h =&#34;${f[&#39;${g}&#39;]*100}&#34;
+s = i()
+i
+
+# %% test
+p = param()
+p.start = 1
+p.step = 10
+p.stop = 100
+p.t = &#34;1:10:100&#34;
+p.list = &#34;${start}:${step}:${stop}&#34;
+p()</code></pre>
 </details>
 </section>
 <section>

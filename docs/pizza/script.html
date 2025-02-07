@@ -8412,9 +8412,9 @@ p.disp()
 
     #### Prevent Evaluation
     ```python
-    definitions = param(a=1, b=&#34;${a}*10+${a}&#34;, c=&#34;\${a}+10&#34;, d=&#39;\${myparam}&#39;)
-    text = definitions.formateval(&#34;this is my text ${a}, ${b}, \${myvar}=${c}+${d}&#34;)
-    print(text)  # &#34;this is my text 1, 11, \${myvar}=\${a}+10+${myparam}&#34;
+    definitions = param(a=1, b=&#34;${a}*10+${a}&#34;, c=&#34;\\${a}+10&#34;, d=&#39;\\${myparam}&#39;)
+    text = definitions.formateval(&#34;this is my text ${a}, ${b}, \\${myvar}=${c}+${d}&#34;)
+    print(text)  # &#34;this is my text 1, 11, \\${myvar}=\\${a}+10+${myparam}&#34;
     ```
 
     ---
@@ -8512,6 +8512,7 @@ p.disp()
     _evalfeature = True    # This class can be evaluated with .eval()
     _returnerror = True    # This class returns an error in the evaluation string (added on 2024-09-06)
 
+
     # magic constructor
     def __init__(self,_protection=False,_evaluation=True,
                  sortdefinitions=False,debug=False,**kwargs):
@@ -8525,14 +8526,14 @@ p.disp()
     @staticmethod
     def escape(s):
         &#34;&#34;&#34;
-            escape \${} as ${{}} --&gt; keep variable names
+            escape \\${} as ${{}} --&gt; keep variable names
             convert ${} as {} --&gt; prepare Python replacement
 
             Examples:
-                escape(&#34;\${a}&#34;)
+                escape(&#34;\\${a}&#34;)
                 returns (&#39;${{a}}&#39;, True)
 
-                escape(&#34;  \${abc} ${a} \${bc}&#34;)
+                escape(&#34;  \\${abc} ${a} \\${bc}&#34;)
                 returns (&#39;  ${{abc}} {a} ${{bc}}&#39;, True)
 
                 escape(&#34;${a}&#34;)
@@ -8546,7 +8547,7 @@ p.disp()
             raise TypeError(f&#39;the argument must be string not {type(s)}&#39;)
         se, start, found = &#34;&#34;, 0, True
         while found:
-            pos0 = s.find(&#34;\${&#34;,start)
+            pos0 = s.find(r&#34;\${&#34;,start)
             found = pos0&gt;=0
             if found:
                 pos1 = s.find(&#34;}&#34;,pos0)
@@ -8562,11 +8563,11 @@ p.disp()
     def protect(self,s=&#34;&#34;):
         &#34;&#34;&#34; protect $variable as ${variable} &#34;&#34;&#34;
         if isinstance(s,str):
-            t = s.replace(&#34;\$&#34;,&#34;££&#34;) # &amp;&amp; is a placeholder
+            t = s.replace(r&#34;\$&#34;,&#34;££&#34;) # &amp;&amp; is a placeholder
             escape = t!=s
             for k in self.keyssorted():
                 t = t.replace(&#34;$&#34;+k,&#34;${&#34;+k+&#34;}&#34;)
-            if escape: t = t.replace(&#34;££&#34;,&#34;\$&#34;)
+            if escape: t = t.replace(&#34;££&#34;,r&#34;\$&#34;)
             if isinstance(s,pstr): t = pstr(t)
             return t, escape
         raise TypeError(f&#39;the argument must be string not {type(s)}&#39;)
@@ -8589,7 +8590,10 @@ p.disp()
 
         &#34;&#34;&#34;
         # the argument s is only used by formateval() for error management
-        tmp = struct()
+        tmp = struct(debug=self._debug)
+        # evaluator without context
+        evaluator_nocontext = SafeEvaluator() # for global evaluation without context
+
         # main string evaluator
         def evalstr(value,key=&#34;&#34;):
             # replace ${variable} (Bash, Lammps syntax) by {variable} (Python syntax)
@@ -8603,9 +8607,9 @@ p.disp()
                 valuesafe, escape0 = self.protect(valuesafe)
             else:
                 escape0 = False
-            # replace ${var} by {var}
-            valuesafe_priorescape = valuesafe
-            valuesafe, escape = param.escape(valuesafe)
+            # replace ${var} by {var} once basic substitutions have been applied
+            valuesafe_priorescape = tmp.numrepl(valuesafe) # minimal substitution
+            valuesafe, escape = param.escape(valuesafe_priorescape)
             escape = escape or escape0
             # replace &#34;^&#34; (Matlab, Lammps exponent) by &#34;**&#34; (Python syntax)
             valuesafe = pstr.eval(valuesafe.replace(&#34;^&#34;,&#34;**&#34;),ispstr=ispstr)
@@ -8619,17 +8623,18 @@ p.disp()
             # Literal string starts with $ (no interpretation), ! (evaluation)
             if not self._evaluation:
                 return pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr)
-            elif valuesafe.startswith(&#34;!&#34;):
+            elif valuesafe.startswith(&#34;!&#34;): # &lt;---------- FORECED LITERAL EVALUATION (error messages are returned)
                 try:
-                    vtmp = ast.literal_eval(valuesafe[1:])
+                    #vtmp = ast.literal_eval(valuesafe[1:])
+                    evaluator = SafeEvaluator(tmp)
+                    vtmp = evaluate_with_placeholders(valuesafe[1:],evaluator,evaluator_nocontext)
                     if isinstance(vtmp,list):
-                        evaluator = SafeEvaluator(tmp)
                         for i,item in enumerate(vtmp):
-                            if isinstance(item,str) and not item.strip().startswith(&#34;$&#34;):
+                            if isinstance(item,str) and not is_literal_string(item):
                                 try:
-                                    vtmp[i] = tmp.format(item, raiseerror=False)
+                                    vtmp[i] = tmp.format(item, raiseerror=False) # in case substitions/interpolations are needed
                                     try:
-                                        vtmp[i] = evaluator.evaluate(vtmp[i])
+                                        vtmp[i] = evaluator_nocontext.evaluate(vtmp[i]) # full evaluation without context
                                     except Exception as othererr:
                                         if self._debug:
                                             print(f&#34;DEBUG {key}: Error evaluating: {vtmp[i]}\n&lt; {othererr} &gt;&#34;)
@@ -8650,17 +8655,37 @@ p.disp()
                         return pstr.topath(tmp.format(valuesafe,escape=escape))
                     elif escape:  # partial evaluation
                         return tmp.format(valuesafe,escape=True)
-                    else: # full evaluation (if it fails the last string content is returned)
+                    else: # full evaluation (if it fails the last string content is returned) &lt;---------- FULL EVALUTION will be tried
                         try:
                             resstr = tmp.format(valuesafe,raiseerror=False)
                         except (KeyError,NameError) as nameerr:
-                            if self._returnerror: # added on 2024-09-06
-                                strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
-                                return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
+                            try: # nested indexing (guess)
+                                resstr = param.safe_fstring(
+                                param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
+                                evaluator = SafeEvaluator(tmp)
+                                reseval = evaluate_with_placeholders(resstr,
+                                          evaluator,evaluator_nocontext,raiseerror=True)
+                            except:
+                                if self._returnerror: # added on 2024-09-06
+                                    strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
+                                    return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
+                                else:
+                                    return value #we keep the original value
                             else:
-                                return value #we keep the original value
-                        except (SyntaxError,TypeError,ValueError) as commonerr:
-                            return &#34;ERROR &lt; %s &gt;&#34; % commonerr
+                                return reseval
+                        except SyntaxError as commonerr:
+                            return &#34;Syntax Error &lt; %s &gt;&#34; % commonerr
+                        except TypeError  as commonerr:
+                            try: # nested indexing (guess)
+                                resstr = param.safe_fstring(
+                                param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
+                                evaluator = SafeEvaluator(tmp)
+                                reseval = evaluate_with_placeholders(resstr,
+                                          evaluator,evaluator_nocontext,raiseerror=True)
+                            except:
+                                return &#34;Type Error &lt; %s &gt;&#34; % commonerr
+                            else:
+                                return reseval
                         except (IndexError,AttributeError):
                             try:
                                 resstr = param.safe_fstring(
@@ -8681,13 +8706,28 @@ p.disp()
                                     return resstr
                                 else:
                                     return reseval
+                        except ValueError as valerr: # forced evaluation within ${}
+                            try:
+                                evaluator = SafeEvaluator(tmp)
+                                reseval = evaluate_with_placeholders(valuesafe_priorescape,evaluator,evaluator_nocontext,raiseerror=True)
+                            except SyntaxError as synerror:
+                                if self._debug:
+                                    print(f&#34;DEBUG {key}: Error evaluating: {valuesafe_priorescape}\n&lt; {synerror} &gt;&#34;)
+                                return evaluate_with_placeholders(valuesafe_priorescape,evaluator,evaluator_nocontext,raiseerror=False)
+                            except Exception as othererr:
+                                if self._debug:
+                                    print(f&#34;DEBUG {key}: Error evaluating: {valuesafe_priorescape}\n&lt; {othererr} &gt;&#34;)
+                                return &#34;Error in ${}: &lt; %s &gt;&#34; % valerr
+                            else:
+                                return reseval
+
                         except Exception as othererr:
                             return &#34;Error in ${}: &lt; %s &gt;&#34; % othererr
                         else:
                             try:
                                 # reseval = eval(resstr)
                                 evaluator = SafeEvaluator(tmp)
-                                reseval = evaluator.evaluate(resstr)
+                                reseval = evaluate_with_placeholders(resstr,evaluator,evaluator_nocontext)
                             except Exception as othererr:
                                 #tmp.setattr(key,&#34;Eval Error &lt; %s &gt;&#34; % othererr)
                                 if self._debug:
@@ -8695,13 +8735,14 @@ p.disp()
                                 return resstr.replace(&#34;\n&#34;,&#34;,&#34;) # \n replaced by ,
                             else:
                                 return reseval
+
         # evalstr() refactored for error management
         def safe_evalstr(x,key=&#34;&#34;):
             xeval = evalstr(x,key)
             if isinstance(xeval,str):
                 try:
                     evaluator = SafeEvaluator(tmp)
-                    return evaluator.evaluate(xeval)
+                    return evaluate_with_placeholders(xeval,evaluator,evaluator_nocontext)
                 except Exception as e:
                     if self._debug:
                         print(f&#34;DEBUG {key}: Error evaluating &#39;{x}&#39;: {e}&#34;)
@@ -8720,6 +8761,19 @@ p.disp()
                     tmp.setattr(key,valuelist)
                 else:
                     tmp.setattr(key, value) # store the value with the key
+            elif isinstance(value, dict):
+                # For dictionaries, evaluate each entry using its own key (sub_key)
+                new_dict = {}
+                for sub_key, sub_value in value.items():
+                    if isinstance(sub_value, str):
+                        new_dict[sub_key] = safe_evalstr(sub_value,key)
+                    elif isinstance(sub_value, list):
+                        # If an entry is a list, apply safe_evalstr to each string element within it
+                        new_dict[sub_key] = [safe_evalstr(x, sub_key) if isinstance(x, str) else x
+                                             for x in sub_value]
+                    else:
+                        new_dict[sub_key] = sub_value
+                tmp.setattr(key, new_dict)
             else: # unsupported types
                 if s.find(&#34;{&#34;+key+&#34;}&#34;)&gt;=0:
                     print(f&#39;*** WARNING ***\n\tIn the {self._ftype}:&#34;\n{s}\n&#34;&#39;)
@@ -8739,13 +8793,14 @@ p.disp()
                     p is a param object
 
                 Example:
-                    definitions = param(a=1,b=&#34;${a}&#34;,c=&#34;\${a}&#34;)
+                    definitions = param(a=1,b=&#34;${a}&#34;,c=&#34;\\${a}&#34;)
                     text = definitions.formateval(&#34;this my text ${a}, ${b}, ${c}&#34;)
                     print(text)
 
         &#34;&#34;&#34;
         tmp = self.eval(s,protection=protection)
         evaluator = SafeEvaluator(tmp) # used when fullevaluation=True
+        evaluator_nocontext = SafeEvaluator() # for global evaluation without context
         # Do all replacements in s (keep comments)
         if len(tmp)==0:
             return s
@@ -8753,6 +8808,7 @@ p.disp()
             ispstr = isinstance(s,pstr)
             ssafe, escape = param.escape(s)
             slines = ssafe.split(&#34;\n&#34;)
+            slines_priorescape = s.split(&#34;\n&#34;)
             for i in range(len(slines)):
                 poscomment = slines[i].find(&#34;#&#34;)
                 if poscomment&gt;=0:
@@ -8775,7 +8831,8 @@ p.disp()
                         except:
                             resstr = param.safe_fstring(slines[i],tmp,varprefix=&#34;&#34;)
                         try:
-                            reseval = evaluator.evaluate(resstr)
+                            #reseval = evaluator.evaluate(resstr)
+                            reseval = evaluate_with_placeholders(slines_priorescape[i],evaluator,evaluator_nocontext,raiseerror=True)
                             slines[i] = str(reseval)+&#34; &#34;+comment if comment else str(reseval)
                         except:
                             slines[i] = resstr + comment
@@ -8828,6 +8885,14 @@ p.disp()
         &#34;&#34;&#34;
         return self.eval(protection=protection)
 
+    # returns the equivalent paramauto instance
+    def toparamauto(self):
+        &#34;&#34;&#34;
+            convert a param instance into a paramauto instance
+                toparamauto()
+        &#34;&#34;&#34;
+        return paramauto(**self)
+
     # returns the equivalent structure evaluated
     def tostatic(self):
         &#34;&#34;&#34; convert dynamic a param() object to a static struct() object.
@@ -8838,12 +8903,14 @@ p.disp()
         return struct.fromkeysvalues(self.keys(),self.values(),makeparam=False)
 
     # Matlab vector/list conversion
-    def expand_ranges(text):
+    @staticmethod
+    def expand_ranges(text,numfmt=&#34;.4g&#34;):
         &#34;&#34;&#34;
         Expands MATLAB-style ranges in a string.
 
         Args:
             text: The input string containing ranges.
+            numfmt: numeric format to be used for the string conversion (default=&#34;.4g&#34;)
 
         Returns:
             The string with ranges expanded, or the original string if no valid ranges are found
@@ -8871,7 +8938,7 @@ p.disp()
                 if num_elements &gt; 100:
                     return match.group(0)  # Return original if too many elements
                 expanded_range = np.arange(start, stop + np.sign(step)*1e-9, step) #adding a small number to include the stop in case of integer steps
-                return &#39;[&#39; + &#39;,&#39;.join(f&#39;{x:.4g}&#39; for x in expanded_range) + &#39;]&#39;
+                return &#39;[&#39; + &#39;,&#39;.join(f&#39;{x:{numfmt}}&#39; for x in expanded_range) + &#39;]&#39;
             except ValueError:
                 return &#34;Error: &lt;Invalid range format.&gt;&#34;
         pattern = r&#39;(\b(?:-?\d+(?:\.\d*)?|-?\.\d+)(?::(?:-?\d+(?:\.\d*)?|-?\.\d+)){1,2})\b&#39;
@@ -9051,8 +9118,8 @@ p.disp()
 
 
 
-    @staticmethod
-    def replace_matrix_shorthand(valuesafe):
+    @classmethod
+    def replace_matrix_shorthand(cls,valuesafe):
         &#34;&#34;&#34;
         Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors.
         Supports up to 4-dimensional arrays and handles variable references.
@@ -9111,6 +9178,9 @@ p.disp()
         &gt;&gt;&gt; param.replace_matrix_shorthand(s)
         &#39;np.array([[[-0.5,-0.5],[-0.5,-0.5]],[[0.5,0.5],[0.5,0.5]]])*0.001&#39;
         &#34;&#34;&#34;
+
+        numfmt = f&#34;.{cls._precision}g&#34;
+
         def replace_spaces_with_commas(txt):
             &#34;&#34;&#34;
             Replaces spaces with commas only when they&#39;re not preceded by a comma, opening bracket, or whitespace,
@@ -9164,7 +9234,7 @@ p.disp()
             return sorted(dims_found, reverse=True)
 
         # Step 0: convert eventual Matlab syntax for row and column vectors into NumPy syntax
-        valuesafe = param.expand_ranges(valuesafe)  # expands start:stop and start:step:stop syntax
+        valuesafe = param.expand_ranges(valuesafe,numfmt)  # expands start:stop and start:step:stop syntax
         valuesafe = param.convert_matlab_like_arrays(valuesafe) # vectors and matrices conversion
         # Step 1: Handle @{var} -&gt; np.atleast_2d(np.array(${var}))
         valuesafe = re.sub(r&#39;@\{([^\{\}]+)\}&#39;, r&#39;np.atleast_2d(np.array(${\1}))&#39;, valuesafe)
@@ -9506,14 +9576,14 @@ returns ('{tata}', False)</p></div>
 <pre><code class="python">@staticmethod
 def escape(s):
     &#34;&#34;&#34;
-        escape \${} as ${{}} --&gt; keep variable names
+        escape \\${} as ${{}} --&gt; keep variable names
         convert ${} as {} --&gt; prepare Python replacement
 
         Examples:
-            escape(&#34;\${a}&#34;)
+            escape(&#34;\\${a}&#34;)
             returns (&#39;${{a}}&#39;, True)
 
-            escape(&#34;  \${abc} ${a} \${bc}&#34;)
+            escape(&#34;  \\${abc} ${a} \\${bc}&#34;)
             returns (&#39;  ${{abc}} {a} ${{bc}}&#39;, True)
 
             escape(&#34;${a}&#34;)
@@ -9527,7 +9597,7 @@ def escape(s):
         raise TypeError(f&#39;the argument must be string not {type(s)}&#39;)
     se, start, found = &#34;&#34;, 0, True
     while found:
-        pos0 = s.find(&#34;\${&#34;,start)
+        pos0 = s.find(r&#34;\${&#34;,start)
         found = pos0&gt;=0
         if found:
             pos1 = s.find(&#34;}&#34;,pos0)
@@ -9538,6 +9608,72 @@ def escape(s):
     result = se+s[start:].replace(&#34;${&#34;,&#34;{&#34;)
     if isinstance(s,pstr): result = pstr(result)
     return result,start&gt;0</code></pre>
+</details>
+</dd>
+<dt id="script.param.expand_ranges"><code class="name flex">
+<span>def <span class="ident">expand_ranges</span></span>(<span>text, numfmt='.4g')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Expands MATLAB-style ranges in a string.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>text</code></strong></dt>
+<dd>The input string containing ranges.</dd>
+<dt><strong><code>numfmt</code></strong></dt>
+<dd>numeric format to be used for the string conversion (default=".4g")</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The string with ranges expanded, or the original string if no valid ranges are found
+or if expansion leads to more than 100 elements. Returns an error message if the input
+format is invalid.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def expand_ranges(text,numfmt=&#34;.4g&#34;):
+    &#34;&#34;&#34;
+    Expands MATLAB-style ranges in a string.
+
+    Args:
+        text: The input string containing ranges.
+        numfmt: numeric format to be used for the string conversion (default=&#34;.4g&#34;)
+
+    Returns:
+        The string with ranges expanded, or the original string if no valid ranges are found
+        or if expansion leads to more than 100 elements. Returns an error message if the input
+        format is invalid.
+    &#34;&#34;&#34;
+    def expand_range(match):
+        try:
+            parts = match.group(1).split(&#39;:&#39;)
+            if len(parts) == 2:
+                start, stop = map(float, parts)
+                step = 1.0
+            elif len(parts) == 3:
+                start, step, stop = map(float, parts)
+            else:
+                return match.group(0)  # Return original if format is invalid
+            if step == 0:
+                return &#34;Error: &lt;Step cannot be zero.&gt;&#34;
+            if (stop - start) / step &gt; 1e6:
+                return &#34;Error: &lt;Range is too large.&gt;&#34;
+            if step &gt; 0:
+                num_elements = int(np.floor((stop - start)/step)+1)
+            else:
+                 num_elements = int(np.floor((start - stop)/-step)+1)
+            if num_elements &gt; 100:
+                return match.group(0)  # Return original if too many elements
+            expanded_range = np.arange(start, stop + np.sign(step)*1e-9, step) #adding a small number to include the stop in case of integer steps
+            return &#39;[&#39; + &#39;,&#39;.join(f&#39;{x:{numfmt}}&#39; for x in expanded_range) + &#39;]&#39;
+        except ValueError:
+            return &#34;Error: &lt;Invalid range format.&gt;&#34;
+    pattern = r&#39;(\b(?:-?\d+(?:\.\d*)?|-?\.\d+)(?::(?:-?\d+(?:\.\d*)?|-?\.\d+)){1,2})\b&#39;
+    expanded_text = re.sub(pattern, expand_range, text)
+    #check for errors generated by the function
+    if &#34;Error:&#34; in expanded_text:
+        return expanded_text
+    return expanded_text</code></pre>
 </details>
 </dd>
 <dt id="script.param.replace_matrix_shorthand"><code class="name flex">
@@ -9596,8 +9732,8 @@ If there are unmatched brackets in any shorthand.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@staticmethod
-def replace_matrix_shorthand(valuesafe):
+<pre><code class="python">@classmethod
+def replace_matrix_shorthand(cls,valuesafe):
     &#34;&#34;&#34;
     Transforms custom shorthand notations for NumPy arrays within a string into valid NumPy array constructors.
     Supports up to 4-dimensional arrays and handles variable references.
@@ -9656,6 +9792,9 @@ def replace_matrix_shorthand(valuesafe):
     &gt;&gt;&gt; param.replace_matrix_shorthand(s)
     &#39;np.array([[[-0.5,-0.5],[-0.5,-0.5]],[[0.5,0.5],[0.5,0.5]]])*0.001&#39;
     &#34;&#34;&#34;
+
+    numfmt = f&#34;.{cls._precision}g&#34;
+
     def replace_spaces_with_commas(txt):
         &#34;&#34;&#34;
         Replaces spaces with commas only when they&#39;re not preceded by a comma, opening bracket, or whitespace,
@@ -9709,7 +9848,7 @@ def replace_matrix_shorthand(valuesafe):
         return sorted(dims_found, reverse=True)
 
     # Step 0: convert eventual Matlab syntax for row and column vectors into NumPy syntax
-    valuesafe = param.expand_ranges(valuesafe)  # expands start:stop and start:step:stop syntax
+    valuesafe = param.expand_ranges(valuesafe,numfmt)  # expands start:stop and start:step:stop syntax
     valuesafe = param.convert_matlab_like_arrays(valuesafe) # vectors and matrices conversion
     # Step 1: Handle @{var} -&gt; np.atleast_2d(np.array(${var}))
     valuesafe = re.sub(r&#39;@\{([^\{\}]+)\}&#39;, r&#39;np.atleast_2d(np.array(${\1}))&#39;, valuesafe)
@@ -9846,7 +9985,10 @@ where :
 
     &#34;&#34;&#34;
     # the argument s is only used by formateval() for error management
-    tmp = struct()
+    tmp = struct(debug=self._debug)
+    # evaluator without context
+    evaluator_nocontext = SafeEvaluator() # for global evaluation without context
+
     # main string evaluator
     def evalstr(value,key=&#34;&#34;):
         # replace ${variable} (Bash, Lammps syntax) by {variable} (Python syntax)
@@ -9860,9 +10002,9 @@ where :
             valuesafe, escape0 = self.protect(valuesafe)
         else:
             escape0 = False
-        # replace ${var} by {var}
-        valuesafe_priorescape = valuesafe
-        valuesafe, escape = param.escape(valuesafe)
+        # replace ${var} by {var} once basic substitutions have been applied
+        valuesafe_priorescape = tmp.numrepl(valuesafe) # minimal substitution
+        valuesafe, escape = param.escape(valuesafe_priorescape)
         escape = escape or escape0
         # replace &#34;^&#34; (Matlab, Lammps exponent) by &#34;**&#34; (Python syntax)
         valuesafe = pstr.eval(valuesafe.replace(&#34;^&#34;,&#34;**&#34;),ispstr=ispstr)
@@ -9876,17 +10018,18 @@ where :
         # Literal string starts with $ (no interpretation), ! (evaluation)
         if not self._evaluation:
             return pstr.eval(tmp.format(valuesafe,escape),ispstr=ispstr)
-        elif valuesafe.startswith(&#34;!&#34;):
+        elif valuesafe.startswith(&#34;!&#34;): # &lt;---------- FORECED LITERAL EVALUATION (error messages are returned)
             try:
-                vtmp = ast.literal_eval(valuesafe[1:])
+                #vtmp = ast.literal_eval(valuesafe[1:])
+                evaluator = SafeEvaluator(tmp)
+                vtmp = evaluate_with_placeholders(valuesafe[1:],evaluator,evaluator_nocontext)
                 if isinstance(vtmp,list):
-                    evaluator = SafeEvaluator(tmp)
                     for i,item in enumerate(vtmp):
-                        if isinstance(item,str) and not item.strip().startswith(&#34;$&#34;):
+                        if isinstance(item,str) and not is_literal_string(item):
                             try:
-                                vtmp[i] = tmp.format(item, raiseerror=False)
+                                vtmp[i] = tmp.format(item, raiseerror=False) # in case substitions/interpolations are needed
                                 try:
-                                    vtmp[i] = evaluator.evaluate(vtmp[i])
+                                    vtmp[i] = evaluator_nocontext.evaluate(vtmp[i]) # full evaluation without context
                                 except Exception as othererr:
                                     if self._debug:
                                         print(f&#34;DEBUG {key}: Error evaluating: {vtmp[i]}\n&lt; {othererr} &gt;&#34;)
@@ -9907,17 +10050,37 @@ where :
                     return pstr.topath(tmp.format(valuesafe,escape=escape))
                 elif escape:  # partial evaluation
                     return tmp.format(valuesafe,escape=True)
-                else: # full evaluation (if it fails the last string content is returned)
+                else: # full evaluation (if it fails the last string content is returned) &lt;---------- FULL EVALUTION will be tried
                     try:
                         resstr = tmp.format(valuesafe,raiseerror=False)
                     except (KeyError,NameError) as nameerr:
-                        if self._returnerror: # added on 2024-09-06
-                            strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
-                            return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
+                        try: # nested indexing (guess)
+                            resstr = param.safe_fstring(
+                            param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
+                            evaluator = SafeEvaluator(tmp)
+                            reseval = evaluate_with_placeholders(resstr,
+                                      evaluator,evaluator_nocontext,raiseerror=True)
+                        except:
+                            if self._returnerror: # added on 2024-09-06
+                                strnameerr = str(nameerr).replace(&#34;&#39;&#34;,&#34;&#34;)
+                                return &#39;&lt; undef %s &#34;${%s}&#34; &gt;&#39; % (self._ftype,strnameerr)
+                            else:
+                                return value #we keep the original value
                         else:
-                            return value #we keep the original value
-                    except (SyntaxError,TypeError,ValueError) as commonerr:
-                        return &#34;ERROR &lt; %s &gt;&#34; % commonerr
+                            return reseval
+                    except SyntaxError as commonerr:
+                        return &#34;Syntax Error &lt; %s &gt;&#34; % commonerr
+                    except TypeError  as commonerr:
+                        try: # nested indexing (guess)
+                            resstr = param.safe_fstring(
+                            param.replace_matrix_shorthand(valuesafe_priorescape),tmp)
+                            evaluator = SafeEvaluator(tmp)
+                            reseval = evaluate_with_placeholders(resstr,
+                                      evaluator,evaluator_nocontext,raiseerror=True)
+                        except:
+                            return &#34;Type Error &lt; %s &gt;&#34; % commonerr
+                        else:
+                            return reseval
                     except (IndexError,AttributeError):
                         try:
                             resstr = param.safe_fstring(
@@ -9938,13 +10101,28 @@ where :
                                 return resstr
                             else:
                                 return reseval
+                    except ValueError as valerr: # forced evaluation within ${}
+                        try:
+                            evaluator = SafeEvaluator(tmp)
+                            reseval = evaluate_with_placeholders(valuesafe_priorescape,evaluator,evaluator_nocontext,raiseerror=True)
+                        except SyntaxError as synerror:
+                            if self._debug:
+                                print(f&#34;DEBUG {key}: Error evaluating: {valuesafe_priorescape}\n&lt; {synerror} &gt;&#34;)
+                            return evaluate_with_placeholders(valuesafe_priorescape,evaluator,evaluator_nocontext,raiseerror=False)
+                        except Exception as othererr:
+                            if self._debug:
+                                print(f&#34;DEBUG {key}: Error evaluating: {valuesafe_priorescape}\n&lt; {othererr} &gt;&#34;)
+                            return &#34;Error in ${}: &lt; %s &gt;&#34; % valerr
+                        else:
+                            return reseval
+
                     except Exception as othererr:
                         return &#34;Error in ${}: &lt; %s &gt;&#34; % othererr
                     else:
                         try:
                             # reseval = eval(resstr)
                             evaluator = SafeEvaluator(tmp)
-                            reseval = evaluator.evaluate(resstr)
+                            reseval = evaluate_with_placeholders(resstr,evaluator,evaluator_nocontext)
                         except Exception as othererr:
                             #tmp.setattr(key,&#34;Eval Error &lt; %s &gt;&#34; % othererr)
                             if self._debug:
@@ -9952,13 +10130,14 @@ where :
                             return resstr.replace(&#34;\n&#34;,&#34;,&#34;) # \n replaced by ,
                         else:
                             return reseval
+
     # evalstr() refactored for error management
     def safe_evalstr(x,key=&#34;&#34;):
         xeval = evalstr(x,key)
         if isinstance(xeval,str):
             try:
                 evaluator = SafeEvaluator(tmp)
-                return evaluator.evaluate(xeval)
+                return evaluate_with_placeholders(xeval,evaluator,evaluator_nocontext)
             except Exception as e:
                 if self._debug:
                     print(f&#34;DEBUG {key}: Error evaluating &#39;{x}&#39;: {e}&#34;)
@@ -9977,74 +10156,25 @@ where :
                 tmp.setattr(key,valuelist)
             else:
                 tmp.setattr(key, value) # store the value with the key
+        elif isinstance(value, dict):
+            # For dictionaries, evaluate each entry using its own key (sub_key)
+            new_dict = {}
+            for sub_key, sub_value in value.items():
+                if isinstance(sub_value, str):
+                    new_dict[sub_key] = safe_evalstr(sub_value,key)
+                elif isinstance(sub_value, list):
+                    # If an entry is a list, apply safe_evalstr to each string element within it
+                    new_dict[sub_key] = [safe_evalstr(x, sub_key) if isinstance(x, str) else x
+                                         for x in sub_value]
+                else:
+                    new_dict[sub_key] = sub_value
+            tmp.setattr(key, new_dict)
         else: # unsupported types
             if s.find(&#34;{&#34;+key+&#34;}&#34;)&gt;=0:
                 print(f&#39;*** WARNING ***\n\tIn the {self._ftype}:&#34;\n{s}\n&#34;&#39;)
             else:
                 print(f&#39;unable to interpret the &#34;{key}&#34; of type {type(value)}&#39;)
     return tmp</code></pre>
-</details>
-</dd>
-<dt id="script.param.expand_ranges"><code class="name flex">
-<span>def <span class="ident">expand_ranges</span></span>(<span>text)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Expands MATLAB-style ranges in a string.</p>
-<h2 id="args">Args</h2>
-<dl>
-<dt><strong><code>text</code></strong></dt>
-<dd>The input string containing ranges.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>The string with ranges expanded, or the original string if no valid ranges are found
-or if expansion leads to more than 100 elements. Returns an error message if the input
-format is invalid.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def expand_ranges(text):
-    &#34;&#34;&#34;
-    Expands MATLAB-style ranges in a string.
-
-    Args:
-        text: The input string containing ranges.
-
-    Returns:
-        The string with ranges expanded, or the original string if no valid ranges are found
-        or if expansion leads to more than 100 elements. Returns an error message if the input
-        format is invalid.
-    &#34;&#34;&#34;
-    def expand_range(match):
-        try:
-            parts = match.group(1).split(&#39;:&#39;)
-            if len(parts) == 2:
-                start, stop = map(float, parts)
-                step = 1.0
-            elif len(parts) == 3:
-                start, step, stop = map(float, parts)
-            else:
-                return match.group(0)  # Return original if format is invalid
-            if step == 0:
-                return &#34;Error: &lt;Step cannot be zero.&gt;&#34;
-            if (stop - start) / step &gt; 1e6:
-                return &#34;Error: &lt;Range is too large.&gt;&#34;
-            if step &gt; 0:
-                num_elements = int(np.floor((stop - start)/step)+1)
-            else:
-                 num_elements = int(np.floor((start - stop)/-step)+1)
-            if num_elements &gt; 100:
-                return match.group(0)  # Return original if too many elements
-            expanded_range = np.arange(start, stop + np.sign(step)*1e-9, step) #adding a small number to include the stop in case of integer steps
-            return &#39;[&#39; + &#39;,&#39;.join(f&#39;{x:.4g}&#39; for x in expanded_range) + &#39;]&#39;
-        except ValueError:
-            return &#34;Error: &lt;Invalid range format.&gt;&#34;
-    pattern = r&#39;(\b(?:-?\d+(?:\.\d*)?|-?\.\d+)(?::(?:-?\d+(?:\.\d*)?|-?\.\d+)){1,2})\b&#39;
-    expanded_text = re.sub(pattern, expand_range, text)
-    #check for errors generated by the function
-    if &#34;Error:&#34; in expanded_text:
-        return expanded_text
-    return expanded_text</code></pre>
 </details>
 </dd>
 <dt id="script.param.formateval"><code class="name flex">
@@ -10076,13 +10206,14 @@ Example:
                 p is a param object
 
             Example:
-                definitions = param(a=1,b=&#34;${a}&#34;,c=&#34;\${a}&#34;)
+                definitions = param(a=1,b=&#34;${a}&#34;,c=&#34;\\${a}&#34;)
                 text = definitions.formateval(&#34;this my text ${a}, ${b}, ${c}&#34;)
                 print(text)
 
     &#34;&#34;&#34;
     tmp = self.eval(s,protection=protection)
     evaluator = SafeEvaluator(tmp) # used when fullevaluation=True
+    evaluator_nocontext = SafeEvaluator() # for global evaluation without context
     # Do all replacements in s (keep comments)
     if len(tmp)==0:
         return s
@@ -10090,6 +10221,7 @@ Example:
         ispstr = isinstance(s,pstr)
         ssafe, escape = param.escape(s)
         slines = ssafe.split(&#34;\n&#34;)
+        slines_priorescape = s.split(&#34;\n&#34;)
         for i in range(len(slines)):
             poscomment = slines[i].find(&#34;#&#34;)
             if poscomment&gt;=0:
@@ -10112,7 +10244,8 @@ Example:
                     except:
                         resstr = param.safe_fstring(slines[i],tmp,varprefix=&#34;&#34;)
                     try:
-                        reseval = evaluator.evaluate(resstr)
+                        #reseval = evaluator.evaluate(resstr)
+                        reseval = evaluate_with_placeholders(slines_priorescape[i],evaluator,evaluator_nocontext,raiseerror=True)
                         slines[i] = str(reseval)+&#34; &#34;+comment if comment else str(reseval)
                     except:
                         slines[i] = resstr + comment
@@ -10151,14 +10284,32 @@ Example:
 <pre><code class="python">def protect(self,s=&#34;&#34;):
     &#34;&#34;&#34; protect $variable as ${variable} &#34;&#34;&#34;
     if isinstance(s,str):
-        t = s.replace(&#34;\$&#34;,&#34;££&#34;) # &amp;&amp; is a placeholder
+        t = s.replace(r&#34;\$&#34;,&#34;££&#34;) # &amp;&amp; is a placeholder
         escape = t!=s
         for k in self.keyssorted():
             t = t.replace(&#34;$&#34;+k,&#34;${&#34;+k+&#34;}&#34;)
-        if escape: t = t.replace(&#34;££&#34;,&#34;\$&#34;)
+        if escape: t = t.replace(&#34;££&#34;,r&#34;\$&#34;)
         if isinstance(s,pstr): t = pstr(t)
         return t, escape
     raise TypeError(f&#39;the argument must be string not {type(s)}&#39;)</code></pre>
+</details>
+</dd>
+<dt id="script.param.toparamauto"><code class="name flex">
+<span>def <span class="ident">toparamauto</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>convert a param instance into a paramauto instance
+toparamauto()</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def toparamauto(self):
+    &#34;&#34;&#34;
+        convert a param instance into a paramauto instance
+            toparamauto()
+    &#34;&#34;&#34;
+    return paramauto(**self)</code></pre>
 </details>
 </dd>
 <dt id="script.param.tostatic"><code class="name flex">
@@ -17668,13 +17819,14 @@ s.sortdefinitions()
     _evalfeature = False    # true if eval() is available
     _maxdisplay = 40        # maximum number of characters to display (should be even)
     _propertyasattribute = False
+    _precision = 4
 
     # attributes for the iterator method
     # Please keep it static, duplicate the object before changing _iter_
     _iter_ = 0
 
     # excluded attributes (keep the , in the Tupple if it is singleton)
-    _excludedattr = {&#39;_iter_&#39;,&#39;__class__&#39;,&#39;_protection&#39;,&#39;_evaluation&#39;,&#39;_returnerror&#39;,&#39;_debug&#39;} # used by keys() and len()
+    _excludedattr = {&#39;_iter_&#39;,&#39;__class__&#39;,&#39;_protection&#39;,&#39;_evaluation&#39;,&#39;_returnerror&#39;,&#39;_debug&#39;,&#39;_precision&#39;} # used by keys() and len()
 
 
     # Methods
@@ -17812,16 +17964,31 @@ s.sortdefinitions()
                 return self.getattr(self.keys()[idx])
             raise IndexError(f&#34;the {self._ftype} index should be comprised between 0 and {len(self)-1}&#34;)
         elif isinstance(idx,slice):
-            return struct.fromkeysvalues(self.keys()[idx], self.values()[idx])
+            out = struct.fromkeysvalues(self.keys()[idx], self.values()[idx])
+            if isinstance(self,paramauto):
+                return paramauto(**out)
+            elif isinstance(self,param):
+                return param(**out)
+            else:
+                return out
         elif isinstance(idx,(list,tuple)):
             k,v= self.keys(), self.values()
             nk = len(k)
             s = param() if isinstance(self,param) else struct()
             for i in idx:
-                if isinstance(i,int) and i&gt;=0 and i&lt;nk:
-                    s.setattr(k[i],v[i])
+                if isinstance(i,int):
+                    if -nk &lt;= i &lt; nk:  # Allow standard Python negative indexing
+                        i = i % nk  # Convert negative index to positive equivalent
+                        s.setattr(k[i],v[i])
+                    else:
+                        raise IndexError(f&#34;idx must contain integers in range [-{nk}, {nk-1}], not {i}&#34;)
+                elif isinstance(i,str):
+                    if i in self:
+                        s.setattr(i, self.getattr(i))
+                    else:
+                        raise KeyError((f&#39;idx &#34;{idx}&#34; is not a valid key&#39;))
                 else:
-                    raise IndexError(&#34;idx must contains only integers ranged between 0 and %d&#34; % (nk-1))
+                    TypeError(&#34;idx must contain only integers or strings&#34;)
             return s
         elif isinstance(idx,str):
             return self.getattr(idx)
@@ -17842,7 +18009,7 @@ s.sortdefinitions()
             elif len(k) == len(value):
                 for i in range(len(k)): self.setattr(k[i], value[i])
             else:
-                raise IndexError(&#34;the number of values (%d) does not match the number of elements in the slive (%d)&#34; \
+                raise IndexError(&#34;the number of values (%d) does not match the number of elements in the slice (%d)&#34; \
                        % (len(value),len(idx)))
         elif isinstance(idx,(list,tuple)):
             if len(value)&lt;=1:
@@ -17930,6 +18097,7 @@ s.sortdefinitions()
             print(f&#34;empty {self._fulltype} ({self._type} object) with no {self._type}s&#34;)
             return f&#34;empty {self._fulltype}&#34;
         else:
+            numfmt = f&#34;.{self._precision}g&#34;
             tmp = self.eval() if self._evalfeature else []
             keylengths = [len(key) for key in self.__dict__]
             width = max(10,max(keylengths)+2)
@@ -17949,12 +18117,12 @@ s.sortdefinitions()
                         # else:
                         #     print(fmt % key,self.dispmax(value))
                         if isinstance(value,np.ndarray):
-                            print(fmt % key, struct.format_array(value))
+                            print(fmt % key, struct.format_array(value,numfmt=numfmt))
                         else:
                             print(fmt % key,self.dispmax(value))
                     elif isinstance(value,struct):
                         print(fmt % key,self.dispmax(value.__str__()))
-                    elif isinstance(value,type):
+                    elif isinstance(value,(type,dict)):
                         print(fmt % key,self.dispmax(str(value)))
                     else:
                         print(fmt % key,type(value))
@@ -17983,7 +18151,7 @@ s.sortdefinitions()
                                         print(fmteval % &#34;&#34;,calcvalue)
                                     else:
                                         if isinstance(calcvalue,np.ndarray):
-                                            print(fmteval % &#34;&#34;, struct.format_array(calcvalue))
+                                            print(fmteval % &#34;&#34;, struct.format_array(calcvalue,numfmt=numfmt))
                                         else:
                                             print(fmteval % &#34;&#34;,self.dispmax(calcvalue))
                             elif isinstance(value,list):
@@ -18041,7 +18209,8 @@ s.sortdefinitions()
             except AttributeError as attr_err:
                 # Handle AttributeError for expressions with operators
                 s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
-                print(f&#34;WARNING: the {self._ftype} {attr_err} is undefined in &#39;{s_}&#39;&#34;)
+                if self._debug:
+                    print(f&#34;WARNING: the {self._ftype} {attr_err} is undefined in &#39;{s_}&#39;&#34;)
                 return s_  # Revert to using &#39;${&#39; for unresolved expressions
             except IndexError as idx_err:
                 s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
@@ -18214,27 +18383,81 @@ s.sortdefinitions()
             for i in range(len(k)):
                 self.setattr(k[i],v[i])
 
-    def generator(self):
-        &#34;&#34;&#34; generate Python code of the equivalent structure &#34;&#34;&#34;
+
+    def generator(self, printout=False):
+        &#34;&#34;&#34;
+        Generate Python code of the equivalent structure.
+
+        This method converts the current structure (an instance of `param`, `paramauto`, or `struct`)
+        into Python code that, when executed, recreates an equivalent structure. The generated code is
+        formatted with one field per line.
+
+        By default (when `printout` is False), the generated code is returned as a raw string that starts
+        directly with, for example, `param(` (or `paramauto(` or `struct(`), with no &#34;X = &#34; prefix or leading
+        newline. When `printout` is True, the generated code is printed to standard output and includes a prefix
+        &#34;X = &#34; to indicate the variable name.
+
+        Parameters:
+            printout (bool): If True, the generated code is printed to standard output with the &#34;X = &#34; prefix.
+                             If False (default), the code is returned as a raw string starting with, e.g.,
+                             `param(`.
+
+        Returns:
+            str: The generated Python code representing the structure (regardless of whether it was printed).
+        &#34;&#34;&#34;
         nk = len(self)
-        if nk==0:
-            print(&#34;X = struct()&#34;)
+        tmp = self.np2str()
+        # Compute the field format based on the maximum key length (with a minimum width of 10)
+        fmt = &#34;%%%ss =&#34; % max(10, max([len(k) for k in self.keys()]) + 2)
+        # Determine the appropriate class string for the current instance.
+        if isinstance(self, param):
+            classstr = &#34;param&#34;
+        elif &#39;paramauto&#39; in globals() and isinstance(self, paramauto):
+            classstr = &#34;paramauto&#34;
         else:
-            ik = 0
-            fmt = &#34;%%%ss=&#34; % max(10,max([len(k) for k in self.keys()])+2)
-            print(&#34;\nX = struct(&#34;)
-            for k in self.keys():
-                ik += 1
-                end = &#34;,\n&#34; if ik&lt;nk else &#34;\n&#34;+(fmt[:-1] % &#34;)&#34;)+&#34;\n&#34;
-                v = getattr(self,k)
-                if isinstance(v,(int,float)) or v == None:
-                    print(fmt % k,v,end=end)
-                elif isinstance(v,str):
-                    print(fmt % k,f&#39;&#34;{v}&#34;&#39;,end=end)
-                elif isinstance(v,(list,tuple)):
-                    print(fmt % k,v,end=end)
+            classstr = &#34;struct&#34;
+
+        lines = []
+        if nk == 0:
+            # For an empty structure.
+            if printout:
+                lines.append(f&#34;X = {classstr}()&#34;)
+            else:
+                lines.append(f&#34;{classstr}()&#34;)
+        else:
+            # Header: include &#34;X = &#34; only if printing.
+            if printout:
+                header = f&#34;X = {classstr}(&#34;
+            else:
+                header = f&#34;{classstr}(&#34;
+            lines.append(header)
+            # Iterate over keys to generate each field line.
+            for i, k in enumerate(self.keys()):
+                v = getattr(self, k)
+                if isinstance(v, np.ndarray):
+                    vtmp = getattr(tmp, k)
+                    field = fmt % k + &#34; &#34; + vtmp
+                elif isinstance(v, (int, float)) or v is None:
+                    field = fmt % k + &#34; &#34; + str(v)
+                elif isinstance(v, str):
+                    field = fmt % k + &#34; &#34; + f&#39;&#34;{v}&#34;&#39;
+                elif isinstance(v, (list, tuple, dict)):
+                    field = fmt % k + &#34; &#34; + str(v)
                 else:
-                    print(fmt % k,&#34;/* unsupported type */&#34;,end=end)
+                    field = fmt % k + &#34; &#34; + &#34;/* unsupported type */&#34;
+                # Append a comma after each field except the last one.
+                if i &lt; nk - 1:
+                    field += &#34;,&#34;
+                lines.append(field)
+            # Create a closing line that aligns the closing parenthesis.
+            closing_line = fmt[:-1] % &#34;)&#34;
+            lines.append(closing_line)
+        result = &#34;\n&#34;.join(lines)
+        if printout:
+            print(result)
+            return None
+        return result
+
 
     # copy and deep copy methpds for the class
     def __copy__(self):
@@ -18276,10 +18499,15 @@ s.sortdefinitions()
         # If overwrite is False and the file already exists, raise an exception
         if not overwrite and file_path.exists():
             raise FileExistsError(f&#34;The file {file_path} already exists, and overwrite is set to False.&#34;)
+        # Convert to static if needed
+        if isinstance(p,(param,paramauto)):
+            tmp = self.tostatic()
+        else:
+            tmp = self
         # Open and write to the file using the resolved path
         with file_path.open(mode=&#34;w&#34;, encoding=&#39;utf-8&#39;) as f:
             print(f&#34;# {self._fulltype} with {len(self)} {self._ftype}s\n&#34;, file=f)
-            for k, v in self.items():
+            for k, v in tmp.items():
                 if v is None:
                     print(k, &#34;=None&#34;, file=f, sep=&#34;&#34;)
                 elif isinstance(v, (int, float)):
@@ -18426,13 +18654,14 @@ s.sortdefinitions()
 
     # A la Matlab display method of vectors, matrices and ND-arrays
     @staticmethod
-    def format_array(value):
+    def format_array(value,numfmt=&#34;.4g&#34;):
         &#34;&#34;&#34;
         Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
         Recursively formats multi-dimensional arrays without introducing unwanted commas.
 
         Args:
             value (np.ndarray): The NumPy array to format.
+            numfmt: numeric format to be used for the string conversion (default=&#34;.4g&#34;)
 
         Returns:
             str: A formatted string representation of the array.
@@ -18463,7 +18692,7 @@ s.sortdefinitions()
 
             if arr.ndim == 1:
                 if len(arr) &lt;= max_display:
-                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in arr) + &#34;]&#34;
+                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:{numfmt}}&#34; for v in arr) + &#34;]&#34;
                 else:
                     return f&#34;[{len(arr)} elements]&#34;
 
@@ -18471,13 +18700,13 @@ s.sortdefinitions()
                 if arr.shape[1] == 1:
                     # Column vector
                     if arr.shape[0] &lt;= max_display:
-                        return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in arr) + &#34;]T&#34;
+                        return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:{numfmt}}&#34; for v in arr) + &#34;]T&#34;
                     else:
                         return f&#34;[{arr.shape[0]}×1 vector]&#34;
                 elif arr.shape[0] == 1:
                     # Row vector
                     if arr.shape[1] &lt;= max_display:
-                        return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in arr[0]) + &#34;]&#34;
+                        return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:{numfmt}}&#34; for v in arr[0]) + &#34;]&#34;
                     else:
                         return f&#34;[1×{arr.shape[1]} vector]&#34;
                 else:
@@ -18503,19 +18732,19 @@ s.sortdefinitions()
             # Use existing logic for vectors and matrices
             if value.ndim == 1:
                 if len(value) &lt;= max_display:
-                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
+                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:{numfmt}}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
                 else:
                     formatted = f&#34;[{len(value)}×1 {dtype_str}]&#34;
             elif value.ndim == 2:
                 rows, cols = value.shape
                 if cols == 1:  # Column vector
                     if rows &lt;= max_display:
-                        formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+                        formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:{numfmt}}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
                     else:
                         formatted = f&#34;[{rows}×1 {dtype_str}]&#34;
                 elif rows == 1:  # Row vector
                     if cols &lt;= max_display:
-                        formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
+                        formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:{numfmt}}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
                     else:
                         formatted = f&#34;[1×{cols} {dtype_str}]&#34;
                 else:  # General matrix
@@ -18534,48 +18763,121 @@ s.sortdefinitions()
 
     # convert all NumPy entries to &#34;nestable&#34; expressions
     def np2str(self):
-        &#34;&#34;&#34; Convert all np entries of s into their string representations  &#34;&#34;&#34;
+        &#34;&#34;&#34; Convert all NumPy entries of s into their string representations, handling both lists and dictionaries. &#34;&#34;&#34;
         out = struct()
         def format_numpy_result(value):
             &#34;&#34;&#34;
             Converts a NumPy array or scalar into a string representation:
             - Scalars and single-element arrays (any number of dimensions) are returned as scalars without brackets.
             - Arrays with more than one element are formatted with proper nesting and commas to make them valid `np.array()` inputs.
-            - Non-ndarray inputs are returned without modification.
+            - If the value is a list or dict, the conversion is applied recursively.
+            - Non-ndarray inputs that are not list/dict are returned without modification.
 
             Args:
-                value (np.ndarray, scalar, or other): The value to format.
+                value (np.ndarray, scalar, list, dict, or other): The value to format.
 
             Returns:
-                str or original type: A properly formatted string for NumPy arrays/scalars or the original value.
+                str, list, dict, or original type: A properly formatted string for NumPy arrays/scalars,
+                a recursively converted list/dict, or the original value.
             &#34;&#34;&#34;
-            if np.isscalar(value):
-                # If the value is a scalar, return it directly
-                return repr(value)
+            if isinstance(value, dict):
+                # Recursively process each key in the dictionary.
+                new_dict = {}
+                for k, v in value.items():
+                    new_dict[k] = format_numpy_result(v)
+                return new_dict
+            elif isinstance(value, list):
+                # Recursively process each element in the list.
+                return [format_numpy_result(x) for x in value]
+            elif isinstance(value, tuple):
+                return tuple(format_numpy_result(x) for x in value)
+            elif isinstance(value, struct):
+                return value.npstr()
+            elif np.isscalar(value):
+                # For scalars: if numeric, use str() to avoid extra quotes.
+                if isinstance(value, (int, float, complex, str)) or value is None:
+                    return value
+                else:
+                    return repr(value)
             elif isinstance(value, np.ndarray):
-                # Check if the array has exactly one element
+                # Check if the array has exactly one element.
                 if value.size == 1:
-                    # Extract the scalar value
+                    # Extract the scalar value.
                     return repr(value.item())
-                # Convert the array to a nested list
+                # Convert the array to a nested list.
                 nested_list = value.tolist()
-                # Recursively format the nested list into a valid string
+                # Recursively format the nested list into a valid string.
                 def list_to_string(lst):
                     if isinstance(lst, list):
-                        # Format lists with proper commas
-                        return &#34;[&#34; + &#34;, &#34;.join(list_to_string(item) for item in lst) + &#34;]&#34;
+                        return &#34;[&#34; + &#34;,&#34;.join(list_to_string(item) for item in lst) + &#34;]&#34;
                     else:
-                        # Format scalars in the list
                         return repr(lst)
-
                 return list_to_string(nested_list)
             else:
-                # Return the input unmodified if not a NumPy array or scalar
-                return value
-        # process all entries in s
-        for key,value in self.items():
-            out.setattr(key,format_numpy_result(value))
-        return out</code></pre>
+                # Return the input unmodified if not a NumPy array, list, dict, or scalar.
+                return str(value) # str() preferred over repr() for concision
+        # Process all entries in self.
+        for key, value in self.items():
+            out.setattr(key, format_numpy_result(value))
+        return out
+
+    # minimal replacement of placeholders by numbers or their string representations
+    def numrepl(self, text):
+        r&#34;&#34;&#34;
+        Replace all placeholders of the form ${key} in the given text by the corresponding
+        numeric value from the instance fields, under the following conditions:
+
+        1. &#39;key&#39; must be a valid field in self (i.e., if key in self).
+        2. The value corresponding to &#39;key&#39; is either:
+             - an int,
+             - a float, or
+             - a string that represents a valid number (e.g., &#34;1&#34; or &#34;1.0&#34;).
+
+        Only when these conditions are met, the placeholder is substituted.
+        The conversion preserves the original type: if the stored value is int, then the
+        substitution will be done as an integer (e.g., 1 and not 1.0). Otherwise, if it is
+        a float then it will be substituted as a float.
+
+        Any placeholder for which the above conditions are not met remains unchanged.
+
+        Placeholders are recognized by the pattern &#34;${&lt;key&gt;}&#34; where &lt;key&gt; is captured as all
+        text until the next &#34;}&#34; (optionally allowing whitespace inside the braces).
+        &#34;&#34;&#34;
+        # Pattern: match &#34;${&#34;, then optional whitespace, capture all characters until &#34;}&#34;,
+        # then optional whitespace, then &#34;}&#34;.
+        placeholder_pattern = re.compile(r&#34;\$\{\s*([^}]+?)\s*\}&#34;)
+
+        def replace_match(match):
+            key = match.group(1)
+            # Check if the key exists in self.
+            if key in self:
+                value = self[key]
+                # If the value is already numeric, substitute directly.
+                if isinstance(value, (int, float)):
+                    return str(value)
+                # If the value is a string, try to interpret it as a numeric value.
+                elif isinstance(value, str):
+                    s = value.strip()
+                    # Check if s is a valid integer representation.
+                    if re.fullmatch(r&#34;[+-]?\d+&#34;, s):
+                        try:
+                            num = int(s)
+                            return str(num)
+                        except ValueError:
+                            # Should not occur because the regex already matched.
+                            return match.group(0)
+                    # Check if s is a valid float representation (including scientific notation).
+                    elif re.fullmatch(r&#34;[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?&#34;, s):
+                        try:
+                            num = float(s)
+                            return str(num)
+                        except ValueError:
+                            return match.group(0)
+            # If key not in self or value is not numeric (or numeric string), leave placeholder intact.
+            return match.group(0)
+
+        # Replace all placeholders in the text using the replacer function.
+        return placeholder_pattern.sub(replace_match, text)</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -18609,7 +18911,7 @@ def dict2struct(dico,makeparam=False):
 </details>
 </dd>
 <dt id="script.struct.format_array"><code class="name flex">
-<span>def <span class="ident">format_array</span></span>(<span>value)</span>
+<span>def <span class="ident">format_array</span></span>(<span>value, numfmt='.4g')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
@@ -18618,6 +18920,8 @@ Recursively formats multi-dimensional arrays without introducing unwanted commas
 <dl>
 <dt><strong><code>value</code></strong> :&ensp;<code>np.ndarray</code></dt>
 <dd>The NumPy array to format.</dd>
+<dt><strong><code>numfmt</code></strong></dt>
+<dd>numeric format to be used for the string conversion (default=".4g")</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -18629,13 +18933,14 @@ Recursively formats multi-dimensional arrays without introducing unwanted commas
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
-def format_array(value):
+def format_array(value,numfmt=&#34;.4g&#34;):
     &#34;&#34;&#34;
     Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays.
     Recursively formats multi-dimensional arrays without introducing unwanted commas.
 
     Args:
         value (np.ndarray): The NumPy array to format.
+        numfmt: numeric format to be used for the string conversion (default=&#34;.4g&#34;)
 
     Returns:
         str: A formatted string representation of the array.
@@ -18666,7 +18971,7 @@ def format_array(value):
 
         if arr.ndim == 1:
             if len(arr) &lt;= max_display:
-                return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in arr) + &#34;]&#34;
+                return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:{numfmt}}&#34; for v in arr) + &#34;]&#34;
             else:
                 return f&#34;[{len(arr)} elements]&#34;
 
@@ -18674,13 +18979,13 @@ def format_array(value):
             if arr.shape[1] == 1:
                 # Column vector
                 if arr.shape[0] &lt;= max_display:
-                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in arr) + &#34;]T&#34;
+                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:{numfmt}}&#34; for v in arr) + &#34;]T&#34;
                 else:
                     return f&#34;[{arr.shape[0]}×1 vector]&#34;
             elif arr.shape[0] == 1:
                 # Row vector
                 if arr.shape[1] &lt;= max_display:
-                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in arr[0]) + &#34;]&#34;
+                    return &#34;[&#34; + &#34; &#34;.join(f&#34;{v:{numfmt}}&#34; for v in arr[0]) + &#34;]&#34;
                 else:
                     return f&#34;[1×{arr.shape[1]} vector]&#34;
             else:
@@ -18706,19 +19011,19 @@ def format_array(value):
         # Use existing logic for vectors and matrices
         if value.ndim == 1:
             if len(value) &lt;= max_display:
-                formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
+                formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:{numfmt}}&#34; for v in value) + f&#34;] ({dtype_str})&#34;
             else:
                 formatted = f&#34;[{len(value)}×1 {dtype_str}]&#34;
         elif value.ndim == 2:
             rows, cols = value.shape
             if cols == 1:  # Column vector
                 if rows &lt;= max_display:
-                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:.4g}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
+                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v[0]:{numfmt}}&#34; for v in value) + f&#34;]T ({dtype_str})&#34;
                 else:
                     formatted = f&#34;[{rows}×1 {dtype_str}]&#34;
             elif rows == 1:  # Row vector
                 if cols &lt;= max_display:
-                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:.4g}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
+                    formatted = &#34;[&#34; + &#34; &#34;.join(f&#34;{v:{numfmt}}&#34; for v in value[0]) + f&#34;] ({dtype_str})&#34;
                 else:
                     formatted = f&#34;[1×{cols} {dtype_str}]&#34;
             else:  # General matrix
@@ -19056,7 +19361,8 @@ If expressions such ${var[1,2]} are used an error is expected, the original cont
         except AttributeError as attr_err:
             # Handle AttributeError for expressions with operators
             s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
-            print(f&#34;WARNING: the {self._ftype} {attr_err} is undefined in &#39;{s_}&#39;&#34;)
+            if self._debug:
+                print(f&#34;WARNING: the {self._ftype} {attr_err} is undefined in &#39;{s_}&#39;&#34;)
             return s_  # Revert to using &#39;${&#39; for unresolved expressions
         except IndexError as idx_err:
             s_ = s.replace(&#34;{&#34;, &#34;${&#34;)
@@ -19137,35 +19443,103 @@ escape is a flag to prevent ${} replaced by {}</p></div>
 </details>
 </dd>
 <dt id="script.struct.generator"><code class="name flex">
-<span>def <span class="ident">generator</span></span>(<span>self)</span>
+<span>def <span class="ident">generator</span></span>(<span>self, printout=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>generate Python code of the equivalent structure</p></div>
+<div class="desc"><p>Generate Python code of the equivalent structure.</p>
+<p>This method converts the current structure (an instance of <code><a title="script.param" href="#script.param">param</a></code>, <code><a title="script.paramauto" href="#script.paramauto">paramauto</a></code>, or <code><a title="script.struct" href="#script.struct">struct</a></code>)
+into Python code that, when executed, recreates an equivalent structure. The generated code is
+formatted with one field per line.</p>
+<p>By default (when <code>printout</code> is False), the generated code is returned as a raw string that starts
+directly with, for example, <code><a title="script.param" href="#script.param">param</a>(</code> (or <code><a title="script.paramauto" href="#script.paramauto">paramauto</a>(</code> or <code><a title="script.struct" href="#script.struct">struct</a>(</code>), with no "X = " prefix or leading
+newline. When <code>printout</code> is True, the generated code is printed to standard output and includes a prefix
+"X = " to indicate the variable name.</p>
+<h2 id="parameters">Parameters</h2>
+<p>printout (bool): If True, the generated code is printed to standard output with the "X = " prefix.
+If False (default), the code is returned as a raw string starting with, e.g.,
+<code><a title="script.param" href="#script.param">param</a>(</code>.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>The generated Python code representing the structure (regardless of whether it was printed).</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def generator(self):
-    &#34;&#34;&#34; generate Python code of the equivalent structure &#34;&#34;&#34;
+<pre><code class="python">def generator(self, printout=False):
+    &#34;&#34;&#34;
+    Generate Python code of the equivalent structure.
+
+    This method converts the current structure (an instance of `param`, `paramauto`, or `struct`)
+    into Python code that, when executed, recreates an equivalent structure. The generated code is
+    formatted with one field per line.
+
+    By default (when `printout` is False), the generated code is returned as a raw string that starts
+    directly with, for example, `param(` (or `paramauto(` or `struct(`), with no &#34;X = &#34; prefix or leading
+    newline. When `printout` is True, the generated code is printed to standard output and includes a prefix
+    &#34;X = &#34; to indicate the variable name.
+
+    Parameters:
+        printout (bool): If True, the generated code is printed to standard output with the &#34;X = &#34; prefix.
+                         If False (default), the code is returned as a raw string starting with, e.g.,
+                         `param(`.
+
+    Returns:
+        str: The generated Python code representing the structure (regardless of whether it was printed).
+    &#34;&#34;&#34;
     nk = len(self)
-    if nk==0:
-        print(&#34;X = struct()&#34;)
+    tmp = self.np2str()
+    # Compute the field format based on the maximum key length (with a minimum width of 10)
+    fmt = &#34;%%%ss =&#34; % max(10, max([len(k) for k in self.keys()]) + 2)
+    # Determine the appropriate class string for the current instance.
+    if isinstance(self, param):
+        classstr = &#34;param&#34;
+    elif &#39;paramauto&#39; in globals() and isinstance(self, paramauto):
+        classstr = &#34;paramauto&#34;
     else:
-        ik = 0
-        fmt = &#34;%%%ss=&#34; % max(10,max([len(k) for k in self.keys()])+2)
-        print(&#34;\nX = struct(&#34;)
-        for k in self.keys():
-            ik += 1
-            end = &#34;,\n&#34; if ik&lt;nk else &#34;\n&#34;+(fmt[:-1] % &#34;)&#34;)+&#34;\n&#34;
-            v = getattr(self,k)
-            if isinstance(v,(int,float)) or v == None:
-                print(fmt % k,v,end=end)
-            elif isinstance(v,str):
-                print(fmt % k,f&#39;&#34;{v}&#34;&#39;,end=end)
-            elif isinstance(v,(list,tuple)):
-                print(fmt % k,v,end=end)
+        classstr = &#34;struct&#34;
+
+    lines = []
+    if nk == 0:
+        # For an empty structure.
+        if printout:
+            lines.append(f&#34;X = {classstr}()&#34;)
+        else:
+            lines.append(f&#34;{classstr}()&#34;)
+    else:
+        # Header: include &#34;X = &#34; only if printing.
+        if printout:
+            header = f&#34;X = {classstr}(&#34;
+        else:
+            header = f&#34;{classstr}(&#34;
+        lines.append(header)
+        # Iterate over keys to generate each field line.
+        for i, k in enumerate(self.keys()):
+            v = getattr(self, k)
+            if isinstance(v, np.ndarray):
+                vtmp = getattr(tmp, k)
+                field = fmt % k + &#34; &#34; + vtmp
+            elif isinstance(v, (int, float)) or v is None:
+                field = fmt % k + &#34; &#34; + str(v)
+            elif isinstance(v, str):
+                field = fmt % k + &#34; &#34; + f&#39;&#34;{v}&#34;&#39;
+            elif isinstance(v, (list, tuple, dict)):
+                field = fmt % k + &#34; &#34; + str(v)
             else:
-                print(fmt % k,&#34;/* unsupported type */&#34;,end=end)</code></pre>
+                field = fmt % k + &#34; &#34; + &#34;/* unsupported type */&#34;
+            # Append a comma after each field except the last one.
+            if i &lt; nk - 1:
+                field += &#34;,&#34;
+            lines.append(field)
+        # Create a closing line that aligns the closing parenthesis.
+        closing_line = fmt[:-1] % &#34;)&#34;
+        lines.append(closing_line)
+    result = &#34;\n&#34;.join(lines)
+    if printout:
+        print(result)
+        return None
+    return result</code></pre>
 </details>
 </dd>
 <dt id="script.struct.getattr"><code class="name flex">
@@ -19287,54 +19661,153 @@ escape is a flag to prevent ${} replaced by {}</p></div>
 <span>def <span class="ident">np2str</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Convert all np entries of s into their string representations</p></div>
+<div class="desc"><p>Convert all NumPy entries of s into their string representations, handling both lists and dictionaries.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def np2str(self):
-    &#34;&#34;&#34; Convert all np entries of s into their string representations  &#34;&#34;&#34;
+    &#34;&#34;&#34; Convert all NumPy entries of s into their string representations, handling both lists and dictionaries. &#34;&#34;&#34;
     out = struct()
     def format_numpy_result(value):
         &#34;&#34;&#34;
         Converts a NumPy array or scalar into a string representation:
         - Scalars and single-element arrays (any number of dimensions) are returned as scalars without brackets.
         - Arrays with more than one element are formatted with proper nesting and commas to make them valid `np.array()` inputs.
-        - Non-ndarray inputs are returned without modification.
+        - If the value is a list or dict, the conversion is applied recursively.
+        - Non-ndarray inputs that are not list/dict are returned without modification.
 
         Args:
-            value (np.ndarray, scalar, or other): The value to format.
+            value (np.ndarray, scalar, list, dict, or other): The value to format.
 
         Returns:
-            str or original type: A properly formatted string for NumPy arrays/scalars or the original value.
+            str, list, dict, or original type: A properly formatted string for NumPy arrays/scalars,
+            a recursively converted list/dict, or the original value.
         &#34;&#34;&#34;
-        if np.isscalar(value):
-            # If the value is a scalar, return it directly
-            return repr(value)
+        if isinstance(value, dict):
+            # Recursively process each key in the dictionary.
+            new_dict = {}
+            for k, v in value.items():
+                new_dict[k] = format_numpy_result(v)
+            return new_dict
+        elif isinstance(value, list):
+            # Recursively process each element in the list.
+            return [format_numpy_result(x) for x in value]
+        elif isinstance(value, tuple):
+            return tuple(format_numpy_result(x) for x in value)
+        elif isinstance(value, struct):
+            return value.npstr()
+        elif np.isscalar(value):
+            # For scalars: if numeric, use str() to avoid extra quotes.
+            if isinstance(value, (int, float, complex, str)) or value is None:
+                return value
+            else:
+                return repr(value)
         elif isinstance(value, np.ndarray):
-            # Check if the array has exactly one element
+            # Check if the array has exactly one element.
             if value.size == 1:
-                # Extract the scalar value
+                # Extract the scalar value.
                 return repr(value.item())
-            # Convert the array to a nested list
+            # Convert the array to a nested list.
             nested_list = value.tolist()
-            # Recursively format the nested list into a valid string
+            # Recursively format the nested list into a valid string.
             def list_to_string(lst):
                 if isinstance(lst, list):
-                    # Format lists with proper commas
-                    return &#34;[&#34; + &#34;, &#34;.join(list_to_string(item) for item in lst) + &#34;]&#34;
+                    return &#34;[&#34; + &#34;,&#34;.join(list_to_string(item) for item in lst) + &#34;]&#34;
                 else:
-                    # Format scalars in the list
                     return repr(lst)
-
             return list_to_string(nested_list)
         else:
-            # Return the input unmodified if not a NumPy array or scalar
-            return value
-    # process all entries in s
-    for key,value in self.items():
-        out.setattr(key,format_numpy_result(value))
+            # Return the input unmodified if not a NumPy array, list, dict, or scalar.
+            return str(value) # str() preferred over repr() for concision
+    # Process all entries in self.
+    for key, value in self.items():
+        out.setattr(key, format_numpy_result(value))
     return out</code></pre>
+</details>
+</dd>
+<dt id="script.struct.numrepl"><code class="name flex">
+<span>def <span class="ident">numrepl</span></span>(<span>self, text)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Replace all placeholders of the form ${key} in the given text by the corresponding
+numeric value from the instance fields, under the following conditions:</p>
+<ol>
+<li>'key' must be a valid field in self (i.e., if key in self).</li>
+<li>The value corresponding to 'key' is either:<ul>
+<li>an int,</li>
+<li>a float, or</li>
+<li>a string that represents a valid number (e.g., "1" or "1.0").</li>
+</ul>
+</li>
+</ol>
+<p>Only when these conditions are met, the placeholder is substituted.
+The conversion preserves the original type: if the stored value is int, then the
+substitution will be done as an integer (e.g., 1 and not 1.0). Otherwise, if it is
+a float then it will be substituted as a float.</p>
+<p>Any placeholder for which the above conditions are not met remains unchanged.</p>
+<p>Placeholders are recognized by the pattern "${<key>}" where <key> is captured as all
+text until the next "}" (optionally allowing whitespace inside the braces).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def numrepl(self, text):
+    r&#34;&#34;&#34;
+    Replace all placeholders of the form ${key} in the given text by the corresponding
+    numeric value from the instance fields, under the following conditions:
+
+    1. &#39;key&#39; must be a valid field in self (i.e., if key in self).
+    2. The value corresponding to &#39;key&#39; is either:
+         - an int,
+         - a float, or
+         - a string that represents a valid number (e.g., &#34;1&#34; or &#34;1.0&#34;).
+
+    Only when these conditions are met, the placeholder is substituted.
+    The conversion preserves the original type: if the stored value is int, then the
+    substitution will be done as an integer (e.g., 1 and not 1.0). Otherwise, if it is
+    a float then it will be substituted as a float.
+
+    Any placeholder for which the above conditions are not met remains unchanged.
+
+    Placeholders are recognized by the pattern &#34;${&lt;key&gt;}&#34; where &lt;key&gt; is captured as all
+    text until the next &#34;}&#34; (optionally allowing whitespace inside the braces).
+    &#34;&#34;&#34;
+    # Pattern: match &#34;${&#34;, then optional whitespace, capture all characters until &#34;}&#34;,
+    # then optional whitespace, then &#34;}&#34;.
+    placeholder_pattern = re.compile(r&#34;\$\{\s*([^}]+?)\s*\}&#34;)
+
+    def replace_match(match):
+        key = match.group(1)
+        # Check if the key exists in self.
+        if key in self:
+            value = self[key]
+            # If the value is already numeric, substitute directly.
+            if isinstance(value, (int, float)):
+                return str(value)
+            # If the value is a string, try to interpret it as a numeric value.
+            elif isinstance(value, str):
+                s = value.strip()
+                # Check if s is a valid integer representation.
+                if re.fullmatch(r&#34;[+-]?\d+&#34;, s):
+                    try:
+                        num = int(s)
+                        return str(num)
+                    except ValueError:
+                        # Should not occur because the regex already matched.
+                        return match.group(0)
+                # Check if s is a valid float representation (including scientific notation).
+                elif re.fullmatch(r&#34;[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?&#34;, s):
+                    try:
+                        num = float(s)
+                        return str(num)
+                    except ValueError:
+                        return match.group(0)
+        # If key not in self or value is not numeric (or numeric string), leave placeholder intact.
+        return match.group(0)
+
+    # Replace all placeholders in the text using the replacer function.
+    return placeholder_pattern.sub(replace_match, text)</code></pre>
 </details>
 </dd>
 <dt id="script.struct.set"><code class="name flex">
@@ -19559,10 +20032,15 @@ write(filename, overwrite=True, mkdir=False)</p>
     # If overwrite is False and the file already exists, raise an exception
     if not overwrite and file_path.exists():
         raise FileExistsError(f&#34;The file {file_path} already exists, and overwrite is set to False.&#34;)
+    # Convert to static if needed
+    if isinstance(p,(param,paramauto)):
+        tmp = self.tostatic()
+    else:
+        tmp = self
     # Open and write to the file using the resolved path
     with file_path.open(mode=&#34;w&#34;, encoding=&#39;utf-8&#39;) as f:
         print(f&#34;# {self._fulltype} with {len(self)} {self._ftype}s\n&#34;, file=f)
-        for k, v in self.items():
+        for k, v in tmp.items():
             if v is None:
                 print(k, &#34;=None&#34;, file=f, sep=&#34;&#34;)
             elif isinstance(v, (int, float)):
@@ -19965,6 +20443,7 @@ water(beadtype=index, userid="myfluid")</p></div>
 <li><code><a title="script.param.protect" href="#script.param.protect">protect</a></code></li>
 <li><code><a title="script.param.replace_matrix_shorthand" href="#script.param.replace_matrix_shorthand">replace_matrix_shorthand</a></code></li>
 <li><code><a title="script.param.safe_fstring" href="#script.param.safe_fstring">safe_fstring</a></code></li>
+<li><code><a title="script.param.toparamauto" href="#script.param.toparamauto">toparamauto</a></code></li>
 <li><code><a title="script.param.tostatic" href="#script.param.tostatic">tostatic</a></code></li>
 <li><code><a title="script.param.tostruct" href="#script.param.tostruct">tostruct</a></code></li>
 </ul>
@@ -20142,6 +20621,7 @@ water(beadtype=index, userid="myfluid")</p></div>
 <li><code><a title="script.struct.keys" href="#script.struct.keys">keys</a></code></li>
 <li><code><a title="script.struct.keyssorted" href="#script.struct.keyssorted">keyssorted</a></code></li>
 <li><code><a title="script.struct.np2str" href="#script.struct.np2str">np2str</a></code></li>
+<li><code><a title="script.struct.numrepl" href="#script.struct.numrepl">numrepl</a></code></li>
 <li><code><a title="script.struct.read" href="#script.struct.read">read</a></code></li>
 <li><code><a title="script.struct.scan" href="#script.struct.scan">scan</a></code></li>
 <li><code><a title="script.struct.set" href="#script.struct.set">set</a></code></li>
