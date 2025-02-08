@@ -1,4 +1,4 @@
-## **Mathematical Notations and Capabilities in `param()`**
+# **Mathematical Notations and Capabilities in `param()`**
 
 > The `param()` class, located in `pizza.private.mstruct` is an essential low-level class for 🍕 Pizza³. It used as parent class for data containers used by `script`, `pipescript`, `dscript`, `scriptobject`, `forcefield`, `dforcefield`. Its methods offer scripting capabilities between Pythonic and LAMMPS syntaxes.
 
@@ -10,7 +10,7 @@ The syntax evolved between versions towards more flexibility and robustness. The
 
 <hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
-### Manage dependencies
+## Manage dependencies
 <kbd>note:</kbd> *It is mandatory to import NumPy as `np` (internal convention) if NumPy arrays are defined in `param` text expressions.*
 
 The following snippet also shows how to check the current working directory (if needed)
@@ -37,9 +37,17 @@ def prettyprint(var, value):
 
 <hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
-### **1 | Overview**
+## **1 | Overview**
 
-#### **1.1 | Variable Definition & Assignment**  
+> `param` and `paramauto` are sibling classes with similar features, offering MATLAB-like syntax, variable interpolation, and mathematical evaluation. Additionally, `paramauto` implements an internal mechanism to reorder expressions into a feasible execution sequence. This feature allows users to define expressions before their inputs or linked expressions, regardless of their order of definition. Such functionality is handy in multiscale modeling, where physical properties, discretization, and simulation parameters are interdependent. As a result, rescaling or imposing a physical property does not require rewriting the corresponding 🍕 Pizza³ template.  
+>  
+> For conciseness, this document focuses on the `param` class. The same syntax applies to `paramauto`, with the only difference being the instance initialization: `p = paramauto()` instead of `p = param()`.
+
+
+---
+
+
+### **1.1 | Variable Definition & Assignment**  
 
 ✍️ The `param()` class stores values and expressions as fields/attributes. Variables are referenced using the syntax `${var}`. For example, if an instance is created as `p = param(var=value, ...)`, then:
 
@@ -53,7 +61,7 @@ def prettyprint(var, value):
 
 ---
 
-#### **1.2 | `param` Expressions**  
+### **1.2 | `param` Expressions**  
 
 🟰 `param` expressions are stored as strings. They can represent either **mathematical expressions** or **template strings**. Unlike Python’s built-in `eval()`, the evaluation result depends on the context—returning either a numerical value or a processed string.  
 
@@ -68,25 +76,30 @@ def prettyprint(var, value):
 
 ---
 
-#### **1.3 | Interpolation & Evaluation**  
+### **1.3 | Interpolation & Evaluation**  
 
 🧮 **Interpolation** (substitution) and 🚀 **evaluation** occur in this order:  
-1️⃣ **Direct interpolation/substitution**  
-   - `"The content of var is ${var}"`  
-2️⃣ **Local evaluation with a text result**  
+
+- 1️⃣ **Direct interpolation/substitution**  
+   - `"The content of var is ${var}"`
+   - <kbd>note:</kbd> *<small>Only fully evaluated variable can be accessed</small>*.  
+- 2️⃣ **Local evaluation with a text result**  
    - `"The sum of variables ${var1 + var2}"`  
    - `"The third value is ${var[2]}"`  
    - `"The sum is ${sum(var)}"`  
-3️⃣ **Full evaluation with a numeric result**  
-   - `"${var}"`, `"@{vector}.T"`, `"@{matrix1} @ @{matrix2}"`  
-4️⃣ **Mixed evaluation in a list**  
+- 3️⃣ **Full evaluation with a numeric result**  
+   - `"${var}"`, `"@{vector}.T"`, `"@{matrix1} @ @{matrix2}"`
+- 4️⃣ **Mixed evaluation in a list**  
    - `["var=${myvar}", "sum=${mylist}", "@{matrix1} @ @{matrix2}"]`  
 
-🤔 If full evaluation is not feasible, the result is stored with **4 significant digits** by default (configurable).  
 
-❌ **Errors** during evaluation return an error message.  
+🤔 If a full evaluation is not feasible, the result is stored with **4 significant digits** by default (configurable).  
 
-🚨 Enable debug messages with:  
+
+❌ **Errors** during evaluation return an error message. For example, accessing a variable that has not been evaluated will raise an error.
+
+
+🚨 Enable debug messages on error evaluation with:  
 ```python
 p = param(debug=True)
 ```
@@ -94,15 +107,20 @@ p = param(debug=True)
 🔄 **Alternative Syntax**:  
 For simple variable substitutions, Pythonic `{variable}` notation is also supported alongside `${variable}` for more flexible evaluation.  
 
+
+🔁 **Nested vs. forced Evaluation**:  
+Nested evaluation is implemented. 🌀 The best interpolation/local/global/evaluation scenario will be followed according to the context.
+🔧 Full evaluation can be forced by prefixing the `param` expression with a ❗ like `var = "! ..."`. 
+
 ---
 
-#### **1.4 | Native vs. `param` Text Expressions**  
+### **1.4 | Native vs. `param` Text Expressions**  
 
 🔢 Variables can be stored as **strings** (`"1.0"`) or **numbers** (`1.0`). Scalars and complex numbers are supported.  
 
-📐 **Defining matrices & arrays** using different notations:  
+📐 **Defining matrices & arrays** using different `param` notations:  
 - **Matlab-style**: `$[1 2 3; 4 5 6]`
-- **NumPy-style**: `$[[1,2,3];[4,5,6]]`
+- **NumPy-style**: `$[[1,2,3],[4,5,6]]`
 - **Hybrid notation**: `$[[1 2 3; 4 5 6],[7 8 9; 10 11 12]]`  
 - **Range expansions**: `"$[1:10]"` or `"$[1:0.5:10]"`  
 
@@ -116,9 +134,19 @@ For simple variable substitutions, Pythonic `{variable}` notation is also suppor
 s = p.eval()  # or equivalently s = p()
 ```
 
+or equivalently
+```python
+s = p()
+```
+
+Variables can be specified
+```python
+subs = p("var1","var2",...)
+```
+
 ---
 
-#### **1.5 | Iterable Instances, Indexing & Slicing**  
+### **1.5 | Iterable Instances, Indexing & Slicing**  
 
 🤝 `param` instances behave like lists or collections:  
 - `p[5]` → Returns the 6th element of `p`.  
@@ -134,7 +162,7 @@ Use `p.check()` to validate all variable assignments.
 
 ---
 
-#### **1.6 | Updating, Inheritance & Merging**  
+### **1.6 | Updating, Inheritance & Merging**  
 
 📦 **Batch updating variables** within a `param` instance:  
 ```python
@@ -152,7 +180,7 @@ pmerged = poriginal + pupdate
 
 ---
 
-#### **1.7 | Conversions**  
+### **1.7 | Conversions**  
 
 ➡️ Convert `param` instances (`p`) to various formats:  
 
@@ -170,7 +198,7 @@ pmerged = poriginal + pupdate
 
 ---
 
-#### **1.8 | File Operations**  
+### **1.8 | File Operations**  
 
 💾 Save and load `param` instances:  
 📥 **Save to disk**  
@@ -184,9 +212,9 @@ p = struct.read(filename).toparam()
 
 <hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
-### **2 | Define variables**
+## **2 | Define variables**
 
-#### **2.1 | Overview**
+### **2.1 | Overview**
 
 - **Basic syntax:** Create an instance with `p = param()` and then define variables as:
   
@@ -204,7 +232,7 @@ p = struct.read(filename).toparam()
 
 ---
 
-#### **2.2 | Literal expressions**
+### **2.2 | Literal expressions**
 
 For legacy support, literal expressions can be defined either by:
 - Adding the prefix `$` to the expression (e.g., `"$ab"`), or
@@ -213,7 +241,7 @@ For legacy support, literal expressions can be defined either by:
 <kbd>note:</kbd> *The latest versions of `param()` can automatically detect literals that cannot be evaluated.*
 
 
-**Literal Expressions Example**
+### **Literal Expressions Example**
 This example demonstrates how to use literal expressions with `param()`:
 - `line1`: A raw string that escapes `${a}` to prevent substitution.
 - `line2`: A list of strings.
@@ -287,14 +315,14 @@ s
 
 ---
 
-#### **2.3 | Inheritance of Missing Variables/Parameters, `paramauto` altenative and variable reordering**
+### **2.3 | Inheritance of Missing Variables/Parameters, `paramauto` altenative and variable reordering**
 
 The missing parameter `x` can be supplied :
 - by another `param` instance `param(x=np.pi/4)` and combined with the previous instance via the operator `+` (<kbd>solution 1</kbd>);
 - by using a `paramauto` instance `l_auto` capable of reordering automatically fields at runtime (<kbd>solution 2</kbd>);
 - by reordering directly the variables in `l`  (<kbd>solution 3</kbd>)
 
-**<kbd>Solution 1:</kbd>** *operator `+`*
+#### **<kbd>Solution 1:</kbd>** *operator `+`*
 
 
 ```python
@@ -330,7 +358,7 @@ lfixed
 
 
 
-**<kbd>Solution 2:</kbd>** *Altenatively, the missing parameter can be appended to `l` and `l` can be converted to a `paramauto` instance. The instance `paramauto` shows eventually order errors, but it tries to reorder the fields at runtime to remove errors*.
+#### **<kbd>Solution 2:</kbd>** *Altenatively, the missing parameter can be appended to `l` and `l` can be converted to a `paramauto` instance. The instance `paramauto` shows eventually order errors, but it tries to reorder the fields at runtime to remove errors*.
 
 
 ```python
@@ -367,7 +395,7 @@ l_auto
 
 
 
-**<kbd>Solution 3:</kbd>** *Reordering fields using slicing and `+`*.
+#### **<kbd>Solution 3:</kbd>** *Reordering fields using slicing and `+`*.
 
 
 ```python
@@ -403,7 +431,7 @@ lreordered
 
 
 
-<kbd>note:</kbd> `param` and `struct` instances can be indexed with lists `[idx1,idx2,key1,key2...]`:
+#### <kbd>note:</kbd> `param` and `struct` instances can be indexed with lists `[idx1,idx2,key1,key2...]`:
 
 - with integers (`0` being the first value, `-1` the last one, `-2` the one before the last...)
 
@@ -470,7 +498,7 @@ l[["x",-2]]
 
 ---
 
-#### **2.4 | Numeric examples**
+### **2.4 | Numeric examples**
 This example demonstrates basic numeric assignments:
 - `p.a` is assigned the float `10.0`.
 - `p.b` is assigned the string `"10"`, representing the number 10.
@@ -510,9 +538,9 @@ p
 
 <hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
-### **3 | Interpolation and Local Evaluation**
+## **3 | Interpolation and Local Evaluation**
 
-#### **3.1 | General Rules**
+### **3.1 | General Rules**
 
 This section demonstrates the interpolation and local evaluation capabilities:
 
@@ -536,7 +564,7 @@ This section demonstrates the interpolation and local evaluation capabilities:
 
 ---
 
-#### **3.2 | Scalar evaluations Example**
+### **3.2 | Scalar evaluations Example**
 The following examples show scalar evaluations:
 - `p.g` evaluates an expression that retrieves `d[1]` and adds `b`.
 - `p.h` evaluates an expression combining an element from the NumPy array `f` and an element from `d`.
@@ -629,7 +657,7 @@ print('avoid using outer indexing and keep it within "{}"')
 
 ---
 
-#### **3.3 | Nested Interpolations**
+### **3.3 | Nested Interpolations**
 
 Nested interpolation enables the use of a variable as an index or key:
 - `${list[${idx}]}`  with `${idx}` a variable coding for a scalar index (for example 1 or "1") of a `list`.
@@ -723,7 +751,7 @@ i
 
 ---
 
-#### **3.4 | List and Nested Evaluations**
+### **3.4 | List and Nested Evaluations**
 This section demonstrates that variables can hold multiple values and that results are stored in lists:
 
 <kbd>note:</kbd> *The special character `!` can be placed in front of expressions using lists as results (e.g., `"!["${myvar}",${sum(myvar)+offset}]"` to force recursive execution if it is not guessed internally.*
@@ -808,7 +836,7 @@ r
 
 
 
-**Additional Numeric Example**
+#### **Additional Numeric Example**
 
 This example defines a param instance `t` with parameters `o` and `p`. Then:
 - `t.a` is constructed as a list containing `${o}` and `${p}`.
@@ -845,7 +873,7 @@ t
 
 ---
 
-#### **3.5 | Support of `dict` (dictionnaries)**
+### **3.5 | Support of `dict` (dictionnaries)**
 
 By design, instances of `struct` (and, by extension, `param()`) are intended to serve as flexible containers that can
 hold any type of data—including class instances. However, evaluating advanced types, such as nested lists or dictionaries,
@@ -860,7 +888,7 @@ quoted keys are not accepted in formatted strings. Consequently, a compromise ap
 - Global evaluation outside `${}` uses conventional Pythonic syntax with quotes `'` or `"`
 - A representation (global) of a `dict` `d` can be achieved outside local evaluation/interpolation with `${d}` and `{d}`
 
-**Example Demonstrating Dictionary Support in `param()`**
+#### **Example Demonstrating Dictionary Support in `param()`**
 
 - `d.a` is directly assigned a dictionary.
 - `d.b` is assigned a string that represents a dictionary.
@@ -920,13 +948,15 @@ d
 
 <hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
-### **4 | Mathematical shorthands for vectors, matrices, 3D and 4D arrays**
+## **4 | Mathematical shorthands for vectors, matrices, 3D and 4D arrays**
 
 Lists cannot be directly used as vectors and must be converted into NumPy arrays before performing vectorized operations.
 
 <kbd>Note:</kbd>This section separate ***non-mathematical* syntaxes** leading to `list` instances from ***mathematical* ones** generating NumPy instances.
 
-#### **4.1 | Non-Mathematical Syntaxes for Lists**
+---
+
+### **4.1 | Non-Mathematical Syntaxes for Lists**
 
 Numeric lists and lists of strings are non-mathematical containers. They accept *à la Matlab* and Pythonic shorthands for rapid prototyping and definitions. They cannot be used directly in NumPy operations, and only their scalar values can be used.
 
@@ -1005,7 +1035,7 @@ u
 
 ---
 
-#### **4.2 | Mathematical/NumPy Syntax**
+### **4.2 | Mathematical/NumPy Syntax**
 
 The `param()` class offers several shorthands to seamlessly manipulate NumPy arrays using `param` text expressions:
 
@@ -1041,7 +1071,7 @@ The `param()` class offers several shorthands to seamlessly manipulate NumPy arr
 
 ---
 
-#### **4.3 | Simple Definitions Example**
+### **4.3 | Simple Definitions Example**
 
 This example demonstrates simple definitions using Matlab-style notations:
 - `e.a` uses `$[1:3]` to create the vector `[1, 2, 3]`.
@@ -1162,7 +1192,7 @@ m
 
 ---
 
-#### **4.5 | Slicing Example**
+### **4.5 | Slicing Example**
 
 This example demonstrates slicing operations:
 - `s.a` and `s.b` are scalar values.
@@ -1249,7 +1279,7 @@ s
 
 ---
 
-#### **4.6 | Advanced Example**
+### **4.6 | Advanced Example**
 
 This advanced example demonstrates operations such as:
 - Defining a vector `V1`.
@@ -1296,7 +1326,7 @@ a
 
 <hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
 
-### **5 | Global evaluation**
+## **5 | Global evaluation**
 
 A global evaluation is attempted for all expressions after interpolation and local evaluations have been performed.
 If the global evaluation does not raise any error, the evaluated result is kept; otherwise, the original interpolated
@@ -1305,7 +1335,7 @@ of `${...}` or `@{...}`), it is recommended to define mathematically valid expre
 variables to store results as text.
 
 
-#### **5.1 | Global Evaluation Example with NumPy**
+### **5.1 | Global Evaluation Example with NumPy**
 
 This example demonstrates global evaluation:
 - `u.p` creates a 2D NumPy array.
@@ -1356,7 +1386,7 @@ u
 
 ---
 
-#### **5.2 | Global Evaluation Example with Various Matrix and ND- Operations**
+### **5.2 | Global Evaluation Example with Various Matrix and ND- Operations**
 
 This example demonstrates various matrix operations:
 - A list `l` is defined.
@@ -1416,5 +1446,5 @@ v
 
 
 <hr style="border: 4px solid #4CAF50; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);">
-<small>For any question, contact INRAE\olivier.vitrac@agroparistech.fr | last revision $2025-02-07$</small>
+<small>For any question, contact INRAE\olivier.vitrac@agroparistech.fr | last revision $2025-02-08$</small>
 
