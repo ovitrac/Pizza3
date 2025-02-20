@@ -9028,13 +9028,14 @@ s.sortdefinitions()
     _maxdisplay = 40        # maximum number of characters to display (should be even)
     _propertyasattribute = False
     _precision = 4
+    _needs_sorting = False
 
     # attributes for the iterator method
     # Please keep it static, duplicate the object before changing _iter_
     _iter_ = 0
 
     # excluded attributes (keep the , in the Tupple if it is singleton)
-    _excludedattr = {&#39;_iter_&#39;,&#39;__class__&#39;,&#39;_protection&#39;,&#39;_evaluation&#39;,&#39;_returnerror&#39;,&#39;_debug&#39;,&#39;_precision&#39;} # used by keys() and len()
+    _excludedattr = {&#39;_iter_&#39;,&#39;__class__&#39;,&#39;_protection&#39;,&#39;_evaluation&#39;,&#39;_returnerror&#39;,&#39;_debug&#39;,&#39;_precision&#39;,&#39;_needs_sorting&#39;} # used by keys() and len()
 
 
     # Methods
@@ -9259,6 +9260,10 @@ s.sortdefinitions()
 
         The new instance is created by copying the fields from the left-hand operand (a)
         and then updating with the fields from the right-hand operand (b).
+
+        If self or s is of class paramauto, the current state of _needs_sorting is propagated
+        but not forced to be true.
+
         &#34;&#34;&#34;
         if not isinstance(s, struct):
             raise TypeError(f&#34;the second operand must be {self._type}&#34;)
@@ -9274,15 +9279,24 @@ s.sortdefinitions()
             else:
                 return 0  # fallback for unknown derivations
 
+        # current classes
+        leftprecedence = get_precedence(self)
+        rightprecedence = get_precedence(s)
         # Determine which class to use for the duplicate.
         # If s (b) has a higher precedence than self (a), use s&#39;s class; otherwise, use self&#39;s.
-        hi_class = self.__class__ if get_precedence(self) &gt;= get_precedence(s) else s.__class__
+        hi_class = self.__class__ if leftprecedence &gt;= rightprecedence else s.__class__
         # Create a new instance of the chosen class by copying self&#39;s fields.
         dup = hi_class(**self)
         # Update with the fields from s.
         dup.update(**s)
-        if sortdefinitions:
-            dup.sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
+        if sortdefinitions: # defer sorting by preserving the state of _needs_sorting
+            if leftprecedence &lt; rightprecedence == 2: # left is promoted
+                dup._needs_sorting = s._needs_sorting
+            elif rightprecedence &lt; leftprecedence == 2: # right is promoted
+                dup._needs_sorting = self._needs_sorting
+            elif leftprecedence == rightprecedence == 2: # left and right are equivalent
+                dup._needs_sorting = self._needs_sorting or s._needs_sorting
+            # dup.sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
         return dup
 
     def __iadd__(self,s,sortdefinitions=False,raiseerror=False, silentmode=True):
@@ -9292,7 +9306,9 @@ s.sortdefinitions()
         if not isinstance(s,struct):
             raise TypeError(f&#34;the second operand must be {self._type}&#34;)
         self.update(**s)
-        if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
+        if sortdefinitions:
+            self._needs_sorting = True
+            # self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
         return self
 
     def __sub__(self,s):
@@ -9563,6 +9579,7 @@ s.sortdefinitions()
                     s.setattr(k[i],True)
         return s
 
+
     def sortdefinitions(self,raiseerror=True,silentmode=False):
         &#34;&#34;&#34; sortdefintions sorts all definitions
             so that they can be executed as param().
@@ -9828,7 +9845,6 @@ s.sortdefinitions()
         s.update(a=10, b=[1, 2, 3], new_field=&#34;new_value&#34;)
         &#34;&#34;&#34;
         protected_attributes = getattr(self, &#39;_excludedattr&#39;, ())
-
         for key, value in kwargs.items():
             if key in protected_attributes:
                 print(f&#34;Warning: Cannot update protected attribute &#39;{key}&#39;&#34;)
@@ -11347,7 +11363,6 @@ The fields to update and their new values.</p>
     s.update(a=10, b=[1, 2, 3], new_field=&#34;new_value&#34;)
     &#34;&#34;&#34;
     protected_attributes = getattr(self, &#39;_excludedattr&#39;, ())
-
     for key, value in kwargs.items():
         if key in protected_attributes:
             print(f&#34;Warning: Cannot update protected attribute &#39;{key}&#39;&#34;)

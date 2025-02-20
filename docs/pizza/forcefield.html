@@ -2276,16 +2276,31 @@ p.disp()
     &#34;&#34;&#34;
 
     def __add__(self,p):
-        return super(param,self).__add__(p,sortdefinitions=True,raiseerror=False)
+        return super().__add__(p,sortdefinitions=True,raiseerror=False)
+        self._needs_sorting = True
 
     def __iadd__(self,p):
-        return super(param,self).__iadd__(p,sortdefinitions=True,raiseerror=False)
+        return super().__iadd__(p,sortdefinitions=True,raiseerror=False)
+        self._needs_sorting = True
 
     def __repr__(self):
         self.sortdefinitions(raiseerror=False)
         #super(param,self).__repr__()
         super().__repr__()
-        return str(self)</code></pre>
+        return str(self)
+
+    def setattr(self,key,value):
+        &#34;&#34;&#34; set field and value &#34;&#34;&#34;
+        if isinstance(value,list) and len(value)==0 and key in self:
+            delattr(self, key)
+        else:
+            self.__dict__[key] = value
+            self.__dict__[&#34;_needs_sorting&#34;] = True
+
+    def sortdefinitions(self, raiseerror=True, silentmode=True):
+        if self._needs_sorting:
+            super().sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
+            self._needs_sorting = False</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -2299,6 +2314,47 @@ p.disp()
 <li>pizza.forcefield.parameterforcefield</li>
 <li>pizza.region.regiondata</li>
 </ul>
+<h3>Methods</h3>
+<dl>
+<dt id="forcefield.paramauto.setattr"><code class="name flex">
+<span>def <span class="ident">setattr</span></span>(<span>self, key, value)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>set field and value</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setattr(self,key,value):
+    &#34;&#34;&#34; set field and value &#34;&#34;&#34;
+    if isinstance(value,list) and len(value)==0 and key in self:
+        delattr(self, key)
+    else:
+        self.__dict__[key] = value
+        self.__dict__[&#34;_needs_sorting&#34;] = True</code></pre>
+</details>
+</dd>
+<dt id="forcefield.paramauto.sortdefinitions"><code class="name flex">
+<span>def <span class="ident">sortdefinitions</span></span>(<span>self, raiseerror=True, silentmode=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>sortdefintions sorts all definitions
+so that they can be executed as param().
+If any inconsistency is found, an error message is generated.</p>
+<p>Flags = default values
+raiseerror=True show erros of True
+silentmode=False no warning if True</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sortdefinitions(self, raiseerror=True, silentmode=True):
+    if self._needs_sorting:
+        super().sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
+        self._needs_sorting = False</code></pre>
+</details>
+</dd>
+</dl>
 </dd>
 <dt id="forcefield.parameterforcefield"><code class="flex name class">
 <span>class <span class="ident">parameterforcefield</span></span>
@@ -3107,13 +3163,14 @@ s.sortdefinitions()
     _maxdisplay = 40        # maximum number of characters to display (should be even)
     _propertyasattribute = False
     _precision = 4
+    _needs_sorting = False
 
     # attributes for the iterator method
     # Please keep it static, duplicate the object before changing _iter_
     _iter_ = 0
 
     # excluded attributes (keep the , in the Tupple if it is singleton)
-    _excludedattr = {&#39;_iter_&#39;,&#39;__class__&#39;,&#39;_protection&#39;,&#39;_evaluation&#39;,&#39;_returnerror&#39;,&#39;_debug&#39;,&#39;_precision&#39;} # used by keys() and len()
+    _excludedattr = {&#39;_iter_&#39;,&#39;__class__&#39;,&#39;_protection&#39;,&#39;_evaluation&#39;,&#39;_returnerror&#39;,&#39;_debug&#39;,&#39;_precision&#39;,&#39;_needs_sorting&#39;} # used by keys() and len()
 
 
     # Methods
@@ -3338,6 +3395,10 @@ s.sortdefinitions()
 
         The new instance is created by copying the fields from the left-hand operand (a)
         and then updating with the fields from the right-hand operand (b).
+
+        If self or s is of class paramauto, the current state of _needs_sorting is propagated
+        but not forced to be true.
+
         &#34;&#34;&#34;
         if not isinstance(s, struct):
             raise TypeError(f&#34;the second operand must be {self._type}&#34;)
@@ -3353,15 +3414,24 @@ s.sortdefinitions()
             else:
                 return 0  # fallback for unknown derivations
 
+        # current classes
+        leftprecedence = get_precedence(self)
+        rightprecedence = get_precedence(s)
         # Determine which class to use for the duplicate.
         # If s (b) has a higher precedence than self (a), use s&#39;s class; otherwise, use self&#39;s.
-        hi_class = self.__class__ if get_precedence(self) &gt;= get_precedence(s) else s.__class__
+        hi_class = self.__class__ if leftprecedence &gt;= rightprecedence else s.__class__
         # Create a new instance of the chosen class by copying self&#39;s fields.
         dup = hi_class(**self)
         # Update with the fields from s.
         dup.update(**s)
-        if sortdefinitions:
-            dup.sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
+        if sortdefinitions: # defer sorting by preserving the state of _needs_sorting
+            if leftprecedence &lt; rightprecedence == 2: # left is promoted
+                dup._needs_sorting = s._needs_sorting
+            elif rightprecedence &lt; leftprecedence == 2: # right is promoted
+                dup._needs_sorting = self._needs_sorting
+            elif leftprecedence == rightprecedence == 2: # left and right are equivalent
+                dup._needs_sorting = self._needs_sorting or s._needs_sorting
+            # dup.sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
         return dup
 
     def __iadd__(self,s,sortdefinitions=False,raiseerror=False, silentmode=True):
@@ -3371,7 +3441,9 @@ s.sortdefinitions()
         if not isinstance(s,struct):
             raise TypeError(f&#34;the second operand must be {self._type}&#34;)
         self.update(**s)
-        if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
+        if sortdefinitions:
+            self._needs_sorting = True
+            # self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
         return self
 
     def __sub__(self,s):
@@ -3642,6 +3714,7 @@ s.sortdefinitions()
                     s.setattr(k[i],True)
         return s
 
+
     def sortdefinitions(self,raiseerror=True,silentmode=False):
         &#34;&#34;&#34; sortdefintions sorts all definitions
             so that they can be executed as param().
@@ -3907,7 +3980,6 @@ s.sortdefinitions()
         s.update(a=10, b=[1, 2, 3], new_field=&#34;new_value&#34;)
         &#34;&#34;&#34;
         protected_attributes = getattr(self, &#39;_excludedattr&#39;, ())
-
         for key, value in kwargs.items():
             if key in protected_attributes:
                 print(f&#34;Warning: Cannot update protected attribute &#39;{key}&#39;&#34;)
@@ -5426,7 +5498,6 @@ The fields to update and their new values.</p>
     s.update(a=10, b=[1, 2, 3], new_field=&#34;new_value&#34;)
     &#34;&#34;&#34;
     protected_attributes = getattr(self, &#39;_excludedattr&#39;, ())
-
     for key, value in kwargs.items():
         if key in protected_attributes:
             print(f&#34;Warning: Cannot update protected attribute &#39;{key}&#39;&#34;)
@@ -6005,6 +6076,10 @@ water(beadtype=index, userid="myfluid")</p></div>
 </li>
 <li>
 <h4><code><a title="forcefield.paramauto" href="#forcefield.paramauto">paramauto</a></code></h4>
+<ul class="">
+<li><code><a title="forcefield.paramauto.setattr" href="#forcefield.paramauto.setattr">setattr</a></code></li>
+<li><code><a title="forcefield.paramauto.sortdefinitions" href="#forcefield.paramauto.sortdefinitions">sortdefinitions</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="forcefield.parameterforcefield" href="#forcefield.parameterforcefield">parameterforcefield</a></code></h4>

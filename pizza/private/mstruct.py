@@ -178,6 +178,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-02-06 maintnance version (fixes and extensions) in agreement with the revised version of param_demo()
 # 2025-02-07 add struct.numrepl(), major release (version 1.0054), improve evaluation error messages
 # 2025-02-19 add importfrom(), add operator <<, add validkeys()
+# 2025-02-19 fix strong slowdown when precedence rules are applied with +: defer sorting() for paramauto()
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
@@ -186,7 +187,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.006"
+__version__ = "1.0062"
 
 
 # %% Dependencies
@@ -203,7 +204,7 @@ import builtins, math
 import random
 import numpy as np
 
-__all__ = ['AttrErrorDict', 'SafeEvaluator', 'evaluate_with_placeholders', 'is_literal_string', 'param', 'paramauto', 'pstr', 'struct']
+__all__ = ['AttrErrorDict', 'SafeEvaluator', 'evaluate_with_placeholders', 'is_empty', 'is_literal_string', 'param', 'paramauto', 'pstr', 'struct']
 
 
 # %% Private classes, functions, variables
@@ -706,13 +707,14 @@ class struct():
     _maxdisplay = 40        # maximum number of characters to display (should be even)
     _propertyasattribute = False
     _precision = 4
+    _needs_sorting = False
 
     # attributes for the iterator method
     # Please keep it static, duplicate the object before changing _iter_
     _iter_ = 0
 
     # excluded attributes (keep the , in the Tupple if it is singleton)
-    _excludedattr = {'_iter_','__class__','_protection','_evaluation','_returnerror','_debug','_precision'} # used by keys() and len()
+    _excludedattr = {'_iter_','__class__','_protection','_evaluation','_returnerror','_debug','_precision','_needs_sorting'} # used by keys() and len()
 
 
     # Methods
@@ -937,6 +939,10 @@ class struct():
 
         The new instance is created by copying the fields from the left-hand operand (a)
         and then updating with the fields from the right-hand operand (b).
+
+        If self or s is of class paramauto, the current state of _needs_sorting is propagated
+        but not forced to be true.
+
         """
         if not isinstance(s, struct):
             raise TypeError(f"the second operand must be {self._type}")
@@ -952,15 +958,24 @@ class struct():
             else:
                 return 0  # fallback for unknown derivations
 
+        # current classes
+        leftprecedence = get_precedence(self)
+        rightprecedence = get_precedence(s)
         # Determine which class to use for the duplicate.
         # If s (b) has a higher precedence than self (a), use s's class; otherwise, use self's.
-        hi_class = self.__class__ if get_precedence(self) >= get_precedence(s) else s.__class__
+        hi_class = self.__class__ if leftprecedence >= rightprecedence else s.__class__
         # Create a new instance of the chosen class by copying self's fields.
         dup = hi_class(**self)
         # Update with the fields from s.
         dup.update(**s)
-        if sortdefinitions:
-            dup.sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
+        if sortdefinitions: # defer sorting by preserving the state of _needs_sorting
+            if leftprecedence < rightprecedence == 2: # left is promoted
+                dup._needs_sorting = s._needs_sorting
+            elif rightprecedence < leftprecedence == 2: # right is promoted
+                dup._needs_sorting = self._needs_sorting
+            elif leftprecedence == rightprecedence == 2: # left and right are equivalent
+                dup._needs_sorting = self._needs_sorting or s._needs_sorting
+            # dup.sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
         return dup
 
     def __iadd__(self,s,sortdefinitions=False,raiseerror=False, silentmode=True):
@@ -970,7 +985,9 @@ class struct():
         if not isinstance(s,struct):
             raise TypeError(f"the second operand must be {self._type}")
         self.update(**s)
-        if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
+        if sortdefinitions:
+            self._needs_sorting = True
+            # self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
         return self
 
     def __sub__(self,s):
@@ -1241,6 +1258,7 @@ class struct():
                     s.setattr(k[i],True)
         return s
 
+
     def sortdefinitions(self,raiseerror=True,silentmode=False):
         """ sortdefintions sorts all definitions
             so that they can be executed as param().
@@ -1506,7 +1524,6 @@ class struct():
         s.update(a=10, b=[1, 2, 3], new_field="new_value")
         """
         protected_attributes = getattr(self, '_excludedattr', ())
-
         for key, value in kwargs.items():
             if key in protected_attributes:
                 print(f"Warning: Cannot update protected attribute '{key}'")
@@ -2072,6 +2089,7 @@ class param(struct):
         super().__init__(debug=debug,**kwargs)
         self._protection = _protection
         self._evaluation = _evaluation
+        self._needs_sorting = False # defers sorting
         if sortdefinitions: self.sortdefinitions()
 
     # escape definitions if needed
@@ -2141,6 +2159,9 @@ class param(struct):
                     string is only used to determine whether definitions have been forgotten
 
         """
+        # handle deferred sorting
+        if self._needs_sorting:
+            self.sortdefinitions(raiseerror=False, silentmode=True)
         # the argument s is only used by formateval() for error management
         tmp = struct(debug=self._debug)
         # evaluator without context
@@ -3239,16 +3260,31 @@ class paramauto(param):
     """
 
     def __add__(self,p):
-        return super(param,self).__add__(p,sortdefinitions=True,raiseerror=False)
+        return super().__add__(p,sortdefinitions=True,raiseerror=False)
+        self._needs_sorting = True
 
     def __iadd__(self,p):
-        return super(param,self).__iadd__(p,sortdefinitions=True,raiseerror=False)
+        return super().__iadd__(p,sortdefinitions=True,raiseerror=False)
+        self._needs_sorting = True
 
     def __repr__(self):
         self.sortdefinitions(raiseerror=False)
         #super(param,self).__repr__()
         super().__repr__()
         return str(self)
+
+    def setattr(self,key,value):
+        """ set field and value """
+        if isinstance(value,list) and len(value)==0 and key in self:
+            delattr(self, key)
+        else:
+            self.__dict__[key] = value
+            self.__dict__["_needs_sorting"] = True
+
+    def sortdefinitions(self, raiseerror=True, silentmode=True):
+        if self._needs_sorting:
+            super().sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
+            self._needs_sorting = False
 
 # %% DEBUG
 # ===================================================
