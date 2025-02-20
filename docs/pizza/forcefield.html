@@ -282,10 +282,10 @@ __credits__ = [&#34;Olivier Vitrac&#34;]
 __license__ = &#34;GPLv3&#34;
 __maintainer__ = &#34;Olivier Vitrac&#34;
 __email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
-__version__ = &#34;0.9971&#34;
+__version__ = &#34;1.006&#34;
 
 
-# INRAE\Olivier Vitrac - rev. 2022-10-10
+# INRAE\Olivier Vitrac - rev. 2025-02-18
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -303,13 +303,14 @@ __version__ = &#34;0.9971&#34;
 # 2024-09-12 upgrading of parameterforcefield
 # 2024-09-21 dforcefield and forcefield can be combined indifferently (no precedence)
 # 2024-10-10 fix the dynamic parameterization with dforcefield (more overrides)
+# 2025-02-18 add tlsphalone, ulsphalone (for special cases not requiring overlay)
 
 # %% Dependencies
 import types
 # All forcefield parameters are stored à la Matlab in a structure
 from pizza.private.mstruct import struct,paramauto
 
-__all__ = [&#39;forcefield&#39;, &#39;none&#39;, &#39;paramauto&#39;, &#39;parameterforcefield&#39;, &#39;rigidwall&#39;, &#39;saltTLSPH&#39;, &#39;smd&#39;, &#39;solidfood&#39;, &#39;struct&#39;, &#39;tlsph&#39;, &#39;ulsph&#39;, &#39;water&#39;]
+__all__ = [&#39;forcefield&#39;, &#39;none&#39;, &#39;paramauto&#39;, &#39;parameterforcefield&#39;, &#39;rigidwall&#39;, &#39;saltTLSPH&#39;, &#39;smd&#39;, &#39;solidfood&#39;, &#39;struct&#39;, &#39;tlsph&#39;, &#39;tlsphalone&#39;, &#39;ulsph&#39;, &#39;ulsphalone&#39;, &#39;water&#39;]
 
 
 # %% Parent class (not to be called directly)
@@ -722,6 +723,59 @@ class tlsph(smd):
     &#34;&#34;&#34; SMD:TLSPH forcefield (total Lagrangian) &#34;&#34;&#34;
     name = smd.name + struct(style=&#34;tlsph&#34;)
     description = smd.description + struct(style=&#34;SMD:TLSPH - total Lagrangian for solids&#34;)
+
+    # style definition (LAMMPS code between triple &#34;&#34;&#34;)
+    PAIR_DIAGCOEFF = &#34;&#34;&#34;
+    # [comment] Diagonal pair coefficient tlsph
+    pair_coeff      %d %d smd/tlsph *COMMON ${rho} ${E} ${nu} ${q1} ${q2} ${Hg} ${Cp} &amp;
+                    *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening} &amp;
+                    *EOS_LINEAR &amp;
+                    *END
+    &#34;&#34;&#34;
+    PAIR_OFFDIAGCOEFF = &#34;&#34;&#34;
+    # [comment] Off-diagonal pair coefficient (generic)
+    pair_coeff      %d %d smd/hertz ${contact_stiffness}
+    &#34;&#34;&#34;
+# END PAIR-COEFF FORCEFIELD ===========================
+
+
+# BEGIN PAIR-COEFF FORCEFIELD ===========================
+class ulsphalone(smd):
+    &#34;&#34;&#34; SMD:ULSPH forcefield (updated Lagrangian) &#34;&#34;&#34;
+    name = smd.name + struct(style=&#34;ulsph&#34;)
+    description = smd.description + struct(style=&#34;SMD:ULSPH - updated Lagrangian for fluids - SPH-like&#34;)
+
+    # forcefield definition (LAMMPS code between triple &#34;&#34;&#34;)
+    PAIR_STYLE = &#34;&#34;&#34;
+    # [comment] PAIR STYLE SMD
+    pair_style      smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION
+    &#34;&#34;&#34;
+
+    # style definition (LAMMPS code between triple &#34;&#34;&#34;)
+    PAIR_DIAGCOEFF = &#34;&#34;&#34;
+    # [comment] Pair diagonal coefficient ulsph
+    pair_coeff      %d %d smd/ulsph *COMMON ${rho} ${c0} ${q1} ${Cp} 0 &amp;
+                    *EOS_TAIT ${taitexponent} &amp;
+                    *END
+    &#34;&#34;&#34;
+    PAIR_OFFDIAGCOEFF = &#34;&#34;&#34;
+    # [comment] Off-diagonal pair coefficient (generic)
+    pair_coeff      %d %d smd/hertz ${contact_stiffness}
+    &#34;&#34;&#34;
+# END PAIR-COEFF FORCEFIELD ===========================
+
+
+# BEGIN PAIR-COEFF FORCEFIELD ===========================
+class tlsphalone(forcefield):
+    &#34;&#34;&#34; SMD:TLSPH forcefield (total Lagrangian) &#34;&#34;&#34;
+    name = smd.name + struct(style=&#34;tlsph&#34;)
+    description = smd.description + struct(style=&#34;SMD:TLSPH - total Lagrangian for solids&#34;)
+
+    # forcefield definition (LAMMPS code between triple &#34;&#34;&#34;)
+    PAIR_STYLE = &#34;&#34;&#34;
+    # [comment] PAIR STYLE SMD
+    pair_style      hybrid/overlay smd/tlsph smd/hertz ${contact_scale}
+    &#34;&#34;&#34;
 
     # style definition (LAMMPS code between triple &#34;&#34;&#34;)
     PAIR_DIAGCOEFF = &#34;&#34;&#34;
@@ -1333,6 +1387,7 @@ the <code><a title="forcefield.parameterforcefield" href="#forcefield.parameterf
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="forcefield.smd" href="#forcefield.smd">smd</a></li>
+<li><a title="forcefield.tlsphalone" href="#forcefield.tlsphalone">tlsphalone</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -2511,6 +2566,7 @@ saltTLSPH(beadtype=index, userid="salt")</p></div>
 <li><a title="forcefield.none" href="#forcefield.none">none</a></li>
 <li><a title="forcefield.tlsph" href="#forcefield.tlsph">tlsph</a></li>
 <li><a title="forcefield.ulsph" href="#forcefield.ulsph">ulsph</a></li>
+<li><a title="forcefield.ulsphalone" href="#forcefield.ulsphalone">ulsphalone</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -2764,6 +2820,7 @@ s.sortdefinitions()
 <ul>
 <li><code>+</code>: Concatenation of two structures (<code>__add__</code>).</li>
 <li><code>-</code>: Subtraction of fields (<code>__sub__</code>).</li>
+<li><code>&lt;&lt;</code>: Import values from another structure (<code>__lshift__</code>)</li>
 <li><code>len()</code>: Number of fields (<code>__len__</code>).</li>
 <li><code>in</code>: Check for field existence (<code>__contains__</code>).</li>
 </ul>
@@ -2805,6 +2862,10 @@ s.sortdefinitions()
 <td>Generate Python code representing the structure.</td>
 </tr>
 <tr>
+<td><code>importfrom()</code></td>
+<td>Import undefined values from another struct or dict.</td>
+</tr>
+<tr>
 <td><code>items()</code></td>
 <td>Return key-value pairs.</td>
 </tr>
@@ -2827,6 +2888,10 @@ s.sortdefinitions()
 <tr>
 <td><code>struct2dict()</code></td>
 <td>Convert the structure to a dictionary.</td>
+</tr>
+<tr>
+<td><code>validkeys()</code></td>
+<td>Return valid keys</td>
 </tr>
 <tr>
 <td><code>values()</code></td>
@@ -2998,6 +3063,7 @@ s.sortdefinitions()
     #### Supported Operators
     - `+`: Concatenation of two structures (`__add__`).
     - `-`: Subtraction of fields (`__sub__`).
+    - `&lt;&lt;`: Import values from another structure (`__lshift__`)
     - `len()`: Number of fields (`__len__`).
     - `in`: Check for field existence (`__contains__`).
 
@@ -3011,12 +3077,14 @@ s.sortdefinitions()
     | `eval()`              | Evaluate expressions within fields.                     |
     | `fromkeys(keys)`      | Create a structure from a list of keys.                 |
     | `generator()`         | Generate Python code representing the structure.        |
+    | `importfrom()`        | Import undefined values from another struct or dict.    |
     | `items()`             | Return key-value pairs.                                 |
     | `keys()`              | Return all keys in the structure.                       |
     | `read(file)`          | Load structure fields from a file.                      |
     | `scan(string)`        | Extract variables from a string and populate fields.    |
     | `sortdefinitions()`   | Sort fields to resolve dependencies.                    |
     | `struct2dict()`       | Convert the structure to a dictionary.                  |
+    | `validkeys()`         | Return valid keys                                       |
     | `values()`            | Return all field values.                                |
     | `write(file)`         | Save the structure to a file.                           |
 
@@ -3259,15 +3327,41 @@ s.sortdefinitions()
         self._iter_ = 0
         raise StopIteration(f&#34;Maximum {self._ftype} iteration reached {len(self)}&#34;)
 
-    def __add__(self,s,sortdefinitions=False,raiseerror=True, silentmode=True):
-        &#34;&#34;&#34; add a structure
-            set sortdefintions=True to sort definitions (to maintain executability)
+    def __add__(self, s, sortdefinitions=False, raiseerror=True, silentmode=True):
         &#34;&#34;&#34;
-        if not isinstance(s,struct):
+        Add two structure objects, with precedence as follows:
+
+          paramauto &gt; param &gt; struct
+
+        In c = a + b, if b has a higher precedence than a then c will be of b&#39;s class,
+        otherwise it will be of a&#39;s class.
+
+        The new instance is created by copying the fields from the left-hand operand (a)
+        and then updating with the fields from the right-hand operand (b).
+        &#34;&#34;&#34;
+        if not isinstance(s, struct):
             raise TypeError(f&#34;the second operand must be {self._type}&#34;)
-        dup = duplicate(self)
-        dup.__dict__.update(s.__dict__)
-        if sortdefinitions: dup.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
+
+        # Define a helper to assign a precedence value.
+        def get_precedence(obj):
+            if isinstance(obj, paramauto):
+                return 2
+            elif isinstance(obj, param):
+                return 1
+            elif isinstance(obj, struct):
+                return 0
+            else:
+                return 0  # fallback for unknown derivations
+
+        # Determine which class to use for the duplicate.
+        # If s (b) has a higher precedence than self (a), use s&#39;s class; otherwise, use self&#39;s.
+        hi_class = self.__class__ if get_precedence(self) &gt;= get_precedence(s) else s.__class__
+        # Create a new instance of the chosen class by copying self&#39;s fields.
+        dup = hi_class(**self)
+        # Update with the fields from s.
+        dup.update(**s)
+        if sortdefinitions:
+            dup.sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
         return dup
 
     def __iadd__(self,s,sortdefinitions=False,raiseerror=False, silentmode=True):
@@ -3276,7 +3370,7 @@ s.sortdefinitions()
         &#34;&#34;&#34;
         if not isinstance(s,struct):
             raise TypeError(f&#34;the second operand must be {self._type}&#34;)
-        self.__dict__.update(s.__dict__)
+        self.update(**s)
         if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
         return self
 
@@ -4096,7 +4190,96 @@ s.sortdefinitions()
             return match.group(0)
 
         # Replace all placeholders in the text using the replacer function.
-        return placeholder_pattern.sub(replace_match, text)</code></pre>
+        return placeholder_pattern.sub(replace_match, text)
+
+    # import method
+    def importfrom(self, s, nonempty=True, replacedefaultvar=True):
+        &#34;&#34;&#34;
+        Import values from &#39;s&#39; into self according to the following rules:
+
+        - Only fields that already exist in self are considered.
+        - If s is a dictionary, it is converted to a struct via struct(**s).
+        - If the current value of a field in self is empty (None, &#34;&#34;, [] or ()),
+          then that field is updated from s.
+        - If nonempty is True (default), then only non-empty values from s are imported.
+        - If replacedefaultvar is True (default), then if a field in self exactly equals
+          &#34;${key}&#34; (with key being the field name), it is replaced by the corresponding
+          value from s if it is empty.
+        - Raises a TypeError if s is not a dict or struct (i.e. if it doesn’t support keys()).
+        &#34;&#34;&#34;
+        # If s is a dictionary, convert it to a struct instance.
+        if isinstance(s, dict):
+            s = struct(**s)
+        elif not hasattr(s, &#34;keys&#34;):
+            raise TypeError(f&#34;s must be a struct or a dictionary not a type {type(s).__name__}&#34;)
+
+        for key in self.keys():
+            if key in s:
+                s_value = getattr(s, key)
+                current_value = getattr(self, key)
+                if is_empty(current_value) or (replacedefaultvar and current_value == &#34;${&#34; + key + &#34;}&#34;):
+                    if nonempty:
+                        if not is_empty(s_value):
+                            setattr(self, key, s_value)
+                    else:
+                        setattr(self, key, s_value)
+
+    # importfrom with copy
+    def __lshift__(self, other):
+        &#34;&#34;&#34;
+        Allows the syntax:
+
+            s = s1 &lt;&lt; s2
+
+        where a new instance is created as a copy of s1 (preserving its type, whether
+        struct, param, or paramauto) and then updated with the values from s2 using
+        importfrom.
+        &#34;&#34;&#34;
+        # Create a new instance preserving the type of self.
+        new_instance = type(self)(**{k: getattr(self, k) for k in self.keys()})
+        # Import values from other (s2) into the new instance.
+        new_instance.importfrom(other)
+        return new_instance
+
+    # returns only valid keys
+    def validkeys(self, list_of_keys):
+        &#34;&#34;&#34;
+        Validate and return the subset of keys from the provided list that are valid in the instance.
+
+        Parameters:
+        -----------
+        list_of_keys : list
+            A list of keys (as strings) to check against the instance’s attributes.
+
+        Returns:
+        --------
+        list
+            A list of keys from list_of_keys that are valid (i.e., exist as attributes in the instance).
+
+        Raises:
+        -------
+        TypeError
+            If list_of_keys is not a list or if any element in list_of_keys is not a string.
+
+        Example:
+        --------
+        &gt;&gt;&gt; s = struct()
+        &gt;&gt;&gt; s.foo = 42
+        &gt;&gt;&gt; s.bar = &#34;hello&#34;
+        &gt;&gt;&gt; valid = s.validkeys([&#34;foo&#34;, &#34;bar&#34;, &#34;baz&#34;])
+        &gt;&gt;&gt; print(valid)   # Output: [&#39;foo&#39;, &#39;bar&#39;] assuming &#39;baz&#39; is not defined in s
+        &#34;&#34;&#34;
+        # Check that list_of_keys is a list
+        if not isinstance(list_of_keys, list):
+            raise TypeError(&#34;list_of_keys must be a list&#34;)
+
+        # Check that every entry in the list is a string
+        for key in list_of_keys:
+            if not isinstance(key, str):
+                raise TypeError(&#34;Each key in list_of_keys must be a string&#34;)
+
+        # Assuming valid keys are those present in the instance&#39;s __dict__
+        return [key for key in list_of_keys if key in self]</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -4799,6 +4982,58 @@ If False (default), the code is returned as a raw string starting with, e.g.,
     )</code></pre>
 </details>
 </dd>
+<dt id="forcefield.struct.importfrom"><code class="name flex">
+<span>def <span class="ident">importfrom</span></span>(<span>self, s, nonempty=True, replacedefaultvar=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Import values from 's' into self according to the following rules:</p>
+<ul>
+<li>Only fields that already exist in self are considered.</li>
+<li>If s is a dictionary, it is converted to a struct via struct(**s).</li>
+<li>If the current value of a field in self is empty (None, "", [] or ()),
+then that field is updated from s.</li>
+<li>If nonempty is True (default), then only non-empty values from s are imported.</li>
+<li>If replacedefaultvar is True (default), then if a field in self exactly equals
+"${key}" (with key being the field name), it is replaced by the corresponding
+value from s if it is empty.</li>
+<li>Raises a TypeError if s is not a dict or struct (i.e. if it doesn’t support keys()).</li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def importfrom(self, s, nonempty=True, replacedefaultvar=True):
+    &#34;&#34;&#34;
+    Import values from &#39;s&#39; into self according to the following rules:
+
+    - Only fields that already exist in self are considered.
+    - If s is a dictionary, it is converted to a struct via struct(**s).
+    - If the current value of a field in self is empty (None, &#34;&#34;, [] or ()),
+      then that field is updated from s.
+    - If nonempty is True (default), then only non-empty values from s are imported.
+    - If replacedefaultvar is True (default), then if a field in self exactly equals
+      &#34;${key}&#34; (with key being the field name), it is replaced by the corresponding
+      value from s if it is empty.
+    - Raises a TypeError if s is not a dict or struct (i.e. if it doesn’t support keys()).
+    &#34;&#34;&#34;
+    # If s is a dictionary, convert it to a struct instance.
+    if isinstance(s, dict):
+        s = struct(**s)
+    elif not hasattr(s, &#34;keys&#34;):
+        raise TypeError(f&#34;s must be a struct or a dictionary not a type {type(s).__name__}&#34;)
+
+    for key in self.keys():
+        if key in s:
+            s_value = getattr(s, key)
+            current_value = getattr(self, key)
+            if is_empty(current_value) or (replacedefaultvar and current_value == &#34;${&#34; + key + &#34;}&#34;):
+                if nonempty:
+                    if not is_empty(s_value):
+                        setattr(self, key, s_value)
+                else:
+                    setattr(self, key, s_value)</code></pre>
+</details>
+</dd>
 <dt id="forcefield.struct.isdefined"><code class="name flex">
 <span>def <span class="ident">isdefined</span></span>(<span>self, ref=None)</span>
 </code></dt>
@@ -5199,6 +5434,71 @@ The fields to update and their new values.</p>
             self.setattr(key, value)</code></pre>
 </details>
 </dd>
+<dt id="forcefield.struct.validkeys"><code class="name flex">
+<span>def <span class="ident">validkeys</span></span>(<span>self, list_of_keys)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Validate and return the subset of keys from the provided list that are valid in the instance.</p>
+<h2 id="parameters">Parameters:</h2>
+<p>list_of_keys : list
+A list of keys (as strings) to check against the instance’s attributes.</p>
+<h2 id="returns">Returns:</h2>
+<p>list
+A list of keys from list_of_keys that are valid (i.e., exist as attributes in the instance).</p>
+<h2 id="raises">Raises:</h2>
+<p>TypeError
+If list_of_keys is not a list or if any element in list_of_keys is not a string.</p>
+<h2 id="example">Example:</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; s = struct()
+&gt;&gt;&gt; s.foo = 42
+&gt;&gt;&gt; s.bar = &quot;hello&quot;
+&gt;&gt;&gt; valid = s.validkeys([&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;])
+&gt;&gt;&gt; print(valid)   # Output: ['foo', 'bar'] assuming 'baz' is not defined in s
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validkeys(self, list_of_keys):
+    &#34;&#34;&#34;
+    Validate and return the subset of keys from the provided list that are valid in the instance.
+
+    Parameters:
+    -----------
+    list_of_keys : list
+        A list of keys (as strings) to check against the instance’s attributes.
+
+    Returns:
+    --------
+    list
+        A list of keys from list_of_keys that are valid (i.e., exist as attributes in the instance).
+
+    Raises:
+    -------
+    TypeError
+        If list_of_keys is not a list or if any element in list_of_keys is not a string.
+
+    Example:
+    --------
+    &gt;&gt;&gt; s = struct()
+    &gt;&gt;&gt; s.foo = 42
+    &gt;&gt;&gt; s.bar = &#34;hello&#34;
+    &gt;&gt;&gt; valid = s.validkeys([&#34;foo&#34;, &#34;bar&#34;, &#34;baz&#34;])
+    &gt;&gt;&gt; print(valid)   # Output: [&#39;foo&#39;, &#39;bar&#39;] assuming &#39;baz&#39; is not defined in s
+    &#34;&#34;&#34;
+    # Check that list_of_keys is a list
+    if not isinstance(list_of_keys, list):
+        raise TypeError(&#34;list_of_keys must be a list&#34;)
+
+    # Check that every entry in the list is a string
+    for key in list_of_keys:
+        if not isinstance(key, str):
+            raise TypeError(&#34;Each key in list_of_keys must be a string&#34;)
+
+    # Assuming valid keys are those present in the instance&#39;s __dict__
+    return [key for key in list_of_keys if key in self]</code></pre>
+</details>
+</dd>
 <dt id="forcefield.struct.values"><code class="name flex">
 <span>def <span class="ident">values</span></span>(<span>self)</span>
 </code></dt>
@@ -5353,6 +5653,79 @@ write(filename, overwrite=True, mkdir=False)</p>
 </li>
 </ul>
 </dd>
+<dt id="forcefield.tlsphalone"><code class="flex name class">
+<span>class <span class="ident">tlsphalone</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>SMD:TLSPH forcefield (total Lagrangian)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class tlsphalone(forcefield):
+    &#34;&#34;&#34; SMD:TLSPH forcefield (total Lagrangian) &#34;&#34;&#34;
+    name = smd.name + struct(style=&#34;tlsph&#34;)
+    description = smd.description + struct(style=&#34;SMD:TLSPH - total Lagrangian for solids&#34;)
+
+    # forcefield definition (LAMMPS code between triple &#34;&#34;&#34;)
+    PAIR_STYLE = &#34;&#34;&#34;
+    # [comment] PAIR STYLE SMD
+    pair_style      hybrid/overlay smd/tlsph smd/hertz ${contact_scale}
+    &#34;&#34;&#34;
+
+    # style definition (LAMMPS code between triple &#34;&#34;&#34;)
+    PAIR_DIAGCOEFF = &#34;&#34;&#34;
+    # [comment] Diagonal pair coefficient tlsph
+    pair_coeff      %d %d smd/tlsph *COMMON ${rho} ${E} ${nu} ${q1} ${q2} ${Hg} ${Cp} &amp;
+                    *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening} &amp;
+                    *EOS_LINEAR &amp;
+                    *END
+    &#34;&#34;&#34;
+    PAIR_OFFDIAGCOEFF = &#34;&#34;&#34;
+    # [comment] Off-diagonal pair coefficient (generic)
+    pair_coeff      %d %d smd/hertz ${contact_stiffness}
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="forcefield.forcefield" href="#forcefield.forcefield">forcefield</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="forcefield.tlsphalone.PAIR_DIAGCOEFF"><code class="name">var <span class="ident">PAIR_DIAGCOEFF</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.tlsphalone.PAIR_OFFDIAGCOEFF"><code class="name">var <span class="ident">PAIR_OFFDIAGCOEFF</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.tlsphalone.PAIR_STYLE"><code class="name">var <span class="ident">PAIR_STYLE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.tlsphalone.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.tlsphalone.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="forcefield.forcefield" href="#forcefield.forcefield">forcefield</a></b></code>:
+<ul class="hlist">
+<li><code><a title="forcefield.forcefield.getallattributes" href="#forcefield.forcefield.getallattributes">getallattributes</a></code></li>
+<li><code><a title="forcefield.forcefield.pair_diagcoeff" href="#forcefield.forcefield.pair_diagcoeff">pair_diagcoeff</a></code></li>
+<li><code><a title="forcefield.forcefield.pair_offdiagcoeff" href="#forcefield.forcefield.pair_offdiagcoeff">pair_offdiagcoeff</a></code></li>
+<li><code><a title="forcefield.forcefield.pair_style" href="#forcefield.forcefield.pair_style">pair_style</a></code></li>
+<li><code><a title="forcefield.forcefield.printheader" href="#forcefield.forcefield.printheader">printheader</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 <dt id="forcefield.ulsph"><code class="flex name class">
 <span>class <span class="ident">ulsph</span></span>
 </code></dt>
@@ -5403,6 +5776,79 @@ write(filename, overwrite=True, mkdir=False)</p>
 <div class="desc"></div>
 </dd>
 <dt id="forcefield.ulsph.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="forcefield.smd" href="#forcefield.smd">smd</a></b></code>:
+<ul class="hlist">
+<li><code><a title="forcefield.smd.getallattributes" href="#forcefield.forcefield.getallattributes">getallattributes</a></code></li>
+<li><code><a title="forcefield.smd.pair_diagcoeff" href="#forcefield.forcefield.pair_diagcoeff">pair_diagcoeff</a></code></li>
+<li><code><a title="forcefield.smd.pair_offdiagcoeff" href="#forcefield.forcefield.pair_offdiagcoeff">pair_offdiagcoeff</a></code></li>
+<li><code><a title="forcefield.smd.pair_style" href="#forcefield.forcefield.pair_style">pair_style</a></code></li>
+<li><code><a title="forcefield.smd.printheader" href="#forcefield.forcefield.printheader">printheader</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="forcefield.ulsphalone"><code class="flex name class">
+<span>class <span class="ident">ulsphalone</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>SMD:ULSPH forcefield (updated Lagrangian)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ulsphalone(smd):
+    &#34;&#34;&#34; SMD:ULSPH forcefield (updated Lagrangian) &#34;&#34;&#34;
+    name = smd.name + struct(style=&#34;ulsph&#34;)
+    description = smd.description + struct(style=&#34;SMD:ULSPH - updated Lagrangian for fluids - SPH-like&#34;)
+
+    # forcefield definition (LAMMPS code between triple &#34;&#34;&#34;)
+    PAIR_STYLE = &#34;&#34;&#34;
+    # [comment] PAIR STYLE SMD
+    pair_style      smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION
+    &#34;&#34;&#34;
+
+    # style definition (LAMMPS code between triple &#34;&#34;&#34;)
+    PAIR_DIAGCOEFF = &#34;&#34;&#34;
+    # [comment] Pair diagonal coefficient ulsph
+    pair_coeff      %d %d smd/ulsph *COMMON ${rho} ${c0} ${q1} ${Cp} 0 &amp;
+                    *EOS_TAIT ${taitexponent} &amp;
+                    *END
+    &#34;&#34;&#34;
+    PAIR_OFFDIAGCOEFF = &#34;&#34;&#34;
+    # [comment] Off-diagonal pair coefficient (generic)
+    pair_coeff      %d %d smd/hertz ${contact_stiffness}
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="forcefield.smd" href="#forcefield.smd">smd</a></li>
+<li><a title="forcefield.forcefield" href="#forcefield.forcefield">forcefield</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="forcefield.ulsphalone.PAIR_DIAGCOEFF"><code class="name">var <span class="ident">PAIR_DIAGCOEFF</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.ulsphalone.PAIR_OFFDIAGCOEFF"><code class="name">var <span class="ident">PAIR_OFFDIAGCOEFF</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.ulsphalone.PAIR_STYLE"><code class="name">var <span class="ident">PAIR_STYLE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.ulsphalone.description"><code class="name">var <span class="ident">description</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="forcefield.ulsphalone.name"><code class="name">var <span class="ident">name</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -5614,6 +6060,7 @@ water(beadtype=index, userid="myfluid")</p></div>
 <li><code><a title="forcefield.struct.generator" href="#forcefield.struct.generator">generator</a></code></li>
 <li><code><a title="forcefield.struct.getattr" href="#forcefield.struct.getattr">getattr</a></code></li>
 <li><code><a title="forcefield.struct.hasattr" href="#forcefield.struct.hasattr">hasattr</a></code></li>
+<li><code><a title="forcefield.struct.importfrom" href="#forcefield.struct.importfrom">importfrom</a></code></li>
 <li><code><a title="forcefield.struct.isdefined" href="#forcefield.struct.isdefined">isdefined</a></code></li>
 <li><code><a title="forcefield.struct.isempty" href="#forcefield.struct.isempty">isempty</a></code></li>
 <li><code><a title="forcefield.struct.isexpression" href="#forcefield.struct.isexpression">isexpression</a></code></li>
@@ -5632,6 +6079,7 @@ water(beadtype=index, userid="myfluid")</p></div>
 <li><code><a title="forcefield.struct.struct2dict" href="#forcefield.struct.struct2dict">struct2dict</a></code></li>
 <li><code><a title="forcefield.struct.struct2param" href="#forcefield.struct.struct2param">struct2param</a></code></li>
 <li><code><a title="forcefield.struct.update" href="#forcefield.struct.update">update</a></code></li>
+<li><code><a title="forcefield.struct.validkeys" href="#forcefield.struct.validkeys">validkeys</a></code></li>
 <li><code><a title="forcefield.struct.values" href="#forcefield.struct.values">values</a></code></li>
 <li><code><a title="forcefield.struct.write" href="#forcefield.struct.write">write</a></code></li>
 <li><code><a title="forcefield.struct.zip" href="#forcefield.struct.zip">zip</a></code></li>
@@ -5647,12 +6095,32 @@ water(beadtype=index, userid="myfluid")</p></div>
 </ul>
 </li>
 <li>
+<h4><code><a title="forcefield.tlsphalone" href="#forcefield.tlsphalone">tlsphalone</a></code></h4>
+<ul class="">
+<li><code><a title="forcefield.tlsphalone.PAIR_DIAGCOEFF" href="#forcefield.tlsphalone.PAIR_DIAGCOEFF">PAIR_DIAGCOEFF</a></code></li>
+<li><code><a title="forcefield.tlsphalone.PAIR_OFFDIAGCOEFF" href="#forcefield.tlsphalone.PAIR_OFFDIAGCOEFF">PAIR_OFFDIAGCOEFF</a></code></li>
+<li><code><a title="forcefield.tlsphalone.PAIR_STYLE" href="#forcefield.tlsphalone.PAIR_STYLE">PAIR_STYLE</a></code></li>
+<li><code><a title="forcefield.tlsphalone.description" href="#forcefield.tlsphalone.description">description</a></code></li>
+<li><code><a title="forcefield.tlsphalone.name" href="#forcefield.tlsphalone.name">name</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="forcefield.ulsph" href="#forcefield.ulsph">ulsph</a></code></h4>
 <ul class="">
 <li><code><a title="forcefield.ulsph.PAIR_DIAGCOEFF" href="#forcefield.ulsph.PAIR_DIAGCOEFF">PAIR_DIAGCOEFF</a></code></li>
 <li><code><a title="forcefield.ulsph.PAIR_OFFDIAGCOEFF" href="#forcefield.ulsph.PAIR_OFFDIAGCOEFF">PAIR_OFFDIAGCOEFF</a></code></li>
 <li><code><a title="forcefield.ulsph.description" href="#forcefield.ulsph.description">description</a></code></li>
 <li><code><a title="forcefield.ulsph.name" href="#forcefield.ulsph.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="forcefield.ulsphalone" href="#forcefield.ulsphalone">ulsphalone</a></code></h4>
+<ul class="">
+<li><code><a title="forcefield.ulsphalone.PAIR_DIAGCOEFF" href="#forcefield.ulsphalone.PAIR_DIAGCOEFF">PAIR_DIAGCOEFF</a></code></li>
+<li><code><a title="forcefield.ulsphalone.PAIR_OFFDIAGCOEFF" href="#forcefield.ulsphalone.PAIR_OFFDIAGCOEFF">PAIR_OFFDIAGCOEFF</a></code></li>
+<li><code><a title="forcefield.ulsphalone.PAIR_STYLE" href="#forcefield.ulsphalone.PAIR_STYLE">PAIR_STYLE</a></code></li>
+<li><code><a title="forcefield.ulsphalone.description" href="#forcefield.ulsphalone.description">description</a></code></li>
+<li><code><a title="forcefield.ulsphalone.name" href="#forcefield.ulsphalone.name">name</a></code></li>
 </ul>
 </li>
 <li>

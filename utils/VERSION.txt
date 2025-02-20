@@ -27,7 +27,7 @@
 	- 1.005: 3D, 4D NumPy arrays are fully implemented and operational
 #
 #
-# Author: INRAE\Olivier Vitrac
-# Revision: 2025-01-21
+# Author: INRAE\olivier.vitrac@agroparistech.fr
+# Revision: 2025-02-19
 #
-version="1.005"
+version="1.006"

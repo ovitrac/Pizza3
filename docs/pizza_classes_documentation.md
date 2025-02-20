@@ -1,6 +1,6 @@
 # Pizza Modules Documentation
 
-Generated on: **2025-02-07 20:34:01**
+Generated on: **2025-02-20 12:54:09**
 
 <hr style="border: none; height: 1px; background-color: #e0e0e0;" />
 
@@ -274,7 +274,9 @@ solidfood
 statussection
 struct
 tlsph
+tlsphalone
 ulsph
+ulsphalone
 water
 LammpsGeneric --> LammpsCollectionGroup
 LammpsGeneric --> LammpsCreate
@@ -305,6 +307,7 @@ coregeometry --> Union
 dict --> AttrErrorDict
 emulsion --> coreshell
 forcefield --> smd
+forcefield --> tlsphalone
 generic --> USERSMD
 none --> rigidwall
 object --> CallableScript
@@ -350,6 +353,7 @@ script --> statussection
 smd --> none
 smd --> tlsph
 smd --> ulsph
+smd --> ulsphalone
 str --> pstr
 struct --> param
 struct --> regioncollection
@@ -884,69 +888,71 @@ struct --> scriptobjectgroup
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| (module-level) | `autoname` | generate automatically names | 3 | 1.003 |
-| (module-level) | `get_metadata` | Return a dictionary of explicitly defined metadata. | 15 | 1.003 |
-| `ScriptTemplate` | `__getattr__` | Handles attribute retrieval, checking the following in order: 1. If 'name' is in default_attributes, return the value from attributes if it exists, otherwise return the default value from default_attributes. 2. If 'name' is 'content', return the content (or an empty string if content is not set). 3. If 'name' exists in the attributes dictionary, return its value. 4. If attributes itself exists in __dict__, return the value from attributes if 'name' is found. 5. If all previous checks fail, raise an AttributeError indicating that 'name' is not found. | 39 | 1.003 |
-| `ScriptTemplate` | `__init__` | Initializes a new `ScriptTemplate` object. | 96 | 1.003 |
-| `ScriptTemplate` | `__repr__` | Return repr(self). | 87 | 1.003 |
-| `ScriptTemplate` | `__setattr__` | Implement setattr(self, name, value). | 24 | 1.003 |
-| `ScriptTemplate` | `__str__` | Return str(self). | 3 | 1.003 |
-| `ScriptTemplate` | `_calculate_content_hash` | Generate hash for content. | 3 | 1.003 |
-| `ScriptTemplate` | `_invalidate_cache` | Reset all cache entries. | 10 | 1.003 |
-| `ScriptTemplate` | `_update_content` | Helper to set _content and _content_hash, refreshing cache as necessary. | 19 | 1.003 |
-| `ScriptTemplate` | `check_variables` | Checks for undefined variables in the ScriptTemplate instance. | 56 | 1.003 |
-| `ScriptTemplate` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 46 | 1.003 |
-| `ScriptTemplate` | `do` | Executes or prepares the script template content based on its attributes and the `softrun` flag. | 103 | 1.003 |
-| `ScriptTemplate` | `is_variable_defined` | Checks if a specified variable is defined (either as a default value or a set value). | 29 | 1.003 |
-| `ScriptTemplate` | `is_variable_set_value_only` | Checks if a specified variable is defined and set to a specific (non-default) value. | 31 | 1.003 |
-| `ScriptTemplate` | `refreshvar` | Detects variables in the content and adds them to definitions if needed. This method ensures that variables like ${varname} are correctly detected and added to the definitions if they are missing. | 14 | 1.003 |
-| `dscript` | `__add__` | Concatenates two dscript objects, creating a new dscript object that combines the TEMPLATE and DEFINITIONS of both. This operation avoids deep copying of definitions by creating a new lambdaScriptdata instance from the definitions. | 55 | 1.003 |
-| `dscript` | `__call__` | Extracts subobjects from the dscript based on the provided keys. | 35 | 1.003 |
-| `dscript` | `__contains__` |  | 2 | 1.003 |
-| `dscript` | `__copy__` | copy method | 6 | 1.003 |
-| `dscript` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `dscript` | `__delitem__` |  | 2 | 1.003 |
-| `dscript` | `__getattr__` |  | 16 | 1.003 |
-| `dscript` | `__getitem__` | Implements index-based retrieval, slicing, or reordering for dscript objects. | 48 | 1.003 |
-| `dscript` | `__init__` | Initializes a new `dscript` object. | 65 | 1.003 |
-| `dscript` | `__iter__` |  | 2 | 1.003 |
-| `dscript` | `__len__` |  | 2 | 1.003 |
-| `dscript` | `__or__` | Pipes a dscript object with other objects. When other is a dscript object, both objects are concatenated (+) before being converted into a pipescript object When other is a script, pipescript or scriptobjectgroup, self is converted into a pipescript | 29 | 1.003 |
-| `dscript` | `__repr__` | Representation of dscript object with additional properties. | 48 | 1.003 |
-| `dscript` | `__setattr__` | Implement setattr(self, name, value). | 24 | 1.003 |
-| `dscript` | `__setitem__` |  | 7 | 1.003 |
-| `dscript` | `__str__` | Return str(self). | 4 | 1.003 |
-| `dscript` | `_build_html_table` | Helper method to build an HTML table with embedded CSS. | 98 | 1.003 |
-| `dscript` | `_escape_html` | Helper method to escape HTML special characters in text. | 16 | 1.003 |
-| `dscript` | `_format_field` | Helper method to format individual fields for the table. | 20 | 1.003 |
-| `dscript` | `_format_list` | Helper method to format list-type fields for the table. | 17 | 1.003 |
-| `dscript` | `_format_values` | Helper method to format the 'values' field, which is a list of tuples. | 17 | 1.003 |
-| `dscript` | `add_dynamic_script` | Add a dynamic script step to the dscript object. | 33 | 1.003 |
-| `dscript` | `check_all_variables` | Checks for undefined variables for each TEMPLATE key in the dscript object. | 38 | 1.003 |
-| `dscript` | `clean` | Clean the TEMPLATE by removing or fixing empty steps. | 42 | 1.003 |
-| `dscript` | `createEmptyVariables` | Creates empty variables in DEFINITIONS if they don't already exist. | 14 | 1.003 |
-| `dscript` | `detect_all_variables` | Detects all variables across all templates in the dscript object. | 20 | 1.003 |
-| `dscript` | `do` | Executes or previews all `ScriptTemplate` instances in `TEMPLATE`, concatenating their processed content. Allows for optional headers and footers based on verbosity settings, and offers a preliminary preview mode with `softrun`. Accumulates definitions across all templates if `return_definitions=True`. | 101 | 1.003 |
-| `dscript` | `flattenvariables` | Flatten the variable definitions for each step based on usage and precedence. | 60 | 1.003 |
-| `dscript` | `generator` | Returns ------- STR generated code corresponding to dscript (using dscript syntax/language). | 9 | 1.003 |
-| `dscript` | `get_attributes_by_index` | Returns the attributes of the ScriptTemplate at the specified index. | 4 | 1.003 |
-| `dscript` | `get_content_by_index` | Returns the content of the ScriptTemplate at the specified index. | 45 | 1.003 |
-| `dscript` | `header` | Generate a formatted header for the DSCRIPT file. | 63 | 1.003 |
-| `dscript` | `items` |  | 2 | 1.003 |
-| `dscript` | `keys` | Return the keys of the TEMPLATE. | 3 | 1.003 |
-| `dscript` | `list_values` | List all unique values taken by a specified key across global definitions and all steps in sequential order. | 179 | 1.003 |
-| `dscript` | `pipescript` | Returns a pipescript object by combining script objects corresponding to the given keys. | 71 | 1.003 |
-| `dscript` | `print_var_info` | Print or save a neatly formatted table of variable information based on the analysis from `var_info()`. | 205 | 1.003 |
-| `dscript` | `reorder` | Reorder the TEMPLATE lines according to a list of indices. | 10 | 1.003 |
-| `dscript` | `save` | Save the current script instance to a text file. | 222 | 1.003 |
-| `dscript` | `script` | returns the corresponding script | 10 | 1.003 |
-| `dscript` | `search` | Search for foreign/definition key values associated with given primary key/definition value(s). | 193 | 1.003 |
-| `dscript` | `set_all_variables` | Ensures that all variables in the templates are added to the global definitions with default values if they are not already defined. | 11 | 1.003 |
-| `dscript` | `values` | Return the ScriptTemplate objects in TEMPLATE. | 3 | 1.003 |
-| `dscript` | `var_info` | Analyze and gather comprehensive information about variables used in the script. | 130 | 1.003 |
-| `dscript` | `write` | Writes the provided script content to a specified file in a given folder, with a header if necessary. | 86 | 1.003 |
-| `lambdaScriptdata` | `__init__` | Constructor for lambdaScriptdata. It forces the parent's _returnerror parameter to False. | 19 | 1.003 |
-| `lamdaScript` | `__init__` | Initialize a new `lambdaScript` instance. | 66 | 1.003 |
+| (module-level) | `autoname` | generate automatically names | 3 | 1.006 |
+| (module-level) | `get_metadata` | Return a dictionary of explicitly defined metadata. | 15 | 1.006 |
+| `ScriptTemplate` | `__getattr__` | Handles attribute retrieval, checking the following in order: 1. If 'name' is in default_attributes, return the value from attributes if it exists, otherwise return the default value from default_attributes. 2. If 'name' is 'content', return the content (or an empty string if content is not set). 3. If 'name' exists in the attributes dictionary, return its value. 4. If attributes itself exists in __dict__, return the value from attributes if 'name' is found. 5. If all previous checks fail, raise an AttributeError indicating that 'name' is not found. | 39 | 1.006 |
+| `ScriptTemplate` | `__init__` | Initializes a new `ScriptTemplate` object. | 96 | 1.006 |
+| `ScriptTemplate` | `__repr__` | Return repr(self). | 87 | 1.006 |
+| `ScriptTemplate` | `__setattr__` | Implement setattr(self, name, value). | 24 | 1.006 |
+| `ScriptTemplate` | `__str__` | Return str(self). | 3 | 1.006 |
+| `ScriptTemplate` | `_calculate_content_hash` | Generate hash for content. | 3 | 1.006 |
+| `ScriptTemplate` | `_invalidate_cache` | Reset all cache entries. | 10 | 1.006 |
+| `ScriptTemplate` | `_update_content` | Helper to set _content and _content_hash, refreshing cache as necessary. | 19 | 1.006 |
+| `ScriptTemplate` | `check_variables` | Checks for undefined variables in the ScriptTemplate instance. | 56 | 1.006 |
+| `ScriptTemplate` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 46 | 1.006 |
+| `ScriptTemplate` | `do` | Executes or prepares the script template content based on its attributes and the `softrun` flag. | 105 | 1.006 |
+| `ScriptTemplate` | `is_variable_defined` | Checks if a specified variable is defined (either as a default value or a set value). | 29 | 1.006 |
+| `ScriptTemplate` | `is_variable_set_value_only` | Checks if a specified variable is defined and set to a specific (non-default) value. | 31 | 1.006 |
+| `ScriptTemplate` | `refreshvar` | Detects variables in the content and adds them to definitions if needed. This method ensures that variables like ${varname} are correctly detected and added to the definitions if they are missing. | 14 | 1.006 |
+| `dscript` | `__add__` | Concatenates two dscript objects, creating a new dscript object that combines the TEMPLATE and DEFINITIONS of both. This operation avoids deep copying of definitions by creating a new lambdaScriptdata instance from the definitions. | 55 | 1.006 |
+| `dscript` | `__call__` | Extracts subobjects from the dscript based on the provided keys. | 37 | 1.006 |
+| `dscript` | `__contains__` |  | 2 | 1.006 |
+| `dscript` | `__copy__` | copy method | 6 | 1.006 |
+| `dscript` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `dscript` | `__delitem__` |  | 2 | 1.006 |
+| `dscript` | `__getattr__` |  | 16 | 1.006 |
+| `dscript` | `__getitem__` | Implements index-based retrieval, slicing, or reordering for dscript objects. | 48 | 1.006 |
+| `dscript` | `__init__` | Initializes a new `dscript` object. | 65 | 1.006 |
+| `dscript` | `__iter__` |  | 2 | 1.006 |
+| `dscript` | `__len__` |  | 2 | 1.006 |
+| `dscript` | `__mul__` | Multiply the dscript instance to create multiple copies of its script. | 67 | 1.006 |
+| `dscript` | `__or__` | Pipes a dscript object with other objects. When other is a dscript object, both objects are concatenated (+) before being converted into a pipescript object When other is a script, pipescript or scriptobjectgroup, self is converted into a pipescript | 29 | 1.006 |
+| `dscript` | `__repr__` | Representation of dscript object with additional properties. | 48 | 1.006 |
+| `dscript` | `__rmul__` |  | 2 | 1.006 |
+| `dscript` | `__setattr__` | Implement setattr(self, name, value). | 24 | 1.006 |
+| `dscript` | `__setitem__` |  | 7 | 1.006 |
+| `dscript` | `__str__` | Return str(self). | 4 | 1.006 |
+| `dscript` | `_build_html_table` | Helper method to build an HTML table with embedded CSS. | 98 | 1.006 |
+| `dscript` | `_escape_html` | Helper method to escape HTML special characters in text. | 16 | 1.006 |
+| `dscript` | `_format_field` | Helper method to format individual fields for the table. | 20 | 1.006 |
+| `dscript` | `_format_list` | Helper method to format list-type fields for the table. | 17 | 1.006 |
+| `dscript` | `_format_values` | Helper method to format the 'values' field, which is a list of tuples. | 17 | 1.006 |
+| `dscript` | `add_dynamic_script` | Add a dynamic script step to the dscript object. | 33 | 1.006 |
+| `dscript` | `check_all_variables` | Checks for undefined variables for each TEMPLATE key in the dscript object. | 38 | 1.006 |
+| `dscript` | `clean` | Clean the TEMPLATE by removing or fixing empty steps. | 42 | 1.006 |
+| `dscript` | `createEmptyVariables` | Creates empty variables in DEFINITIONS if they don't already exist. | 14 | 1.006 |
+| `dscript` | `detect_all_variables` | Detects all variables across all templates in the dscript object. | 20 | 1.006 |
+| `dscript` | `do` | Executes or previews all `ScriptTemplate` instances in `TEMPLATE`, concatenating their processed content. Allows for optional headers and footers based on verbosity settings, and offers a preliminary preview mode with `softrun`. Accumulates definitions across all templates if `return_definitions=True`. | 101 | 1.006 |
+| `dscript` | `flattenvariables` | Flatten the variable definitions for each step based on usage and precedence. | 60 | 1.006 |
+| `dscript` | `generator` | Returns ------- STR generated code corresponding to dscript (using dscript syntax/language). | 9 | 1.006 |
+| `dscript` | `get_attributes_by_index` | Returns the attributes of the ScriptTemplate at the specified index. | 4 | 1.006 |
+| `dscript` | `get_content_by_index` | Returns the content of the ScriptTemplate at the specified index. | 45 | 1.006 |
+| `dscript` | `header` | Generate a formatted header for the DSCRIPT file. | 63 | 1.006 |
+| `dscript` | `items` |  | 2 | 1.006 |
+| `dscript` | `keys` | Return the keys of the TEMPLATE. | 3 | 1.006 |
+| `dscript` | `list_values` | List all unique values taken by a specified key across global definitions and all steps in sequential order. | 179 | 1.006 |
+| `dscript` | `pipescript` | Returns a pipescript object by combining script objects corresponding to the given keys. | 73 | 1.006 |
+| `dscript` | `print_var_info` | Print or save a neatly formatted table of variable information based on the analysis from `var_info()`. | 205 | 1.006 |
+| `dscript` | `reorder` | Reorder the TEMPLATE lines according to a list of indices. | 10 | 1.006 |
+| `dscript` | `save` | Save the current script instance to a text file. | 222 | 1.006 |
+| `dscript` | `script` | returns the corresponding script | 10 | 1.006 |
+| `dscript` | `search` | Search for foreign/definition key values associated with given primary key/definition value(s). | 193 | 1.006 |
+| `dscript` | `set_all_variables` | Ensures that all variables in the templates are added to the global definitions with default values if they are not already defined. | 11 | 1.006 |
+| `dscript` | `values` | Return the ScriptTemplate objects in TEMPLATE. | 3 | 1.006 |
+| `dscript` | `var_info` | Analyze and gather comprehensive information about variables used in the script. | 130 | 1.006 |
+| `dscript` | `write` | Writes the provided script content to a specified file in a given folder, with a header if necessary. | 86 | 1.006 |
+| `lambdaScriptdata` | `__init__` | Constructor for lambdaScriptdata. It forces the parent's _returnerror parameter to False. | 19 | 1.006 |
+| `lamdaScript` | `__init__` | Initialize a new `lambdaScript` instance. | 66 | 1.006 |
 
 <a id="pizza_dump3" name="pizza_dump3"></a>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_dscript" title="Go to Previous Module: pizza.dscript" style="text-decoration: none;">⬅️ Previous</a>
@@ -1141,9 +1147,12 @@ smd
 solidfood
 struct
 tlsph
+tlsphalone
 ulsph
+ulsphalone
 water
 forcefield --> smd
+forcefield --> tlsphalone
 none --> rigidwall
 object --> forcefield
 object --> struct
@@ -1152,6 +1161,7 @@ paramauto --> parameterforcefield
 smd --> none
 smd --> tlsph
 smd --> ulsph
+smd --> ulsphalone
 struct --> param
 tlsph --> saltTLSPH
 tlsph --> solidfood
@@ -1164,65 +1174,77 @@ ulsph --> water
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| `forcefield` | `__repr__` | disp method | 21 | 0.9971 |
-| `forcefield` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.9971 |
-| `forcefield` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 0.9971 |
-| `forcefield` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 0.9971 |
-| `forcefield` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
-| `forcefield` | `printheader` | print header | 7 | 0.9971 |
-| `none` | `__repr__` | disp method | 21 | 0.9971 |
-| `none` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.9971 |
-| `none` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 0.9971 |
-| `none` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 0.9971 |
-| `none` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
-| `none` | `printheader` | print header | 7 | 0.9971 |
-| `parameterforcefield` | `__init__` | Constructor for parameterforcefield. It forces the parent's _returnerror parameter to False. | 19 | 0.9971 |
-| `rigidwall` | `__init__` | rigidwall forcefield: rigidwall(beadtype=index, userid="mywall") | 12 | 0.9971 |
-| `rigidwall` | `__repr__` | disp method | 21 | 0.9971 |
-| `rigidwall` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.9971 |
-| `rigidwall` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 0.9971 |
-| `rigidwall` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 0.9971 |
-| `rigidwall` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
-| `rigidwall` | `printheader` | print header | 7 | 0.9971 |
-| `saltTLSPH` | `__init__` | saltTLSPH forcefield: saltTLSPH(beadtype=index, userid="salt") | 22 | 0.9971 |
-| `saltTLSPH` | `__repr__` | disp method | 21 | 0.9971 |
-| `saltTLSPH` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.9971 |
-| `saltTLSPH` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 0.9971 |
-| `saltTLSPH` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 0.9971 |
-| `saltTLSPH` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
-| `saltTLSPH` | `printheader` | print header | 7 | 0.9971 |
-| `smd` | `__repr__` | disp method | 21 | 0.9971 |
-| `smd` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.9971 |
-| `smd` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 0.9971 |
-| `smd` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 0.9971 |
-| `smd` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
-| `smd` | `printheader` | print header | 7 | 0.9971 |
-| `solidfood` | `__init__` | food forcefield: solidfood(beadtype=index, userid="myfood") | 22 | 0.9971 |
-| `solidfood` | `__repr__` | disp method | 21 | 0.9971 |
-| `solidfood` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.9971 |
-| `solidfood` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 0.9971 |
-| `solidfood` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 0.9971 |
-| `solidfood` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
-| `solidfood` | `printheader` | print header | 7 | 0.9971 |
-| `tlsph` | `__repr__` | disp method | 21 | 0.9971 |
-| `tlsph` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.9971 |
-| `tlsph` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 0.9971 |
-| `tlsph` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 0.9971 |
-| `tlsph` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
-| `tlsph` | `printheader` | print header | 7 | 0.9971 |
-| `ulsph` | `__repr__` | disp method | 21 | 0.9971 |
-| `ulsph` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.9971 |
-| `ulsph` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 0.9971 |
-| `ulsph` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 0.9971 |
-| `ulsph` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
-| `ulsph` | `printheader` | print header | 7 | 0.9971 |
-| `water` | `__init__` | water forcefield: water(beadtype=index, userid="myfluid") | 16 | 0.9971 |
-| `water` | `__repr__` | disp method | 21 | 0.9971 |
-| `water` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 0.9971 |
-| `water` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 0.9971 |
-| `water` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 0.9971 |
-| `water` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 0.9971 |
-| `water` | `printheader` | print header | 7 | 0.9971 |
+| `forcefield` | `__repr__` | disp method | 21 | 1.006 |
+| `forcefield` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `forcefield` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `forcefield` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `forcefield` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `forcefield` | `printheader` | print header | 7 | 1.006 |
+| `none` | `__repr__` | disp method | 21 | 1.006 |
+| `none` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `none` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `none` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `none` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `none` | `printheader` | print header | 7 | 1.006 |
+| `parameterforcefield` | `__init__` | Constructor for parameterforcefield. It forces the parent's _returnerror parameter to False. | 19 | 1.006 |
+| `rigidwall` | `__init__` | rigidwall forcefield: rigidwall(beadtype=index, userid="mywall") | 12 | 1.006 |
+| `rigidwall` | `__repr__` | disp method | 21 | 1.006 |
+| `rigidwall` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `rigidwall` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `rigidwall` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `rigidwall` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `rigidwall` | `printheader` | print header | 7 | 1.006 |
+| `saltTLSPH` | `__init__` | saltTLSPH forcefield: saltTLSPH(beadtype=index, userid="salt") | 22 | 1.006 |
+| `saltTLSPH` | `__repr__` | disp method | 21 | 1.006 |
+| `saltTLSPH` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `saltTLSPH` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `saltTLSPH` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `saltTLSPH` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `saltTLSPH` | `printheader` | print header | 7 | 1.006 |
+| `smd` | `__repr__` | disp method | 21 | 1.006 |
+| `smd` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `smd` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `smd` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `smd` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `smd` | `printheader` | print header | 7 | 1.006 |
+| `solidfood` | `__init__` | food forcefield: solidfood(beadtype=index, userid="myfood") | 22 | 1.006 |
+| `solidfood` | `__repr__` | disp method | 21 | 1.006 |
+| `solidfood` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `solidfood` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `solidfood` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `solidfood` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `solidfood` | `printheader` | print header | 7 | 1.006 |
+| `tlsph` | `__repr__` | disp method | 21 | 1.006 |
+| `tlsph` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `tlsph` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `tlsph` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `tlsph` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `tlsph` | `printheader` | print header | 7 | 1.006 |
+| `tlsphalone` | `__repr__` | disp method | 21 | 1.006 |
+| `tlsphalone` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `tlsphalone` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `tlsphalone` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `tlsphalone` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `tlsphalone` | `printheader` | print header | 7 | 1.006 |
+| `ulsph` | `__repr__` | disp method | 21 | 1.006 |
+| `ulsph` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `ulsph` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `ulsph` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `ulsph` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `ulsph` | `printheader` | print header | 7 | 1.006 |
+| `ulsphalone` | `__repr__` | disp method | 21 | 1.006 |
+| `ulsphalone` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `ulsphalone` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `ulsphalone` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `ulsphalone` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `ulsphalone` | `printheader` | print header | 7 | 1.006 |
+| `water` | `__init__` | water forcefield: water(beadtype=index, userid="myfluid") | 16 | 1.006 |
+| `water` | `__repr__` | disp method | 21 | 1.006 |
+| `water` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `water` | `pair_diagcoeff` | Generate and return the diagonal pair coefficients for the current forcefield instance. | 63 | 1.006 |
+| `water` | `pair_offdiagcoeff` | Generate and return the off-diagonal pair coefficients for the current forcefield instance. | 87 | 1.006 |
+| `water` | `pair_style` | Generate and return the pair style command for the current forcefield instance. | 58 | 1.006 |
+| `water` | `printheader` | print header | 7 | 1.006 |
 
 <a id="pizza_generic" name="pizza_generic"></a>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_forcefield" title="Go to Previous Module: pizza.forcefield" style="text-decoration: none;">⬅️ Previous</a>
@@ -1302,87 +1324,88 @@ object --> pipescript
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| (module-level) | `format_table` | Formats a table with given headers and rows, truncating text based on maximum column widths and aligning content based on the specified alignment. | 82 | 0.9999 |
-| (module-level) | `generate_random_name` |  | 3 | 0.9999 |
-| (module-level) | `truncate_text` | Truncates the input text to fit within the specified maximum width. If the text is longer than `maxwidth`, it is shortened by keeping the beginning and trailing parts, separated by " [...] ". | 26 | 0.9999 |
-| `Operation` | `__add__` | overload + as union | 3 | 0.9999 |
-| `Operation` | `__init__` | Initializes a new Operation instance with given parameters. | 10 | 0.9999 |
-| `Operation` | `__mul__` | overload * as intersect | 3 | 0.9999 |
-| `Operation` | `__repr__` | detailed representation | 10 | 0.9999 |
-| `Operation` | `__str__` | string representation | 18 | 0.9999 |
-| `Operation` | `__sub__` | overload - as subtract | 3 | 0.9999 |
-| `Operation` | `_operate` | Implements algebraic operations between self and other Operation instances. | 40 | 0.9999 |
-| `Operation` | `append` | Appends a single operand to the operands list of the Operation instance. | 3 | 0.9999 |
-| `Operation` | `extend` | Extends the operands list of the Operation instance with multiple operands. | 3 | 0.9999 |
-| `Operation` | `generateID` | Generates an ID for the Operation instance based on its operands or name. | 8 | 0.9999 |
-| `Operation` | `generate_hashname` | Generates an ID for the Operation instance based on its operands or name. | 9 | 0.9999 |
-| `Operation` | `get_proper_operand` | Returns the proper operand depending on whether the operation is finalized. | 17 | 0.9999 |
-| `Operation` | `is_empty` | Checks if the Operation instance has no operands. | 3 | 0.9999 |
-| `Operation` | `is_unary` | Checks if the Operation instance has exactly one operand. | 3 | 0.9999 |
-| `Operation` | `isfinalized` | Checks whether the Operation instance is finalized. Returns: - bool: True if the Operation is finalized, otherwise False. Functionality: - An Operation is considered finalized if its operator is not one of the algebraic operators '+', '-', '*'. | 10 | 0.9999 |
-| `Operation` | `script` | Generate the LAMMPS code using the dscript and script classes. | 14 | 0.9999 |
-| `group` | `__call__` | Allows subindexing of the group object using callable syntax with multiple keys. | 27 | 0.9999 |
-| `group` | `__copy__` | copy method | 6 | 0.9999 |
-| `group` | `__deepcopy__` | deep copy method | 8 | 0.9999 |
-| `group` | `__getattr__` | Allows accessing operations via attribute-style notation. If the attribute is one of the core attributes, returns it directly. For other attributes, searches for an operation with a matching name in the _operations list. | 33 | 0.9999 |
-| `group` | `__getitem__` | Enable shorthand for G.operations[G.find(operation_name)] using G[operation_name], or accessing operation by index using G[index]. | 18 | 0.9999 |
-| `group` | `__init__` | Initializes a new instance of the group class. | 57 | 0.9999 |
-| `group` | `__len__` | return the number of stored operations | 3 | 0.9999 |
-| `group` | `__repr__` | Returns a neatly formatted table representation of the group's operations. | 28 | 0.9999 |
-| `group` | `__setattr__` | Allows deletion of an operation via 'G.operation_name = []' after construction. During construction, attributes are set normally. | 20 | 0.9999 |
-| `group` | `__str__` | Return str(self). | 2 | 0.9999 |
-| `group` | `_get_subobject` | Retrieves a subobject based on the provided key. | 37 | 0.9999 |
-| `group` | `add_group_criteria` | Adds group(s) using existing methods based on key-value pairs. | 36 | 0.9999 |
-| `group` | `add_group_criteria_single` | Adds a single group based on criteria. | 99 | 0.9999 |
-| `group` | `add_operation` | add an operation | 6 | 0.9999 |
-| `group` | `byid` | select atoms by id and store them in group G.id(group_name,id_values) | 11 | 0.9999 |
-| `group` | `byregion` | set a group of atoms based on a regionID G.region(group_name,regionID) | 9 | 0.9999 |
-| `group` | `bytype` | select atoms by type and store them in group G.type(group_name,type_values) | 11 | 0.9999 |
-| `group` | `byvariable` | Sets a group of atoms based on a variable. | 16 | 0.9999 |
-| `group` | `clear` | clear group G.clear(group_name) | 9 | 0.9999 |
-| `group` | `clearall` | clear all operations | 3 | 0.9999 |
-| `group` | `code` | Joins the `code` attributes of all stored `operation` objects with ' '. | 5 | 0.9999 |
-| `group` | `copy` | Copies a stored operation to a new operation with a different name. | 20 | 0.9999 |
-| `group` | `count` | Generates DSCRIPT counters for specified groups with LAMMPS variable definitions and print commands. | 110 | 0.9999 |
-| `group` | `create` | create group G.create(group_name) | 9 | 0.9999 |
-| `group` | `create_groups` |  | 5 | 0.9999 |
-| `group` | `delete` | Deletes one or more stored operations based on their names. | 41 | 0.9999 |
-| `group` | `disp` | display the content of an operation | 7 | 0.9999 |
-| `group` | `dscript` | Generates a dscript object containing the group's LAMMPS commands. | 24 | 0.9999 |
-| `group` | `evaluate` | Evaluates the operation and stores the result in a new group. Expressions could combine +, - and * like o1+o2+o3-o4+o5+o6 | 65 | 0.9999 |
-| `group` | `find` | Returns the index of an operation based on its name. | 7 | 0.9999 |
-| `group` | `format_cell_content` |  | 7 | 0.9999 |
-| `group` | `generate_group_definitions_from_collection` | Generates group definitions based on the collection of groupobject instances. | 15 | 0.9999 |
-| `group` | `get_by_name` | Returns the operation matching "operation_name" Usage: group.get_by_name("operation_name") To be used by Operation, not by end-user, which should prefer getattr() | 10 | 0.9999 |
-| `group` | `get_group_criteria` | Retrieve the criteria that define a group. Handles group_name as a string or number. | 33 | 0.9999 |
-| `group` | `intersect` | Intersect group1, group2, group3 and store the result in group_name. Example usage: group.intersect(group_name, group1, group2, group3,...) | 10 | 0.9999 |
-| `group` | `list` | return the list of all operations | 3 | 0.9999 |
-| `group` | `operation_exists` | Returns true if "operation_name" exists To be used by Operation, not by end-user, which should prefer find() | 6 | 0.9999 |
-| `group` | `pipescript` | Generates a pipescript object containing the group's LAMMPS commands. | 36 | 0.9999 |
-| `group` | `reindex` | Change the index of a stored operation. | 19 | 0.9999 |
-| `group` | `rename` | Rename a stored operation. | 22 | 0.9999 |
-| `group` | `script` | Generates a script object containing the group's LAMMPS commands. | 19 | 0.9999 |
-| `group` | `subtract` | Subtract group2, group3 from group1 and store the result in group_name. Example usage: group.subtract(group_name, group1, group2, group3,...) | 10 | 0.9999 |
-| `group` | `union` | Union group1, group2, group3 and store the result in group_name. Example usage: group.union(group_name, group1, group2, group3,...) | 10 | 0.9999 |
-| `group` | `variable` | Assigns an expression to a LAMMPS variable. | 19 | 0.9999 |
-| `groupcollection` | `__add__` | Adds a `groupobject` or another `groupcollection` to this collection. | 19 | 0.9999 |
-| `groupcollection` | `__getitem__` | Retrieves a `groupobject` by its index. | 14 | 0.9999 |
-| `groupcollection` | `__iadd__` | In-place addition of a `groupobject` or a list/tuple of `groupobject` instances. | 23 | 0.9999 |
-| `groupcollection` | `__init__` | Initializes a new instance of the groupcollection class. | 34 | 0.9999 |
-| `groupcollection` | `__iter__` | Returns an iterator over the `groupobject` instances in the collection. | 8 | 0.9999 |
-| `groupcollection` | `__len__` | Returns the number of `groupobject` instances in the collection. | 8 | 0.9999 |
-| `groupcollection` | `__repr__` | Returns a neatly formatted string representation of the groupcollection. | 24 | 0.9999 |
-| `groupcollection` | `__str__` | Returns the same representation as `__repr__`. | 8 | 0.9999 |
-| `groupcollection` | `append` | Appends a `groupobject` to the collection. | 13 | 0.9999 |
-| `groupcollection` | `clear` | Clears all `groupobject` instances from the collection. | 5 | 0.9999 |
-| `groupcollection` | `extend` | Extends the collection with a list or tuple of `groupobject` instances. | 17 | 0.9999 |
-| `groupcollection` | `mass` | Generates LAMMPS mass commands for each unique beadtype in the collection. | 71 | 0.9999 |
-| `groupcollection` | `remove` | Removes a `groupobject` from the collection. | 11 | 0.9999 |
-| `groupobject` | `__add__` | Adds this groupobject to another groupobject or a groupcollection. | 19 | 0.9999 |
-| `groupobject` | `__init__` | Initializes a new instance of the groupobject class. | 34 | 0.9999 |
-| `groupobject` | `__radd__` | Adds this groupobject to another groupobject or a groupcollection from the right. | 19 | 0.9999 |
-| `groupobject` | `__repr__` | Returns an unambiguous string representation of the groupobject. | 8 | 0.9999 |
-| `groupobject` | `__str__` | Returns a readable string representation of the groupobject. | 5 | 0.9999 |
+| (module-level) | `format_table` | Formats a table with given headers and rows, truncating text based on maximum column widths and aligning content based on the specified alignment. | 82 | 1.006 |
+| (module-level) | `generate_random_name` |  | 3 | 1.006 |
+| (module-level) | `truncate_text` | Truncates the input text to fit within the specified maximum width. If the text is longer than `maxwidth`, it is shortened by keeping the beginning and trailing parts, separated by " [...] ". | 26 | 1.006 |
+| `Operation` | `__add__` | overload + as union | 3 | 1.006 |
+| `Operation` | `__init__` | Initializes a new Operation instance with given parameters. | 10 | 1.006 |
+| `Operation` | `__mul__` | overload * as intersect | 3 | 1.006 |
+| `Operation` | `__repr__` | detailed representation | 10 | 1.006 |
+| `Operation` | `__str__` | string representation | 18 | 1.006 |
+| `Operation` | `__sub__` | overload - as subtract | 3 | 1.006 |
+| `Operation` | `_operate` | Implements algebraic operations between self and other Operation instances. | 40 | 1.006 |
+| `Operation` | `append` | Appends a single operand to the operands list of the Operation instance. | 3 | 1.006 |
+| `Operation` | `extend` | Extends the operands list of the Operation instance with multiple operands. | 3 | 1.006 |
+| `Operation` | `generateID` | Generates an ID for the Operation instance based on its operands or name. | 8 | 1.006 |
+| `Operation` | `generate_hashname` | Generates an ID for the Operation instance based on its operands or name. | 9 | 1.006 |
+| `Operation` | `get_proper_operand` | Returns the proper operand depending on whether the operation is finalized. | 17 | 1.006 |
+| `Operation` | `is_empty` | Checks if the Operation instance has no operands. | 3 | 1.006 |
+| `Operation` | `is_unary` | Checks if the Operation instance has exactly one operand. | 3 | 1.006 |
+| `Operation` | `isfinalized` | Checks whether the Operation instance is finalized. Returns: - bool: True if the Operation is finalized, otherwise False. Functionality: - An Operation is considered finalized if its operator is not one of the algebraic operators '+', '-', '*'. | 10 | 1.006 |
+| `Operation` | `script` | Generate the LAMMPS code using the dscript and script classes. | 14 | 1.006 |
+| `group` | `__call__` | Allows subindexing of the group object using callable syntax with multiple keys. | 27 | 1.006 |
+| `group` | `__copy__` | copy method | 6 | 1.006 |
+| `group` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `group` | `__getattr__` | Allows accessing operations via attribute-style notation. If the attribute is one of the core attributes, returns it directly. For other attributes, searches for an operation with a matching name in the _operations list. | 33 | 1.006 |
+| `group` | `__getitem__` | Enable shorthand for G.operations[G.find(operation_name)] using G[operation_name], or accessing operation by index using G[index]. | 18 | 1.006 |
+| `group` | `__init__` | Initializes a new instance of the group class. | 57 | 1.006 |
+| `group` | `__len__` | return the number of stored operations | 3 | 1.006 |
+| `group` | `__repr__` | Returns a neatly formatted table representation of the group's operations. | 28 | 1.006 |
+| `group` | `__setattr__` | Allows deletion of an operation via 'G.operation_name = []' after construction. During construction, attributes are set normally. | 20 | 1.006 |
+| `group` | `__str__` | Return str(self). | 2 | 1.006 |
+| `group` | `_get_subobject` | Retrieves a subobject based on the provided key. | 37 | 1.006 |
+| `group` | `add_group_criteria` | Adds group(s) using existing methods based on key-value pairs. | 36 | 1.006 |
+| `group` | `add_group_criteria_single` | Adds a single group based on criteria. | 99 | 1.006 |
+| `group` | `add_operation` | add an operation | 6 | 1.006 |
+| `group` | `byid` | select atoms by id and store them in group G.id(group_name,id_values) | 11 | 1.006 |
+| `group` | `byregion` | set a group of atoms based on a regionID G.region(group_name,regionID) | 9 | 1.006 |
+| `group` | `bytype` | select atoms by type and store them in group G.type(group_name,type_values) | 11 | 1.006 |
+| `group` | `byvariable` | Sets a group of atoms based on a variable. | 16 | 1.006 |
+| `group` | `clear` | clear group G.clear(group_name) | 9 | 1.006 |
+| `group` | `clearall` | clear all operations | 3 | 1.006 |
+| `group` | `code` | Joins the `code` attributes of all stored `operation` objects with ' '. | 5 | 1.006 |
+| `group` | `copy` | Copies a stored operation to a new operation with a different name. | 20 | 1.006 |
+| `group` | `count` | Generates DSCRIPT counters for specified groups with LAMMPS variable definitions and print commands. | 110 | 1.006 |
+| `group` | `create` | create group G.create(group_name) | 9 | 1.006 |
+| `group` | `create_groups` |  | 5 | 1.006 |
+| `group` | `delete` | Deletes one or more stored operations based on their names. | 41 | 1.006 |
+| `group` | `disp` | display the content of an operation | 7 | 1.006 |
+| `group` | `dscript` | Generates a dscript object containing the group's LAMMPS commands. | 24 | 1.006 |
+| `group` | `evaluate` | Evaluates the operation and stores the result in a new group. Expressions could combine +, - and * like o1+o2+o3-o4+o5+o6 | 65 | 1.006 |
+| `group` | `find` | Returns the index of an operation based on its name. | 7 | 1.006 |
+| `group` | `format_cell_content` |  | 7 | 1.006 |
+| `group` | `generate_group_definitions_from_collection` | Generates group definitions based on the collection of groupobject instances. | 15 | 1.006 |
+| `group` | `get_by_name` | Returns the operation matching "operation_name" Usage: group.get_by_name("operation_name") To be used by Operation, not by end-user, which should prefer getattr() | 10 | 1.006 |
+| `group` | `get_group_criteria` | Retrieve the criteria that define a group. Handles group_name as a string or number. | 33 | 1.006 |
+| `group` | `intersect` | Intersect group1, group2, group3 and store the result in group_name. Example usage: group.intersect(group_name, group1, group2, group3,...) | 10 | 1.006 |
+| `group` | `list` | return the list of all operations | 3 | 1.006 |
+| `group` | `operation_exists` | Returns true if "operation_name" exists To be used by Operation, not by end-user, which should prefer find() | 6 | 1.006 |
+| `group` | `pipescript` | Generates a pipescript object containing the group's LAMMPS commands. | 36 | 1.006 |
+| `group` | `reindex` | Change the index of a stored operation. | 19 | 1.006 |
+| `group` | `rename` | Rename a stored operation. | 22 | 1.006 |
+| `group` | `script` | Generates a script object containing the group's LAMMPS commands. | 19 | 1.006 |
+| `group` | `subtract` | Subtract group2, group3 from group1 and store the result in group_name. Example usage: group.subtract(group_name, group1, group2, group3,...) | 10 | 1.006 |
+| `group` | `union` | Union group1, group2, group3 and store the result in group_name. Example usage: group.union(group_name, group1, group2, group3,...) | 10 | 1.006 |
+| `group` | `variable` | Assigns an expression to a LAMMPS variable. | 19 | 1.006 |
+| `groupcollection` | `__add__` | Adds a `groupobject` or another `groupcollection` to this collection. | 19 | 1.006 |
+| `groupcollection` | `__getitem__` | Retrieves a `groupobject` by its index. | 14 | 1.006 |
+| `groupcollection` | `__iadd__` | In-place addition of a `groupobject` or a list/tuple of `groupobject` instances. | 23 | 1.006 |
+| `groupcollection` | `__init__` | Initializes a new instance of the groupcollection class. | 34 | 1.006 |
+| `groupcollection` | `__iter__` | Returns an iterator over the `groupobject` instances in the collection. | 8 | 1.006 |
+| `groupcollection` | `__len__` | Returns the number of `groupobject` instances in the collection. | 8 | 1.006 |
+| `groupcollection` | `__repr__` | Returns a neatly formatted string representation of the groupcollection. | 24 | 1.006 |
+| `groupcollection` | `__str__` | Returns the same representation as `__repr__`. | 8 | 1.006 |
+| `groupcollection` | `append` | Appends a `groupobject` to the collection. | 13 | 1.006 |
+| `groupcollection` | `clear` | Clears all `groupobject` instances from the collection. | 5 | 1.006 |
+| `groupcollection` | `extend` | Extends the collection with a list or tuple of `groupobject` instances. | 17 | 1.006 |
+| `groupcollection` | `list` | Return a unique, stable list of groups in the original order | 3 | 1.006 |
+| `groupcollection` | `mass` | Generates LAMMPS mass commands for each unique beadtype in the collection. | 71 | 1.006 |
+| `groupcollection` | `remove` | Removes a `groupobject` from the collection. | 11 | 1.006 |
+| `groupobject` | `__add__` | Adds this groupobject to another groupobject or a groupcollection. | 19 | 1.006 |
+| `groupobject` | `__init__` | Initializes a new instance of the groupobject class. | 34 | 1.006 |
+| `groupobject` | `__radd__` | Adds this groupobject to another groupobject or a groupcollection from the right. | 19 | 1.006 |
+| `groupobject` | `__repr__` | Returns an unambiguous string representation of the groupobject. | 8 | 1.006 |
+| `groupobject` | `__str__` | Returns a readable string representation of the groupobject. | 5 | 1.006 |
 
 <a id="pizza_private_mstruct" name="pizza_private_mstruct"></a>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_group" title="Go to Previous Module: pizza.group" style="text-decoration: none;">⬅️ Previous</a>
@@ -1415,212 +1438,222 @@ struct --> param
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| (module-level) | `evaluate_with_placeholders` | Evaluates only unescaped placeholders of the form ${...} in the input text. Escaped placeholders (\${...}) are left as literal text (after removing the escape). | 47 | 1.0054 |
-| (module-level) | `is_literal_string` | Returns True if the first non-blank character in the string is '$' and it is not immediately followed by '{' or '['. | 20 | 1.0054 |
-| `AttrErrorDict` | `__getitem__` | x.__getitem__(y) <==> x[y] | 11 | 1.0054 |
-| `SafeEvaluator` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 30 | 1.0054 |
-| `SafeEvaluator` | `evaluate` |  | 3 | 1.0054 |
-| `SafeEvaluator` | `generic_visit` | Called if no explicit visitor function exists for a node. | 2 | 1.0054 |
-| `SafeEvaluator` | `visit_Attribute` |  | 12 | 1.0054 |
-| `SafeEvaluator` | `visit_BinOp` |  | 9 | 1.0054 |
-| `SafeEvaluator` | `visit_Call` |  | 7 | 1.0054 |
-| `SafeEvaluator` | `visit_Constant` |  | 2 | 1.0054 |
-| `SafeEvaluator` | `visit_Dict` | Evaluate a dictionary expression by safely evaluating each key and value. This allows expressions like: {"a": ${v1}+${v2}, "b": ${var}}. | 6 | 1.0054 |
-| `SafeEvaluator` | `visit_ExtSlice` |  | 3 | 1.0054 |
-| `SafeEvaluator` | `visit_Index` |  | 2 | 1.0054 |
-| `SafeEvaluator` | `visit_List` |  | 2 | 1.0054 |
-| `SafeEvaluator` | `visit_Name` |  | 4 | 1.0054 |
-| `SafeEvaluator` | `visit_Slice` |  | 5 | 1.0054 |
-| `SafeEvaluator` | `visit_Subscript` |  | 7 | 1.0054 |
-| `SafeEvaluator` | `visit_Tuple` |  | 2 | 1.0054 |
-| `SafeEvaluator` | `visit_UnaryOp` |  | 6 | 1.0054 |
-| `param` | `__add__` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 10 | 1.0054 |
-| `param` | `__call__` | Extract an evaluated sub-structure based on the specified keys, keeping the same class type. | 25 | 1.0054 |
-| `param` | `__contains__` | in override | 3 | 1.0054 |
-| `param` | `__copy__` | copy method | 6 | 1.0054 |
-| `param` | `__deepcopy__` | deep copy method | 8 | 1.0054 |
-| `param` | `__delattr__` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.0054 |
-| `param` | `__getattr__` | get attribute override | 3 | 1.0054 |
-| `param` | `__getitem__` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 41 | 1.0054 |
-| `param` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0054 |
-| `param` | `__iadd__` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 9 | 1.0054 |
-| `param` | `__init__` | constructor | 7 | 1.0054 |
-| `param` | `__isub__` | isub a structure | 9 | 1.0054 |
-| `param` | `__iter__` | struct iterator | 6 | 1.0054 |
-| `param` | `__len__` | return the number of fields | 4 | 1.0054 |
-| `param` | `__next__` | increment iterator | 7 | 1.0054 |
-| `param` | `__repr__` | display method | 68 | 1.0054 |
-| `param` | `__setattr__` | set attribute override | 3 | 1.0054 |
-| `param` | `__setitem__` | set the ith element of the structure | 24 | 1.0054 |
-| `param` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0054 |
-| `param` | `__str__` | Return str(self). | 2 | 1.0054 |
-| `param` | `__sub__` | sub a structure | 10 | 1.0054 |
-| `param` | `check` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.0054 |
-| `param` | `clear` | clear() delete all fields while preserving the original class | 3 | 1.0054 |
-| `param` | `convert_matlab_like_arrays` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 166 | 1.0054 |
-| `param` | `dict2struct` | create a structure from a dictionary | 8 | 1.0054 |
-| `param` | `disp` | display method | 3 | 1.0054 |
-| `param` | `dispmax` | optimize display | 8 | 1.0054 |
-| `param` | `escape` | escape \${} as ${{}} --> keep variable names convert ${} as {} --> prepare Python replacement | 35 | 1.0054 |
-| `param` | `eval` | Eval method for structure such as MS.alias | 207 | 1.0054 |
-| `param` | `expand_ranges` | Expands MATLAB-style ranges in a string. | 44 | 1.0054 |
-| `param` | `format` | Format a string with fields using {field} as placeholders. Handles expressions like ${variable1}. | 55 | 1.0054 |
-| `param` | `format_array` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 106 | 1.0054 |
-| `param` | `format_legacy` | format a string with field (use {field} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly ${variable1} escape is a flag to prevent ${} replaced by {} | 27 | 1.0054 |
-| `param` | `formateval` | format method with evaluation feature | 59 | 1.0054 |
-| `param` | `fromkeys` | returns a structure from keys | 3 | 1.0054 |
-| `param` | `fromkeysvalues` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.0054 |
-| `param` | `generator` | Generate Python code of the equivalent structure. | 73 | 1.0054 |
-| `param` | `getattr` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.0054 |
-| `param` | `getval` | returns the evaluated value | 4 | 1.0054 |
-| `param` | `hasattr` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.0054 |
-| `param` | `isdefined` | isdefined(ref) returns true if it is defined in ref | 19 | 1.0054 |
-| `param` | `isstrdefined` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.0054 |
-| `param` | `isstrexpression` | isstrexpression(string) returns true if s contains an expression | 5 | 1.0054 |
-| `param` | `items` | return all elements as iterable key, value | 3 | 1.0054 |
-| `param` | `keys` | return the fields | 4 | 1.0054 |
-| `param` | `keyssorted` | sort keys by length() | 5 | 1.0054 |
-| `param` | `np2str` | Convert all NumPy entries of s into their string representations, handling both lists and dictionaries. | 58 | 1.0054 |
-| `param` | `numrepl` | Replace all placeholders of the form ${key} in the given text by the corresponding numeric value from the instance fields, under the following conditions: | 56 | 1.0054 |
-| `param` | `protect` | protect $variable as ${variable} | 11 | 1.0054 |
-| `param` | `read` | read the equivalent structure read(filename) | 35 | 1.0054 |
-| `param` | `safe_fstring` | Safely evaluate expressions in ${} using SafeEvaluator. | 61 | 1.0054 |
-| `param` | `scan` | scan(string) scan a string for variables | 11 | 1.0054 |
-| `param` | `set` | initialization | 3 | 1.0054 |
-| `param` | `setattr` | set field and value | 6 | 1.0054 |
-| `param` | `sortdefinitions` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.0054 |
-| `param` | `struct2dict` | create a dictionary from the current structure | 3 | 1.0054 |
-| `param` | `struct2param` | convert an object struct() to param() | 8 | 1.0054 |
-| `param` | `toparamauto` | convert a param instance into a paramauto instance toparamauto() | 6 | 1.0054 |
-| `param` | `tostatic` | convert dynamic a param() object to a static struct() object. note: no interpretation note: use tostruct() to interpret them and convert it to struct note: tostatic().struct2param() makes it reversible | 7 | 1.0054 |
-| `param` | `tostruct` | generate the evaluated structure tostruct(protection=False) | 6 | 1.0054 |
-| `param` | `update` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.0054 |
-| `param` | `values` | return the values | 4 | 1.0054 |
-| `param` | `write` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 38 | 1.0054 |
-| `param` | `zip` | zip keys and values | 3 | 1.0054 |
-| `paramauto` | `__add__` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 2 | 1.0054 |
-| `paramauto` | `__call__` | Extract an evaluated sub-structure based on the specified keys, keeping the same class type. | 25 | 1.0054 |
-| `paramauto` | `__contains__` | in override | 3 | 1.0054 |
-| `paramauto` | `__copy__` | copy method | 6 | 1.0054 |
-| `paramauto` | `__deepcopy__` | deep copy method | 8 | 1.0054 |
-| `paramauto` | `__delattr__` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.0054 |
-| `paramauto` | `__getattr__` | get attribute override | 3 | 1.0054 |
-| `paramauto` | `__getitem__` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 41 | 1.0054 |
-| `paramauto` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0054 |
-| `paramauto` | `__iadd__` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 2 | 1.0054 |
-| `paramauto` | `__init__` | constructor | 7 | 1.0054 |
-| `paramauto` | `__isub__` | isub a structure | 9 | 1.0054 |
-| `paramauto` | `__iter__` | struct iterator | 6 | 1.0054 |
-| `paramauto` | `__len__` | return the number of fields | 4 | 1.0054 |
-| `paramauto` | `__next__` | increment iterator | 7 | 1.0054 |
-| `paramauto` | `__repr__` | display method | 5 | 1.0054 |
-| `paramauto` | `__setattr__` | set attribute override | 3 | 1.0054 |
-| `paramauto` | `__setitem__` | set the ith element of the structure | 24 | 1.0054 |
-| `paramauto` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0054 |
-| `paramauto` | `__str__` | Return str(self). | 2 | 1.0054 |
-| `paramauto` | `__sub__` | sub a structure | 10 | 1.0054 |
-| `paramauto` | `check` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.0054 |
-| `paramauto` | `clear` | clear() delete all fields while preserving the original class | 3 | 1.0054 |
-| `paramauto` | `convert_matlab_like_arrays` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 166 | 1.0054 |
-| `paramauto` | `dict2struct` | create a structure from a dictionary | 8 | 1.0054 |
-| `paramauto` | `disp` | display method | 3 | 1.0054 |
-| `paramauto` | `dispmax` | optimize display | 8 | 1.0054 |
-| `paramauto` | `escape` | escape \${} as ${{}} --> keep variable names convert ${} as {} --> prepare Python replacement | 35 | 1.0054 |
-| `paramauto` | `eval` | Eval method for structure such as MS.alias | 207 | 1.0054 |
-| `paramauto` | `expand_ranges` | Expands MATLAB-style ranges in a string. | 44 | 1.0054 |
-| `paramauto` | `format` | Format a string with fields using {field} as placeholders. Handles expressions like ${variable1}. | 55 | 1.0054 |
-| `paramauto` | `format_array` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 106 | 1.0054 |
-| `paramauto` | `format_legacy` | format a string with field (use {field} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly ${variable1} escape is a flag to prevent ${} replaced by {} | 27 | 1.0054 |
-| `paramauto` | `formateval` | format method with evaluation feature | 59 | 1.0054 |
-| `paramauto` | `fromkeys` | returns a structure from keys | 3 | 1.0054 |
-| `paramauto` | `fromkeysvalues` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.0054 |
-| `paramauto` | `generator` | Generate Python code of the equivalent structure. | 73 | 1.0054 |
-| `paramauto` | `getattr` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.0054 |
-| `paramauto` | `getval` | returns the evaluated value | 4 | 1.0054 |
-| `paramauto` | `hasattr` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.0054 |
-| `paramauto` | `isdefined` | isdefined(ref) returns true if it is defined in ref | 19 | 1.0054 |
-| `paramauto` | `isstrdefined` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.0054 |
-| `paramauto` | `isstrexpression` | isstrexpression(string) returns true if s contains an expression | 5 | 1.0054 |
-| `paramauto` | `items` | return all elements as iterable key, value | 3 | 1.0054 |
-| `paramauto` | `keys` | return the fields | 4 | 1.0054 |
-| `paramauto` | `keyssorted` | sort keys by length() | 5 | 1.0054 |
-| `paramauto` | `np2str` | Convert all NumPy entries of s into their string representations, handling both lists and dictionaries. | 58 | 1.0054 |
-| `paramauto` | `numrepl` | Replace all placeholders of the form ${key} in the given text by the corresponding numeric value from the instance fields, under the following conditions: | 56 | 1.0054 |
-| `paramauto` | `protect` | protect $variable as ${variable} | 11 | 1.0054 |
-| `paramauto` | `read` | read the equivalent structure read(filename) | 35 | 1.0054 |
-| `paramauto` | `safe_fstring` | Safely evaluate expressions in ${} using SafeEvaluator. | 61 | 1.0054 |
-| `paramauto` | `scan` | scan(string) scan a string for variables | 11 | 1.0054 |
-| `paramauto` | `set` | initialization | 3 | 1.0054 |
-| `paramauto` | `setattr` | set field and value | 6 | 1.0054 |
-| `paramauto` | `sortdefinitions` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.0054 |
-| `paramauto` | `struct2dict` | create a dictionary from the current structure | 3 | 1.0054 |
-| `paramauto` | `struct2param` | convert an object struct() to param() | 8 | 1.0054 |
-| `paramauto` | `toparamauto` | convert a param instance into a paramauto instance toparamauto() | 6 | 1.0054 |
-| `paramauto` | `tostatic` | convert dynamic a param() object to a static struct() object. note: no interpretation note: use tostruct() to interpret them and convert it to struct note: tostatic().struct2param() makes it reversible | 7 | 1.0054 |
-| `paramauto` | `tostruct` | generate the evaluated structure tostruct(protection=False) | 6 | 1.0054 |
-| `paramauto` | `update` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.0054 |
-| `paramauto` | `values` | return the values | 4 | 1.0054 |
-| `paramauto` | `write` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 38 | 1.0054 |
-| `paramauto` | `zip` | zip keys and values | 3 | 1.0054 |
-| `pstr` | `__add__` | Return self+value. | 2 | 1.0054 |
-| `pstr` | `__iadd__` |  | 2 | 1.0054 |
-| `pstr` | `__repr__` | Return repr(self). | 5 | 1.0054 |
-| `pstr` | `__truediv__` | overload / | 7 | 1.0054 |
-| `pstr` | `eval` | evaluate the path of it os a path | 9 | 1.0054 |
-| `pstr` | `topath` | return a validated path | 6 | 1.0054 |
-| `struct` | `__add__` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 10 | 1.0054 |
-| `struct` | `__call__` | Extract a sub-structure based on the specified keys, keeping the same class type. | 35 | 1.0054 |
-| `struct` | `__contains__` | in override | 3 | 1.0054 |
-| `struct` | `__copy__` | copy method | 6 | 1.0054 |
-| `struct` | `__deepcopy__` | deep copy method | 8 | 1.0054 |
-| `struct` | `__delattr__` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.0054 |
-| `struct` | `__getattr__` | get attribute override | 3 | 1.0054 |
-| `struct` | `__getitem__` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 41 | 1.0054 |
-| `struct` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.0054 |
-| `struct` | `__iadd__` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 9 | 1.0054 |
-| `struct` | `__init__` | constructor, use debug=True to report eval errors | 6 | 1.0054 |
-| `struct` | `__isub__` | isub a structure | 9 | 1.0054 |
-| `struct` | `__iter__` | struct iterator | 6 | 1.0054 |
-| `struct` | `__len__` | return the number of fields | 4 | 1.0054 |
-| `struct` | `__next__` | increment iterator | 7 | 1.0054 |
-| `struct` | `__repr__` | display method | 68 | 1.0054 |
-| `struct` | `__setattr__` | set attribute override | 3 | 1.0054 |
-| `struct` | `__setitem__` | set the ith element of the structure | 24 | 1.0054 |
-| `struct` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.0054 |
-| `struct` | `__str__` | Return str(self). | 2 | 1.0054 |
-| `struct` | `__sub__` | sub a structure | 10 | 1.0054 |
-| `struct` | `check` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.0054 |
-| `struct` | `clear` | clear() delete all fields while preserving the original class | 3 | 1.0054 |
-| `struct` | `dict2struct` | create a structure from a dictionary | 8 | 1.0054 |
-| `struct` | `disp` | display method | 3 | 1.0054 |
-| `struct` | `dispmax` | optimize display | 8 | 1.0054 |
-| `struct` | `format` | Format a string with fields using {field} as placeholders. Handles expressions like ${variable1}. | 55 | 1.0054 |
-| `struct` | `format_array` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 106 | 1.0054 |
-| `struct` | `format_legacy` | format a string with field (use {field} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly ${variable1} escape is a flag to prevent ${} replaced by {} | 27 | 1.0054 |
-| `struct` | `fromkeys` | returns a structure from keys | 3 | 1.0054 |
-| `struct` | `fromkeysvalues` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.0054 |
-| `struct` | `generator` | Generate Python code of the equivalent structure. | 73 | 1.0054 |
-| `struct` | `getattr` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.0054 |
-| `struct` | `hasattr` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.0054 |
-| `struct` | `isdefined` | isdefined(ref) returns true if it is defined in ref | 19 | 1.0054 |
-| `struct` | `isstrdefined` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.0054 |
-| `struct` | `isstrexpression` | isstrexpression(string) returns true if s contains an expression | 5 | 1.0054 |
-| `struct` | `items` | return all elements as iterable key, value | 3 | 1.0054 |
-| `struct` | `keys` | return the fields | 4 | 1.0054 |
-| `struct` | `keyssorted` | sort keys by length() | 5 | 1.0054 |
-| `struct` | `np2str` | Convert all NumPy entries of s into their string representations, handling both lists and dictionaries. | 58 | 1.0054 |
-| `struct` | `numrepl` | Replace all placeholders of the form ${key} in the given text by the corresponding numeric value from the instance fields, under the following conditions: | 56 | 1.0054 |
-| `struct` | `read` | read the equivalent structure read(filename) | 35 | 1.0054 |
-| `struct` | `scan` | scan(string) scan a string for variables | 11 | 1.0054 |
-| `struct` | `set` | initialization | 3 | 1.0054 |
-| `struct` | `setattr` | set field and value | 6 | 1.0054 |
-| `struct` | `sortdefinitions` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.0054 |
-| `struct` | `struct2dict` | create a dictionary from the current structure | 3 | 1.0054 |
-| `struct` | `struct2param` | convert an object struct() to param() | 8 | 1.0054 |
-| `struct` | `update` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.0054 |
-| `struct` | `values` | return the values | 4 | 1.0054 |
-| `struct` | `write` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 38 | 1.0054 |
-| `struct` | `zip` | zip keys and values | 3 | 1.0054 |
+| (module-level) | `evaluate_with_placeholders` | Evaluates only unescaped placeholders of the form ${...} in the input text. Escaped placeholders (\${...}) are left as literal text (after removing the escape). | 47 | 1.006 |
+| (module-level) | `is_empty` | Return True if value is considered empty (None, "", [] or ()). | 3 | 1.006 |
+| (module-level) | `is_literal_string` | Returns True if the first non-blank character in the string is '$' and it is not immediately followed by '{' or '['. | 20 | 1.006 |
+| `AttrErrorDict` | `__getitem__` | x.__getitem__(y) <==> x[y] | 11 | 1.006 |
+| `SafeEvaluator` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 30 | 1.006 |
+| `SafeEvaluator` | `evaluate` |  | 3 | 1.006 |
+| `SafeEvaluator` | `generic_visit` | Called if no explicit visitor function exists for a node. | 2 | 1.006 |
+| `SafeEvaluator` | `visit_Attribute` |  | 12 | 1.006 |
+| `SafeEvaluator` | `visit_BinOp` |  | 9 | 1.006 |
+| `SafeEvaluator` | `visit_Call` |  | 7 | 1.006 |
+| `SafeEvaluator` | `visit_Constant` |  | 2 | 1.006 |
+| `SafeEvaluator` | `visit_Dict` | Evaluate a dictionary expression by safely evaluating each key and value. This allows expressions like: {"a": ${v1}+${v2}, "b": ${var}}. | 6 | 1.006 |
+| `SafeEvaluator` | `visit_ExtSlice` |  | 3 | 1.006 |
+| `SafeEvaluator` | `visit_Index` |  | 2 | 1.006 |
+| `SafeEvaluator` | `visit_List` |  | 2 | 1.006 |
+| `SafeEvaluator` | `visit_Name` |  | 4 | 1.006 |
+| `SafeEvaluator` | `visit_Slice` |  | 5 | 1.006 |
+| `SafeEvaluator` | `visit_Subscript` |  | 7 | 1.006 |
+| `SafeEvaluator` | `visit_Tuple` |  | 2 | 1.006 |
+| `SafeEvaluator` | `visit_UnaryOp` |  | 6 | 1.006 |
+| `param` | `__add__` | Add two structure objects, with precedence as follows: | 36 | 1.006 |
+| `param` | `__call__` | Extract an evaluated sub-structure based on the specified keys, keeping the same class type. | 25 | 1.006 |
+| `param` | `__contains__` | in override | 3 | 1.006 |
+| `param` | `__copy__` | copy method | 6 | 1.006 |
+| `param` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `param` | `__delattr__` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.006 |
+| `param` | `__getattr__` | get attribute override | 3 | 1.006 |
+| `param` | `__getitem__` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 41 | 1.006 |
+| `param` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.006 |
+| `param` | `__iadd__` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 9 | 1.006 |
+| `param` | `__init__` | constructor | 7 | 1.006 |
+| `param` | `__isub__` | isub a structure | 9 | 1.006 |
+| `param` | `__iter__` | struct iterator | 6 | 1.006 |
+| `param` | `__len__` | return the number of fields | 4 | 1.006 |
+| `param` | `__lshift__` | Allows the syntax: | 15 | 1.006 |
+| `param` | `__next__` | increment iterator | 7 | 1.006 |
+| `param` | `__repr__` | display method | 68 | 1.006 |
+| `param` | `__setattr__` | set attribute override | 3 | 1.006 |
+| `param` | `__setitem__` | set the ith element of the structure | 24 | 1.006 |
+| `param` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.006 |
+| `param` | `__str__` | Return str(self). | 2 | 1.006 |
+| `param` | `__sub__` | sub a structure | 10 | 1.006 |
+| `param` | `check` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.006 |
+| `param` | `clear` | clear() delete all fields while preserving the original class | 3 | 1.006 |
+| `param` | `convert_matlab_like_arrays` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 166 | 1.006 |
+| `param` | `dict2struct` | create a structure from a dictionary | 8 | 1.006 |
+| `param` | `disp` | display method | 3 | 1.006 |
+| `param` | `dispmax` | optimize display | 8 | 1.006 |
+| `param` | `escape` | escape \${} as ${{}} --> keep variable names convert ${} as {} --> prepare Python replacement | 35 | 1.006 |
+| `param` | `eval` | Eval method for structure such as MS.alias | 207 | 1.006 |
+| `param` | `expand_ranges` | Expands MATLAB-style ranges in a string. | 44 | 1.006 |
+| `param` | `format` | Format a string with fields using {field} as placeholders. Handles expressions like ${variable1}. | 55 | 1.006 |
+| `param` | `format_array` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 106 | 1.006 |
+| `param` | `format_legacy` | format a string with field (use {field} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly ${variable1} escape is a flag to prevent ${} replaced by {} | 27 | 1.006 |
+| `param` | `formateval` | format method with evaluation feature | 59 | 1.006 |
+| `param` | `fromkeys` | returns a structure from keys | 3 | 1.006 |
+| `param` | `fromkeysvalues` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.006 |
+| `param` | `generator` | Generate Python code of the equivalent structure. | 73 | 1.006 |
+| `param` | `getattr` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.006 |
+| `param` | `getval` | returns the evaluated value | 4 | 1.006 |
+| `param` | `hasattr` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.006 |
+| `param` | `importfrom` | Import values from 's' into self according to the following rules: | 30 | 1.006 |
+| `param` | `isdefined` | isdefined(ref) returns true if it is defined in ref | 19 | 1.006 |
+| `param` | `isstrdefined` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.006 |
+| `param` | `isstrexpression` | isstrexpression(string) returns true if s contains an expression | 5 | 1.006 |
+| `param` | `items` | return all elements as iterable key, value | 3 | 1.006 |
+| `param` | `keys` | return the fields | 4 | 1.006 |
+| `param` | `keyssorted` | sort keys by length() | 5 | 1.006 |
+| `param` | `np2str` | Convert all NumPy entries of s into their string representations, handling both lists and dictionaries. | 58 | 1.006 |
+| `param` | `numrepl` | Replace all placeholders of the form ${key} in the given text by the corresponding numeric value from the instance fields, under the following conditions: | 56 | 1.006 |
+| `param` | `protect` | protect $variable as ${variable} | 11 | 1.006 |
+| `param` | `read` | read the equivalent structure read(filename) | 35 | 1.006 |
+| `param` | `safe_fstring` | Safely evaluate expressions in ${} using SafeEvaluator. | 61 | 1.006 |
+| `param` | `scan` | scan(string) scan a string for variables | 11 | 1.006 |
+| `param` | `set` | initialization | 3 | 1.006 |
+| `param` | `setattr` | set field and value | 6 | 1.006 |
+| `param` | `sortdefinitions` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.006 |
+| `param` | `struct2dict` | create a dictionary from the current structure | 3 | 1.006 |
+| `param` | `struct2param` | convert an object struct() to param() | 8 | 1.006 |
+| `param` | `toparamauto` | convert a param instance into a paramauto instance toparamauto() | 6 | 1.006 |
+| `param` | `tostatic` | convert dynamic a param() object to a static struct() object. note: no interpretation note: use tostruct() to interpret them and convert it to struct note: tostatic().struct2param() makes it reversible | 7 | 1.006 |
+| `param` | `tostruct` | generate the evaluated structure tostruct(protection=False) | 6 | 1.006 |
+| `param` | `update` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.006 |
+| `param` | `validkeys` | Validate and return the subset of keys from the provided list that are valid in the instance. | 38 | 1.006 |
+| `param` | `values` | return the values | 4 | 1.006 |
+| `param` | `write` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 38 | 1.006 |
+| `param` | `zip` | zip keys and values | 3 | 1.006 |
+| `paramauto` | `__add__` | Add two structure objects, with precedence as follows: | 2 | 1.006 |
+| `paramauto` | `__call__` | Extract an evaluated sub-structure based on the specified keys, keeping the same class type. | 25 | 1.006 |
+| `paramauto` | `__contains__` | in override | 3 | 1.006 |
+| `paramauto` | `__copy__` | copy method | 6 | 1.006 |
+| `paramauto` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `paramauto` | `__delattr__` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.006 |
+| `paramauto` | `__getattr__` | get attribute override | 3 | 1.006 |
+| `paramauto` | `__getitem__` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 41 | 1.006 |
+| `paramauto` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.006 |
+| `paramauto` | `__iadd__` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 2 | 1.006 |
+| `paramauto` | `__init__` | constructor | 7 | 1.006 |
+| `paramauto` | `__isub__` | isub a structure | 9 | 1.006 |
+| `paramauto` | `__iter__` | struct iterator | 6 | 1.006 |
+| `paramauto` | `__len__` | return the number of fields | 4 | 1.006 |
+| `paramauto` | `__lshift__` | Allows the syntax: | 15 | 1.006 |
+| `paramauto` | `__next__` | increment iterator | 7 | 1.006 |
+| `paramauto` | `__repr__` | display method | 5 | 1.006 |
+| `paramauto` | `__setattr__` | set attribute override | 3 | 1.006 |
+| `paramauto` | `__setitem__` | set the ith element of the structure | 24 | 1.006 |
+| `paramauto` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.006 |
+| `paramauto` | `__str__` | Return str(self). | 2 | 1.006 |
+| `paramauto` | `__sub__` | sub a structure | 10 | 1.006 |
+| `paramauto` | `check` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.006 |
+| `paramauto` | `clear` | clear() delete all fields while preserving the original class | 3 | 1.006 |
+| `paramauto` | `convert_matlab_like_arrays` | Converts Matlab-like array syntax (including hybrid notations) into a NumPy-esque list syntax in multiple passes. | 166 | 1.006 |
+| `paramauto` | `dict2struct` | create a structure from a dictionary | 8 | 1.006 |
+| `paramauto` | `disp` | display method | 3 | 1.006 |
+| `paramauto` | `dispmax` | optimize display | 8 | 1.006 |
+| `paramauto` | `escape` | escape \${} as ${{}} --> keep variable names convert ${} as {} --> prepare Python replacement | 35 | 1.006 |
+| `paramauto` | `eval` | Eval method for structure such as MS.alias | 207 | 1.006 |
+| `paramauto` | `expand_ranges` | Expands MATLAB-style ranges in a string. | 44 | 1.006 |
+| `paramauto` | `format` | Format a string with fields using {field} as placeholders. Handles expressions like ${variable1}. | 55 | 1.006 |
+| `paramauto` | `format_array` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 106 | 1.006 |
+| `paramauto` | `format_legacy` | format a string with field (use {field} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly ${variable1} escape is a flag to prevent ${} replaced by {} | 27 | 1.006 |
+| `paramauto` | `formateval` | format method with evaluation feature | 59 | 1.006 |
+| `paramauto` | `fromkeys` | returns a structure from keys | 3 | 1.006 |
+| `paramauto` | `fromkeysvalues` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.006 |
+| `paramauto` | `generator` | Generate Python code of the equivalent structure. | 73 | 1.006 |
+| `paramauto` | `getattr` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.006 |
+| `paramauto` | `getval` | returns the evaluated value | 4 | 1.006 |
+| `paramauto` | `hasattr` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.006 |
+| `paramauto` | `importfrom` | Import values from 's' into self according to the following rules: | 30 | 1.006 |
+| `paramauto` | `isdefined` | isdefined(ref) returns true if it is defined in ref | 19 | 1.006 |
+| `paramauto` | `isstrdefined` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.006 |
+| `paramauto` | `isstrexpression` | isstrexpression(string) returns true if s contains an expression | 5 | 1.006 |
+| `paramauto` | `items` | return all elements as iterable key, value | 3 | 1.006 |
+| `paramauto` | `keys` | return the fields | 4 | 1.006 |
+| `paramauto` | `keyssorted` | sort keys by length() | 5 | 1.006 |
+| `paramauto` | `np2str` | Convert all NumPy entries of s into their string representations, handling both lists and dictionaries. | 58 | 1.006 |
+| `paramauto` | `numrepl` | Replace all placeholders of the form ${key} in the given text by the corresponding numeric value from the instance fields, under the following conditions: | 56 | 1.006 |
+| `paramauto` | `protect` | protect $variable as ${variable} | 11 | 1.006 |
+| `paramauto` | `read` | read the equivalent structure read(filename) | 35 | 1.006 |
+| `paramauto` | `safe_fstring` | Safely evaluate expressions in ${} using SafeEvaluator. | 61 | 1.006 |
+| `paramauto` | `scan` | scan(string) scan a string for variables | 11 | 1.006 |
+| `paramauto` | `set` | initialization | 3 | 1.006 |
+| `paramauto` | `setattr` | set field and value | 6 | 1.006 |
+| `paramauto` | `sortdefinitions` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.006 |
+| `paramauto` | `struct2dict` | create a dictionary from the current structure | 3 | 1.006 |
+| `paramauto` | `struct2param` | convert an object struct() to param() | 8 | 1.006 |
+| `paramauto` | `toparamauto` | convert a param instance into a paramauto instance toparamauto() | 6 | 1.006 |
+| `paramauto` | `tostatic` | convert dynamic a param() object to a static struct() object. note: no interpretation note: use tostruct() to interpret them and convert it to struct note: tostatic().struct2param() makes it reversible | 7 | 1.006 |
+| `paramauto` | `tostruct` | generate the evaluated structure tostruct(protection=False) | 6 | 1.006 |
+| `paramauto` | `update` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.006 |
+| `paramauto` | `validkeys` | Validate and return the subset of keys from the provided list that are valid in the instance. | 38 | 1.006 |
+| `paramauto` | `values` | return the values | 4 | 1.006 |
+| `paramauto` | `write` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 38 | 1.006 |
+| `paramauto` | `zip` | zip keys and values | 3 | 1.006 |
+| `pstr` | `__add__` | Return self+value. | 2 | 1.006 |
+| `pstr` | `__iadd__` |  | 2 | 1.006 |
+| `pstr` | `__repr__` | Return repr(self). | 5 | 1.006 |
+| `pstr` | `__truediv__` | overload / | 7 | 1.006 |
+| `pstr` | `eval` | evaluate the path of it os a path | 9 | 1.006 |
+| `pstr` | `topath` | return a validated path | 6 | 1.006 |
+| `struct` | `__add__` | Add two structure objects, with precedence as follows: | 36 | 1.006 |
+| `struct` | `__call__` | Extract a sub-structure based on the specified keys, keeping the same class type. | 35 | 1.006 |
+| `struct` | `__contains__` | in override | 3 | 1.006 |
+| `struct` | `__copy__` | copy method | 6 | 1.006 |
+| `struct` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `struct` | `__delattr__` | Delete an instance attribute if it exists and is not a class or excluded attribute. | 10 | 1.006 |
+| `struct` | `__getattr__` | get attribute override | 3 | 1.006 |
+| `struct` | `__getitem__` | s[i] returns the ith element of the structure s[:4] returns a structure with the four first fields s[[1,3]] returns the second and fourth elements | 41 | 1.006 |
+| `struct` | `__getstate__` | getstate for cooperative inheritance / duplication | 3 | 1.006 |
+| `struct` | `__iadd__` | iadd a structure set sortdefintions=True to sort definitions (to maintain executability) | 9 | 1.006 |
+| `struct` | `__init__` | constructor, use debug=True to report eval errors | 6 | 1.006 |
+| `struct` | `__isub__` | isub a structure | 9 | 1.006 |
+| `struct` | `__iter__` | struct iterator | 6 | 1.006 |
+| `struct` | `__len__` | return the number of fields | 4 | 1.006 |
+| `struct` | `__lshift__` | Allows the syntax: | 15 | 1.006 |
+| `struct` | `__next__` | increment iterator | 7 | 1.006 |
+| `struct` | `__repr__` | display method | 68 | 1.006 |
+| `struct` | `__setattr__` | set attribute override | 3 | 1.006 |
+| `struct` | `__setitem__` | set the ith element of the structure | 24 | 1.006 |
+| `struct` | `__setstate__` | setstate for cooperative inheritance / duplication | 3 | 1.006 |
+| `struct` | `__str__` | Return str(self). | 2 | 1.006 |
+| `struct` | `__sub__` | sub a structure | 10 | 1.006 |
+| `struct` | `check` | populate fields from a default structure check(defaultstruct) missing field, None and [] values are replaced by default ones | 19 | 1.006 |
+| `struct` | `clear` | clear() delete all fields while preserving the original class | 3 | 1.006 |
+| `struct` | `dict2struct` | create a structure from a dictionary | 8 | 1.006 |
+| `struct` | `disp` | display method | 3 | 1.006 |
+| `struct` | `dispmax` | optimize display | 8 | 1.006 |
+| `struct` | `format` | Format a string with fields using {field} as placeholders. Handles expressions like ${variable1}. | 55 | 1.006 |
+| `struct` | `format_array` | Format NumPy array for display with distinctions for scalars, row/column vectors, and ND arrays. Recursively formats multi-dimensional arrays without introducing unwanted commas. | 106 | 1.006 |
+| `struct` | `format_legacy` | format a string with field (use {field} as placeholders) s.replace(string), s.replace(string,escape=True) where: s is a struct object string is a string with possibly ${variable1} escape is a flag to prevent ${} replaced by {} | 27 | 1.006 |
+| `struct` | `fromkeys` | returns a structure from keys | 3 | 1.006 |
+| `struct` | `fromkeysvalues` | struct.keysvalues(keys,values) creates a structure from keys and values use makeparam = True to create a param instead of struct | 18 | 1.006 |
+| `struct` | `generator` | Generate Python code of the equivalent structure. | 73 | 1.006 |
+| `struct` | `getattr` | Get attribute override to access both instance attributes and properties if allowed. | 11 | 1.006 |
+| `struct` | `hasattr` | Return true if the field exists, considering properties as regular attributes if allowed. | 7 | 1.006 |
+| `struct` | `importfrom` | Import values from 's' into self according to the following rules: | 30 | 1.006 |
+| `struct` | `isdefined` | isdefined(ref) returns true if it is defined in ref | 19 | 1.006 |
+| `struct` | `isstrdefined` | isstrdefined(string,ref) returns true if it is defined in ref | 14 | 1.006 |
+| `struct` | `isstrexpression` | isstrexpression(string) returns true if s contains an expression | 5 | 1.006 |
+| `struct` | `items` | return all elements as iterable key, value | 3 | 1.006 |
+| `struct` | `keys` | return the fields | 4 | 1.006 |
+| `struct` | `keyssorted` | sort keys by length() | 5 | 1.006 |
+| `struct` | `np2str` | Convert all NumPy entries of s into their string representations, handling both lists and dictionaries. | 58 | 1.006 |
+| `struct` | `numrepl` | Replace all placeholders of the form ${key} in the given text by the corresponding numeric value from the instance fields, under the following conditions: | 56 | 1.006 |
+| `struct` | `read` | read the equivalent structure read(filename) | 35 | 1.006 |
+| `struct` | `scan` | scan(string) scan a string for variables | 11 | 1.006 |
+| `struct` | `set` | initialization | 3 | 1.006 |
+| `struct` | `setattr` | set field and value | 6 | 1.006 |
+| `struct` | `sortdefinitions` | sortdefintions sorts all definitions so that they can be executed as param(). If any inconsistency is found, an error message is generated. | 53 | 1.006 |
+| `struct` | `struct2dict` | create a dictionary from the current structure | 3 | 1.006 |
+| `struct` | `struct2param` | convert an object struct() to param() | 8 | 1.006 |
+| `struct` | `update` | Update multiple fields at once, while protecting certain attributes. | 22 | 1.006 |
+| `struct` | `validkeys` | Validate and return the subset of keys from the provided list that are valid in the instance. | 38 | 1.006 |
+| `struct` | `values` | return the values | 4 | 1.006 |
+| `struct` | `write` | write the equivalent structure (not recursive for nested struct) write(filename, overwrite=True, mkdir=False) | 38 | 1.006 |
+| `struct` | `zip` | zip keys and values | 3 | 1.006 |
 
 <a id="pizza_private_utils" name="pizza_private_utils"></a>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.8em;"><a href="#pizza_private_mstruct" title="Go to Previous Module: pizza.private.mstruct" style="text-decoration: none;">⬅️ Previous</a>
@@ -1861,7 +1894,9 @@ smd
 solidfood
 struct
 tlsph
+tlsphalone
 ulsph
+ulsphalone
 water
 LammpsGeneric --> LammpsCollectionGroup
 LammpsGeneric --> LammpsCreate
@@ -1891,6 +1926,7 @@ coregeometry --> Sphere
 coregeometry --> Union
 dict --> AttrErrorDict
 forcefield --> smd
+forcefield --> tlsphalone
 none --> rigidwall
 object --> Collection
 object --> coregeometry
@@ -1910,6 +1946,7 @@ script --> LammpsGeneric
 smd --> none
 smd --> tlsph
 smd --> ulsph
+smd --> ulsphalone
 str --> pstr
 struct --> param
 struct --> regioncollection
@@ -2346,9 +2383,12 @@ solidfood
 statussection
 struct
 tlsph
+tlsphalone
 ulsph
+ulsphalone
 water
 forcefield --> smd
+forcefield --> tlsphalone
 none --> rigidwall
 object --> CallableScript
 object --> VariableOccurrences
@@ -2372,6 +2412,7 @@ script --> statussection
 smd --> none
 smd --> tlsph
 smd --> ulsph
+smd --> ulsphalone
 struct --> param
 struct --> scriptobject
 struct --> scriptobjectgroup
@@ -2386,281 +2427,281 @@ ulsph --> water
 
 | Class | Method | Docstring First Paragraph | # Lines | __version__ |
 |-------|---------|---------------------------|---------|-------------|
-| (module-level) | `frame_header` | Format the header content into an ASCII framed box with customizable properties. | 147 | 1.003 |
-| (module-level) | `get_metadata` | Return a dictionary of explicitly defined metadata. | 15 | 1.003 |
-| (module-level) | `<lambda>` |  | 1 | 1.003 |
-| (module-level) | `is_scalar` | Determines if a value is scalar (not a list, dict, or tuple). | 5 | 1.003 |
-| (module-level) | `make_hashable` | Recursively converts lists and dictionaries to tuples to make them hashable. | 9 | 1.003 |
-| (module-level) | `picker` |  | 1 | 1.003 |
-| (module-level) | `remove_comments` | Removes comments from a single or multi-line string, handling quotes, escaped characters, and line continuation. | 101 | 1.003 |
-| (module-level) | `span` |  | 2 | 1.003 |
-| `CallableScript` | `__call__` | Call self as a function. | 3 | 1.003 |
-| `CallableScript` | `__get__` |  | 3 | 1.003 |
-| `CallableScript` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 1.003 |
-| `VariableOccurrences` | `__init__` | Initializes the VariableOccurrences object. | 38 | 1.003 |
-| `VariableOccurrences` | `_determine_scopes` | Determines the unique scopes present across all variables. | 7 | 1.003 |
-| `VariableOccurrences` | `export` | Exports the variable occurrences to a file or returns the content as a string. | 161 | 1.003 |
-| `VariableOccurrences` | `get_all_elements_in_lists` | Retrieves all unique elements within list-type variable values. | 26 | 1.003 |
-| `VariableOccurrences` | `get_all_values` | Retrieves all unique values of the variable(s). | 26 | 1.003 |
-| `VariableOccurrences` | `get_raw_data` | Returns the raw data. | 8 | 1.003 |
-| `VariableOccurrences` | `get_steps_with_value` | Retrieves the steps where the variable equals the specified value. | 52 | 1.003 |
-| `VariableOccurrences` | `get_steps_with_value_in_scope` | Retrieves the steps within a specific scope where the variable equals the specified value. | 45 | 1.003 |
-| `VariableOccurrences` | `get_usage_count` | Counts how many times a specific value is used. | 48 | 1.003 |
-| `VariableOccurrences` | `summarize` | Provides a summary of the variable occurrences. | 72 | 1.003 |
-| `boundarysection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `boundarysection` | `__and__` | overload and operator | 7 | 1.003 |
-| `boundarysection` | `__copy__` | copy method | 6 | 1.003 |
-| `boundarysection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `boundarysection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `boundarysection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `boundarysection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `boundarysection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `boundarysection` | `__repr__` | disp method | 22 | 1.003 |
-| `boundarysection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `boundarysection` | `__str__` | string representation | 3 | 1.003 |
-| `boundarysection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `boundarysection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `boundarysection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `boundarysection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `boundarysection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `boundarysection` | `printheader` | print header | 7 | 1.003 |
-| `boundarysection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `boundarysection` | `write` | Write the script to a file. | 39 | 1.003 |
-| `discretizationsection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `discretizationsection` | `__and__` | overload and operator | 7 | 1.003 |
-| `discretizationsection` | `__copy__` | copy method | 6 | 1.003 |
-| `discretizationsection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `discretizationsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `discretizationsection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `discretizationsection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `discretizationsection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `discretizationsection` | `__repr__` | disp method | 22 | 1.003 |
-| `discretizationsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `discretizationsection` | `__str__` | string representation | 3 | 1.003 |
-| `discretizationsection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `discretizationsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `discretizationsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `discretizationsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `discretizationsection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `discretizationsection` | `printheader` | print header | 7 | 1.003 |
-| `discretizationsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `discretizationsection` | `write` | Write the script to a file. | 39 | 1.003 |
-| `dumpsection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `dumpsection` | `__and__` | overload and operator | 7 | 1.003 |
-| `dumpsection` | `__copy__` | copy method | 6 | 1.003 |
-| `dumpsection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `dumpsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `dumpsection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `dumpsection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `dumpsection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `dumpsection` | `__repr__` | disp method | 22 | 1.003 |
-| `dumpsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `dumpsection` | `__str__` | string representation | 3 | 1.003 |
-| `dumpsection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `dumpsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `dumpsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `dumpsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `dumpsection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `dumpsection` | `printheader` | print header | 7 | 1.003 |
-| `dumpsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `dumpsection` | `write` | Write the script to a file. | 39 | 1.003 |
-| `geometrysection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `geometrysection` | `__and__` | overload and operator | 7 | 1.003 |
-| `geometrysection` | `__copy__` | copy method | 6 | 1.003 |
-| `geometrysection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `geometrysection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `geometrysection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `geometrysection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `geometrysection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `geometrysection` | `__repr__` | disp method | 22 | 1.003 |
-| `geometrysection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `geometrysection` | `__str__` | string representation | 3 | 1.003 |
-| `geometrysection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `geometrysection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `geometrysection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `geometrysection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `geometrysection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `geometrysection` | `printheader` | print header | 7 | 1.003 |
-| `geometrysection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `geometrysection` | `write` | Write the script to a file. | 39 | 1.003 |
-| `globalsection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `globalsection` | `__and__` | overload and operator | 7 | 1.003 |
-| `globalsection` | `__copy__` | copy method | 6 | 1.003 |
-| `globalsection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `globalsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `globalsection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `globalsection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `globalsection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `globalsection` | `__repr__` | disp method | 22 | 1.003 |
-| `globalsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `globalsection` | `__str__` | string representation | 3 | 1.003 |
-| `globalsection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `globalsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `globalsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `globalsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `globalsection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `globalsection` | `printheader` | print header | 7 | 1.003 |
-| `globalsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `globalsection` | `write` | Write the script to a file. | 39 | 1.003 |
-| `initializesection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `initializesection` | `__and__` | overload and operator | 7 | 1.003 |
-| `initializesection` | `__copy__` | copy method | 6 | 1.003 |
-| `initializesection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `initializesection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `initializesection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `initializesection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `initializesection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `initializesection` | `__repr__` | disp method | 22 | 1.003 |
-| `initializesection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `initializesection` | `__str__` | string representation | 3 | 1.003 |
-| `initializesection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `initializesection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `initializesection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `initializesection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `initializesection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `initializesection` | `printheader` | print header | 7 | 1.003 |
-| `initializesection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `initializesection` | `write` | Write the script to a file. | 39 | 1.003 |
-| `integrationsection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `integrationsection` | `__and__` | overload and operator | 7 | 1.003 |
-| `integrationsection` | `__copy__` | copy method | 6 | 1.003 |
-| `integrationsection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `integrationsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `integrationsection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `integrationsection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `integrationsection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `integrationsection` | `__repr__` | disp method | 22 | 1.003 |
-| `integrationsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `integrationsection` | `__str__` | string representation | 3 | 1.003 |
-| `integrationsection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `integrationsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `integrationsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `integrationsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `integrationsection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `integrationsection` | `printheader` | print header | 7 | 1.003 |
-| `integrationsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `integrationsection` | `write` | Write the script to a file. | 39 | 1.003 |
-| `interactionsection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `interactionsection` | `__and__` | overload and operator | 7 | 1.003 |
-| `interactionsection` | `__copy__` | copy method | 6 | 1.003 |
-| `interactionsection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `interactionsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `interactionsection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `interactionsection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `interactionsection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `interactionsection` | `__repr__` | disp method | 22 | 1.003 |
-| `interactionsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `interactionsection` | `__str__` | string representation | 3 | 1.003 |
-| `interactionsection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `interactionsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `interactionsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `interactionsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `interactionsection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `interactionsection` | `printheader` | print header | 7 | 1.003 |
-| `interactionsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `interactionsection` | `write` | Write the script to a file. | 39 | 1.003 |
-| `pipescript` | `__add__` | overload + as pipe with copy | 12 | 1.003 |
-| `pipescript` | `__copy__` | copy method | 6 | 1.003 |
-| `pipescript` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `pipescript` | `__getitem__` | return the ith or slice element(s) of the pipe | 24 | 1.003 |
-| `pipescript` | `__iadd__` | overload += as pipe without copy | 6 | 1.003 |
-| `pipescript` | `__init__` | constructor | 26 | 1.003 |
-| `pipescript` | `__len__` | len() method | 3 | 1.003 |
-| `pipescript` | `__mul__` | overload * as multiple pipes with copy | 9 | 1.003 |
-| `pipescript` | `__or__` | Overload | pipe operator in pipescript | 51 | 1.003 |
-| `pipescript` | `__repr__` | display method | 29 | 1.003 |
-| `pipescript` | `__setitem__` | modify the ith element of the pipe p[4] = [] removes the 4th element p[4:7] = [] removes the elements from position 4 to 6 p[2:4] = p[0:2] copy the elements 0 and 1 in positions 2 and 3 p[[3,4]]=p[0] | 58 | 1.003 |
-| `pipescript` | `__str__` | string representation | 3 | 1.003 |
-| `pipescript` | `clear` |  | 16 | 1.003 |
-| `pipescript` | `do` | Execute the pipeline or a part of the pipeline and generate the LAMMPS script. | 118 | 1.003 |
-| `pipescript` | `do_legacy` | Execute the pipeline or a part of the pipeline and generate the LAMMPS script. | 99 | 1.003 |
-| `pipescript` | `dscript` | Convert the current pipescript object to a dscript object. | 115 | 1.003 |
-| `pipescript` | `generate_report` | Generates a comprehensive report for specified variables and writes it to a file. | 124 | 1.003 |
-| `pipescript` | `getUSER` | getUSER get USER variable getUSER(idx,varname) | 9 | 1.003 |
-| `pipescript` | `header` | Generate a formatted header for the pipescript file. | 33 | 1.003 |
-| `pipescript` | `join` | join a combination scripts and pipescripts within a pipescript p = pipescript.join([s1,s2,p3,p4,p5...]) | 19 | 1.003 |
-| `pipescript` | `list_multiple_values` | Lists all occurrences and values of multiple variables across the pipeline scripts. | 17 | 1.003 |
-| `pipescript` | `list_values` | Lists all occurrences and values of a specified variable or all variables across the pipeline scripts. | 118 | 1.003 |
-| `pipescript` | `plot_multiple_value_distributions` | Plots the distribution of elements for multiple variables across specified scopes. | 54 | 1.003 |
-| `pipescript` | `rename` | rename scripts in the pipe p.rename(idx=[0,2,3],name=["A","B","C"]) | 17 | 1.003 |
-| `pipescript` | `script` | script the pipeline or parts of the pipeline s = p.script() s = p.script([0,2]) | 50 | 1.003 |
-| `pipescript` | `setUSER` | setUSER sets USER variables setUSER(idx,varname,varvalue) | 9 | 1.003 |
-| `pipescript` | `write` | Write the combined script to a file. | 27 | 1.003 |
-| `runsection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `runsection` | `__and__` | overload and operator | 7 | 1.003 |
-| `runsection` | `__copy__` | copy method | 6 | 1.003 |
-| `runsection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `runsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `runsection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `runsection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `runsection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `runsection` | `__repr__` | disp method | 22 | 1.003 |
-| `runsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `runsection` | `__str__` | string representation | 3 | 1.003 |
-| `runsection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `runsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `runsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `runsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `runsection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `runsection` | `printheader` | print header | 7 | 1.003 |
-| `runsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `runsection` | `write` | Write the script to a file. | 39 | 1.003 |
-| `script` | `__add__` | overload addition operator | 24 | 1.003 |
-| `script` | `__and__` | overload and operator | 7 | 1.003 |
-| `script` | `__copy__` | copy method | 6 | 1.003 |
-| `script` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `script` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `script` | `__mul__` | overload * operator | 8 | 1.003 |
-| `script` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `script` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `script` | `__repr__` | disp method | 22 | 1.003 |
-| `script` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `script` | `__str__` | string representation | 3 | 1.003 |
-| `script` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `script` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `script` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `script` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `script` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `script` | `printheader` | print header | 7 | 1.003 |
-| `script` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `script` | `write` | Write the script to a file. | 39 | 1.003 |
-| `scriptobject` | `__add__` | add a structure set sortdefintions=True to sort definitions (to maintain executability) | 12 | 1.003 |
-| `scriptobject` | `__eq__` | Return self==value. | 3 | 1.003 |
-| `scriptobject` | `__ge__` | Return self>=value. | 2 | 1.003 |
-| `scriptobject` | `__gt__` | Return self>value. | 2 | 1.003 |
-| `scriptobject` | `__init__` | constructor, use debug=True to report eval errors | 30 | 1.003 |
-| `scriptobject` | `__le__` | Return self<=value. | 2 | 1.003 |
-| `scriptobject` | `__lt__` | Return self<value. | 2 | 1.003 |
-| `scriptobject` | `__ne__` | Return self!=value. | 2 | 1.003 |
-| `scriptobject` | `__or__` | overload | or for pipe | 6 | 1.003 |
-| `scriptobject` | `__str__` | string representation | 3 | 1.003 |
-| `scriptobjectgroup` | `__add__` | overload + | 32 | 1.003 |
-| `scriptobjectgroup` | `__init__` | SOG constructor | 18 | 1.003 |
-| `scriptobjectgroup` | `__or__` | overload | or for pipe | 6 | 1.003 |
-| `scriptobjectgroup` | `__str__` | string representation | 3 | 1.003 |
-| `scriptobjectgroup` | `group_generator` | Generate and return a group object. | 28 | 1.003 |
-| `scriptobjectgroup` | `<lambda>` |  | 1 | 1.003 |
-| `scriptobjectgroup` | `mass` | Generates LAMMPS mass commands for each unique beadtype in the collection. | 89 | 1.003 |
-| `scriptobjectgroup` | `<lambda>` |  | 1 | 1.003 |
-| `scriptobjectgroup` | `select` | select bead from a keep beadlist | 11 | 1.003 |
-| `scriptobjectgroup` | `struct` | create a group with name | 10 | 1.003 |
-| `statussection` | `__add__` | overload addition operator | 24 | 1.003 |
-| `statussection` | `__and__` | overload and operator | 7 | 1.003 |
-| `statussection` | `__copy__` | copy method | 6 | 1.003 |
-| `statussection` | `__deepcopy__` | deep copy method | 8 | 1.003 |
-| `statussection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.003 |
-| `statussection` | `__mul__` | overload * operator | 8 | 1.003 |
-| `statussection` | `__or__` | overload | or for pipe | 19 | 1.003 |
-| `statussection` | `__pow__` | overload ** operator | 8 | 1.003 |
-| `statussection` | `__repr__` | disp method | 22 | 1.003 |
-| `statussection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.003 |
-| `statussection` | `__str__` | string representation | 3 | 1.003 |
-| `statussection` | `_iadd__` | overload addition operator | 8 | 1.003 |
-| `statussection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.003 |
-| `statussection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.003 |
-| `statussection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.003 |
-| `statussection` | `header` | Generate a formatted header for the script file. | 37 | 1.003 |
-| `statussection` | `printheader` | print header | 7 | 1.003 |
-| `statussection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.003 |
-| `statussection` | `write` | Write the script to a file. | 39 | 1.003 |
+| (module-level) | `frame_header` | Format the header content into an ASCII framed box with customizable properties. | 147 | 1.006 |
+| (module-level) | `get_metadata` | Return a dictionary of explicitly defined metadata. | 15 | 1.006 |
+| (module-level) | `<lambda>` |  | 1 | 1.006 |
+| (module-level) | `is_scalar` | Determines if a value is scalar (not a list, dict, or tuple). | 5 | 1.006 |
+| (module-level) | `make_hashable` | Recursively converts lists and dictionaries to tuples to make them hashable. | 9 | 1.006 |
+| (module-level) | `picker` |  | 1 | 1.006 |
+| (module-level) | `remove_comments` | Removes comments from a single or multi-line string, handling quotes, escaped characters, and line continuation. | 101 | 1.006 |
+| (module-level) | `span` |  | 2 | 1.006 |
+| `CallableScript` | `__call__` | Call self as a function. | 3 | 1.006 |
+| `CallableScript` | `__get__` |  | 3 | 1.006 |
+| `CallableScript` | `__init__` | Initialize self.  See help(type(self)) for accurate signature. | 2 | 1.006 |
+| `VariableOccurrences` | `__init__` | Initializes the VariableOccurrences object. | 38 | 1.006 |
+| `VariableOccurrences` | `_determine_scopes` | Determines the unique scopes present across all variables. | 7 | 1.006 |
+| `VariableOccurrences` | `export` | Exports the variable occurrences to a file or returns the content as a string. | 161 | 1.006 |
+| `VariableOccurrences` | `get_all_elements_in_lists` | Retrieves all unique elements within list-type variable values. | 26 | 1.006 |
+| `VariableOccurrences` | `get_all_values` | Retrieves all unique values of the variable(s). | 26 | 1.006 |
+| `VariableOccurrences` | `get_raw_data` | Returns the raw data. | 8 | 1.006 |
+| `VariableOccurrences` | `get_steps_with_value` | Retrieves the steps where the variable equals the specified value. | 52 | 1.006 |
+| `VariableOccurrences` | `get_steps_with_value_in_scope` | Retrieves the steps within a specific scope where the variable equals the specified value. | 45 | 1.006 |
+| `VariableOccurrences` | `get_usage_count` | Counts how many times a specific value is used. | 48 | 1.006 |
+| `VariableOccurrences` | `summarize` | Provides a summary of the variable occurrences. | 72 | 1.006 |
+| `boundarysection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `boundarysection` | `__and__` | overload and operator | 7 | 1.006 |
+| `boundarysection` | `__copy__` | copy method | 6 | 1.006 |
+| `boundarysection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `boundarysection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `boundarysection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `boundarysection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `boundarysection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `boundarysection` | `__repr__` | disp method | 22 | 1.006 |
+| `boundarysection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `boundarysection` | `__str__` | string representation | 3 | 1.006 |
+| `boundarysection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `boundarysection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `boundarysection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `boundarysection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `boundarysection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `boundarysection` | `printheader` | print header | 7 | 1.006 |
+| `boundarysection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `boundarysection` | `write` | Write the script to a file. | 39 | 1.006 |
+| `discretizationsection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `discretizationsection` | `__and__` | overload and operator | 7 | 1.006 |
+| `discretizationsection` | `__copy__` | copy method | 6 | 1.006 |
+| `discretizationsection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `discretizationsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `discretizationsection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `discretizationsection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `discretizationsection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `discretizationsection` | `__repr__` | disp method | 22 | 1.006 |
+| `discretizationsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `discretizationsection` | `__str__` | string representation | 3 | 1.006 |
+| `discretizationsection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `discretizationsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `discretizationsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `discretizationsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `discretizationsection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `discretizationsection` | `printheader` | print header | 7 | 1.006 |
+| `discretizationsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `discretizationsection` | `write` | Write the script to a file. | 39 | 1.006 |
+| `dumpsection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `dumpsection` | `__and__` | overload and operator | 7 | 1.006 |
+| `dumpsection` | `__copy__` | copy method | 6 | 1.006 |
+| `dumpsection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `dumpsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `dumpsection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `dumpsection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `dumpsection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `dumpsection` | `__repr__` | disp method | 22 | 1.006 |
+| `dumpsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `dumpsection` | `__str__` | string representation | 3 | 1.006 |
+| `dumpsection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `dumpsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `dumpsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `dumpsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `dumpsection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `dumpsection` | `printheader` | print header | 7 | 1.006 |
+| `dumpsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `dumpsection` | `write` | Write the script to a file. | 39 | 1.006 |
+| `geometrysection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `geometrysection` | `__and__` | overload and operator | 7 | 1.006 |
+| `geometrysection` | `__copy__` | copy method | 6 | 1.006 |
+| `geometrysection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `geometrysection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `geometrysection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `geometrysection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `geometrysection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `geometrysection` | `__repr__` | disp method | 22 | 1.006 |
+| `geometrysection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `geometrysection` | `__str__` | string representation | 3 | 1.006 |
+| `geometrysection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `geometrysection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `geometrysection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `geometrysection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `geometrysection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `geometrysection` | `printheader` | print header | 7 | 1.006 |
+| `geometrysection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `geometrysection` | `write` | Write the script to a file. | 39 | 1.006 |
+| `globalsection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `globalsection` | `__and__` | overload and operator | 7 | 1.006 |
+| `globalsection` | `__copy__` | copy method | 6 | 1.006 |
+| `globalsection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `globalsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `globalsection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `globalsection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `globalsection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `globalsection` | `__repr__` | disp method | 22 | 1.006 |
+| `globalsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `globalsection` | `__str__` | string representation | 3 | 1.006 |
+| `globalsection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `globalsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `globalsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `globalsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `globalsection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `globalsection` | `printheader` | print header | 7 | 1.006 |
+| `globalsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `globalsection` | `write` | Write the script to a file. | 39 | 1.006 |
+| `initializesection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `initializesection` | `__and__` | overload and operator | 7 | 1.006 |
+| `initializesection` | `__copy__` | copy method | 6 | 1.006 |
+| `initializesection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `initializesection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `initializesection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `initializesection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `initializesection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `initializesection` | `__repr__` | disp method | 22 | 1.006 |
+| `initializesection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `initializesection` | `__str__` | string representation | 3 | 1.006 |
+| `initializesection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `initializesection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `initializesection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `initializesection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `initializesection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `initializesection` | `printheader` | print header | 7 | 1.006 |
+| `initializesection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `initializesection` | `write` | Write the script to a file. | 39 | 1.006 |
+| `integrationsection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `integrationsection` | `__and__` | overload and operator | 7 | 1.006 |
+| `integrationsection` | `__copy__` | copy method | 6 | 1.006 |
+| `integrationsection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `integrationsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `integrationsection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `integrationsection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `integrationsection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `integrationsection` | `__repr__` | disp method | 22 | 1.006 |
+| `integrationsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `integrationsection` | `__str__` | string representation | 3 | 1.006 |
+| `integrationsection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `integrationsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `integrationsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `integrationsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `integrationsection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `integrationsection` | `printheader` | print header | 7 | 1.006 |
+| `integrationsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `integrationsection` | `write` | Write the script to a file. | 39 | 1.006 |
+| `interactionsection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `interactionsection` | `__and__` | overload and operator | 7 | 1.006 |
+| `interactionsection` | `__copy__` | copy method | 6 | 1.006 |
+| `interactionsection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `interactionsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `interactionsection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `interactionsection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `interactionsection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `interactionsection` | `__repr__` | disp method | 22 | 1.006 |
+| `interactionsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `interactionsection` | `__str__` | string representation | 3 | 1.006 |
+| `interactionsection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `interactionsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `interactionsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `interactionsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `interactionsection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `interactionsection` | `printheader` | print header | 7 | 1.006 |
+| `interactionsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `interactionsection` | `write` | Write the script to a file. | 39 | 1.006 |
+| `pipescript` | `__add__` | overload + as pipe with copy | 12 | 1.006 |
+| `pipescript` | `__copy__` | copy method | 6 | 1.006 |
+| `pipescript` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `pipescript` | `__getitem__` | return the ith or slice element(s) of the pipe | 24 | 1.006 |
+| `pipescript` | `__iadd__` | overload += as pipe without copy | 6 | 1.006 |
+| `pipescript` | `__init__` | constructor | 26 | 1.006 |
+| `pipescript` | `__len__` | len() method | 3 | 1.006 |
+| `pipescript` | `__mul__` | overload * as multiple pipes with copy | 9 | 1.006 |
+| `pipescript` | `__or__` | Overload | pipe operator in pipescript | 52 | 1.006 |
+| `pipescript` | `__repr__` | display method | 29 | 1.006 |
+| `pipescript` | `__setitem__` | modify the ith element of the pipe p[4] = [] removes the 4th element p[4:7] = [] removes the elements from position 4 to 6 p[2:4] = p[0:2] copy the elements 0 and 1 in positions 2 and 3 p[[3,4]]=p[0] | 58 | 1.006 |
+| `pipescript` | `__str__` | string representation | 3 | 1.006 |
+| `pipescript` | `clear` |  | 16 | 1.006 |
+| `pipescript` | `do` | Execute the pipeline or a part of the pipeline and generate the LAMMPS script. | 118 | 1.006 |
+| `pipescript` | `do_legacy` | Execute the pipeline or a part of the pipeline and generate the LAMMPS script. | 99 | 1.006 |
+| `pipescript` | `dscript` | Convert the current pipescript object to a dscript object. | 115 | 1.006 |
+| `pipescript` | `generate_report` | Generates a comprehensive report for specified variables and writes it to a file. | 124 | 1.006 |
+| `pipescript` | `getUSER` | getUSER get USER variable getUSER(idx,varname) | 9 | 1.006 |
+| `pipescript` | `header` | Generate a formatted header for the pipescript file. | 33 | 1.006 |
+| `pipescript` | `join` | join a combination scripts and pipescripts within a pipescript p = pipescript.join([s1,s2,p3,p4,p5...]) | 19 | 1.006 |
+| `pipescript` | `list_multiple_values` | Lists all occurrences and values of multiple variables across the pipeline scripts. | 17 | 1.006 |
+| `pipescript` | `list_values` | Lists all occurrences and values of a specified variable or all variables across the pipeline scripts. | 118 | 1.006 |
+| `pipescript` | `plot_multiple_value_distributions` | Plots the distribution of elements for multiple variables across specified scopes. | 54 | 1.006 |
+| `pipescript` | `rename` | rename scripts in the pipe p.rename(idx=[0,2,3],name=["A","B","C"]) | 17 | 1.006 |
+| `pipescript` | `script` | script the pipeline or parts of the pipeline s = p.script() s = p.script([0,2]) | 50 | 1.006 |
+| `pipescript` | `setUSER` | setUSER sets USER variables setUSER(idx,varname,varvalue) | 9 | 1.006 |
+| `pipescript` | `write` | Write the combined script to a file. | 27 | 1.006 |
+| `runsection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `runsection` | `__and__` | overload and operator | 7 | 1.006 |
+| `runsection` | `__copy__` | copy method | 6 | 1.006 |
+| `runsection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `runsection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `runsection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `runsection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `runsection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `runsection` | `__repr__` | disp method | 22 | 1.006 |
+| `runsection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `runsection` | `__str__` | string representation | 3 | 1.006 |
+| `runsection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `runsection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `runsection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `runsection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `runsection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `runsection` | `printheader` | print header | 7 | 1.006 |
+| `runsection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `runsection` | `write` | Write the script to a file. | 39 | 1.006 |
+| `script` | `__add__` | overload addition operator | 24 | 1.006 |
+| `script` | `__and__` | overload and operator | 7 | 1.006 |
+| `script` | `__copy__` | copy method | 6 | 1.006 |
+| `script` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `script` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `script` | `__mul__` | overload * operator | 8 | 1.006 |
+| `script` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `script` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `script` | `__repr__` | disp method | 22 | 1.006 |
+| `script` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `script` | `__str__` | string representation | 3 | 1.006 |
+| `script` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `script` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `script` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `script` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `script` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `script` | `printheader` | print header | 7 | 1.006 |
+| `script` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `script` | `write` | Write the script to a file. | 39 | 1.006 |
+| `scriptobject` | `__add__` | Add two structure objects, with precedence as follows: | 12 | 1.006 |
+| `scriptobject` | `__eq__` | Return self==value. | 3 | 1.006 |
+| `scriptobject` | `__ge__` | Return self>=value. | 2 | 1.006 |
+| `scriptobject` | `__gt__` | Return self>value. | 2 | 1.006 |
+| `scriptobject` | `__init__` | constructor, use debug=True to report eval errors | 30 | 1.006 |
+| `scriptobject` | `__le__` | Return self<=value. | 2 | 1.006 |
+| `scriptobject` | `__lt__` | Return self<value. | 2 | 1.006 |
+| `scriptobject` | `__ne__` | Return self!=value. | 2 | 1.006 |
+| `scriptobject` | `__or__` | overload | or for pipe | 6 | 1.006 |
+| `scriptobject` | `__str__` | string representation | 3 | 1.006 |
+| `scriptobjectgroup` | `__add__` | overload + | 32 | 1.006 |
+| `scriptobjectgroup` | `__init__` | SOG constructor | 18 | 1.006 |
+| `scriptobjectgroup` | `__or__` | overload | or for pipe | 6 | 1.006 |
+| `scriptobjectgroup` | `__str__` | string representation | 3 | 1.006 |
+| `scriptobjectgroup` | `group_generator` | Generate and return a group object. | 28 | 1.006 |
+| `scriptobjectgroup` | `<lambda>` |  | 1 | 1.006 |
+| `scriptobjectgroup` | `mass` | Generates LAMMPS mass commands for each unique beadtype in the collection. | 89 | 1.006 |
+| `scriptobjectgroup` | `<lambda>` |  | 1 | 1.006 |
+| `scriptobjectgroup` | `select` | select bead from a keep beadlist | 11 | 1.006 |
+| `scriptobjectgroup` | `struct` | create a group with name | 10 | 1.006 |
+| `statussection` | `__add__` | overload addition operator | 24 | 1.006 |
+| `statussection` | `__and__` | overload and operator | 7 | 1.006 |
+| `statussection` | `__copy__` | copy method | 6 | 1.006 |
+| `statussection` | `__deepcopy__` | deep copy method | 8 | 1.006 |
+| `statussection` | `__init__` | constructor adding instance definitions stored in USER | 14 | 1.006 |
+| `statussection` | `__mul__` | overload * operator | 8 | 1.006 |
+| `statussection` | `__or__` | overload | or for pipe | 19 | 1.006 |
+| `statussection` | `__pow__` | overload ** operator | 8 | 1.006 |
+| `statussection` | `__repr__` | disp method | 22 | 1.006 |
+| `statussection` | `__rshift__` | overload right  shift operator (keep only the last template) | 10 | 1.006 |
+| `statussection` | `__str__` | string representation | 3 | 1.006 |
+| `statussection` | `_iadd__` | overload addition operator | 8 | 1.006 |
+| `statussection` | `detect_variables` | Detects variables in the content of the template using an extended pattern to include indexed variables (e.g., ${var[i]}) if `with_index` is True. | 42 | 1.006 |
+| `statussection` | `do` | Generate the LAMMPS script based on the current configuration. | 77 | 1.006 |
+| `statussection` | `getallattributes` | advanced method to get all attributes including class ones | 4 | 1.006 |
+| `statussection` | `header` | Generate a formatted header for the script file. | 37 | 1.006 |
+| `statussection` | `printheader` | print header | 7 | 1.006 |
+| `statussection` | `tmpwrite` | Write the script to a temporary file and create optional persistent copies. | 92 | 1.006 |
+| `statussection` | `write` | Write the script to a file. | 39 | 1.006 |
 

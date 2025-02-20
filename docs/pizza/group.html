@@ -36,7 +36,7 @@ __credits__ = [&#34;Olivier Vitrac&#34;,&#34;Han Chen&#34;]
 __license__ = &#34;GPLv3&#34;
 __maintainer__ = &#34;Olivier Vitrac&#34;
 __email__ = &#34;olivier.vitrac@agroparistech.fr&#34;
-__version__ = &#34;0.9999&#34;
+__version__ = &#34;1.006&#34;
 
 
 &#34;&#34;&#34;
@@ -216,6 +216,7 @@ Created on Wed Aug 16 16:25:19 2023
 # 2024-10-12 add copy and deepcopy features
 # 2024-11-29 add groupobjects, groupcollection
 # 2024-12-01 standarize scripting features, automatically call script/pscript methods
+# 2024-02-18 add groupcollection.list()
 
 # %% Dependencies
 # pizza.group is independent of region and can performs only static operations.
@@ -743,6 +744,10 @@ class groupcollection:
         D.collection = &#34;\n&#34;.join(lines)
         D.DEFINITIONS.mass = default_mass
         return D
+
+    def list(self):
+        &#34;&#34;&#34;Return a unique, stable list of groups in the original order&#34;&#34;&#34;
+        return list(dict.fromkeys(group for g in self for group in g.group))
 
 
 
@@ -3750,6 +3755,10 @@ simulations, or other repetitive tasks.</li>
 <li><strong>Script Management</strong>: Manage and version-control different script sections
 and configurations easily.</li>
 </ul>
+<h2 id="operations">Operations:</h2>
+<p>"+" concatenates dscript instances (d1+d2)
+"<em>" duplicates a dscript instance (d</em>3 or 3*d)
+"|" pipe dscript instances with script, pipescript, scriptobjectgroup&hellip; instances</p>
 <h2 id="methods">Methods:</h2>
 <p><strong>init</strong>(self, name=None):
 Initializes a new <code><a title="group.dscript" href="#group.dscript">dscript</a></code> object with an optional name.</p>
@@ -3897,6 +3906,12 @@ script, especially when managing multiple scripts.</p>
       simulations, or other repetitive tasks.
     - **Script Management**: Manage and version-control different script sections
       and configurations easily.
+
+    Operations:
+    -----------
+    &#34;+&#34; concatenates dscript instances (d1+d2)
+    &#34;*&#34; duplicates a dscript instance (d*3 or 3*d)
+    &#34;|&#34; pipe dscript instances with script, pipescript, scriptobjectgroup... instances
 
     Methods:
     --------
@@ -4411,6 +4426,80 @@ script, especially when managing multiple scripts.</p>
             raise TypeError(f&#34;Cannot concatenate &#39;dscript&#39; with &#39;{type(other).__name__}&#39;&#34;)
 
 
+    def __mul__(self, n):
+        &#34;&#34;&#34;
+        Multiply the dscript instance to create multiple copies of its script.
+
+        This operator creates a new dscript instance that duplicates the original&#39;s TEMPLATE
+        entries n times, while preserving the same DEFINITIONS and non-TEMPLATE attributes. For
+        each key in the original TEMPLATE, a copy is made and its key is modified by appending
+        a copy number (e.g., &#34;A&#34; becomes &#34;A1&#34;, &#34;A2&#34;, ..., &#34;An&#34;). If a generated key (such as &#34;A1&#34;)
+        already exists in the new TEMPLATE, a unique suffix (e.g., &#34;_1&#34;, &#34;_2&#34;, etc.) is added
+        until a unique key is obtained.
+
+        Each copy is added using the `add_dynamic_script` method to ensure that fresh copies of
+        local definitions are created, mimicking the behavior seen in the __add__ method.
+
+        Parameters:
+        -----------
+        n : int
+            The number of copies to create. Must be an integer greater than or equal to 1.
+
+        Returns:
+        --------
+        dscript
+            A new dscript instance containing n copies of each TEMPLATE entry from the original,
+            with keys modified to indicate the copy number.
+
+        Raises:
+        -------
+        TypeError
+            If n is not an integer.
+        ValueError
+            If n is less than 1.
+
+        Example:
+        --------
+        &gt;&gt;&gt; D = dscript(...)
+        &gt;&gt;&gt; Dcopies = D * 3
+        &gt;&gt;&gt; # If D.TEMPLATE was {&#39;A&#39;: ..., &#39;B&#39;: ...}, then Dcopies.TEMPLATE will be:
+        &gt;&gt;&gt; # {&#39;A1&#39;: ..., &#39;B1&#39;: ..., &#39;A2&#39;: ..., &#39;B2&#39;: ..., &#39;A3&#39;: ..., &#39;B3&#39;: ...}
+        &#34;&#34;&#34;
+        if not isinstance(n, int):
+            raise TypeError(&#34;dscript can only be multiplied by an integer&#34;)
+        if n &lt; 1:
+            raise ValueError(&#34;Multiplication factor must be at least 1&#34;)
+        # Create a new dscript instance with the same global definitions.
+        # (We follow the __add__ convention by passing self.DEFINITIONS into the constructor.)
+        new_script = dscript(name=f&#34;{self.name}*{n}&#34;, **self.DEFINITIONS)
+        # For each copy (from 1 to n), duplicate every template line.
+        for i in range(1, n + 1):
+            for orig_key, tmpl in self.TEMPLATE.items():
+                # Form a candidate key by appending the copy number to the original key.
+                base = str(orig_key)
+                candidate = base + str(i)
+                # If candidate already exists (a case like &#34;A1&#34; might be there already),
+                # append an extra suffix until a unique key is found.
+                counter = 1
+                while candidate in new_script.TEMPLATE:
+                    candidate = base + str(i) + &#34;_&#34; + str(counter)
+                    counter += 1
+                # Use add_dynamic_script to add a fresh copy of the template.
+                # We pass a fresh copy of the local definitions using lambdaScriptdata(**tmpl.definitions)
+                new_script.add_dynamic_script(
+                    candidate,
+                    content=tmpl.content,
+                    definitions=lambdaScriptdata(**tmpl.definitions),
+                    verbose=self.verbose
+                )
+        return new_script
+
+    # Allow multiplication to work regardless of the order
+    def __rmul__(self, n):
+        return self.__mul__(n)
+
+
+
     def __or__(self, other):
         &#34;&#34;&#34;
         Pipes a dscript object with other objects.
@@ -4443,12 +4532,13 @@ script, especially when managing multiple scripts.</p>
 
 
 
-    def __call__(self, *keys):
+    def __call__(self,*keys,seteval=True):
         &#34;&#34;&#34;
         Extracts subobjects from the dscript based on the provided keys.
 
         Parameters:
         -----------
+        seteval : flag (default=True) to force eval=True for templates using variables
         *keys : one or more keys that correspond to the `TEMPLATE` entries.
 
         Returns:
@@ -4464,8 +4554,9 @@ script, especially when managing multiple scripts.</p>
                 result.TEMPLATE[key] = self.TEMPLATE[key]
             else:
                 raise KeyError(f&#34;Key &#39;{key}&#39; not found in TEMPLATE.&#34;)
-        # Copy the DEFINITIONS from the current object
-        result.DEFINITIONS = copy.deepcopy(self.DEFINITIONS)
+        # Copy from DEFINITIONS ONLY variables undefined at the template level
+        varlist = result.check_all_variables(verbose=False,seteval=seteval,output=True)
+        result.DEFINITIONS = self.DEFINITIONS(*self.DEFINITIONS.validkeys(varlist[&#34;undefined&#34;]))
         # Copy other relevant attributes
         result.SECTIONS = self.SECTIONS[:]
         result.section = self.section
@@ -4659,6 +4750,8 @@ script, especially when managing multiple scripts.</p>
             localvariables = localvariables+scriptdata(**self.TEMPLATE[key].definitions)
             focused_dscript.TEMPLATE[key].definitions = localvariables
             focused_dscript.DEFINITIONS = scriptdata(**self.DEFINITIONS)
+            # populate global variables if they are set to their default values locally (i.e., &#39;${var}&#34;)
+            focused_dscript.TEMPLATE[key].definitions.importfrom(self.DEFINITIONS,nonempty=True, replacedefaultvar=True)
             focused_dscript.SECTIONS = self.SECTIONS[:]
             focused_dscript.section = self.section
             focused_dscript.position = self.position
@@ -10076,6 +10169,8 @@ dscript subobjects.</p></div>
         localvariables = localvariables+scriptdata(**self.TEMPLATE[key].definitions)
         focused_dscript.TEMPLATE[key].definitions = localvariables
         focused_dscript.DEFINITIONS = scriptdata(**self.DEFINITIONS)
+        # populate global variables if they are set to their default values locally (i.e., &#39;${var}&#34;)
+        focused_dscript.TEMPLATE[key].definitions.importfrom(self.DEFINITIONS,nonempty=True, replacedefaultvar=True)
         focused_dscript.SECTIONS = self.SECTIONS[:]
         focused_dscript.section = self.section
         focused_dscript.position = self.position
@@ -14322,7 +14417,11 @@ name (str, optional): The name of the collection. If not provided, a default nam
         D = dscript(name=idD if name is None else name, description=f&#34;{idD} with {len(self)} beads&#34;)
         D.collection = &#34;\n&#34;.join(lines)
         D.DEFINITIONS.mass = default_mass
-        return D</code></pre>
+        return D
+
+    def list(self):
+        &#34;&#34;&#34;Return a unique, stable list of groups in the original order&#34;&#34;&#34;
+        return list(dict.fromkeys(group for g in self for group in g.group))</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -14405,6 +14504,20 @@ TypeError: If any item in &lt;code&gt;objs&lt;/code&gt; is not a &lt;code&gt;&lt
         if not isinstance(obj, groupobject):
             raise TypeError(&#34;All items to extend must be `groupobject` instances.&#34;)
     self.collection.extend(objs)</code></pre>
+</details>
+</dd>
+<dt id="group.groupcollection.list"><code class="name flex">
+<span>def <span class="ident">list</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a unique, stable list of groups in the original order</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list(self):
+    &#34;&#34;&#34;Return a unique, stable list of groups in the original order&#34;&#34;&#34;
+    return list(dict.fromkeys(group for g in self for group in g.group))</code></pre>
 </details>
 </dd>
 <dt id="group.groupcollection.mass"><code class="name flex">
@@ -15203,7 +15316,8 @@ note: XX&gt;&gt;YY&gt;&gt;ZZ represents the number of stored variables
             rightarg = pipescript(s,printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)  # Convert the script-like object into a pipescript
             native = False
         elif isinstance(s,(scriptobject,scriptobjectgroup)):
-            rightarg = pipescript(s,printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)  # Convert the script-like object into a pipescript
+            stmp = s.script(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
+            rightarg =  pipescript(stmp,printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)  # Convert the script-like object into a pipescript
             native = False
         elif isinstance(s, group):
             stmp = s.script(printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)
@@ -17621,10 +17735,11 @@ and saves the resulting script to the specified file.</li>
 </li>
 <li>
 <h4><code><a title="group.groupcollection" href="#group.groupcollection">groupcollection</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="group.groupcollection.append" href="#group.groupcollection.append">append</a></code></li>
 <li><code><a title="group.groupcollection.clear" href="#group.groupcollection.clear">clear</a></code></li>
 <li><code><a title="group.groupcollection.extend" href="#group.groupcollection.extend">extend</a></code></li>
+<li><code><a title="group.groupcollection.list" href="#group.groupcollection.list">list</a></code></li>
 <li><code><a title="group.groupcollection.mass" href="#group.groupcollection.mass">mass</a></code></li>
 <li><code><a title="group.groupcollection.remove" href="#group.groupcollection.remove">remove</a></code></li>
 </ul>

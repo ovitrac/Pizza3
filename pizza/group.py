@@ -8,7 +8,7 @@ __credits__ = ["Olivier Vitrac","Han Chen"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9999"
+__version__ = "1.006"
 
 
 """
@@ -188,6 +188,7 @@ Created on Wed Aug 16 16:25:19 2023
 # 2024-10-12 add copy and deepcopy features
 # 2024-11-29 add groupobjects, groupcollection
 # 2024-12-01 standarize scripting features, automatically call script/pscript methods
+# 2024-02-18 add groupcollection.list()
 
 # %% Dependencies
 # pizza.group is independent of region and can performs only static operations.
@@ -715,6 +716,10 @@ class groupcollection:
         D.collection = "\n".join(lines)
         D.DEFINITIONS.mass = default_mass
         return D
+
+    def list(self):
+        """Return a unique, stable list of groups in the original order"""
+        return list(dict.fromkeys(group for g in self for group in g.group))
 
 
 

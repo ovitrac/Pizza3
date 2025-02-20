@@ -177,6 +177,7 @@ Created on Sun Jan 23 14:19:03 2022
 # 2025-02-03 add _precision, fix generator for NumPy
 # 2025-02-06 maintnance version (fixes and extensions) in agreement with the revised version of param_demo()
 # 2025-02-07 add struct.numrepl(), major release (version 1.0054), improve evaluation error messages
+# 2025-02-19 add importfrom(), add operator <<, add validkeys()
 
 __project__ = "Pizza3"
 __author__ = "Olivier Vitrac"
@@ -185,7 +186,7 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.0054"
+__version__ = "1.006"
 
 
 # %% Dependencies
@@ -521,6 +522,11 @@ class AttrErrorDict(dict):
         except KeyError:
             raise AttributeError(f"Attribute '{key}' not found")
 
+# A generalized isempty defintion
+def is_empty(value):
+    """Return True if value is considered empty (None, "", [] or ())."""
+    return value is None or value == "" or value == [] or value == ()
+
 # %% core struct class
 class struct():
     """
@@ -656,6 +662,7 @@ class struct():
     #### Supported Operators
     - `+`: Concatenation of two structures (`__add__`).
     - `-`: Subtraction of fields (`__sub__`).
+    - `<<`: Import values from another structure (`__lshift__`)
     - `len()`: Number of fields (`__len__`).
     - `in`: Check for field existence (`__contains__`).
 
@@ -669,12 +676,14 @@ class struct():
     | `eval()`              | Evaluate expressions within fields.                     |
     | `fromkeys(keys)`      | Create a structure from a list of keys.                 |
     | `generator()`         | Generate Python code representing the structure.        |
+    | `importfrom()`        | Import undefined values from another struct or dict.    |
     | `items()`             | Return key-value pairs.                                 |
     | `keys()`              | Return all keys in the structure.                       |
     | `read(file)`          | Load structure fields from a file.                      |
     | `scan(string)`        | Extract variables from a string and populate fields.    |
     | `sortdefinitions()`   | Sort fields to resolve dependencies.                    |
     | `struct2dict()`       | Convert the structure to a dictionary.                  |
+    | `validkeys()`         | Return valid keys                                       |
     | `values()`            | Return all field values.                                |
     | `write(file)`         | Save the structure to a file.                           |
 
@@ -917,15 +926,41 @@ class struct():
         self._iter_ = 0
         raise StopIteration(f"Maximum {self._ftype} iteration reached {len(self)}")
 
-    def __add__(self,s,sortdefinitions=False,raiseerror=True, silentmode=True):
-        """ add a structure
-            set sortdefintions=True to sort definitions (to maintain executability)
+    def __add__(self, s, sortdefinitions=False, raiseerror=True, silentmode=True):
         """
-        if not isinstance(s,struct):
+        Add two structure objects, with precedence as follows:
+
+          paramauto > param > struct
+
+        In c = a + b, if b has a higher precedence than a then c will be of b's class,
+        otherwise it will be of a's class.
+
+        The new instance is created by copying the fields from the left-hand operand (a)
+        and then updating with the fields from the right-hand operand (b).
+        """
+        if not isinstance(s, struct):
             raise TypeError(f"the second operand must be {self._type}")
-        dup = duplicate(self)
-        dup.__dict__.update(s.__dict__)
-        if sortdefinitions: dup.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
+
+        # Define a helper to assign a precedence value.
+        def get_precedence(obj):
+            if isinstance(obj, paramauto):
+                return 2
+            elif isinstance(obj, param):
+                return 1
+            elif isinstance(obj, struct):
+                return 0
+            else:
+                return 0  # fallback for unknown derivations
+
+        # Determine which class to use for the duplicate.
+        # If s (b) has a higher precedence than self (a), use s's class; otherwise, use self's.
+        hi_class = self.__class__ if get_precedence(self) >= get_precedence(s) else s.__class__
+        # Create a new instance of the chosen class by copying self's fields.
+        dup = hi_class(**self)
+        # Update with the fields from s.
+        dup.update(**s)
+        if sortdefinitions:
+            dup.sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
         return dup
 
     def __iadd__(self,s,sortdefinitions=False,raiseerror=False, silentmode=True):
@@ -934,7 +969,7 @@ class struct():
         """
         if not isinstance(s,struct):
             raise TypeError(f"the second operand must be {self._type}")
-        self.__dict__.update(s.__dict__)
+        self.update(**s)
         if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
         return self
 
@@ -1756,6 +1791,94 @@ class struct():
         # Replace all placeholders in the text using the replacer function.
         return placeholder_pattern.sub(replace_match, text)
 
+    # import method
+    def importfrom(self, s, nonempty=True, replacedefaultvar=True):
+        """
+        Import values from 's' into self according to the following rules:
+
+        - Only fields that already exist in self are considered.
+        - If s is a dictionary, it is converted to a struct via struct(**s).
+        - If the current value of a field in self is empty (None, "", [] or ()),
+          then that field is updated from s.
+        - If nonempty is True (default), then only non-empty values from s are imported.
+        - If replacedefaultvar is True (default), then if a field in self exactly equals
+          "${key}" (with key being the field name), it is replaced by the corresponding
+          value from s if it is empty.
+        - Raises a TypeError if s is not a dict or struct (i.e. if it doesn’t support keys()).
+        """
+        # If s is a dictionary, convert it to a struct instance.
+        if isinstance(s, dict):
+            s = struct(**s)
+        elif not hasattr(s, "keys"):
+            raise TypeError(f"s must be a struct or a dictionary not a type {type(s).__name__}")
+
+        for key in self.keys():
+            if key in s:
+                s_value = getattr(s, key)
+                current_value = getattr(self, key)
+                if is_empty(current_value) or (replacedefaultvar and current_value == "${" + key + "}"):
+                    if nonempty:
+                        if not is_empty(s_value):
+                            setattr(self, key, s_value)
+                    else:
+                        setattr(self, key, s_value)
+
+    # importfrom with copy
+    def __lshift__(self, other):
+        """
+        Allows the syntax:
+
+            s = s1 << s2
+
+        where a new instance is created as a copy of s1 (preserving its type, whether
+        struct, param, or paramauto) and then updated with the values from s2 using
+        importfrom.
+        """
+        # Create a new instance preserving the type of self.
+        new_instance = type(self)(**{k: getattr(self, k) for k in self.keys()})
+        # Import values from other (s2) into the new instance.
+        new_instance.importfrom(other)
+        return new_instance
+
+    # returns only valid keys
+    def validkeys(self, list_of_keys):
+        """
+        Validate and return the subset of keys from the provided list that are valid in the instance.
+
+        Parameters:
+        -----------
+        list_of_keys : list
+            A list of keys (as strings) to check against the instance’s attributes.
+
+        Returns:
+        --------
+        list
+            A list of keys from list_of_keys that are valid (i.e., exist as attributes in the instance).
+
+        Raises:
+        -------
+        TypeError
+            If list_of_keys is not a list or if any element in list_of_keys is not a string.
+
+        Example:
+        --------
+        >>> s = struct()
+        >>> s.foo = 42
+        >>> s.bar = "hello"
+        >>> valid = s.validkeys(["foo", "bar", "baz"])
+        >>> print(valid)   # Output: ['foo', 'bar'] assuming 'baz' is not defined in s
+        """
+        # Check that list_of_keys is a list
+        if not isinstance(list_of_keys, list):
+            raise TypeError("list_of_keys must be a list")
+
+        # Check that every entry in the list is a string
+        for key in list_of_keys:
+            if not isinstance(key, str):
+                raise TypeError("Each key in list_of_keys must be a string")
+
+        # Assuming valid keys are those present in the instance's __dict__
+        return [key for key in list_of_keys if key in self]
 
 # %% param class with scripting and evaluation capabilities
 class param(struct):

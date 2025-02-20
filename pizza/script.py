@@ -102,11 +102,11 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.003"
+__version__ = "1.006"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2025-01-17 (community)
+# INRAE\Olivier Vitrac - rev. 2025-02-18 (community)
 # contact: olivier.vitrac@agroparistech.fr
 
 
@@ -159,6 +159,7 @@ __version__ = "1.003"
 # 2025-01-06 script.dscript() forces autorefresh=False to prevent automatic assignement of variables not definet yet (see dscript.ScriptTemplate constructor)
 # 2025-01-07 add VariableOccurrences.export() in Markdown and HTML, pipescript.generate_report() (version 1.0)
 # 2025-01-18 consistent implementation of do() between dscript and script for indexed variables
+# 2025-02-18 fix pipescipt | scriptobjectgroup (the script method was not called before)
 
 # %% Dependencies
 import os, sys, datetime, socket, getpass, tempfile, types, re, inspect
@@ -2436,7 +2437,7 @@ class script:
         if isinstance(rightarg,(pipescript,script,scriptobject,scriptobjectgroup)):
             return pipescript(self,printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity) | rightarg
         else:
-            raise ValueError("the argument in | must a pipescript, a scriptobject or a scriptobjectgroup not {type(s)}")
+            raise ValueError(f"the argument in | must a pipescript, a scriptobject or a scriptobjectgroup not {type(s)}")
 
 
     def header(self, verbose=True, verbosity=None, style=2):
@@ -2991,7 +2992,8 @@ class pipescript:
             rightarg = pipescript(s,printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)  # Convert the script-like object into a pipescript
             native = False
         elif isinstance(s,(scriptobject,scriptobjectgroup)):
-            rightarg = pipescript(s,printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)  # Convert the script-like object into a pipescript
+            stmp = s.script(printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)
+            rightarg =  pipescript(stmp,printflag=self.printflag,verbose=self.verbose,verbosity=self.verbosity)  # Convert the script-like object into a pipescript
             native = False
         elif isinstance(s, group):
             stmp = s.script(printflag=s.printflag,verbose=s.verbose,verbosity=s.verbosity)

@@ -139,10 +139,10 @@ __credits__ = ["Olivier Vitrac"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "0.9971"
+__version__ = "1.006"
 
 
-# INRAE\Olivier Vitrac - rev. 2022-10-10
+# INRAE\Olivier Vitrac - rev. 2025-02-18
 # contact: olivier.vitrac@agroparistech.fr
 
 # History
@@ -160,6 +160,7 @@ __version__ = "0.9971"
 # 2024-09-12 upgrading of parameterforcefield
 # 2024-09-21 dforcefield and forcefield can be combined indifferently (no precedence)
 # 2024-10-10 fix the dynamic parameterization with dforcefield (more overrides)
+# 2025-02-18 add tlsphalone, ulsphalone (for special cases not requiring overlay)
 
 # %% Dependencies
 import types
@@ -579,6 +580,59 @@ class tlsph(smd):
     """ SMD:TLSPH forcefield (total Lagrangian) """
     name = smd.name + struct(style="tlsph")
     description = smd.description + struct(style="SMD:TLSPH - total Lagrangian for solids")
+
+    # style definition (LAMMPS code between triple """)
+    PAIR_DIAGCOEFF = """
+    # [comment] Diagonal pair coefficient tlsph
+    pair_coeff      %d %d smd/tlsph *COMMON ${rho} ${E} ${nu} ${q1} ${q2} ${Hg} ${Cp} &
+                    *STRENGTH_LINEAR_PLASTIC ${sigma_yield} ${hardening} &
+                    *EOS_LINEAR &
+                    *END
+    """
+    PAIR_OFFDIAGCOEFF = """
+    # [comment] Off-diagonal pair coefficient (generic)
+    pair_coeff      %d %d smd/hertz ${contact_stiffness}
+    """
+# END PAIR-COEFF FORCEFIELD ===========================
+
+
+# BEGIN PAIR-COEFF FORCEFIELD ===========================
+class ulsphalone(smd):
+    """ SMD:ULSPH forcefield (updated Lagrangian) """
+    name = smd.name + struct(style="ulsph")
+    description = smd.description + struct(style="SMD:ULSPH - updated Lagrangian for fluids - SPH-like")
+
+    # forcefield definition (LAMMPS code between triple """)
+    PAIR_STYLE = """
+    # [comment] PAIR STYLE SMD
+    pair_style      smd/ulsph *DENSITY_CONTINUITY *VELOCITY_GRADIENT *NO_GRADIENT_CORRECTION
+    """
+
+    # style definition (LAMMPS code between triple """)
+    PAIR_DIAGCOEFF = """
+    # [comment] Pair diagonal coefficient ulsph
+    pair_coeff      %d %d smd/ulsph *COMMON ${rho} ${c0} ${q1} ${Cp} 0 &
+                    *EOS_TAIT ${taitexponent} &
+                    *END
+    """
+    PAIR_OFFDIAGCOEFF = """
+    # [comment] Off-diagonal pair coefficient (generic)
+    pair_coeff      %d %d smd/hertz ${contact_stiffness}
+    """
+# END PAIR-COEFF FORCEFIELD ===========================
+
+
+# BEGIN PAIR-COEFF FORCEFIELD ===========================
+class tlsphalone(forcefield):
+    """ SMD:TLSPH forcefield (total Lagrangian) """
+    name = smd.name + struct(style="tlsph")
+    description = smd.description + struct(style="SMD:TLSPH - total Lagrangian for solids")
+
+    # forcefield definition (LAMMPS code between triple """)
+    PAIR_STYLE = """
+    # [comment] PAIR STYLE SMD
+    pair_style      hybrid/overlay smd/tlsph smd/hertz ${contact_scale}
+    """
 
     # style definition (LAMMPS code between triple """)
     PAIR_DIAGCOEFF = """

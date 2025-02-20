@@ -7672,6 +7672,7 @@ the <code><a title="dforcefield.parameterforcefield" href="#dforcefield.paramete
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li>pizza.forcefield.smd</li>
+<li>pizza.forcefield.tlsphalone</li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -8740,6 +8741,7 @@ s.sortdefinitions()
 <ul>
 <li><code>+</code>: Concatenation of two structures (<code>__add__</code>).</li>
 <li><code>-</code>: Subtraction of fields (<code>__sub__</code>).</li>
+<li><code>&lt;&lt;</code>: Import values from another structure (<code>__lshift__</code>)</li>
 <li><code>len()</code>: Number of fields (<code>__len__</code>).</li>
 <li><code>in</code>: Check for field existence (<code>__contains__</code>).</li>
 </ul>
@@ -8781,6 +8783,10 @@ s.sortdefinitions()
 <td>Generate Python code representing the structure.</td>
 </tr>
 <tr>
+<td><code>importfrom()</code></td>
+<td>Import undefined values from another struct or dict.</td>
+</tr>
+<tr>
 <td><code>items()</code></td>
 <td>Return key-value pairs.</td>
 </tr>
@@ -8803,6 +8809,10 @@ s.sortdefinitions()
 <tr>
 <td><code>struct2dict()</code></td>
 <td>Convert the structure to a dictionary.</td>
+</tr>
+<tr>
+<td><code>validkeys()</code></td>
+<td>Return valid keys</td>
 </tr>
 <tr>
 <td><code>values()</code></td>
@@ -8974,6 +8984,7 @@ s.sortdefinitions()
     #### Supported Operators
     - `+`: Concatenation of two structures (`__add__`).
     - `-`: Subtraction of fields (`__sub__`).
+    - `&lt;&lt;`: Import values from another structure (`__lshift__`)
     - `len()`: Number of fields (`__len__`).
     - `in`: Check for field existence (`__contains__`).
 
@@ -8987,12 +8998,14 @@ s.sortdefinitions()
     | `eval()`              | Evaluate expressions within fields.                     |
     | `fromkeys(keys)`      | Create a structure from a list of keys.                 |
     | `generator()`         | Generate Python code representing the structure.        |
+    | `importfrom()`        | Import undefined values from another struct or dict.    |
     | `items()`             | Return key-value pairs.                                 |
     | `keys()`              | Return all keys in the structure.                       |
     | `read(file)`          | Load structure fields from a file.                      |
     | `scan(string)`        | Extract variables from a string and populate fields.    |
     | `sortdefinitions()`   | Sort fields to resolve dependencies.                    |
     | `struct2dict()`       | Convert the structure to a dictionary.                  |
+    | `validkeys()`         | Return valid keys                                       |
     | `values()`            | Return all field values.                                |
     | `write(file)`         | Save the structure to a file.                           |
 
@@ -9235,15 +9248,41 @@ s.sortdefinitions()
         self._iter_ = 0
         raise StopIteration(f&#34;Maximum {self._ftype} iteration reached {len(self)}&#34;)
 
-    def __add__(self,s,sortdefinitions=False,raiseerror=True, silentmode=True):
-        &#34;&#34;&#34; add a structure
-            set sortdefintions=True to sort definitions (to maintain executability)
+    def __add__(self, s, sortdefinitions=False, raiseerror=True, silentmode=True):
         &#34;&#34;&#34;
-        if not isinstance(s,struct):
+        Add two structure objects, with precedence as follows:
+
+          paramauto &gt; param &gt; struct
+
+        In c = a + b, if b has a higher precedence than a then c will be of b&#39;s class,
+        otherwise it will be of a&#39;s class.
+
+        The new instance is created by copying the fields from the left-hand operand (a)
+        and then updating with the fields from the right-hand operand (b).
+        &#34;&#34;&#34;
+        if not isinstance(s, struct):
             raise TypeError(f&#34;the second operand must be {self._type}&#34;)
-        dup = duplicate(self)
-        dup.__dict__.update(s.__dict__)
-        if sortdefinitions: dup.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
+
+        # Define a helper to assign a precedence value.
+        def get_precedence(obj):
+            if isinstance(obj, paramauto):
+                return 2
+            elif isinstance(obj, param):
+                return 1
+            elif isinstance(obj, struct):
+                return 0
+            else:
+                return 0  # fallback for unknown derivations
+
+        # Determine which class to use for the duplicate.
+        # If s (b) has a higher precedence than self (a), use s&#39;s class; otherwise, use self&#39;s.
+        hi_class = self.__class__ if get_precedence(self) &gt;= get_precedence(s) else s.__class__
+        # Create a new instance of the chosen class by copying self&#39;s fields.
+        dup = hi_class(**self)
+        # Update with the fields from s.
+        dup.update(**s)
+        if sortdefinitions:
+            dup.sortdefinitions(raiseerror=raiseerror, silentmode=silentmode)
         return dup
 
     def __iadd__(self,s,sortdefinitions=False,raiseerror=False, silentmode=True):
@@ -9252,7 +9291,7 @@ s.sortdefinitions()
         &#34;&#34;&#34;
         if not isinstance(s,struct):
             raise TypeError(f&#34;the second operand must be {self._type}&#34;)
-        self.__dict__.update(s.__dict__)
+        self.update(**s)
         if sortdefinitions: self.sortdefinitions(raiseerror=raiseerror,silentmode=silentmode)
         return self
 
@@ -10072,7 +10111,96 @@ s.sortdefinitions()
             return match.group(0)
 
         # Replace all placeholders in the text using the replacer function.
-        return placeholder_pattern.sub(replace_match, text)</code></pre>
+        return placeholder_pattern.sub(replace_match, text)
+
+    # import method
+    def importfrom(self, s, nonempty=True, replacedefaultvar=True):
+        &#34;&#34;&#34;
+        Import values from &#39;s&#39; into self according to the following rules:
+
+        - Only fields that already exist in self are considered.
+        - If s is a dictionary, it is converted to a struct via struct(**s).
+        - If the current value of a field in self is empty (None, &#34;&#34;, [] or ()),
+          then that field is updated from s.
+        - If nonempty is True (default), then only non-empty values from s are imported.
+        - If replacedefaultvar is True (default), then if a field in self exactly equals
+          &#34;${key}&#34; (with key being the field name), it is replaced by the corresponding
+          value from s if it is empty.
+        - Raises a TypeError if s is not a dict or struct (i.e. if it doesn’t support keys()).
+        &#34;&#34;&#34;
+        # If s is a dictionary, convert it to a struct instance.
+        if isinstance(s, dict):
+            s = struct(**s)
+        elif not hasattr(s, &#34;keys&#34;):
+            raise TypeError(f&#34;s must be a struct or a dictionary not a type {type(s).__name__}&#34;)
+
+        for key in self.keys():
+            if key in s:
+                s_value = getattr(s, key)
+                current_value = getattr(self, key)
+                if is_empty(current_value) or (replacedefaultvar and current_value == &#34;${&#34; + key + &#34;}&#34;):
+                    if nonempty:
+                        if not is_empty(s_value):
+                            setattr(self, key, s_value)
+                    else:
+                        setattr(self, key, s_value)
+
+    # importfrom with copy
+    def __lshift__(self, other):
+        &#34;&#34;&#34;
+        Allows the syntax:
+
+            s = s1 &lt;&lt; s2
+
+        where a new instance is created as a copy of s1 (preserving its type, whether
+        struct, param, or paramauto) and then updated with the values from s2 using
+        importfrom.
+        &#34;&#34;&#34;
+        # Create a new instance preserving the type of self.
+        new_instance = type(self)(**{k: getattr(self, k) for k in self.keys()})
+        # Import values from other (s2) into the new instance.
+        new_instance.importfrom(other)
+        return new_instance
+
+    # returns only valid keys
+    def validkeys(self, list_of_keys):
+        &#34;&#34;&#34;
+        Validate and return the subset of keys from the provided list that are valid in the instance.
+
+        Parameters:
+        -----------
+        list_of_keys : list
+            A list of keys (as strings) to check against the instance’s attributes.
+
+        Returns:
+        --------
+        list
+            A list of keys from list_of_keys that are valid (i.e., exist as attributes in the instance).
+
+        Raises:
+        -------
+        TypeError
+            If list_of_keys is not a list or if any element in list_of_keys is not a string.
+
+        Example:
+        --------
+        &gt;&gt;&gt; s = struct()
+        &gt;&gt;&gt; s.foo = 42
+        &gt;&gt;&gt; s.bar = &#34;hello&#34;
+        &gt;&gt;&gt; valid = s.validkeys([&#34;foo&#34;, &#34;bar&#34;, &#34;baz&#34;])
+        &gt;&gt;&gt; print(valid)   # Output: [&#39;foo&#39;, &#39;bar&#39;] assuming &#39;baz&#39; is not defined in s
+        &#34;&#34;&#34;
+        # Check that list_of_keys is a list
+        if not isinstance(list_of_keys, list):
+            raise TypeError(&#34;list_of_keys must be a list&#34;)
+
+        # Check that every entry in the list is a string
+        for key in list_of_keys:
+            if not isinstance(key, str):
+                raise TypeError(&#34;Each key in list_of_keys must be a string&#34;)
+
+        # Assuming valid keys are those present in the instance&#39;s __dict__
+        return [key for key in list_of_keys if key in self]</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -10775,6 +10903,58 @@ If False (default), the code is returned as a raw string starting with, e.g.,
     )</code></pre>
 </details>
 </dd>
+<dt id="dforcefield.struct.importfrom"><code class="name flex">
+<span>def <span class="ident">importfrom</span></span>(<span>self, s, nonempty=True, replacedefaultvar=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Import values from 's' into self according to the following rules:</p>
+<ul>
+<li>Only fields that already exist in self are considered.</li>
+<li>If s is a dictionary, it is converted to a struct via struct(**s).</li>
+<li>If the current value of a field in self is empty (None, "", [] or ()),
+then that field is updated from s.</li>
+<li>If nonempty is True (default), then only non-empty values from s are imported.</li>
+<li>If replacedefaultvar is True (default), then if a field in self exactly equals
+"${key}" (with key being the field name), it is replaced by the corresponding
+value from s if it is empty.</li>
+<li>Raises a TypeError if s is not a dict or struct (i.e. if it doesn’t support keys()).</li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def importfrom(self, s, nonempty=True, replacedefaultvar=True):
+    &#34;&#34;&#34;
+    Import values from &#39;s&#39; into self according to the following rules:
+
+    - Only fields that already exist in self are considered.
+    - If s is a dictionary, it is converted to a struct via struct(**s).
+    - If the current value of a field in self is empty (None, &#34;&#34;, [] or ()),
+      then that field is updated from s.
+    - If nonempty is True (default), then only non-empty values from s are imported.
+    - If replacedefaultvar is True (default), then if a field in self exactly equals
+      &#34;${key}&#34; (with key being the field name), it is replaced by the corresponding
+      value from s if it is empty.
+    - Raises a TypeError if s is not a dict or struct (i.e. if it doesn’t support keys()).
+    &#34;&#34;&#34;
+    # If s is a dictionary, convert it to a struct instance.
+    if isinstance(s, dict):
+        s = struct(**s)
+    elif not hasattr(s, &#34;keys&#34;):
+        raise TypeError(f&#34;s must be a struct or a dictionary not a type {type(s).__name__}&#34;)
+
+    for key in self.keys():
+        if key in s:
+            s_value = getattr(s, key)
+            current_value = getattr(self, key)
+            if is_empty(current_value) or (replacedefaultvar and current_value == &#34;${&#34; + key + &#34;}&#34;):
+                if nonempty:
+                    if not is_empty(s_value):
+                        setattr(self, key, s_value)
+                else:
+                    setattr(self, key, s_value)</code></pre>
+</details>
+</dd>
 <dt id="dforcefield.struct.isdefined"><code class="name flex">
 <span>def <span class="ident">isdefined</span></span>(<span>self, ref=None)</span>
 </code></dt>
@@ -11175,6 +11355,71 @@ The fields to update and their new values.</p>
             self.setattr(key, value)</code></pre>
 </details>
 </dd>
+<dt id="dforcefield.struct.validkeys"><code class="name flex">
+<span>def <span class="ident">validkeys</span></span>(<span>self, list_of_keys)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Validate and return the subset of keys from the provided list that are valid in the instance.</p>
+<h2 id="parameters">Parameters:</h2>
+<p>list_of_keys : list
+A list of keys (as strings) to check against the instance’s attributes.</p>
+<h2 id="returns">Returns:</h2>
+<p>list
+A list of keys from list_of_keys that are valid (i.e., exist as attributes in the instance).</p>
+<h2 id="raises">Raises:</h2>
+<p>TypeError
+If list_of_keys is not a list or if any element in list_of_keys is not a string.</p>
+<h2 id="example">Example:</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; s = struct()
+&gt;&gt;&gt; s.foo = 42
+&gt;&gt;&gt; s.bar = &quot;hello&quot;
+&gt;&gt;&gt; valid = s.validkeys([&quot;foo&quot;, &quot;bar&quot;, &quot;baz&quot;])
+&gt;&gt;&gt; print(valid)   # Output: ['foo', 'bar'] assuming 'baz' is not defined in s
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validkeys(self, list_of_keys):
+    &#34;&#34;&#34;
+    Validate and return the subset of keys from the provided list that are valid in the instance.
+
+    Parameters:
+    -----------
+    list_of_keys : list
+        A list of keys (as strings) to check against the instance’s attributes.
+
+    Returns:
+    --------
+    list
+        A list of keys from list_of_keys that are valid (i.e., exist as attributes in the instance).
+
+    Raises:
+    -------
+    TypeError
+        If list_of_keys is not a list or if any element in list_of_keys is not a string.
+
+    Example:
+    --------
+    &gt;&gt;&gt; s = struct()
+    &gt;&gt;&gt; s.foo = 42
+    &gt;&gt;&gt; s.bar = &#34;hello&#34;
+    &gt;&gt;&gt; valid = s.validkeys([&#34;foo&#34;, &#34;bar&#34;, &#34;baz&#34;])
+    &gt;&gt;&gt; print(valid)   # Output: [&#39;foo&#39;, &#39;bar&#39;] assuming &#39;baz&#39; is not defined in s
+    &#34;&#34;&#34;
+    # Check that list_of_keys is a list
+    if not isinstance(list_of_keys, list):
+        raise TypeError(&#34;list_of_keys must be a list&#34;)
+
+    # Check that every entry in the list is a string
+    for key in list_of_keys:
+        if not isinstance(key, str):
+            raise TypeError(&#34;Each key in list_of_keys must be a string&#34;)
+
+    # Assuming valid keys are those present in the instance&#39;s __dict__
+    return [key for key in list_of_keys if key in self]</code></pre>
+</details>
+</dd>
 <dt id="dforcefield.struct.values"><code class="name flex">
 <span>def <span class="ident">values</span></span>(<span>self)</span>
 </code></dt>
@@ -11388,6 +11633,7 @@ write(filename, overwrite=True, mkdir=False)</p>
 <li><code><a title="dforcefield.struct.generator" href="#dforcefield.struct.generator">generator</a></code></li>
 <li><code><a title="dforcefield.struct.getattr" href="#dforcefield.struct.getattr">getattr</a></code></li>
 <li><code><a title="dforcefield.struct.hasattr" href="#dforcefield.struct.hasattr">hasattr</a></code></li>
+<li><code><a title="dforcefield.struct.importfrom" href="#dforcefield.struct.importfrom">importfrom</a></code></li>
 <li><code><a title="dforcefield.struct.isdefined" href="#dforcefield.struct.isdefined">isdefined</a></code></li>
 <li><code><a title="dforcefield.struct.isempty" href="#dforcefield.struct.isempty">isempty</a></code></li>
 <li><code><a title="dforcefield.struct.isexpression" href="#dforcefield.struct.isexpression">isexpression</a></code></li>
@@ -11406,6 +11652,7 @@ write(filename, overwrite=True, mkdir=False)</p>
 <li><code><a title="dforcefield.struct.struct2dict" href="#dforcefield.struct.struct2dict">struct2dict</a></code></li>
 <li><code><a title="dforcefield.struct.struct2param" href="#dforcefield.struct.struct2param">struct2param</a></code></li>
 <li><code><a title="dforcefield.struct.update" href="#dforcefield.struct.update">update</a></code></li>
+<li><code><a title="dforcefield.struct.validkeys" href="#dforcefield.struct.validkeys">validkeys</a></code></li>
 <li><code><a title="dforcefield.struct.values" href="#dforcefield.struct.values">values</a></code></li>
 <li><code><a title="dforcefield.struct.write" href="#dforcefield.struct.write">write</a></code></li>
 <li><code><a title="dforcefield.struct.zip" href="#dforcefield.struct.zip">zip</a></code></li>

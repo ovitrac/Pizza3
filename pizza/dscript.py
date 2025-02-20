@@ -770,11 +770,11 @@ __credits__ = ["Olivier Vitrac", "Han Chen", "Joseph Fine"]
 __license__ = "GPLv3"
 __maintainer__ = "Olivier Vitrac"
 __email__ = "olivier.vitrac@agroparistech.fr"
-__version__ = "1.003"
+__version__ = "1.006"
 
 
 
-# INRAE\Olivier Vitrac - rev. 2025-01-17 (community)
+# INRAE\Olivier Vitrac - rev. 2025-02-19 (community)
 # contact: olivier.vitrac@agroparistech.fr, han.chen@inrae.fr
 
 # Revision history
@@ -807,6 +807,8 @@ __version__ = "1.003"
 # 2025-01-06 split dscipt.save() so that it uses var_info() as a standard method to retrive variable information
 # 2025-01-07 fine tunning of dscipt.save(), add print dscript.print_var_info() - version 1.0
 # 2025-01-17 fix parsing global parameters containing ",", full implementation of variables with indices ${var[i]}
+# 2025-02-18 change precedence rules in ScriptTemplate.do(), dscript.pipescipt() when the variable is defined in global definitions but not locally (i.e., set to its default value "${var}")
+# 2025-02-19 implement the previous rev with the new importfrom() method, add * for dscript instances
 
 # Dependencies
 import os, getpass, socket, time, datetime
@@ -1649,8 +1651,10 @@ class ScriptTemplate:
         # Perform full processing when softrun is False
         if cond:
             if self.attributes.get("eval", True):
-                #return "\n".join([self.definitions.formateval(line, protected) for line in self.content])
+                # inheritance rules (right terms has higher precedence)
                 inputs = globaldefinitions + self.definitions + USER + lambdaScriptdata(**kwargs)
+                #  restore global definitions if default content (${var}) is detected
+                inputs.importfrom(globaldefinitions,nonempty=True, replacedefaultvar=True)
                 usedvariables = self.detect_variables(with_index=False,only_indexed=False)
                 variables_used_with_index = self.detect_variables(with_index=False,only_indexed=True)
                 usedvariables_withoutindex = [ var for var in usedvariables if var not in variables_used_with_index ]
@@ -1883,6 +1887,12 @@ class dscript:
       simulations, or other repetitive tasks.
     - **Script Management**: Manage and version-control different script sections
       and configurations easily.
+
+    Operations:
+    -----------
+    "+" concatenates dscript instances (d1+d2)
+    "*" duplicates a dscript instance (d*3 or 3*d)
+    "|" pipe dscript instances with script, pipescript, scriptobjectgroup... instances
 
     Methods:
     --------
@@ -2397,6 +2407,80 @@ class dscript:
             raise TypeError(f"Cannot concatenate 'dscript' with '{type(other).__name__}'")
 
 
+    def __mul__(self, n):
+        """
+        Multiply the dscript instance to create multiple copies of its script.
+
+        This operator creates a new dscript instance that duplicates the original's TEMPLATE
+        entries n times, while preserving the same DEFINITIONS and non-TEMPLATE attributes. For
+        each key in the original TEMPLATE, a copy is made and its key is modified by appending
+        a copy number (e.g., "A" becomes "A1", "A2", ..., "An"). If a generated key (such as "A1")
+        already exists in the new TEMPLATE, a unique suffix (e.g., "_1", "_2", etc.) is added
+        until a unique key is obtained.
+
+        Each copy is added using the `add_dynamic_script` method to ensure that fresh copies of
+        local definitions are created, mimicking the behavior seen in the __add__ method.
+
+        Parameters:
+        -----------
+        n : int
+            The number of copies to create. Must be an integer greater than or equal to 1.
+
+        Returns:
+        --------
+        dscript
+            A new dscript instance containing n copies of each TEMPLATE entry from the original,
+            with keys modified to indicate the copy number.
+
+        Raises:
+        -------
+        TypeError
+            If n is not an integer.
+        ValueError
+            If n is less than 1.
+
+        Example:
+        --------
+        >>> D = dscript(...)
+        >>> Dcopies = D * 3
+        >>> # If D.TEMPLATE was {'A': ..., 'B': ...}, then Dcopies.TEMPLATE will be:
+        >>> # {'A1': ..., 'B1': ..., 'A2': ..., 'B2': ..., 'A3': ..., 'B3': ...}
+        """
+        if not isinstance(n, int):
+            raise TypeError("dscript can only be multiplied by an integer")
+        if n < 1:
+            raise ValueError("Multiplication factor must be at least 1")
+        # Create a new dscript instance with the same global definitions.
+        # (We follow the __add__ convention by passing self.DEFINITIONS into the constructor.)
+        new_script = dscript(name=f"{self.name}*{n}", **self.DEFINITIONS)
+        # For each copy (from 1 to n), duplicate every template line.
+        for i in range(1, n + 1):
+            for orig_key, tmpl in self.TEMPLATE.items():
+                # Form a candidate key by appending the copy number to the original key.
+                base = str(orig_key)
+                candidate = base + str(i)
+                # If candidate already exists (a case like "A1" might be there already),
+                # append an extra suffix until a unique key is found.
+                counter = 1
+                while candidate in new_script.TEMPLATE:
+                    candidate = base + str(i) + "_" + str(counter)
+                    counter += 1
+                # Use add_dynamic_script to add a fresh copy of the template.
+                # We pass a fresh copy of the local definitions using lambdaScriptdata(**tmpl.definitions)
+                new_script.add_dynamic_script(
+                    candidate,
+                    content=tmpl.content,
+                    definitions=lambdaScriptdata(**tmpl.definitions),
+                    verbose=self.verbose
+                )
+        return new_script
+
+    # Allow multiplication to work regardless of the order
+    def __rmul__(self, n):
+        return self.__mul__(n)
+
+
+
     def __or__(self, other):
         """
         Pipes a dscript object with other objects.
@@ -2429,12 +2513,13 @@ class dscript:
 
 
 
-    def __call__(self, *keys):
+    def __call__(self,*keys,seteval=True):
         """
         Extracts subobjects from the dscript based on the provided keys.
 
         Parameters:
         -----------
+        seteval : flag (default=True) to force eval=True for templates using variables
         *keys : one or more keys that correspond to the `TEMPLATE` entries.
 
         Returns:
@@ -2450,8 +2535,9 @@ class dscript:
                 result.TEMPLATE[key] = self.TEMPLATE[key]
             else:
                 raise KeyError(f"Key '{key}' not found in TEMPLATE.")
-        # Copy the DEFINITIONS from the current object
-        result.DEFINITIONS = copy.deepcopy(self.DEFINITIONS)
+        # Copy from DEFINITIONS ONLY variables undefined at the template level
+        varlist = result.check_all_variables(verbose=False,seteval=seteval,output=True)
+        result.DEFINITIONS = self.DEFINITIONS(*self.DEFINITIONS.validkeys(varlist["undefined"]))
         # Copy other relevant attributes
         result.SECTIONS = self.SECTIONS[:]
         result.section = self.section
@@ -2645,6 +2731,8 @@ class dscript:
             localvariables = localvariables+scriptdata(**self.TEMPLATE[key].definitions)
             focused_dscript.TEMPLATE[key].definitions = localvariables
             focused_dscript.DEFINITIONS = scriptdata(**self.DEFINITIONS)
+            # populate global variables if they are set to their default values locally (i.e., '${var}")
+            focused_dscript.TEMPLATE[key].definitions.importfrom(self.DEFINITIONS,nonempty=True, replacedefaultvar=True)
             focused_dscript.SECTIONS = self.SECTIONS[:]
             focused_dscript.section = self.section
             focused_dscript.position = self.position
