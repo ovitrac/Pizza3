@@ -1,7 +1,11 @@
 # 🍕 **Pizza³**
 
-| <img src="assets/logo.png" alt="logo" style="zoom:25%;" /> | This project is part of the <br />[Generative Simulation](https://github.com/ovitrac/generativeSimulation) demonstrators | Say it.<br />Simulate it wit AI. |
+<div aligb="center">
+
+| ![Generative Simulation](assets/logo.png) | This project is part of the <br />[Generative Simulation](https://github.com/ovitrac/generativeSimulation) demonstrators | Say it.<br />Simulate it wit AI. |
 | ---------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------- |
+
+</div>
 
 ---
 
@@ -26,11 +30,8 @@
 
 ---
 
-<details>
 
-<summary>Overview (click to expand)</summary>
-
-## 🧠 **Part I: Philosophy and Principles (Overview)**
+## 🧠 **Part I: Overview**
 
 <kbd>Pizza3</kbd> began as a fork and extension of the **Pizza.py** toolkit for [LAMMPS](https://www.lammps.org/), rewritten in Python 3.x to modernize the original Python 2.x framework. Over time, it has evolved into a **flexible and loosely integrated toolkit** designed for [LAMMPS](https://www.lammps.org/) users, regardless of the simulation style. <kbd>Pizza3</kbd> empowers users to facilitate **multiscale modeling** and seamlessly connect results across different scales and levels of coarse-graining.
 
@@ -54,7 +55,6 @@ All objects in <kbd>Pizza3</kbd> have **scripting and static compiling capabilit
 - 📜 **Generate input/output scripts and dumps** using classes like `pizza.data()` and `pizza.dump()`.
 - 🔬 **Perform advanced spatial/temporal analysis** using the MATLAB/Octave-based library in the `post/` folder.
 
-</details>
 
 ---
 
@@ -893,6 +893,6 @@ $ 2025-02-08 $
 
 ### 🍕 **Pizza³**: Built for AI. Ready for Simulation.
 
-| [<img src="assets/page3.png" alt="page3" style="zoom:50%;" />](https://github.com/ovitrac/generativeSimulation) | 🔮**Explore the future.**  Coding is a language—<br />and with generative AI, we can bridge real-world<br /> problems to simulation-ready computer code. <br />Python is the medium of choice, as it remains the<br /> most fluent language for AI systems.<br /><br />╰┈➤***Prompts accelerate simulation prototyping** and<br /> the design of complex case scenarios. Thanks to<br /> the abstract nature of this interface, there are no<br /> constraints on the level of complexity: it operates<br /> independently of the underlying mathematical or<br /> numerical methods.*<br /><br /><br />👈🏻 Click on the image to learn more. |      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ---- |
-| <small>Credits: [Olivier Vitrac](mailto:olivier.vitrac@gmail.com)</small> |                                                              |      |
+| [<img src="assets/page3.png" alt="page3" style="zoom:50%;" />](https://github.com/ovitrac/generativeSimulation) | 🔮**Explore the future.**  Coding is a language—and with generative AI, we can bridge real-world problems to simulation-ready computer code. Python is the medium of choice, as it remains the most fluent language for AI systems.<br /><br />╰┈➤***Prompts accelerate simulation prototyping** and the design of complex case scenarios. Thanks to the abstract nature of this interface, there are no constraints on the level of complexity: it operates independently of the underlying mathematical or numerical methods.*<br /><br />👈🏻 Click on the image to learn more. |
+| ------------------------------------------------------------ | :----------------------------------------------------------- |
+| <small>Credits: [Olivier Vitrac](mailto:olivier.vitrac@gmail.com)</small> |                                                              |
