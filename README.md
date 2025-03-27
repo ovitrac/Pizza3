@@ -1,5 +1,9 @@
-
 # 🍕 **Pizza³**
+
+| <img src="assets/logo.png" alt="logo" style="zoom:25%;" /> | This project is part of the <br />[Generative Simulation](https://github.com/ovitrac/generativeSimulation) demonstrators | Say it.<br />Simulate it wit AI. |
+| ---------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------- |
+
+---
 
 > **Toolkit for multiscale modeling with LAMMPS in Python 3.x**. It integrates with [LAMMPS-GUI](https://github.com/lammps/lammps/releases) and leverages Large Language Models for rapid prototyping.
 
@@ -882,3 +886,13 @@ $ 2025-02-08 $
 ---
 
 *For further details, consult the [online documentation](https://ovitrac.github.io/Pizza3/) and the [release page](https://github.com/ovitrac/Pizza3/releases) for new capabilities.*
+
+
+
+---
+
+### 🍕 **Pizza³**: Built for AI. Ready for Simulation.
+
+| [<img src="assets/page3.png" alt="page3" style="zoom:50%;" />](https://github.com/ovitrac/generativeSimulation) | 🔮**Explore the future.**  Coding is a language—<br />and with generative AI, we can bridge real-world<br /> problems to simulation-ready computer code. <br />Python is the medium of choice, as it remains the<br /> most fluent language for AI systems.<br /><br />╰┈➤***Prompts accelerate simulation prototyping** and<br /> the design of complex case scenarios. Thanks to<br /> the abstract nature of this interface, there are no<br /> constraints on the level of complexity: it operates<br /> independently of the underlying mathematical or<br /> numerical methods.*<br /><br /><br />👈🏻 Click on the image to learn more. |      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ---- |
+| <small>Credits: [Olivier Vitrac](mailto:olivier.vitrac@gmail.com)</small> |                                                              |      |
