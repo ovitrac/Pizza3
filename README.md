@@ -7,6 +7,7 @@
 
 </div>
 
+
 ---
 
 > **Toolkit for multiscale modeling with LAMMPS in Python 3.x**. It integrates with [LAMMPS-GUI](https://github.com/lammps/lammps/releases) and leverages Large Language Models for rapid prototyping.
