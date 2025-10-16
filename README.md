@@ -12,6 +12,21 @@
 
 > **Toolkit for multiscale modeling with LAMMPS in Python 3.x**. It integrates with [LAMMPS-GUI](https://github.com/lammps/lammps/releases) and leverages Large Language Models for rapid prototyping.
 
+# 
+
+<a href="https://deepwiki.com/ovitrac/Pizza3" title="Detailed manual of Pizza3" target="_blank">
+
+  <picture>
+    <source media="(prefers-color-scheme: dark)"
+            srcset="https://img.shields.io/badge/DeepWiki-Pizza3-1f6feb?style=flat&logo=bookstack&logoColor=white&labelColor=0d1117">
+    <source media="(prefers-color-scheme: light)"
+            srcset="https://img.shields.io/badge/DeepWiki-Pizza3-0969da?style=flat&logo=bookstack&logoColor=white&labelColor=f6f8fa">
+    <img alt="DeepWiki: sig2dna"
+         src="https://img.shields.io/badge/DeepWiki-Pizza3-0969da?style=flat&logo=bookstack&logoColor=white">
+  </picture>
+
+</a>
+
 ---
 
 - 📄 **[Read this file in `HTML`](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html)** *(includes 🎬 videos and enhanced visuals).*
@@ -20,9 +35,8 @@
 - 📐[POST Examples and Analysis Workflow](https://ovitrac.github.io/Pizza3/post/index_post.html) *(examples of 🌊 fluid-structure interactions)*
 - 🔖 **[Releases](https://github.com/ovitrac/Pizza3/releases)** *(✨ new capabilities are detailed there, ⬇️ download page)*
 - 🧵[Wiki Pages](https://github.com/ovitrac/Pizza3/wiki) *(🤺 technical discussions)* including on 🔢 [codelet data containers](https://ovitrac.github.io/Pizza3/pizza/private/param_demo.html))
+- 🗃️ [DeepWiki Pages](https://deepwiki.com/ovitrac/Pizza3) *(the full manual of Pizza^3^ prepared by 🧠 AI)*
 - 📰[Publication](https://doi.org/10.1016/j.foodres.2024.114908)
-
-
 
 ---
 
