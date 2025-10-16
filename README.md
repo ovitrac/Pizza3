@@ -29,6 +29,8 @@
 
 ---
 
+📚 **Resources**
+
 - 📄 **[Read this file in `HTML`](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html)** *(includes 🎬 videos and enhanced visuals).*
 - 📚 **[Online Documentation - 🐍Python](https://ovitrac.github.io/Pizza3/)** *(including how to  🛠️ install, ▶️ run and ✏️ modify <kbd>Pizza³</kbd>)*
 - 📚 **[Online Documentation - 📊Matlab/Octave](https://ovitrac.github.io/Pizza3/index_matlab.html)** *(advanced 📈📉 post-treatment)*
@@ -37,6 +39,35 @@
 - 🧵[Wiki Pages](https://github.com/ovitrac/Pizza3/wiki) *(🤺 technical discussions)* including on 🔢 [codelet data containers](https://ovitrac.github.io/Pizza3/pizza/private/param_demo.html))
 - 🗃️ [DeepWiki Pages](https://deepwiki.com/ovitrac/Pizza3) *(the full manual of Pizza^3^ prepared by 🧠 AI)*
 - 📰[Publication](https://doi.org/10.1016/j.foodres.2024.114908)
+
+---
+
+📑 **Table of Contents**
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [🧠 **Part I: Overview**](#-part-i-overview)
+  - [📌 **Key Features:**](#-key-features)
+  - [📌 **Key Components:**](#-key-components)
+- [🏗️ **Part II: Illustrations** (Workshops and Examples)](#-part-ii-illustrations-workshops-and-examples)
+  - [🎓Scope](#scope)
+  - [📊Table 1: Overview of Legacy Classes](#table-1-overview-of-legacy-classes)
+  - [📐Key Steps](#key-steps)
+  - [📝Overview of workshop1 Classes](#overview-of-workshop1-classes)
+  - [🧩Top Classes Dependencies](#top-classes-dependencies)
+  - [🏞️ Output of workshop1 (LAMMPS script)](#-output-of-workshop1-lammps-script)
+  - [📜LAMMPS script](#lammps-script)
+  - [🎥 Videos from workshop1](#-videos-from-workshop1)
+  - [📈 Extensions in Workshop2](#-extensions-in-workshop2)
+- [🔗Part III. Overview of Classes used in Workshops](#part-iii-overview-of-classes-used-in-workshops)
+  - [🌟pizza.raster()](#pizzaraster)
+  - [🌟pizza.forcefield()](#pizzaforcefield)
+  - [🌟pizza.script(), pizza.script.pipescript()](#pizzascript-pizzascriptpipescript)
+  - [🌟pizza.data3.data(), pizza.dump3.dump()](#pizzadata3data-pizzadump3dump)
+  - [🍕 **Pizza³**: Built for AI. Ready for Simulation.](#-pizza%C2%B3-built-for-ai-ready-for-simulation)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
 ---
