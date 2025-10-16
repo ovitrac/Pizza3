@@ -10,10 +10,6 @@
 
 ---
 
-> **Toolkit for multiscale modeling with LAMMPS in Python 3.x**. It integrates with [LAMMPS-GUI](https://github.com/lammps/lammps/releases) and leverages Large Language Models for rapid prototyping.
-
-# 
-
 <a href="https://deepwiki.com/ovitrac/Pizza3" title="Detailed manual of Pizza3" target="_blank">
 
   <picture>
@@ -27,6 +23,10 @@
 
 </a>
 
+> 
+>
+> **Toolkit for multiscale modeling with LAMMPS in Python 3.x**. It integrates with [LAMMPS-GUI](https://github.com/lammps/lammps/releases) and leverages Large Language Models for rapid prototyping.
+
 ---
 
 - 📄 **[Read this file in `HTML`](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ovitrac/Pizza3/main/README.html)** *(includes 🎬 videos and enhanced visuals).*
@@ -37,10 +37,6 @@
 - 🧵[Wiki Pages](https://github.com/ovitrac/Pizza3/wiki) *(🤺 technical discussions)* including on 🔢 [codelet data containers](https://ovitrac.github.io/Pizza3/pizza/private/param_demo.html))
 - 🗃️ [DeepWiki Pages](https://deepwiki.com/ovitrac/Pizza3) *(the full manual of Pizza^3^ prepared by 🧠 AI)*
 - 📰[Publication](https://doi.org/10.1016/j.foodres.2024.114908)
-
----
-
-[TOC]
 
 
 ---
