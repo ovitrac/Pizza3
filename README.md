@@ -47,25 +47,9 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [🧠 **Part I: Overview**](#-part-i-overview)
-  - [📌 **Key Features:**](#-key-features)
-  - [📌 **Key Components:**](#-key-components)
-- [🏗️ **Part II: Illustrations** (Workshops and Examples)](#-part-ii-illustrations-workshops-and-examples)
-  - [🎓Scope](#scope)
-  - [📊Table 1: Overview of Legacy Classes](#table-1-overview-of-legacy-classes)
-  - [📐Key Steps](#key-steps)
-  - [📝Overview of workshop1 Classes](#overview-of-workshop1-classes)
-  - [🧩Top Classes Dependencies](#top-classes-dependencies)
-  - [🏞️ Output of workshop1 (LAMMPS script)](#-output-of-workshop1-lammps-script)
-  - [📜LAMMPS script](#lammps-script)
-  - [🎥 Videos from workshop1](#-videos-from-workshop1)
-  - [📈 Extensions in Workshop2](#-extensions-in-workshop2)
-- [🔗Part III. Overview of Classes used in Workshops](#part-iii-overview-of-classes-used-in-workshops)
-  - [🌟pizza.raster()](#pizzaraster)
-  - [🌟pizza.forcefield()](#pizzaforcefield)
-  - [🌟pizza.script(), pizza.script.pipescript()](#pizzascript-pizzascriptpipescript)
-  - [🌟pizza.data3.data(), pizza.dump3.dump()](#pizzadata3data-pizzadump3dump)
-  - [🍕 **Pizza³**: Built for AI. Ready for Simulation.](#-pizza%C2%B3-built-for-ai-ready-for-simulation)
+- [🧠 **Part I** | Overview](#-part-i--overview)
+- [🏗️ **Part II** | Illustrations (Workshops and Examples)](#-part-ii--illustrations-workshops-and-examples)
+- [🔗**Part III** | Overview of Classes used in Workshops](#part-iii--overview-of-classes-used-in-workshops)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -73,7 +57,7 @@
 ---
 
 
-## 🧠 **Part I: Overview**
+## 🧠 **Part I** | Overview
 
 <kbd>Pizza3</kbd> began as a fork and extension of the **Pizza.py** toolkit for [LAMMPS](https://www.lammps.org/), rewritten in Python 3.x to modernize the original Python 2.x framework. Over time, it has evolved into a **flexible and loosely integrated toolkit** designed for [LAMMPS](https://www.lammps.org/) users, regardless of the simulation style. <kbd>Pizza3</kbd> empowers users to facilitate **multiscale modeling** and seamlessly connect results across different scales and levels of coarse-graining.
 
@@ -104,7 +88,7 @@ All objects in <kbd>Pizza3</kbd> have **scripting and static compiling capabilit
 
 <summary>Workshops and Examples (click to expand)</summary>
 
-## 🏗️ **Part II: Illustrations** (Workshops and Examples)
+## 🏗️ **Part II** | Illustrations (Workshops and Examples)
 
 
 
@@ -659,7 +643,7 @@ A block of fluid is squeezed between two surfaces, the lower surface is "sensing
 
 <summary>Object-Oriented Design (click to expand)</summary>
 
-## 🔗Part III. Overview of Classes used in Workshops
+## 🔗**Part III** | Outlook of Classes used in Workshops
 
 
 
