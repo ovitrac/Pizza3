@@ -17,7 +17,7 @@
             srcset="https://img.shields.io/badge/DeepWiki-Pizza3-1f6feb?style=flat&logo=bookstack&logoColor=white&labelColor=0d1117">
     <source media="(prefers-color-scheme: light)"
             srcset="https://img.shields.io/badge/DeepWiki-Pizza3-0969da?style=flat&logo=bookstack&logoColor=white&labelColor=f6f8fa">
-    <img alt="DeepWiki: sig2dna"
+    <img alt="DeepWiki: Pizza3"
          src="https://img.shields.io/badge/DeepWiki-Pizza3-0969da?style=flat&logo=bookstack&logoColor=white">
   </picture>
 
